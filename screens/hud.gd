@@ -41,8 +41,8 @@ func _process(_delta: float) -> void:
 	timer_label.text = Style.clock(Game.seconds_left)
 	var starting: int = maxi(1, Game.starting_value)
 	delivered_bar.value = 100.0 * Game.banked_value / starting
-	delivered_label.text = "DELIVERED %s of %s · TARGET %s" % [Loot.rupees(Game.banked_value), Loot.rupees(Game.starting_value), Loot.rupees(Game.target_value())]
-	lost_label.text = "LOST %s · GHOST WINS ABOVE %s" % [Loot.rupees(Game.lost_value), Loot.rupees(Game.loss_limit())]
+	delivered_label.text = "DELIVERED %s / %s · TARGET %s" % [Loot.rupees(Game.banked_value), Loot.rupees(Game.starting_value), Loot.rupees(Game.target_value())]
+	lost_label.text = "LOST %s / %s" % [Loot.rupees(Game.lost_value), Loot.rupees(Game.loss_limit())]
 	var ghost: Node3D = Game.ghost()
 	ghost_panel.visible = ghost != null
 	if ghost != null:
@@ -60,11 +60,18 @@ func _refresh() -> void:
 
 # --- Layout ---
 func _build_round_panel() -> void:
-	var box := Style.panel(0.0)
-	var rows := Style.column()
-	box.add_child(rows)
-	timer_label = Style.label("2:30", Balance.HOST_TITLE_SIZE)
-	rows.add_child(timer_label)
+	# One compact row, so the house stays visible: the timer, then the bar with its figures underneath.
+	var box := Style.panel(0.0, Balance.HUD_PANEL_PADDING)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", Balance.HUD_PANEL_PADDING)
+	box.add_child(row)
+	timer_label = Style.label("2:30", Balance.HUD_TIMER_SIZE)
+	timer_label.autowrap_mode = TextServer.AUTOWRAP_OFF # In a row, wrapping labels shrink to one letter wide.
+	row.add_child(timer_label)
+	var rows := VBoxContainer.new()
+	rows.add_theme_constant_override("separation", Balance.HUD_ROW_GAP)
+	rows.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_child(rows)
 
 	# The bar shows delivered value; a white tick marks the 70% target.
 	var track := Control.new()
@@ -81,24 +88,30 @@ func _build_round_panel() -> void:
 	target_marker.position = Vector2(Balance.HUD_BAR_SIZE.x * Balance.DELIVERY_PERCENT / 100.0, -Balance.HUD_MARKER_OVERHANG)
 	track.add_child(target_marker)
 
-	delivered_label = Style.label("", Balance.HOST_SMALL_SIZE)
-	rows.add_child(delivered_label)
-	lost_label = Style.label("", Balance.HOST_SMALL_SIZE, Balance.DAMAGE_COLOUR)
-	rows.add_child(lost_label)
+	var figures := HBoxContainer.new()
+	figures.add_theme_constant_override("separation", Balance.HUD_PANEL_PADDING)
+	rows.add_child(figures)
+	delivered_label = Style.label("", Balance.HUD_TEXT_SIZE)
+	delivered_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	figures.add_child(delivered_label)
+	lost_label = Style.label("", Balance.HUD_TEXT_SIZE, Balance.DAMAGE_COLOUR)
+	lost_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	figures.add_child(lost_label)
 	box.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	box.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP, Control.PRESET_MODE_MINSIZE, int(Balance.HUD_MARGIN))
 	add_child(box)
 
 
 func _build_ghost_panel() -> void:
-	ghost_panel = Style.panel(0.0)
-	var rows := Style.column()
+	ghost_panel = Style.panel(0.0, Balance.HUD_PANEL_PADDING)
+	var rows := VBoxContainer.new()
+	rows.add_theme_constant_override("separation", Balance.HUD_ROW_GAP)
 	ghost_panel.add_child(rows)
-	ghost_label = Style.label("", Balance.HOST_SMALL_SIZE, Balance.HOST_GHOST_COLOUR)
+	ghost_label = Style.label("", Balance.HUD_TEXT_SIZE, Balance.HOST_GHOST_COLOUR)
 	rows.add_child(ghost_label)
 	ghost_bar.max_value = Balance.ENERGY_MAX
 	ghost_bar.show_percentage = false
-	ghost_bar.custom_minimum_size = Vector2(Balance.GHOST_PANEL_WIDTH, Balance.HUD_FONT_SIZE)
+	ghost_bar.custom_minimum_size = Balance.HUD_ENERGY_BAR_SIZE
 	var fill := StyleBoxFlat.new()
 	fill.bg_color = Balance.POSSESS_COLOUR
 	ghost_bar.add_theme_stylebox_override("fill", fill)

@@ -2,12 +2,12 @@
 extends RefCounted
 
 # --- Building blocks ---
-static func panel(min_width: float) -> PanelContainer:
+static func panel(min_width: float, padding: int = Balance.HOST_PANEL_PADDING) -> PanelContainer:
 	var box := PanelContainer.new()
 	var style := StyleBoxFlat.new()
 	style.bg_color = Balance.HOST_PANEL_COLOUR
 	style.set_corner_radius_all(Balance.HOST_CORNER_RADIUS)
-	style.set_content_margin_all(Balance.HOST_PANEL_PADDING)
+	style.set_content_margin_all(padding)
 	box.add_theme_stylebox_override("panel", style)
 	box.custom_minimum_size.x = min_width
 	return box

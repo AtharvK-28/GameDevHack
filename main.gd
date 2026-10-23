@@ -9,6 +9,7 @@ const MOVER_SCENE := preload("res://actors/Mover.tscn")
 const GHOST_SCENE := preload("res://actors/GhostWisp.tscn")
 const CAMERA_SCENE := preload("res://actors/PartyCamera.tscn")
 const ARENA_SCENE := preload("res://arenas/Mansion.tscn")
+const WINDOW_KEYS := preload("res://core/window_keys.gd")
 const SCREEN_SCENES: Array[PackedScene] = [
 	preload("res://screens/HUD.tscn"), preload("res://screens/Lobby.tscn"), preload("res://screens/RoleReveal.tscn"),
 	preload("res://screens/RoundEnd.tscn"), preload("res://screens/Results.tscn"),
@@ -39,7 +40,10 @@ func _ready() -> void:
 	Net.players_changed.connect(_start_ready_controllers)
 	_build_connection_text()
 	_start_ready_controllers()
+	add_child(WINDOW_KEYS.new())
 	if match_mode:
+		# The shared screen plays fullscreen; F11 gives the window back.
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 		_build_match_screens()
 		Game.attach(self)
 		print("Match lobby ready: phones join, tap Ready, then press Enter to start.")

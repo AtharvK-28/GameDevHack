@@ -6,6 +6,8 @@ Every approved design or technical decision, newest first. Only the user approve
 
 | # | Date | Decision | Reason |
 | --- | --- | --- | --- |
+| 55 | 2026-10-23 | The match starts fullscreen; F11 switches between fullscreen and a window. The live HUD's top panel is compact so more of the house shows. | User asked for a fullscreen view and a smaller timer panel |
+| 54 | 2026-10-23 | The camera's three-quarter view is mirrored: 55° down and 20° to the other side (yaw −20°). Supersedes the yaw in decision 39. | User asked to flip the camera view |
 | 53 | 2026-10-23 | Mover team colours: overalls and cap in the slot's colour; shirts for contrast are green, orange, green and red for slots 1–4. | Art plan approved with “go” |
 | 52 | 2026-10-23 | Mover animation uses the guide's `MoverModel` (one clip at a time with cross-fades), driven only by state the mover already tracks. Tumble and get-up play together at 1.35× to fit the unchanged 1.5 s. Grab and bank-cheer one-shots play on those events; victory and defeat poses wait. A cursed item animates one weight class heavier (visual only). The flashlight stays spring-carried, not attached to the hand. Animation tunables live in `Balance.gd`. | Art plan approved with “go” |
 | 51 | 2026-10-23 | The 1.76 m mover model is scaled to 0.91 so it matches the unchanged 1.6 m capsule, feet at the capsule's base; stride-matching speeds scale with it. Colliders, carry tuning and every gameplay number stay as they were. | Art plan approved with “go” |

@@ -53,6 +53,7 @@ func _refresh() -> void:
 		status_label.text = "2–4 players: each phone taps Ready (%d ready)" % ready_count
 	else:
 		status_label.text = "%d players · %d rounds · Press Enter to start" % [ready_count, Balance.MATCH_ROUNDS[ready_count - 2]]
+	status_label.text += "\nF11: fullscreen or window"
 
 
 # --- Layout ---
