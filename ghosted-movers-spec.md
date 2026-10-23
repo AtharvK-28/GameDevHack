@@ -187,11 +187,11 @@ The demo enables House Shake and Curse. The following catalog also preserves def
 
 ## Arenas
 
-Three single-floor, roofless houses, each with its own layout, signature haunting and hazard. The demo spawns 6/9/12 items by player count; the following arena layouts and loot catalog are later work. Each sits on one ground plane (ramps allowed, no stairs) so the shared camera always works.
+Three single-floor, roofless houses, each with its own layout, signature haunting and hazard. The demo spawns 6/9/12 items by player count; the following arena layouts and loot catalog are later work. Each sits on one ground plane (ramps allowed, no stairs; the Old Mansion's gallery stairs are the one exception) so the shared camera always works. Arenas are built from data files in `arenas/layouts/` by `arenas/arena_builder.gd`; walls stand 3.0 m above their floor with no roofs, and camera-facing walls are see-through.
 
 | Arena | Layout | Signature haunting | Arena-only hazard | Light and colour |
 | --- | --- | --- | --- | --- |
-| Old Mansion | Six rooms off a central hall; truck at the front door; piano in the far parlour | House Shake | Many doors and two chandeliers over the main route | Warm lamplight, purple wallpaper |
+| Old Mansion | From `arenas/layouts/mansion-layout.svg`: main room and kitchen with a raised 1.2 m gallery behind them (reached only by stairs), a fenced garden, and a path from the front door to the truck; the piano starts on the gallery. The only arena with stairs. | House Shake | Many doors and two chandeliers over the main route | Warm lamplight, purple wallpaper |
 | Ghost Ship | Open deck, crate stacks, a narrow gangplank with no rails down to the truck on the dock | Gust of Wind | Water: anything that falls overboard is lost | Moonlight blue, green lanterns |
 | Abandoned Museum | Long galleries of pedestals; the furthest distance to the truck | Lights Out | Very fragile, very valuable exhibits | Cold white spotlights, dusty fog |
 
@@ -462,8 +462,10 @@ ghosted-movers/
 │   ├── LightsOut.gd
 │   └── EctoSlime.gd
 ├── arenas/
-│   ├── ArenaBase.gd      # spawn points, camera bounds, signature haunting, total value
-│   ├── Mansion.tscn
+│   ├── arena_builder.gd  # builds any arena from its layout data: floors, walls, railings, stairs, truck, room zones
+│   ├── layouts/          # <arena>_layout.json (metres) and the floor-plan SVGs they come from
+│   ├── Greybox.tscn      # the one-room test arena the headless checks use
+│   ├── Mansion.tscn      # built from layouts/mansion_layout.json
 │   ├── Ship.tscn
 │   └── Museum.tscn
 ├── assets/               # models/ (mover/: the character .glb files), audio/, fonts/; source/ holds art sources Godot skips
