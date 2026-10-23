@@ -2,13 +2,13 @@
 
 The phases follow the spec's 24-hour build plan. A phase is done only when its check passes. AI agents update this file after every task.
 
-**Status:** Phase 1 implemented and locally verified; awaiting four physical phones on the target network. No later phase started.
+**Status:** Phase 0 complete. Phase 1 implemented and locally verified; awaiting four physical phones on the target network. No later phase started.
 
 ## Phase 0 · Setup
 
 - [x] Godot project created by the user in the editor (Mobile, Jolt; 60 Hz explicitly configured)
 - [x] `AGENTS.md`, `DECISIONS.md`, `PROGRESS.md`, `ghosted-movers-spec.md` added to the repo root
-- [ ] Git repository initialised and pushed
+- [x] Git repository initialised and pushed to `origin/main`
 - [x] Phase 1 decisions recorded under the user's instruction to replan and start; exact supplied Godot version verified
 
 ## Phase 1 · H0–2 · Plumbing
@@ -90,5 +90,5 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - Browser verification: four isolated Chrome contexts; 30 input messages per second at rest; simultaneous joystick/button touch; touch cancellation; reload/rejoin; no uncaught JavaScript errors; landscape layouts at 568×320, 667×375, 844×390 and 1024×768; portrait rotate overlay at 375×667. Screenshots visually inspected.
 - Main scene rendered and visually inspected with the actual Mobile renderer. Godot emitted an environment-level root certificate-store warning during local checks; LAN HTTP/WebSocket checks still passed. This was not a script/scene error.
 - Four physical phones and actual network latency remain unverified. Phase 2 is gated on that acceptance check.
-- Git repository existed without commits at the start of this task. Remote push is not yet verified.
+- Initial project and Phase 1 checkpoint `9bfc228` pushed successfully to `origin/main`; generated caches, local test dependencies and verification captures are ignored.
 - Run instructions and the browser feature limitations are in `README.md`.
