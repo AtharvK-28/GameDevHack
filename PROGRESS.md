@@ -2,7 +2,7 @@
 
 The phases follow the spec's 24-hour build plan. A phase is done only when its check passes. AI agents update this file after every task.
 
-**Status:** Phases 0–3 complete. Phase 4 (ghost) is built and pushed at the user's request before its new check ran: `core/ghost_check.gd` compiles but has not run yet (the port was busy with a play session), and the two-phone 1v1 check is still to do. Four unconfirmed behaviours are listed under Open in DECISIONS.md.
+**Status:** Phases 0–3 complete. Phase 4 (ghost) passes `core/ghost_check.gd`; its two-phone 1v1 check is still to do. Phase 5 (match flow and demo scope) is built and passes `core/match_check.gd` (60 checks) plus all four earlier checks; the user's 4-player phone test is next. Mover character art is waiting for its plan's go.
 
 ## Phase 0 · Setup
 
@@ -45,15 +45,20 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - [x] Ghost phone screen: energy, ACTION label, haunting costs, greyed buttons, cooldown rings
 - [ ] **Check:** a 1v1 greybox round is tense and fair — waiting for the user's two-phone test
 
-## Phase 5 · H12–14 · Match flow (minimum viable game)
+## Phase 5 · H12–14 · Match flow and demo scope
 
-- [ ] Lobby with QR code
-- [ ] Role reveal and ghost rotation
-- [ ] Timer and quota
-- [ ] Round end with restart
-- [ ] Results with awards
-- [ ] HUD
-- [ ] **Check:** a 4-player match runs from lobby to results with no restart
+- [x] Lobby with QR code
+- [x] Role reveal and ghost rotation
+- [x] 150 s timer, 70% final delivery target, >30% loss early defeat and single result snapshot
+- [x] Round end with restart
+- [x] Final leaderboard (awards deferred)
+- [x] HUD and phone phase/lock/reason/countdown feedback
+- [x] Seeded 6/9/12-item setup; identical restart
+- [x] Simplified ghost: sliders, Shake, six-second heavy-item Curse
+- [x] Three-quarter smooth camera; ability-only shake
+- [x] Disconnect pause/reconnect/cancel
+- [x] Automated scoring, Curse and full-match checks
+- [ ] **Check:** a 4-player match runs from lobby to results with no restart — waiting for the user's phone test
 
 ## Phase 6 · H14–18 · Arenas and look (safe submission)
 
@@ -68,7 +73,7 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 ## Phase 7 · H18–21 · Juice and playtest
 
 - [ ] Sounds and music
-- [ ] Particles, shatter punch-in, phone buzz
+- [ ] Particles and phone buzz (shatter punch-in deferred)
 - [ ] Playtests with 2, 3 and 4 players
 - [ ] `Balance.gd` tuned
 
@@ -112,4 +117,9 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - Deferred to Phase 5: the second flashlight for 4-player matches (spawned at round setup); the lone-mover flag is set by match flow.
 - Phase 4 handover (2026-10-23, new machine): Godot 4.7.2 (`ed1daf0bf`) verified; import plus `plumbing_check.gd` (35), `carrying_check.gd` (75) and `team_carry_check.gd` (49) all passed before any change. A headless import re-saved `project.godot` without the explicit 60 Hz line (60 is Godot's default); the line was restored. Watch for this after imports.
 - Phase 4 build (2026-10-23): `GhostWisp` (energy, possession, the exorcism freeze and lock, and the host's check on every ghost button), the `Possessable` component (slider and hopper driven in the component; door, chandelier and rug act through their own scripts), `Haunting` with House Shake and Ecto Slime, `PartyCamera` with trauma shake, the ghost's phone screen, and one valueless prop of each type in the greybox. The host key G passes the ghost; the lone-mover rule counts movers only.
-- Phase 4 verification so far: every new script compiles and loads, Main runs headless with a ghost (13 possessables: 8 loot items and 5 furniture), and the three earlier checks still pass (35, 75, 49; they now remove the furniture first). The ghost phone screen was rendered in headless Firefox at 844×390 and 568×320 for the free, possessing and exorcised states, plus the unchanged mover screen, with no script errors. **Not yet run:** `core/ghost_check.gd` and a Mobile-renderer look at the new visuals.
+- Phase 4 build verification: every new script compiles and loads, Main runs headless with a ghost (13 possessables: 8 loot items and 5 furniture), and the three earlier checks still pass (35, 75, 49; they now remove the furniture first). The ghost phone screen was rendered in headless Firefox at 844×390 and 568×320 for the free, possessing and exorcised states, plus the unchanged mover screen, with no script errors. A Mobile-renderer look at the new visuals remains pending.
+- Phase 4 ghost check (2026-10-23): the first complete run had 128 passing assertions and 2 failures. Both were test issues: the reopening door pushed the mover outside its panel beside the jamb, where walking straight ahead hit the wall; the chandelier assertion ran just before physical contact with the vase. The test now walks the mover around the open panel and through the doorway, and waits for the chandelier's landing with a bounded timeout before asserting damage. The focused door probe and final full ghost check pass: **130 assertions, exit code 0**. The mover reached z = -8.81 m beyond the doorway; the dropped chandelier reduced the vase from ₹3,000 to ₹829 after exorcism. Gameplay code and tuning are unchanged. Local output is saved in ignored `.verification/ghost_check_latest.log`.
+- Phase 5 build (2026-10-23, continued after the previous agent's usage limit): it had recorded decisions 39–48 and written `Game.gd`, Curse, the phone refusal reasons and seeded loot, but stopped before the round setup and host screens, so Main could not run. Added: `setup_match_round()` and the lobby reset in `main.gd`; the five host screens in `screens/` (Lobby with QR, RoleReveal, HUD with pause overlay, RoundEnd, Results); `core/qr_code.gd`; the three-quarter following `PartyCamera`; phone match screens (reveal, pause, result, final), Curse button, refusal reasons with seconds and the cursed-item note. Main defaults to match mode; the four earlier checks switch it off and use the greybox harness.
+- Phase 5 verification: `match_check.gd` passes 60 checks with two real WebSocket phones and the host keys (lobby, refused late join, seeded setup, reveal, camera yaw and follow, regen 8/s, opening protection and shared lock with phone reasons, Curse cost/no stacking/30% slower for 6 s, exact 70%/30% win, early ghost win at 30% + ₹1, restart with identical layout and replaced points, ghost rotation, timeout, disconnect pause/resume/cancel, a full 4-round match). Plumbing, carrying (75), team carry (49) and ghost checks still pass; the match-mode smoke run is clean, with no script errors or leaks. The QR encoder matches the reference `qrcode` library module for module (48 symbols, versions 1–6, all 8 masks). Host screens were rendered in the Mobile renderer and phone screens in headless Chrome at 844 × 390; both inspected.
+- Phase 5 fixes found while verifying: the phone HUD read a freed item when a carried item shattered (logged an error each time); the lobby link wrapped onto two lines; the 3D truck sign showed through the panels; the locked Curse button kept its colour; the cooldown ring covered button text.
+- Watch: the open Godot editor re-saved `project.godot`, dropping the explicit 60 Hz line (restored) and adding `import/blender/enabled=false` (left uncommitted for the art task).

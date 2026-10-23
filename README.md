@@ -2,7 +2,22 @@
 
 Godot 4.7.2 stable · Mobile renderer · Jolt · 60 Hz physics.
 
-## Run the greybox
+## Play a match
+
+1. Press **F5** in Godot. The shared screen opens on the lobby with a QR code and the join link.
+2. Start the phone page server (see the next section, step 2). Phones on the same Wi-Fi scan the QR code or open the link, enter a name and tap **Ready to move**.
+3. With 2–4 phones ready, press **Enter** on the host. Each round: a 3 s role reveal, then 150 s of play. 2 players play 4 rounds, 3 play 3 and 4 play 4; the ghost passes to the next player every round.
+4. **Winning a round:** movers must deliver at least **70%** of the round's starting value. Losing more than 30% (damage, shattering, items lost) ends the round for the ghost at once. Otherwise the round ends when time runs out or every item has been delivered or destroyed; only delivered value counts.
+5. **Host keys.** Round end: **Enter** next round, **R** restart the round (same layout and roles; its points are replaced), **L** back to the lobby. Final standings: **Enter** back to the lobby. If a phone drops mid-round the round pauses until it rejoins from the same browser; **L** cancels to the lobby without scoring.
+6. **The demo ghost** has POSSESS (any loose loot or the crate), SHOVE, SHAKE (House Shake, 45) and CURSE (30, 15 s cooldown: nearby loot glows and is 30% slower to carry for 6 s). Hauntings are locked for the first 8 s and for 4 s after each one; the ghost's phone shows why a button is unavailable and for how long. Keyboard ghost: Q possess, F action, Z shake, C curse.
+
+Points: movers get 1 per ₹100 they deliver (two-person items split) plus 100 for a win; the ghost gets 1 per ₹100 lost plus 150 for a win. Awards, more arenas and the other ghost abilities come later.
+
+## Run the greybox harness
+
+The Phase 4 sandbox, with every ghost ability and the G key, is still available: select the root node of `Main.tscn`, untick **Match Mode** in the Inspector, and run. Tick it again before committing. The checks below use the harness automatically.
+
+### Harness steps
 
 1. Import this folder's `project.godot` into Godot and press **F6 with Main.tscn open**, or **F5** to run the project. Only run one host at a time: it listens on port 9080.
 2. In a terminal, change into `controller/` and start the page server:
@@ -40,7 +55,7 @@ Godot 4.7.2 stable · Mobile renderer · Jolt · 60 Hz physics.
 - **House Shake** (45, 20 s cooldown): a 1 s rumble warning, then 2.5 s in which anyone moving tumbles. Stand still or BRACE.
 - **Ecto Slime** (25, 10 s cooldown): for 4 s the wisp leaves green patches that last 4 s each; movers on slime keep their momentum.
 
-Role rotation, scoring, the QR lobby and gamepads are later phases.
+Gamepads are a later phase.
 
 Allow the game (9080) and Python page server (8080) through the host's firewall on the private network if prompted. A second game instance shows a port-in-use error. Stop the first host before retrying. Stop Python with Ctrl+C when finished.
 
@@ -61,6 +76,7 @@ godot --headless --path . --script res://core/plumbing_check.gd
 godot --headless --path . --script res://core/carrying_check.gd
 godot --headless --path . --script res://core/team_carry_check.gd
 godot --headless --path . --script res://core/ghost_check.gd
+godot --headless --path . --script res://core/match_check.gd
 ```
 
 Close a running host before any integration check; they all open port 9080.
@@ -69,6 +85,7 @@ Close a running host before any integration check; they all open port 9080.
 - `carrying_check.gd` runs real Jolt physics: pickup and spring settling, walking and 180° turns without launching, plain drops, grab selection, throwing, damage maths, wall hits, resting contact, banking exactly once, phone grab and HUD, heartbeat and disconnect drops, and two movers grabbing the same item in one tick. Success ends with `CARRYING CHECK: PASS` and exit code 0.
 - `team_carry_check.gd` drives two simulated phones: two-person lift, 70% carry, average steering, turning, 25% drag with scraping, the lone-mover 40% drag, losing grip, the piano through the parlour doorway, tumbling from thrown items, and the flashlight's beam, wall blocking and 1.5 s exorcism timer against a stand-in target. Success ends with `TEAM CARRY CHECK: PASS` and exit code 0. The carrying checks remove the ghost's furniture first, so they test carrying alone.
 - `ghost_check.gd` drives a mover phone and a ghost phone: the piano route past the open door, the G key and the movers-only lone-mover rule, wisp speed, walls, bounds and shimmer, energy gain and drain, every possession rule, all five prop actions and their costs, exorcism with the freeze and lock, House Shake, Ecto Slime, the ghost's `hud` (labels, costs, cooldowns, greying) and the Q/F/Z/X keys. Success ends with `GHOST CHECK: PASS` and exit code 0.
+- `match_check.gd` plays whole matches with two phones and the host keys: lobby and ready, Enter to start, a third phone refused mid-match, the seeded 6-item setup with one piano, reveal and live phases, the three-quarter camera following the mover, energy regeneration, opening protection, the shared haunting lock and their phone reasons, Curse (cost, no stacking, 30% slower carry for 6 s), the exact 70%/30% boundaries, an early ghost win, restart with the same layout and replaced points, ghost rotation, timeout, disconnect pause and resume, cancelling to the lobby, and a full 4-round match to the final standings. Success ends with `MATCH CHECK: PASS` and exit code 0.
 
 Change tuning values in `autoload/Balance.gd`. After changing controller settings, regenerate the committed browser settings:
 
