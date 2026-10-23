@@ -55,7 +55,6 @@
 	"spawns": {
 		"movers": [[7.0, 21.0], [8.5, 21.0], [7.0, 19.8], [8.5, 19.8]],
 		"ghost": {"at": [16, 24.5], "floor": 0},
-		"flashlights": [{"at": [10.5, 13.5], "floor": 0}, {"at": [13.5, 13.5], "floor": 0}],
 		"loot": [
 			{"id": "gallery-piano", "role": "piano", "at": [10.0, 3.0], "floor": 1.2, "yaw": 0},
 			{"id": "gallery-library", "role": "tall", "at": [6.6, 0.45], "floor": 1.2, "yaw": 0},

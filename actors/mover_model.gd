@@ -4,7 +4,7 @@
 class_name MoverModel
 extends Node3D
 
-enum Carry { NONE, LIGHT, MEDIUM, HEAVY, TEAM, DRAG, FLASHLIGHT }
+enum Carry { NONE, LIGHT, MEDIUM, HEAVY, TEAM, DRAG }
 
 # --- Clip names ---
 const CLIP_PREFIX: String = "mover_"
@@ -74,9 +74,6 @@ func _locomotion_clip(speed: float, carry: Carry) -> String:
 			return "team_carry_walk" if moving else "team_carry_idle"
 		Carry.DRAG:
 			return "drag" if moving else "team_carry_idle"
-		Carry.FLASHLIGHT:
-			if not moving:
-				return "flashlight_aim"
 	if not moving:
 		return "idle"
 	return "run" if speed > Balance.MODEL_WALK_RUN_SWITCH else "walk"

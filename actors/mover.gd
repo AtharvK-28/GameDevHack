@@ -264,8 +264,6 @@ func _update_model() -> void:
 func _carry_pose() -> MoverModel.Carry:
 	if not is_instance_valid(held_item):
 		return MoverModel.Carry.NONE
-	if held_item is Flashlight:
-		return MoverModel.Carry.FLASHLIGHT
 	if held_item.weight_class == Balance.TWO_PERSON:
 		return MoverModel.Carry.TEAM if held_item.holder_count() == 2 else MoverModel.Carry.DRAG
 	# A cursed item looks one weight class heavier (decision 52); its speed is unchanged by this.

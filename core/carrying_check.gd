@@ -1,4 +1,4 @@
-# Runs real Jolt physics and input paths for pickup, impacts, throwing, banking and grab conflicts.
+# Runs real Jolt physics and input paths for pickup, impacts, throwing, banking, grab conflicts and price tags.
 # This script compiles before the autoloads exist, so loot is loaded at runtime and never named by class.
 extends SceneTree
 
@@ -65,6 +65,7 @@ func _run() -> void:
 	await _check_banking()
 	await _check_phone_release_and_hud()
 	await _check_double_grab()
+	await _check_price_tags()
 	await _clear_loot()
 	for client: WebSocketPeer in clients:
 		client.close()
@@ -370,6 +371,23 @@ func _check_double_grab() -> void:
 	_send(first, {"type": "btn", "b": "grab", "down": false})
 	_send(second, {"type": "btn", "b": "grab", "down": false})
 	await _wait(INPUT_SECONDS)
+
+
+# --- Price tags ---
+func _check_price_tags() -> void:
+	# A tag stays hidden until a mover comes within PRICE_SHOW_DISTANCE, then fades in.
+	await _clear_loot()
+	_park_other_movers()
+	_reset_mover(Vector3(0.0, MOVER_HEIGHT, 3.0), Vector3.FORWARD)
+	var item := _spawn(0, Vector3(4.0, _rest_height(0), -4.0))
+	await _wait(SETTLE_SECONDS)
+	_check(not item.price_label.visible, "A price tag is hidden while nobody is near")
+	_reset_mover(Vector3(4.0, MOVER_HEIGHT, -2.5), Vector3.FORWARD)
+	await _wait(SETTINGS.PRICE_FADE_TIME + 0.2)
+	_check(item.price_label.visible and item.price_label.modulate.a > SETTINGS.PRICE_OPACITY - 0.05, "A mover walking up to an item reveals its price tag")
+	_reset_mover(Vector3(0.0, MOVER_HEIGHT, 3.0), Vector3.FORWARD)
+	await _wait(SETTINGS.PRICE_FADE_TIME + 0.2)
+	_check(not item.price_label.visible, "The tag fades away again once the mover leaves")
 
 
 # --- Test helpers ---

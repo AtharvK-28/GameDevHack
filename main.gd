@@ -95,7 +95,7 @@ func _send_hud() -> void:
 		# A carried item that just shattered is already freed; check before taking a typed reference.
 		var has_item: bool = is_instance_valid(mover.held_item) and not mover.held_item.finished
 		var item: Carryable = mover.held_item if has_item else null
-		var value: Variant = null # Items without a price, like the flashlight, show their name only.
+		var value: Variant = null # Items without a price show their name only.
 		if has_item and item is Loot:
 			value = item.value
 		var cursed: float = item.curse_left if has_item and item is Loot else 0.0

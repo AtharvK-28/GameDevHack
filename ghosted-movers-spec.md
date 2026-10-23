@@ -34,7 +34,7 @@ Every compulsory requirement is met by the core game. The extra features are whe
 | Minimum 3 arenas | Old Mansion, Ghost Ship, Abandoned Museum |
 | At least 3 interactive environmental elements | Possessable props, plus House Shake, Gust of Wind and Lights Out hauntings |
 | Role switching after each round | The Ghost passes to the next player every round |
-| Limited sabotage | Ghost energy bar, haunting cooldowns, exorcism by flashlight |
+| Limited sabotage | Ghost energy bar, haunting cooldowns, map tasks that handicap the ghost (to be designed) |
 | Timer or points scoring | 150 s round timer; a value quota; individual points |
 | Win/loss, restart, final results | Quota met or not; a restart-round button; a final leaderboard with awards |
 
@@ -50,9 +50,9 @@ Every compulsory requirement is met by the core game. The extra features are whe
 
 The current demo uses the supplied Old Mansion layout and mover character assets; the greybox remains the regression harness. Build a complete match before art or extra abilities. The arena/ability catalog below includes later work; only possession/SHOVE, House Shake and Curse are enabled in the demo. Existing door, chandelier, hopper, rug and slime code is retained for regression tests. Awards, expanded loot, cinematic zoom and slow motion are deferred. Room progress is included in the approved UI pass.
 
-- **Curse:** the free wisp targets nearby unbanked loot, including held loot, using the existing 0.6 m footprint reach and a visible target highlight. C / haunt3 costs 30 energy, cooldown 15 s. The object glows for 6 s and carrying/dragging speed is multiplied by 0.7, including both holders. Dropping or transferring does not remove the curse; the mover is free of the slowdown when no longer carrying it. No stacking, no spring or lift-height changes. The flashlight is not loot and cannot be cursed.
+- **Curse:** the free wisp targets nearby unbanked loot, including held loot, using the existing 0.6 m footprint reach and a visible target highlight. C / haunt3 costs 30 energy, cooldown 15 s. The object glows for 6 s and carrying/dragging speed is multiplied by 0.7, including both holders. Dropping or transferring does not remove the curse; the mover is free of the slowdown when no longer carrying it. No stacking, no spring or lift-height changes.
 - **Haunting limits:** 8 s opening protection from live start; 4 s shared lock after a cast; individual cooldowns start at cast. House Shake works while possessing; Curse is wisp-only. Phone UI explains all refusals and displays remaining seconds, including exorcism, cooldown, opening protection, shared lock, insufficient energy and missing targets. A mover holding cursed loot sees its remaining duration.
-- **Seeded setup:** 6/9/12 loot items for 2/3/4 players, exactly one centrepiece, using existing types. Original total is calculated from that spawn. Restart restores the same seed, layout, roles and values. One flashlight, two for four players. Keep the lone-mover 40% drag rule. New rounds receive a new seed.
+- **Seeded setup:** 6/9/12 loot items for 2/3/4 players, exactly one centrepiece, using existing types. Original total is calculated from that spawn. Restart restores the same seed, layout, roles and values. Keep the lone-mover 40% drag rule. New rounds receive a new seed.
 - **Disconnect:** pause the round simulation and timers until all participants reconnect; the host may cancel to the lobby without scoring the unfinished round. Reject new identities during a match; existing participants may rejoin.
 - **Host flow:** lobby/QR → 3 s role reveal/countdown → 150 s round → round result/restart → next role → final leaderboard. 2 players play 4 rounds, 3 play 3, 4 play 4. The demo uses Mansion for all rounds; additional arenas remain later work.
 - **Results:** frozen once per attempt; restarting replaces rather than adds that attempt's score. Host controls start, next, restart and return to lobby. Phones display the same current phase and their own role/points after reconnect.
@@ -116,11 +116,10 @@ Movers have one job: get value onto the truck. Every control is about carrying w
 - Only releasing GRAB inside the zone banks. Loot that is thrown, pushed or slid in by the ghost stays in play until a mover picks it up and releases it there.
 - A two-person item banks when its last holder lets go inside the zone. If one holder lets go first, the other is left dragging it.
 
-**The flashlight**
+**Countering the ghost**
 
-- One flashlight lies in each arena; with 4 players, two. It's an item, so carrying it means not carrying loot. It is light and can be thrown; it has no value, takes no damage and does not bank.
-- Hold its beam on a glowing possessed prop for 1.5 s to exorcise the ghost. The ghost is ejected, stunned and cannot possess anything for 5 s. Stunned means the wisp is frozen for 1 s: it cannot move or use any button, hauntings included.
-- The beam reaches 8 m and walls block it. Its aim ignores height, so a raised prop such as a chandelier can be lit from below.
+- There is no flashlight (decision 82). Each map will get repeatable tasks that handicap the ghost for a while; doing them costs time the movers could spend carrying loot. The tasks are still to be designed.
+- Exorcism stays in the game for those tasks to trigger: the ghost is ejected, stunned and cannot possess anything for 5 s. Stunned means the wisp is frozen for 1 s: it cannot move or use any button, hauntings included.
 
 **Tumbling.** You fall over if:
 
@@ -147,7 +146,7 @@ The ghost wins by smashing value and wasting time, never by cheap surprise. Ever
 - Move the wisp into any prop with a possessable outline and tap POSSESS. The wisp must be within 0.6 m of the prop's footprint; the prop it would take shows a bright outline.
 - The prop glows green and drips particles. The joystick now moves the prop, and the action button does that prop's special move.
 - Possession drains 8 energy per second. Leaving a prop is free. When energy runs out, the ghost is pushed out.
-- Every loose loot item, the piano included, can be possessed as a slider; heavier items move slower. The flashlight cannot be possessed.
+- Every loose loot item, the piano included, can be possessed as a slider; heavier items move slower.
 - Rules that keep it fair:
   - The ghost can't possess an item someone is carrying, and a possessed item can't be grabbed until the ghost leaves or is exorcised.
   - Nothing inside the truck zone can be possessed. A possessed prop that enters the zone pushes the ghost out, with no stun.
@@ -177,7 +176,7 @@ The demo enables House Shake and Curse. The following catalog also preserves def
 | --- | --- | --- | --- | --- | --- | --- |
 | House Shake | Old Mansion | Rumble, ceiling dust, small camera shake for 1 s | 2.5 s: anyone moving tumbles; shelf items fall | Stand still or BRACE | 45 | 20 s |
 | Gust of Wind | Ghost Ship | Wind streaks and a whistle show the direction for 1 s | 3 s: moving with the wind tumbles you; standing still slowly pushes you | BRACE, or walk against or across the wind | 40 | 18 s |
-| Lights Out | Abandoned Museum | Lights flicker for 1 s | 6 s of darkness except the flashlight cone and the truck light | Stick near the flashlight carrier | 50 | 25 s |
+| Lights Out | Abandoned Museum | Lights flicker for 1 s | 6 s of darkness except the truck light (to be redesigned with the Museum) | To be redesigned with the Museum | 50 | 25 s |
 | Ecto Slime | All arenas | The wisp leaves a green trail | For 4 s, movers on slime slide with their momentum | Walk around it | 25 | 10 s |
 
 - **House Shake.** "Moving" means the stick is pushed or the mover is sliding; BRACE protects. Shelf items falling waits for the Phase 6 Mansion, since the greybox has no shelves.
@@ -253,7 +252,7 @@ Each round has a clear team result: the movers either hit the quota or they don'
 - **Butterfingers:** most value lost while carrying.
 - **Piano Killer:** destroyed a centrepiece.
 - **Poltergeist Pro:** most value destroyed as the ghost.
-- **Exorcist:** most exorcisms.
+- **Exorcist:** most exorcisms (needs the ghost tasks).
 - **Tumbleweed:** most tumbles.
 
 **Tune these first.** All live in `Balance.gd`. Change one at a time between playtests.
@@ -287,7 +286,7 @@ The game is judged on a projector from across a room. Everything must read insta
 
 - One consistent low-poly style. Movers use the team's own character model (`assets/models/mover/`); props and arenas should match it, using CC0 packs such as Kenney Furniture Kit and KayKit where they fit. Don't mix styles. The Old Mansion uses Kenney kits only, with decor colours muted so they never look like loot; surface textures are the project's own (`tools/make_surface_textures.gd`); every source is listed in `assets/CREDITS.md`.
 - Movers: chunky characters with overalls and cap in their slot's colour and a contrasting shirt, with a name tag overhead. The model is scaled to the 1.6 m capsule; it only shows the mover's state and never changes gameplay.
-- Every item shows a price tag above it that ticks down and turns red as value drops.
+- Every item has a small price tag above it that shows only while a mover or the ghost is within 3 m, fading in and out over 0.2 s, and always while it is carried. It ticks down and turns red as value drops. Damage and banking popups always show, a little bigger than the tags.
 - Ghost: a translucent bedsheet wisp with trailing particles. Possessed props get a green glow, an outline shader and dripping ectoplasm.
 - `WorldEnvironment`: glow (bloom), filmic tonemapping, depth fog in the museum. The Mobile renderer has no SSAO or volumetric fog, so fake contact shadows with darker texture bases or blob shadows under items.
 
@@ -457,13 +456,12 @@ ghosted-movers/
 │   ├── GhostWisp.tscn    # wisp, energy, possession and the host's checks on every ghost button
 │   └── PartyCamera.tscn  # three-quarter view, smooth follow and framing, ability-only shake, wall fade
 ├── props/
-│   ├── carryable.gd      # shared spring carry, throws and impacts for loot and the flashlight
+│   ├── carryable.gd      # shared spring carry, throws and impacts for loot
 │   ├── Loot.tscn         # base RigidBody3D: value, weight, fragility, handles, price tag
 │   ├── loot/             # the greybox loot kinds used by the checks: Piano.tscn, Vase.tscn …
 │   ├── catalog/          # furniture catalog: catalog_item.gd, catalog.gd, <arena>/*.tres entries, built/ hero models, furniture/ possessable props
 │   ├── Possessable.gd    # component: kind = slider | door | dropper | hopper | rug
 │   ├── furniture/        # valueless possessable props: Crate, Door, Chandelier, Armour, Rug
-│   ├── Flashlight.tscn
 │   ├── Truck.tscn        # the scanned pickup, scaled to the movers, with box colliders
 │   └── TruckZone.tscn    # banking zone: a box, or a half-circle behind a tailgate
 ├── hauntings/
@@ -513,7 +511,7 @@ ghosted-movers/
 
 **Phase 2 harness.** `Main.tscn` instances a one-room CSG greybox (`arenas/Mansion.tscn`) with vase, TV and clock loot and a `TruckZone`, plus four movers. `Sfx.gd` holds a procedural banking sound until real audio arrives in Phase 7. `core/carrying_check.gd` verifies carrying, damage, banking and grab conflicts with real Jolt physics.
 
-**Phase 3 greybox.** The grand piano (2.2 × 1.0 × 1.4 m, 100 kg) starts in a back parlour behind a partition with a 2.0 m doorway, so it must be turned to fit through. The partition is knee-high (0.7 m), like other camera-side walls, so the camera sees into the parlour; it still blocks movers and a carried piano. One flashlight lies in the main room. The flashlight's beam timer works against anything in the `possessables` group exposing `is_possessed()` and `exorcise()`; Phase 4's `Possessable` provides them. `core/team_carry_check.gd` verifies two-person carry, tumbling and the flashlight.
+**Phase 3 greybox.** The grand piano (2.2 × 1.0 × 1.4 m, 100 kg) starts in a back parlour behind a partition with a 2.0 m doorway, so it must be turned to fit through. The partition is knee-high (0.7 m), like other camera-side walls, so the camera sees into the parlour; it still blocks movers and a carried piano. `core/team_carry_check.gd` verifies two-person carry and tumbling. (A flashlight built in this phase was removed later, decision 82.)
 
 **Phase 4 greybox.** Until Phase 5's role rotation, the host key G passes the ghost to the next active slot (a connected phone, or the keyboard's slot), and after the last one back to no ghost. That slot's mover leaves play, its phone switches to the ghost screen, and a wisp starts at the far end of the parlour with full energy. The lone-mover rule counts movers only. Keyboard ghost keys: Q possess, F action, Z haunt 1, X haunt 2. The greybox adds one valueless prop of each type from `props/furniture/`: a crate (slider), a door in the parlour doorway (door), a chandelier over the main lane (dropper), a suit of armour by the parlour wall (hopper) and a rug inside the front door (rug). Every loot item carries a slider `Possessable`. The signature haunting is House Shake. A top-right panel shows the ghost's energy to everyone. `core/ghost_check.gd` verifies the wisp, possession rules, all five actions, energy, exorcism and both hauntings with real Jolt physics.
 
@@ -525,7 +523,7 @@ The riskiest thing, physics carrying, gets built first. A complete playable matc
    - Check: 4 phones each move their own capsule on screen, with no noticeable lag.
 2. **H2–6 · Carrying core.** Mover controller, base `Loot` with spring carry, impact damage, price tags, truck banking, one greybox room built from CSG shapes.
    - Check: carry a vase to the truck; bumping a wall visibly drops its value.
-3. **H6–9 · Two-person carry, tumbling, flashlight.** This is the hardest tuning in the project.
+3. **H6–9 · Two-person carry and tumbling.** This is the hardest tuning in the project.
    - Check: two players get the piano through a doorway and laugh doing it.
    - Fallback if it isn't fun by H9: centrepieces become heavy single-person items at 40% speed.
 4. **H9–12 · Ghost.** Wisp movement, the `Possessable` component with all 5 prop types, energy, exorcism, House Shake and Ecto Slime.
@@ -547,7 +545,6 @@ The riskiest thing, physics carrying, gets built first. A complete playable matc
 3. Fog and extra lighting polish
 4. Awards (keep the leaderboard)
 5. Reconnect support
-6. The second flashlight
 
 **Never cut:** 3 arenas, ghost rotation, the quota, restart, the results screen.
 
@@ -586,13 +583,13 @@ Let the judges play within 15 seconds. A teammate plays the first ghost so the h
    - price tags ticking down on every bump,
    - two judges wrestling the piano through a door,
    - the House Shake warning, and the counter ("freeze!"),
-   - a flashlight exorcism kicking the ghost out of a sofa.
+   - the ghost possessing the sofa and ramming a carrier off their feet.
 4. **1:25–1:45 · Results.** Round result, then the awards screen. Read out Butterfingers.
 5. **1:45–2:00 · How it's built.** Godot 4, phones over a local WebSocket bridge, 3 arenas, ghost rotation, and fair hauntings with a warning and a counter.
 
 **Have answers ready for**
 
-- "How do you keep the ghost from being overpowered?" Energy, cooldowns, exorcism, and every haunting warns first.
+- "How do you keep the ghost from being overpowered?" Energy, cooldowns, and every haunting warns first.
 - "Why phones?" Anyone joins in seconds, and the ghost gets its own controls without a second screen.
 - "What's next?" Audience voting on hauntings, more houses, online play.
 

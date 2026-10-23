@@ -1,4 +1,4 @@
-# Runs real Jolt physics and two simulated phones for two-person carry, tumbling and the flashlight.
+# Runs real Jolt physics and two simulated phones for two-person carry, tumbling and the lone drag.
 # This script compiles before the autoloads exist, so props are loaded at runtime and never named by class.
 extends SceneTree
 
@@ -14,11 +14,9 @@ const SPEED_TOLERANCE: float = 0.3 # Metres per second.
 const DIRECTION_TOLERANCE: float = 20.0 # Degrees.
 const DOORWAY_TIMEOUT: float = 8.0 # Seconds allowed to steer the piano through the parlour door.
 const DOOR_STEER_GAIN: float = 2.0 # Stick per metre each holder steers their end toward the door's centre line.
-const TARGET_SCRIPT := "extends Node3D\nvar possessed: bool = true\nvar exorcisms: int = 0\nfunc is_possessed() -> bool:\n\treturn possessed\nfunc exorcise() -> void:\n\tpossessed = false\n\texorcisms += 1\n"
 
 # --- Test state ---
 var loot_scene: PackedScene
-var flashlight_scene: PackedScene
 var playground: Node3D
 var mover_a: CharacterBody3D
 var mover_b: CharacterBody3D
@@ -45,12 +43,11 @@ func _run() -> void:
 
 	# Stop early if the props cannot load; otherwise every check below would compare empty values.
 	loot_scene = load("res://props/Loot.tscn")
-	flashlight_scene = load("res://props/Flashlight.tscn")
 	var props_loaded: bool = true
-	for path: String in ["res://props/carryable.gd", "res://props/loot.gd", "res://props/flashlight.gd"]:
+	for path: String in ["res://props/carryable.gd", "res://props/loot.gd"]:
 		var script: Script = load(path)
 		props_loaded = props_loaded and script != null and script.can_instantiate()
-	_check(props_loaded, "Carryable, loot and flashlight scripts compile")
+	_check(props_loaded, "Carryable and loot scripts compile")
 	if not props_loaded:
 		quit(1)
 		return
@@ -79,7 +76,6 @@ func _run() -> void:
 	await _check_drag()
 	await _check_doorway()
 	await _check_tumbling()
-	await _check_flashlight()
 	await _check_lone_drag()
 	for client: WebSocketPeer in clients:
 		client.close()
@@ -91,7 +87,6 @@ func _run() -> void:
 func _check_greybox_contents() -> void:
 	var pianos: Array = get_nodes_in_group("loot").filter(func(item: Node) -> bool: return item.weight_class == SETTINGS.TWO_PERSON)
 	_check(pianos.size() == 1 and pianos[0].global_position.z < SETTINGS.PARLOUR_WALL_Z, "The greybox has one piano, in the parlour")
-	_check(get_nodes_in_group("flashlights").size() == 1, "The greybox has one flashlight")
 
 
 # --- Two-person carry ---
@@ -261,89 +256,6 @@ func _check_tumbling() -> void:
 	_check(_value_of(pushed) < SETTINGS.LOOT_VALUES[VASE_KIND] * (1.0 - min_loss), "A hit on a mover counts the item's full speed (₹%d left)" % _value_of(pushed))
 
 
-# --- Flashlight ---
-func _check_flashlight() -> void:
-	await _release_all()
-	await _clear_carryables()
-	_place(mover_a, Vector3(0.0, MOVER_HEIGHT, -4.0), Vector3.RIGHT)
-	_place(mover_b, Vector3(-5.0, MOVER_HEIGHT, 0.0), Vector3.FORWARD)
-	var torch := _spawn_flashlight(Vector3(SETTINGS.HOLD_DISTANCE, _torch_height(), -4.0))
-	await _wait(SETTLE_SECONDS)
-	inboxes[0].clear()
-	_press(0, "grab", true)
-	await _wait(SETTLE_SECONDS)
-	_check(mover_a.held_item == torch, "GRAB picks up the flashlight")
-	_check(_hud_shows(0, "Flashlight", null), "Phone shows the flashlight without a price")
-	_spawn_loot(VASE_KIND, Vector3(1.2, _rest_height(VASE_KIND), -3.0))
-	await _wait(SETTLE_SECONDS)
-	_check(mover_a.held_item == torch, "Carrying the flashlight means not carrying loot")
-
-	# The beam follows the holder's facing.
-	_set_stick(0, Vector2(0.0, 1.0))
-	await _wait(INPUT_SECONDS)
-	_set_stick(0, Vector2.ZERO)
-	await _wait(SETTLE_SECONDS)
-	var beam_forward: Vector3 = -torch.beam.global_basis.z
-	_check(beam_forward.dot(mover_a.facing) > cos(deg_to_rad(5.0)), "The beam points where the holder faces")
-	var body_forward: Vector3 = _flat(-torch.global_basis.z).normalized()
-	_check(body_forward.dot(mover_a.facing) > cos(deg_to_rad(25.0)), "The torch body turns to match the beam")
-
-	# A possessed stand-in 4 m down the beam is exorcised once after 1.5 s.
-	var target := _spawn_target(mover_a.global_position + mover_a.facing * 4.0)
-	await _wait(SETTINGS.EXORCISE_TIME - 0.5)
-	_check(target.exorcisms == 0, "Less than 1.5 s in the beam does not exorcise")
-	await _wait(0.8)
-	_check(target.exorcisms == 1 and not target.possessed, "1.5 s in the beam exorcises the possessed target")
-	await _wait(1.5)
-	_check(target.exorcisms == 1, "An exorcised target is not exorcised again")
-
-	# Out of the cone, behind a wall, or with a loose torch: no exorcism.
-	target.possessed = true
-	target.global_position = mover_a.global_position - mover_a.facing * 4.0
-	await _wait(SETTINGS.EXORCISE_TIME + 0.5)
-	_check(target.exorcisms == 1, "A target outside the beam cone is not exorcised")
-
-	# Facing the parlour partition (a solid section, away from the door) with the target behind it.
-	target.global_position = Vector3(3.0, 0.5, -10.0)
-	_place(mover_a, Vector3(3.0, MOVER_HEIGHT, -5.5), Vector3.FORWARD)
-	await _wait(SETTLE_SECONDS * 2.0 + SETTINGS.EXORCISE_TIME + 0.5)
-	_check(mover_a.held_item == torch and target.exorcisms == 1, "Walls block the beam")
-
-	# Back in open space, drop the torch and put the target in its beam.
-	_place(mover_a, Vector3(0.0, MOVER_HEIGHT, -3.0), Vector3.RIGHT)
-	await _wait(SETTLE_SECONDS * 2.0)
-	_press(0, "grab", false)
-	await _wait(SETTLE_SECONDS)
-	target.global_position = torch.global_position + torch.beam_direction() * 3.0
-	await _wait(SETTINGS.EXORCISE_TIME + 0.5)
-	_check(target.exorcisms == 1, "A flashlight lying on the floor does not exorcise")
-	target.queue_free()
-
-	# Thrown like any light item; released in the truck it stays in play.
-	await _clear_carryables()
-	_place(mover_a, Vector3(0.0, MOVER_HEIGHT, -4.0), Vector3.RIGHT)
-	torch = _spawn_flashlight(Vector3(SETTINGS.HOLD_DISTANCE, _torch_height(), -4.0))
-	await _wait(SETTLE_SECONDS)
-	_press(0, "grab", true)
-	await _wait(SETTLE_SECONDS)
-	_press(0, "throw", true)
-	await _wait(INPUT_SECONDS)
-	_press(0, "throw", false)
-	_check(mover_a.held_item == null and torch.linear_velocity.x > 3.0, "THROW launches the flashlight")
-	await _release_all()
-	await _clear_carryables()
-	var truck: Area3D = playground.arena.truck
-	var banked_before: int = truck.banked_items
-	_place(mover_a, Vector3(5.0, MOVER_HEIGHT, 6.5), Vector3.FORWARD)
-	torch = _spawn_flashlight(Vector3(5.0, _torch_height(), 6.5 - SETTINGS.HOLD_DISTANCE))
-	await _wait(SETTLE_SECONDS)
-	_press(0, "grab", true)
-	await _wait(SETTLE_SECONDS)
-	_press(0, "grab", false)
-	await _wait(SETTLE_SECONDS)
-	_check(is_instance_valid(torch) and not torch.finished and truck.banked_items == banked_before, "A flashlight released in the truck does not bank")
-
-
 # --- Lone mover ---
 func _check_lone_drag() -> void:
 	# With phone B gone, only one player is active, so the lone mover drags at 40%.
@@ -367,10 +279,13 @@ func _setup_piano(centre: Vector2, both_hands: bool) -> RigidBody3D:
 	# A fresh piano lying along x, with phone A at its west handle and phone B at its east handle.
 	await _release_all()
 	await _clear_carryables()
-	var piano := _spawn_loot(PIANO_KIND, Vector3(centre.x, _rest_height(PIANO_KIND), centre.y))
+	# Movers first: a teleported mover sweeps through the space between its old and new spot on the next
+	# physics step, which would launch a piano already spawned in its path.
 	var stand_offset: float = SETTINGS.LOOT_SIZES[PIANO_KIND].x / 2.0 + SETTINGS.TEAM_STAND_DISTANCE
 	_place(mover_a, Vector3(centre.x - stand_offset, MOVER_HEIGHT, centre.y), Vector3.RIGHT)
 	_place(mover_b, Vector3(centre.x + stand_offset, MOVER_HEIGHT, centre.y), Vector3.LEFT)
+	await _wait(INPUT_SECONDS)
+	var piano := _spawn_loot(PIANO_KIND, Vector3(centre.x, _rest_height(PIANO_KIND), centre.y))
 	await _wait(SETTLE_SECONDS)
 	_press(0, "grab", true)
 	if both_hands:
@@ -422,26 +337,6 @@ func _spawn_loot(kind: int, location: Vector3) -> RigidBody3D:
 	return item
 
 
-func _spawn_flashlight(location: Vector3) -> RigidBody3D:
-	var torch: RigidBody3D = flashlight_scene.instantiate()
-	torch.position = location
-	playground.add_child(torch)
-	return torch
-
-
-func _spawn_target(location: Vector3) -> Node3D:
-	var script := GDScript.new()
-	script.source_code = TARGET_SCRIPT
-	script.reload()
-	var target := Node3D.new()
-	target.set_script(script)
-	target.name = "StandInProp"
-	playground.add_child(target)
-	target.global_position = Vector3(location.x, 0.5, location.z)
-	target.add_to_group("possessables")
-	return target
-
-
 func _clear_carryables() -> void:
 	for item: Node in get_nodes_in_group("carryables"):
 		item.queue_free()
@@ -457,10 +352,6 @@ func _place(target: CharacterBody3D, location: Vector3, direction: Vector3) -> v
 
 func _rest_height(kind: int) -> float:
 	return SETTINGS.LOOT_SIZES[kind].y / 2.0 + SETTINGS.LOOT_SPAWN_CLEARANCE
-
-
-func _torch_height() -> float:
-	return SETTINGS.FLASHLIGHT_SIZE.y / 2.0 + SETTINGS.LOOT_SPAWN_CLEARANCE
 
 
 func _yaw(item: Node3D) -> float:

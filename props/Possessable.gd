@@ -1,5 +1,5 @@
 # Component that makes its parent prop hauntable. The ghost possesses it, steers it with the stick and triggers
-# its ACTION; the flashlight exorcises it through is_possessed() and exorcise(). Sliders and hoppers are driven
+# its ACTION; exorcise() kicks the ghost out with a stun (kept for map tasks that handicap the ghost). Sliders and hoppers are driven
 # here. Doors, droppers and rugs provide can_act() and act() themselves.
 class_name Possessable
 extends Node3D
@@ -81,7 +81,7 @@ func _on_body_entered(other: Node) -> void:
 		other.tumble.call_deferred(previous_velocity)
 
 
-# --- Possession, for the ghost and the flashlight ---
+# --- Possession ---
 func is_possessed() -> bool:
 	return is_instance_valid(ghost)
 

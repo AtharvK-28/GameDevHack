@@ -24,6 +24,7 @@ var scrape_remainder: float = 0.0
 var scrape_unshown: int = 0
 var scrape_popup_time: float = 0.0
 var price_label := Label3D.new()
+var price_reveal: float = 0.0 # 0 hidden to 1 shown; fades with nearby movers and the ghost.
 var curse_left: float = 0.0
 var curse_targeted: bool = false
 var body_material: StandardMaterial3D
@@ -54,10 +55,15 @@ func _ready() -> void:
 
 
 # --- Feedback ---
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	price_label.global_position = global_position + Vector3.UP * (item_size.y / 2.0 + Balance.PRICE_LABEL_HEIGHT)
 	price_label.text = rupees(value)
+	var shown: float = 1.0 if is_held() or _someone_near() else 0.0
+	price_reveal = move_toward(price_reveal, shown, delta / Balance.PRICE_FADE_TIME)
+	price_label.visible = price_reveal > 0.0
 	price_label.modulate = Color.WHITE.lerp(Balance.DAMAGE_COLOUR, 1.0 - float(value) / initial_value)
+	price_label.modulate.a = price_reveal * Balance.PRICE_OPACITY
+	price_label.outline_modulate.a = price_reveal * Balance.PRICE_OPACITY
 	if body_material != null:
 		body_material.emission_enabled = curse_left > 0.0 or curse_targeted
 		body_material.emission = Balance.CURSE_COLOUR
@@ -306,7 +312,7 @@ func show_popup(message: String, colour: Color) -> void:
 	popup.text = message
 	popup.modulate = colour
 	popup.font_size = Balance.PRICE_FONT_SIZE
-	popup.pixel_size = Balance.PRICE_PIXEL_SIZE
+	popup.pixel_size = Balance.VALUE_POPUP_PIXEL_SIZE
 	popup.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	popup.no_depth_test = true
 	get_parent().add_child(popup)
@@ -368,7 +374,18 @@ func _build_shape() -> void:
 func _build_price_label() -> void:
 	price_label.font_size = Balance.PRICE_FONT_SIZE
 	price_label.pixel_size = Balance.PRICE_PIXEL_SIZE
+	price_label.outline_size = Balance.PRICE_OUTLINE_SIZE
+	price_label.visible = false
 	price_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	price_label.no_depth_test = true # Walls never hide a price.
 	add_child(price_label)
 	price_label.top_level = true
+
+
+func _someone_near() -> bool:
+	# Movers and the ghost reveal prices around them; the rest of the house stays clean.
+	var tree := get_tree()
+	for player: Node3D in tree.get_nodes_in_group("movers") + tree.get_nodes_in_group("ghosts"):
+		if player.global_position.distance_to(global_position) <= Balance.PRICE_SHOW_DISTANCE:
+			return true
+	return false

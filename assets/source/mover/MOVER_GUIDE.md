@@ -54,8 +54,6 @@ func _physics_process(delta: float) -> void:
 func _carry_state() -> MoverModel.Carry:
 	if held == null:
 		return MoverModel.Carry.NONE
-	if held.is_flashlight:
-		return MoverModel.Carry.FLASHLIGHT
 	if held.is_two_person:
 		return MoverModel.Carry.TEAM if held.both_handles_held() else MoverModel.Carry.DRAG
 	return [MoverModel.Carry.LIGHT, MoverModel.Carry.MEDIUM, MoverModel.Carry.HEAVY][held.speed_class()]
@@ -98,7 +96,7 @@ Lengths are at 1.0x speed (30 fps source).
 | `mover_get_up` | 0.53 s | no | Stands back up after a tumble | – |
 | `mover_slime_slide` | 0.67 s | yes | Sliding on Ecto Slime | – |
 | `mover_wind_push` | 1.0 s | yes | Gust of Wind, standing still | – |
-| `mover_flashlight_aim` | 1.33 s | yes | Holding the flashlight still | – |
+| `mover_flashlight_aim` | 1.33 s | yes | Unused: the flashlight was removed (decision 82) | – |
 | `mover_bank_cheer` | 0.87 s | no | Item banked | – |
 | `mover_victory` | 0.8 s | yes | Results: movers won | – |
 | `mover_defeat` | 2.0 s | yes | Results: ghost won | – |

@@ -1,13 +1,12 @@
 # The Old Mansion, built from arenas/layouts/mansion_layout.json (the floor plan in mansion-layout.svg).
 # The builder makes the house; this script sets the dusk mood (environment and moonlight), spawns the round's loot
-# from the furniture catalog onto the layout's role-tagged spawn spots, and places the flashlights. Decor, lamps
-# and possessable furniture live in arenas/dressing/MansionDressing.tscn; the surroundings in MansionEnvironment.
+# from the furniture catalog onto the layout's role-tagged spawn spots. Decor, lamps and possessable furniture
+# live in arenas/dressing/MansionDressing.tscn; the surroundings in MansionEnvironment.
 extends Node3D
 
 # --- Scene resources ---
 const LAYOUT_PATH: String = "res://arenas/layouts/mansion_layout.json"
 const LOOT_SCENE := preload("res://props/Loot.tscn")
-const FLASHLIGHT := preload("res://props/Flashlight.tscn")
 
 # --- Arena identity ---
 const ARENA_NAME: String = "Old Mansion"
@@ -27,10 +26,6 @@ func _ready() -> void:
 	truck = ArenaBuilder.build(self, layout)
 	_build_mood()
 	_spawn_loot()
-	var flashlights: int = 2 if demo_mode and player_count == 4 else 1
-	for index: int in range(flashlights):
-		var spot: Dictionary = layout.spawns.flashlights[index]
-		_spawn(FLASHLIGHT, ArenaBuilder.point_of(spot, Balance.FLASHLIGHT_SIZE.y / 2.0 + Balance.LOOT_SPAWN_CLEARANCE))
 
 
 # --- Arena interface (shared with the greybox) ---

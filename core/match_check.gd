@@ -108,7 +108,6 @@ func _check_reveal() -> void:
 	_check(loot.size() == get_nodes_in_group("loot").size() and pianos == 1, "Two players get %d seeded items with exactly one centrepiece (%d)" % [get_nodes_in_group("loot").size(), loot.size()])
 	_check(game.starting_value == total and game.target_value() == ceili(total * 0.7), "The starting value is the spawned total (%s) and the target is 70%%" % _rupees(total))
 	fresh_layout = _layout()
-	_check(get_nodes_in_group("flashlights").size() == 1, "Two players get one flashlight")
 	_check(load("res://props/loot.gd").lone_mover == true, "A 2-player match makes the one mover the lone mover")
 
 	# A third phone cannot join mid-match.

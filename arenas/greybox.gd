@@ -6,7 +6,6 @@ const VASE := preload("res://props/loot/Vase.tscn")
 const TV := preload("res://props/loot/TV.tscn")
 const CLOCK := preload("res://props/loot/Clock.tscn")
 const PIANO := preload("res://props/loot/Piano.tscn")
-const FLASHLIGHT := preload("res://props/Flashlight.tscn")
 const TRUCK := preload("res://props/TruckZone.tscn")
 const CRATE := preload("res://props/furniture/Crate.tscn")
 const ARMOUR := preload("res://props/furniture/Armour.tscn")
@@ -35,14 +34,6 @@ func _ready() -> void:
 			_spawn_loot(TV, point, 1)
 		_spawn_loot(CLOCK, Balance.CLOCK_POSITION, 2)
 	_spawn_loot(PIANO, Balance.PIANO_POSITION, 3)
-	var flashlight := FLASHLIGHT.instantiate()
-	flashlight.position = Vector3(Balance.FLASHLIGHT_POSITION.x, Balance.FLASHLIGHT_SIZE.y / 2.0 + Balance.LOOT_SPAWN_CLEARANCE, Balance.FLASHLIGHT_POSITION.y)
-	add_child(flashlight)
-	if demo_mode and player_count == 4:
-		var second := FLASHLIGHT.instantiate()
-		second.position = flashlight.position
-		second.position.x = -second.position.x
-		add_child(second)
 	_spawn_furniture()
 	truck = TRUCK.instantiate()
 	truck.position = Balance.TRUCK_POSITION

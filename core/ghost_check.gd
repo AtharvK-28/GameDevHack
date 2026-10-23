@@ -6,7 +6,7 @@ extends SceneTree
 # --- Test settings ---
 const SETTINGS := preload("res://autoload/Balance.gd")
 const SCRIPTS: Array[String] = [
-	"res://props/carryable.gd", "res://props/loot.gd", "res://props/flashlight.gd", "res://props/Possessable.gd",
+	"res://props/carryable.gd", "res://props/loot.gd", "res://props/Possessable.gd",
 	"res://props/furniture.gd", "res://props/door.gd", "res://props/chandelier.gd", "res://props/rug.gd",
 	"res://actors/ghost_wisp.gd", "res://actors/party_camera.gd", "res://hauntings/Haunting.gd",
 	"res://hauntings/HouseShake.gd", "res://hauntings/EctoSlime.gd",
@@ -39,7 +39,6 @@ const DROP_TIMEOUT: float = 3.0 # Seconds allowed for the creak and physical lan
 
 # --- Test state ---
 var loot_scene: PackedScene
-var flashlight_scene: PackedScene
 var chandelier_scene: PackedScene
 var playground: Node3D
 var ghost: Node3D
@@ -86,7 +85,6 @@ func _run() -> void:
 		quit(1)
 		return
 	loot_scene = load("res://props/Loot.tscn")
-	flashlight_scene = load("res://props/Flashlight.tscn")
 	chandelier_scene = load("res://props/furniture/Chandelier.tscn")
 
 	playground = load("res://Main.tscn").instantiate()
@@ -146,8 +144,6 @@ func _check_greybox_contents() -> void:
 	kinds.sort()
 	_check(kinds == [SLIDER, DOOR, DROPPER, HOPPER, RUG], "The greybox has one possessable prop of each type (%s)" % str(kinds))
 	_check(loot_sliders > 0 and loot_sliders == get_nodes_in_group("loot").size(), "Every loot item, the piano included, is a possessable slider (%d)" % loot_sliders)
-	var torches: Array[Node] = get_nodes_in_group("flashlights")
-	_check(torches.size() == 1 and _possessable_of(torches[0]) == null, "The flashlight cannot be possessed")
 	var carryable_furniture: int = 0
 	for prop: Node in get_nodes_in_group("furniture"):
 		if prop.is_in_group("carryables") or prop.is_in_group("loot"):
@@ -494,16 +490,10 @@ func _check_door() -> void:
 	_check(door.state == DOOR_OPEN, "The stopped door still reopens after its lock")
 	await _clear_carryables()
 
-	# The flashlight exorcises a possessed door: its own panel does not block the beam.
-	_place(mover_a, Vector3(1.2, MOVER_HEIGHT, -2.5), Vector3.FORWARD)
-	var torch := _spawn_flashlight(Vector3(1.2, _torch_height(), -2.5 - SETTINGS.HOLD_DISTANCE))
+	# Exorcising the possessed door ejects the ghost and locks it out.
+	door_p.exorcise()
+	_check(ghost.possessing == null and ghost.lockout_left > 0.0, "Exorcising the possessed door ejects the ghost")
 	await _wait(SETTLE_SECONDS)
-	_press(MOVER_PHONE, "grab", true)
-	await _wait(SETTINGS.EXORCISE_TIME + 0.8)
-	_check(mover_a.held_item == torch and ghost.possessing == null and ghost.lockout_left > 0.0, "Holding the beam on the possessed door for 1.5 s exorcises it")
-	_press(MOVER_PHONE, "grab", false)
-	await _wait(SETTLE_SECONDS)
-	await _clear_carryables()
 
 
 # --- Dropper ---
@@ -553,7 +543,7 @@ func _check_dropper() -> void:
 	var second_p: Node3D = _possessable_of(second)
 	await _possess(second_p, Vector3(-0.5, 0.0, 0.0)) # Off the vase's footprint, still under the chandelier.
 	await _tap(GHOST_PHONE, "action")
-	second_p.exorcise() # Stands in for the flashlight, which _check_exorcism uses for real.
+	second_p.exorcise()
 	_check(ghost.possessing == null and ghost.is_frozen() and second.state == CREAKING, "Exorcised during the creak, the ghost is ejected")
 	# Check the physical landing, not a fixed delay that can expire just before contact with the vase.
 	var drop_deadline: int = Time.get_ticks_msec() + int(DROP_TIMEOUT * 1000.0)
@@ -635,18 +625,12 @@ func _check_exorcism() -> void:
 	_reset_ghost()
 	var crate: RigidBody3D = crate_p.prop
 	_reset_body(crate, Vector3(-2.0, _furniture_height(0), 0.0))
-	_place(mover_a, Vector3(-6.0, MOVER_HEIGHT, 0.0), Vector3.RIGHT)
-	var torch := _spawn_flashlight(Vector3(-6.0 + SETTINGS.HOLD_DISTANCE, _torch_height(), 0.0))
 	await _wait(SETTLE_SECONDS)
 	await _possess(crate_p)
-	_press(MOVER_PHONE, "grab", true)
-	await _wait(SETTINGS.EXORCISE_TIME - 0.5)
-	_check(mover_a.held_item == torch and ghost.possessing == crate_p, "Less than 1.5 s in the beam leaves the ghost inside")
-	await _wait(0.8)
-	_check(ghost.possessing == null and not crate_p.is_possessed() and ghost.body_mesh.visible, "1.5 s in the beam exorcises the ghost from the crate")
+	crate_p.exorcise()
+	_check(ghost.possessing == null and not crate_p.is_possessed() and ghost.body_mesh.visible, "Exorcism ejects the ghost from the crate")
 	var ejected_at: Vector3 = ghost.global_position
 	_check(_flat(ejected_at - crate_p.global_position).length() < 0.1, "The ejected wisp appears where the crate is")
-	_press(MOVER_PHONE, "grab", false) # Put the torch down so it cannot exorcise again.
 
 	# Frozen for 1 s: no movement and no buttons.
 	var slime: Node = ghost.hauntings[1]
@@ -929,13 +913,6 @@ func _spawn_loot(kind: int, location: Vector3) -> RigidBody3D:
 	return item
 
 
-func _spawn_flashlight(location: Vector3) -> RigidBody3D:
-	var torch: RigidBody3D = flashlight_scene.instantiate()
-	torch.position = location
-	playground.add_child(torch)
-	return torch
-
-
 func _spawn_chandelier(location: Vector3) -> RigidBody3D:
 	var chandelier: RigidBody3D = chandelier_scene.instantiate()
 	chandelier.position = location
@@ -984,10 +961,6 @@ func _rest_height(kind: int) -> float:
 
 func _furniture_height(kind: int) -> float:
 	return SETTINGS.FURNITURE_SIZES[kind].y / 2.0 + SETTINGS.LOOT_SPAWN_CLEARANCE
-
-
-func _torch_height() -> float:
-	return SETTINGS.FLASHLIGHT_SIZE.y / 2.0 + SETTINGS.LOOT_SPAWN_CLEARANCE
 
 
 func _value_of(item: RigidBody3D) -> int:

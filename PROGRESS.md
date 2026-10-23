@@ -32,14 +32,14 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 
 - [x] Two-person carry
 - [x] Tumbling
-- [x] Flashlight with beam and 1.5 s exorcism timer (connected to possession in Phase 4)
+- [x] Flashlight with beam and 1.5 s exorcism timer (removed later, decision 82)
 - [x] **Check:** two players get the piano through a doorway — user confirmed phone control and two-person pickup work on 2026-10-23; the single-person fallback is not needed
 
 ## Phase 4 · H9–12 · Ghost
 
 - [x] Wisp movement
 - [x] `Possessable` component with all 5 prop types
-- [x] Exorcism wired to the flashlight's beam timer
+- [x] Exorcism (the flashlight that triggered it was removed later, decision 82; map tasks will trigger it)
 - [x] Energy
 - [x] House Shake and Ecto Slime
 - [x] Ghost phone screen: energy, ACTION label, haunting costs, greyed buttons, cooldown rings
@@ -132,3 +132,4 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - Menus, HUD and security (2026-10-24): Maaack's Game Template menus (title over the idling Mansion, map select, options with Demo mode, credits, pause) themed with Kenney UI Pack pieces and Baloo 2; the game launches into them. Lobby with keyed QR, join code and slot cards; edge HUD (timer, room ring, truck totals, delivery toasts, player chips with ghost energy, Tab totals). Phone page restyled with code entry. Connection security: session key and code, per-player secrets, 2 s log-in, pending cap, 1 KB messages, rate limit, wrong-code lockout, key rotation. All six checks pass (plumbing includes every security case); screenshots of every screen and the phone page inspected. Frame rate 114–118 FPS at 1080p on Iris Xe, unchanged.
 - Mansion world (2026-10-24): surroundings scene with forest, grassland, road, gate, chimney and shutters; wildlife, mist, leaves, fireflies, lightning and reactions; synthesized night sounds; truck lights. Proven: no void or ground edge at any of the four camera-bound corners at the widest framing (26 m). All six checks pass. Frame rate with 4 movers at 1080p on Iris Xe: 114–118 FPS before, about 94 after.
 - Furniture system (2026-10-24): data-driven catalog (`props/catalog/`) from the Kenney Furniture Kit (CC0) plus 7 built hero items; the Mansion's 18-piece loot pool spawns on role-tagged spots placed like a lived-in home; possessable chandelier, kitchen door, suit of armour, hall rug and sofa; rooms dressed (gallery library, piano and bedroom; fireside parlour; kitchen; garden benches). New `core/catalog_check.gd` passes (entries, values, colliders, the piano's route, decor never possessable or priced, the whole pool rests where placed, every match-sized pick). The greybox the other checks use is unchanged.
+- Flashlight removed and price tags made subtle (2026-10-24, decisions 82 and 83): no flashlight item, spawns, settings, carry pose or beam checks; exorcism stays for future ghost tasks (the checks trigger it directly). Price tags are half size, softer, and show only within 3 m of a mover or the ghost, or while carried; `carrying_check` covers hiding and revealing. Next: design the map tasks that handicap the ghost.

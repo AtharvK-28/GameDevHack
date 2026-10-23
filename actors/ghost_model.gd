@@ -125,7 +125,7 @@ func play_taunt() -> void:
 	_start_action("taunt", &"Grin")
 
 
-## Flashlight exorcism: blasted out of the prop (0.6 s), then dizzy until stun_seconds have passed.
+## Exorcism: blasted out of the prop (0.6 s), then dizzy until stun_seconds have passed.
 func play_exorcised(stun_seconds := 1.0) -> void:
 	visible = true
 	_pending_stun = maxf(stun_seconds - _length("ejected"), 0.1)

@@ -56,7 +56,7 @@ const JOYSTICK_DEADZONE: float = 0.12 # Normalised stick magnitude, 0 to 1.
 # --- Carrying settings ---
 const WORLD_LAYER: int = 1
 const MOVER_LAYER: int = 2
-const LOOT_LAYER: int = 4 # Loose physics props: loot, the flashlight and furniture.
+const LOOT_LAYER: int = 4 # Loose physics props: loot and furniture.
 const LIGHT: int = 0 # Weight classes, used as indexes into the tables below.
 const MEDIUM: int = 1
 const HEAVY: int = 2
@@ -118,16 +118,6 @@ const MODEL_SPEED_SCALE_MIN: float = 0.5 # Limits on clip playback speed.
 const MODEL_SPEED_SCALE_MAX: float = 1.8
 const MODEL_TRIM_LIGHTEN: float = 0.35 # Overall cuffs and cap strap, lighter than the slot colour.
 const MODEL_SEAM_DARKEN: float = 0.55 # Seams and pocket edges, darker than the slot colour.
-
-# --- Flashlight settings ---
-const FLASHLIGHT_SIZE := Vector3(0.25, 0.25, 0.6)
-const FLASHLIGHT_COLOUR := Color("f2d16b")
-const FLASHLIGHT_RANGE: float = 8.0 # Metres.
-const FLASHLIGHT_HALF_ANGLE: float = 20.0 # Degrees either side of the beam.
-const FLASHLIGHT_ENERGY: float = 4.0
-const FLASHLIGHT_AIM_STIFFNESS: float = 40.0 # Angular acceleration per radian turning the torch toward the holder's facing.
-const BEAM_CONE_ALPHA: float = 0.15 # Opacity of the visible beam cone, 0 to 1.
-const EXORCISE_TIME: float = 1.5 # Seconds a possessed prop must stay in the beam.
 
 # --- Ghost settings ---
 const GHOST_MODEL_PATH: String = "res://assets/models/ghost/ghost.glb"
@@ -343,9 +333,14 @@ const LOOT_FRAGILITIES: Array[int] = [3, 3, 2, 2]
 const LOOT_WEIGHTS: Array[int] = [LIGHT, MEDIUM, HEAVY, TWO_PERSON]
 const LOOT_SIZES: Array[Vector3] = [Vector3(0.65, 0.8, 0.65), Vector3(1.0, 0.75, 0.6), Vector3(0.7, 1.8, 0.5), Vector3(2.2, 1.0, 1.4)]
 const LOOT_COLOURS: Array[Color] = [Color("87d9e6"), Color("cf9ec9"), Color("bd9667"), Color("4b3b5c")]
-const PRICE_LABEL_HEIGHT: float = 0.35 # Above the item's top.
+const PRICE_LABEL_HEIGHT: float = 0.2 # Metres above the item's top.
 const PRICE_FONT_SIZE: int = 48
-const PRICE_PIXEL_SIZE: float = 0.012 # World metres per label pixel; tags must read on a projector.
+const PRICE_PIXEL_SIZE: float = 0.006 # World metres per label pixel; small, so tags never crowd the screen.
+const PRICE_OPACITY: float = 0.8 # 0 to 1.
+const PRICE_OUTLINE_SIZE: int = 8 # Pixels of dark outline around the tag's text.
+const PRICE_SHOW_DISTANCE: float = 3.0 # Metres; a tag shows only while a mover or the ghost is this close.
+const PRICE_FADE_TIME: float = 0.2 # Seconds to fade a tag fully in or out.
+const VALUE_POPUP_PIXEL_SIZE: float = 0.009 # Damage and banking popups, a little bigger than tags.
 const VALUE_POPUP_START: float = 0.6 # Metres above the price tag, so the popup never covers it.
 const VALUE_POPUP_LIFETIME: float = 1.2
 const VALUE_POPUP_RISE: float = 1.0
@@ -451,7 +446,6 @@ const PARLOUR_WALL_Z: float = -8.0 # Partition between the main room and the bac
 const PARLOUR_DOOR_WIDTH: float = 2.0
 const PARLOUR_WALL_HEIGHT: float = 0.7 # Knee-high like other camera-side walls; still blocks a carried piano and movers.
 const PIANO_POSITION := Vector2(0.0, -9.75)
-const FLASHLIGHT_POSITION := Vector2(-5.5, 1.0)
 const WALL_THICKNESS: float = 0.3
 const WALL_HEIGHT: float = 2.2
 const FRONT_WALL_HEIGHT: float = 0.7
