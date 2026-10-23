@@ -3,7 +3,10 @@ extends Node
 
 # --- Input definitions ---
 const SLOT_KEYS: Array[Key] = [KEY_1, KEY_2, KEY_3, KEY_4]
-const BUTTON_KEYS: Dictionary = {KEY_SPACE: "grab", KEY_E: "throw", KEY_SHIFT: "brace"}
+const BUTTON_KEYS: Dictionary = {
+	KEY_SPACE: "grab", KEY_E: "throw", KEY_SHIFT: "brace",
+	KEY_Q: "possess", KEY_F: "action", KEY_Z: "haunt1", KEY_X: "haunt2",
+}
 
 class PlayerInput:
 	var direction := Vector2.ZERO

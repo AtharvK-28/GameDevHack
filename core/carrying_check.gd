@@ -53,6 +53,7 @@ func _run() -> void:
 	root.add_child(playground)
 	mover = playground.movers[0]
 	_park_other_movers()
+	await _clear_furniture()
 	await _clear_loot()
 	await _check_spring_settles()
 	await _check_grab_selection()
@@ -428,6 +429,13 @@ func _park_other_movers() -> void:
 	for other: CharacterBody3D in playground.movers:
 		if other != mover:
 			_place(other, Vector3(-6.0 + other.slot * 2.0, MOVER_HEIGHT, 8.0), Vector3.FORWARD)
+
+
+func _clear_furniture() -> void:
+	# The ghost's furniture has its own check; carrying is tested in an empty room.
+	for prop: Node in get_nodes_in_group("furniture"):
+		prop.queue_free()
+	await _wait(INPUT_SECONDS)
 
 
 func _clear_loot() -> void:

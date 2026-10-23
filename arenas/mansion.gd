@@ -1,4 +1,4 @@
-# One CSG room for carrying tests; the full Mansion layout belongs to Phase 6.
+# One CSG room with a back parlour for carrying and ghost tests; the full Mansion layout belongs to Phase 6.
 extends Node3D
 
 # --- Scene resources ---
@@ -8,6 +8,15 @@ const CLOCK := preload("res://props/loot/Clock.tscn")
 const PIANO := preload("res://props/loot/Piano.tscn")
 const FLASHLIGHT := preload("res://props/Flashlight.tscn")
 const TRUCK := preload("res://props/TruckZone.tscn")
+const CRATE := preload("res://props/furniture/Crate.tscn")
+const ARMOUR := preload("res://props/furniture/Armour.tscn")
+const DOOR := preload("res://props/furniture/Door.tscn")
+const CHANDELIER := preload("res://props/furniture/Chandelier.tscn")
+const RUG := preload("res://props/furniture/Rug.tscn")
+
+# --- Arena identity ---
+const ARENA_NAME: String = "Old Mansion"
+const SIGNATURE_HAUNTING := preload("res://hauntings/HouseShake.gd")
 
 var truck: Area3D
 
@@ -23,9 +32,27 @@ func _ready() -> void:
 	var flashlight := FLASHLIGHT.instantiate()
 	flashlight.position = Vector3(Balance.FLASHLIGHT_POSITION.x, Balance.FLASHLIGHT_SIZE.y / 2.0 + Balance.LOOT_SPAWN_CLEARANCE, Balance.FLASHLIGHT_POSITION.y)
 	add_child(flashlight)
+	_spawn_furniture()
 	truck = TRUCK.instantiate()
 	truck.position = Balance.TRUCK_POSITION
 	add_child(truck)
+
+
+func ghost_spawn() -> Vector3:
+	return Vector3(Balance.GHOST_SPAWN.x, Balance.WISP_HEIGHT, Balance.GHOST_SPAWN.y)
+
+
+func _spawn_furniture() -> void:
+	# One possessable prop of each type, none of them worth anything.
+	var crate_size: Vector3 = Balance.FURNITURE_SIZES[0]
+	var armour_size: Vector3 = Balance.FURNITURE_SIZES[1]
+	_spawn(CRATE, Vector3(Balance.CRATE_POSITION.x, crate_size.y / 2.0 + Balance.LOOT_SPAWN_CLEARANCE, Balance.CRATE_POSITION.y))
+	_spawn(ARMOUR, Vector3(Balance.ARMOUR_POSITION.x, armour_size.y / 2.0 + Balance.LOOT_SPAWN_CLEARANCE, Balance.ARMOUR_POSITION.y))
+	# The door hangs on the parlour doorway's right-hand jamb.
+	_spawn(DOOR, Vector3(Balance.PARLOUR_DOOR_WIDTH / 2.0, 0.0, Balance.PARLOUR_WALL_Z))
+	var chandelier_centre: float = Balance.CHANDELIER_HEIGHT + Balance.CHANDELIER_SIZE.y / 2.0
+	_spawn(CHANDELIER, Vector3(Balance.CHANDELIER_POSITION.x, chandelier_centre, Balance.CHANDELIER_POSITION.y))
+	_spawn(RUG, Vector3(Balance.RUG_POSITION.x, 0.0, Balance.RUG_POSITION.y))
 
 
 # --- Greybox helpers ---
@@ -63,6 +90,10 @@ func _box(node_name: String, size: Vector3, location: Vector3, colour: Color) ->
 
 
 func _spawn_loot(scene: PackedScene, point: Vector2, kind: int) -> void:
-	var item := scene.instantiate()
-	item.position = Vector3(point.x, Balance.LOOT_SIZES[kind].y / 2.0 + Balance.LOOT_SPAWN_CLEARANCE, point.y)
-	add_child(item)
+	_spawn(scene, Vector3(point.x, Balance.LOOT_SIZES[kind].y / 2.0 + Balance.LOOT_SPAWN_CLEARANCE, point.y))
+
+
+func _spawn(scene: PackedScene, location: Vector3) -> void:
+	var prop := scene.instantiate()
+	prop.position = location
+	add_child(prop)

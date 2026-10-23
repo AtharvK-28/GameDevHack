@@ -1,6 +1,7 @@
 # Moves a player and owns one grab at a time; the carried item applies its own spring.
 # On a two-person handle the mover follows its handle and its stick steers the item instead.
-# A tumble drops whatever is held and lies the mover down for TUMBLE_DURATION seconds.
+# A tumble drops whatever is held and lies the mover down for TUMBLE_DURATION seconds. On slime the mover keeps
+# its momentum. While its player is the ghost, the mover is out of play.
 extends CharacterBody3D
 
 signal tumbled(slot: int)
@@ -9,9 +10,12 @@ signal tumbled(slot: int)
 var slot: int = 0
 var facing := Vector3.FORWARD
 var stick := Vector2.ZERO # This frame's movement input; zero while bracing or down.
+var bracing: bool = false
+var in_play: bool = true
 var held_item: Carryable
 var grab_released: bool = true
 var tumble_time_left: float = 0.0
+var pose_tween: Tween
 var name_label := Label3D.new()
 var hold_point: Marker3D
 var body_pivot := Node3D.new()
@@ -40,7 +44,8 @@ func _physics_process(delta: float) -> void:
 		held_item = null
 
 	stick = player_input.direction
-	if player_input.buttons.get("brace", false) or is_tumbling():
+	bracing = player_input.buttons.get("brace", false)
+	if bracing or is_tumbling():
 		stick = Vector2.ZERO
 	if is_tumbling():
 		tumble_time_left -= delta
@@ -55,9 +60,7 @@ func _physics_process(delta: float) -> void:
 		_follow_handle()
 	else:
 		_turn_toward_stick(delta)
-		var speed: float = movement_speed()
-		velocity.x = stick.x * speed
-		velocity.z = stick.y * speed
+		_walk(delta)
 	_update_hold_point()
 	if not is_on_floor():
 		velocity.y -= Balance.GRAVITY * delta
@@ -79,6 +82,59 @@ func movement_speed() -> float:
 func carry_stick() -> Vector3:
 	# The stick as a world direction; two-person items read this to steer.
 	return Vector3(stick.x, 0.0, stick.y)
+
+
+func _walk(delta: float) -> void:
+	var target: Vector3 = carry_stick() * movement_speed()
+	if on_slime():
+		# Slime keeps the mover's momentum: the stick only nudges the slide.
+		var grip: float = 1.0 - exp(-Balance.SLIME_GRIP * delta)
+		velocity.x = lerpf(velocity.x, target.x, grip)
+		velocity.z = lerpf(velocity.z, target.z, grip)
+	else:
+		velocity.x = target.x
+		velocity.z = target.z
+
+
+func on_slime() -> bool:
+	for patch: Node3D in get_tree().get_nodes_in_group("slime"):
+		var offset: Vector3 = patch.global_position - global_position
+		if Vector2(offset.x, offset.z).length() < Balance.SLIME_PATCH_RADIUS:
+			return true
+	return false
+
+
+# --- House Shake queries ---
+func is_bracing() -> bool:
+	return bracing
+
+
+func is_moving() -> bool:
+	# Pushing the stick, or sliding: on slime, or pulled along by a two-person handle.
+	return not stick.is_zero_approx() or Vector2(velocity.x, velocity.z).length() > Balance.SHAKE_MOVING_SPEED
+
+
+# --- The ghost's slot ---
+func set_in_play(active: bool) -> void:
+	# While this player is the ghost, the mover leaves the board: no collisions, input, hauntings or tumbles.
+	if not active:
+		_let_go()
+		tumble_time_left = 0.0
+		if pose_tween != null:
+			pose_tween.kill()
+		body_pivot.quaternion = Quaternion.IDENTITY
+		facing_marker.show()
+		remove_from_group("movers")
+	else:
+		add_to_group("movers")
+	in_play = active
+	visible = active
+	velocity = Vector3.ZERO
+	stick = Vector2.ZERO
+	bracing = false
+	collision_layer = Balance.MOVER_LAYER if active else 0
+	collision_mask = (Balance.WORLD_LAYER | Balance.MOVER_LAYER | Balance.LOOT_LAYER) if active else 0
+	process_mode = Node.PROCESS_MODE_INHERIT if active else Node.PROCESS_MODE_DISABLED
 
 
 func _turn_toward_stick(delta: float) -> void:
@@ -155,8 +211,8 @@ func tumble(push: Vector3 = Vector3.ZERO) -> void:
 	velocity = Vector3.ZERO
 	var fall_direction := Vector3(push.x, 0.0, push.z)
 	fall_direction = fall_direction.normalized() if fall_direction.length() > 0.01 else facing
-	var tween := create_tween()
-	tween.tween_property(body_pivot, "quaternion", Quaternion(Vector3.UP.cross(fall_direction).normalized(), PI / 2.0), Balance.TUMBLE_FALL_TIME)
+	pose_tween = create_tween()
+	pose_tween.tween_property(body_pivot, "quaternion", Quaternion(Vector3.UP.cross(fall_direction).normalized(), PI / 2.0), Balance.TUMBLE_FALL_TIME)
 	facing_marker.hide()
 	tumbled.emit(slot)
 	var player := Net.player_for_slot(slot)
@@ -166,8 +222,8 @@ func tumble(push: Vector3 = Vector3.ZERO) -> void:
 
 
 func _stand_up() -> void:
-	var tween := create_tween()
-	tween.tween_property(body_pivot, "quaternion", Quaternion.IDENTITY, Balance.TUMBLE_FALL_TIME)
+	pose_tween = create_tween()
+	pose_tween.tween_property(body_pivot, "quaternion", Quaternion.IDENTITY, Balance.TUMBLE_FALL_TIME)
 	facing_marker.show()
 
 

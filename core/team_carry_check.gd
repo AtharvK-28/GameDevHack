@@ -57,8 +57,11 @@ func _run() -> void:
 
 	playground = load("res://Main.tscn").instantiate()
 	root.add_child(playground)
-	await _wait(INPUT_SECONDS)
 	_check_greybox_contents()
+	# The ghost's furniture has its own check (with the parlour door in place); this one carries in an empty room.
+	for prop: Node in get_nodes_in_group("furniture"):
+		prop.queue_free()
+	await _wait(INPUT_SECONDS)
 	for index: int in range(2):
 		await _connect_phone("Team %d" % (index + 1))
 	_check(_welcome_slot(0) == 0 and _welcome_slot(1) == 1, "Two phones control movers 1 and 2")
