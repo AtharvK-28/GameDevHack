@@ -132,7 +132,7 @@ function handleMessage(message) {
       break;
     case "hud":
       if (activeRole === "mover") {
-        elements["held-label"].textContent = message.held ? `${message.held} · ₹${Number(message.value).toLocaleString("en-IN")}` : "Hands free";
+        elements["held-label"].textContent = !message.held ? "Hands free" : Number.isFinite(message.value) ? `${message.held} · ₹${message.value.toLocaleString("en-IN")}` : message.held;
       } else {
         elements["held-label"].textContent = `Energy ${Math.round(message.energy)}`;
         elements["action-label"].textContent = message.action || "ACTION";

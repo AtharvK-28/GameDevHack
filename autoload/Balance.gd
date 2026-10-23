@@ -21,10 +21,11 @@ const MOVER_SPEED: float = 4.5 # Metres per second; unchanged from the spec.
 const GRAVITY: float = 9.8 # Metres per second squared.
 const CAPSULE_RADIUS: float = 0.4
 const CAPSULE_HEIGHT: float = 1.6
-const FLOOR_SIZE: float = 20.0
+const FLOOR_SIZE: float = 28.0
 const FLOOR_THICKNESS: float = 0.2
 const SPAWN_SPACING: float = 2.5
-const CAMERA_DISTANCE: float = 18.0
+const CAMERA_DISTANCE: float = 21.0
+const CAMERA_TARGET := Vector3(0.0, 0.0, -3.0) # Centre of the greybox between the parlour and the truck.
 const CAMERA_ANGLE: float = 55.0 # Degrees down from horizontal.
 const LABEL_HEIGHT: float = 1.35
 const LABEL_FONT_SIZE: int = 48
@@ -37,9 +38,13 @@ const JOYSTICK_DEADZONE: float = 0.12 # Normalised stick magnitude, 0 to 1.
 # --- Carrying settings ---
 const WORLD_LAYER: int = 1
 const MOVER_LAYER: int = 2
-const LOOT_LAYER: int = 4
-const CARRY_SPEEDS: Array[float] = [1.0, 0.8, 0.6] # Light, medium, heavy.
-const LOOT_MASSES: Array[float] = [2.0, 8.0, 20.0] # Kilograms.
+const LOOT_LAYER: int = 4 # Everything carryable, including the flashlight.
+const LIGHT: int = 0 # Weight classes, used as indexes into the tables below.
+const MEDIUM: int = 1
+const HEAVY: int = 2
+const TWO_PERSON: int = 3
+const CARRY_SPEEDS: Array[float] = [1.0, 0.8, 0.6, 0.7] # By weight class; two-person with both handles held.
+const WEIGHT_MASSES: Array[float] = [2.0, 8.0, 20.0, 100.0] # Kilograms, by weight class.
 const GRAB_RANGE: float = 1.8
 const GRAB_HALF_ANGLE: float = 60.0 # Degrees either side of facing.
 const HOLD_DISTANCE: float = 1.25
@@ -61,15 +66,46 @@ const LOOT_BOUNCE: float = 0.1
 const THROW_SPEED: float = 7.0 # Metres per second added in the facing direction.
 const THROW_LIFT: float = 2.0 # Metres per second upwards.
 
+# --- Two-person carry settings ---
+const DRAG_SPEED: float = 0.25 # Fraction of mover speed when one handle drags.
+const LONE_DRAG_SPEED: float = 0.4 # Fraction of mover speed for a lone mover's drag.
+const SCRAPE_RATE: float = 0.015 # Fraction of current value lost per metre dragged.
+const SCRAPE_POPUP_INTERVAL: float = 0.5 # Seconds between scrape-loss popups.
+const TEAM_DRIVE_GAIN: float = 20.0 # Per second; how quickly a handle matches its holder's stick.
+const TEAM_MAX_FORCE: float = 1500.0 # Newtons per handle.
+const TEAM_LIFT_MAX_FORCE: float = 3000.0 # Newtons holding a two-person item up.
+const DRAG_SUPPORT: float = 0.9 # Fraction of weight supported while dragging, so the item slides instead of sticking.
+const TEAM_STAND_DISTANCE: float = 0.6 # Metres beyond a handle where its holder stands.
+const TEAM_FOLLOW_GAIN: float = 12.0 # Per second; how quickly a holder keeps up with their handle.
+const TEAM_LEASH: float = 1.0 # Metres a holder can be pulled off their spot before letting go.
+
+# --- Tumbling settings ---
+const TUMBLE_HIT_SPEED: float = 4.0 # Metres per second; a thrown prop faster than this knocks a mover over.
+const TUMBLE_DURATION: float = 1.5 # Seconds lying down.
+const TUMBLE_FALL_TIME: float = 0.2 # Seconds for the fall and stand-up animation.
+const TUMBLE_BUZZ_MS: int = 200
+
+# --- Flashlight settings ---
+const FLASHLIGHT_SIZE := Vector3(0.25, 0.25, 0.6)
+const FLASHLIGHT_COLOUR := Color("f2d16b")
+const FLASHLIGHT_RANGE: float = 8.0 # Metres.
+const FLASHLIGHT_HALF_ANGLE: float = 20.0 # Degrees either side of the beam.
+const FLASHLIGHT_ENERGY: float = 4.0
+const FLASHLIGHT_AIM_STIFFNESS: float = 40.0 # Angular acceleration per radian turning the torch toward the holder's facing.
+const BEAM_CONE_ALPHA: float = 0.15 # Opacity of the visible beam cone, 0 to 1.
+const EXORCISE_TIME: float = 1.5 # Seconds a possessed prop must stay in the beam.
+
 # --- Damage, loot and feedback settings ---
 const DAMAGE_SPEED_THRESHOLD: float = 2.5 # Metres per second of closing speed.
 const DAMAGE_MULTIPLIER: float = 0.04 # Fraction of current value per m/s × fragility.
 const LOOT_CONTACT_LIMIT: int = 16
-const LOOT_NAMES: Array[String] = ["Antique vase", "Old TV", "Grandfather clock"]
-const LOOT_VALUES: Array[int] = [3000, 5000, 8000] # Rupees from the Mansion loot list.
-const LOOT_FRAGILITIES: Array[int] = [3, 3, 2]
-const LOOT_SIZES: Array[Vector3] = [Vector3(0.65, 0.8, 0.65), Vector3(1.0, 0.75, 0.6), Vector3(0.7, 1.8, 0.5)]
-const LOOT_COLOURS: Array[Color] = [Color("87d9e6"), Color("cf9ec9"), Color("bd9667")]
+const FLOOR_NORMAL_MIN: float = 0.7 # Contacts with a steeper normal than this count as floor.
+const LOOT_NAMES: Array[String] = ["Antique vase", "Old TV", "Grandfather clock", "Grand piano"]
+const LOOT_VALUES: Array[int] = [3000, 5000, 8000, 20000] # Rupees from the Mansion loot list.
+const LOOT_FRAGILITIES: Array[int] = [3, 3, 2, 2]
+const LOOT_WEIGHTS: Array[int] = [LIGHT, MEDIUM, HEAVY, TWO_PERSON]
+const LOOT_SIZES: Array[Vector3] = [Vector3(0.65, 0.8, 0.65), Vector3(1.0, 0.75, 0.6), Vector3(0.7, 1.8, 0.5), Vector3(2.2, 1.0, 1.4)]
+const LOOT_COLOURS: Array[Color] = [Color("87d9e6"), Color("cf9ec9"), Color("bd9667"), Color("4b3b5c")]
 const PRICE_LABEL_HEIGHT: float = 0.35 # Above the item's top.
 const PRICE_FONT_SIZE: int = 48
 const PRICE_PIXEL_SIZE: float = 0.012 # World metres per label pixel; tags must read on a projector.
@@ -82,8 +118,13 @@ const DAMAGE_BUZZ_MS: int = 60
 
 # --- Greybox room settings ---
 const ROOM_WIDTH: float = 14.0
-const ROOM_DEPTH: float = 10.0
-const ROOM_CENTRE_Z: float = -3.0
+const ROOM_DEPTH: float = 13.5
+const ROOM_CENTRE_Z: float = -4.75
+const PARLOUR_WALL_Z: float = -8.0 # Partition between the main room and the back parlour.
+const PARLOUR_DOOR_WIDTH: float = 2.0
+const PARLOUR_WALL_HEIGHT: float = 0.7 # Knee-high like other camera-side walls; still blocks a carried piano and movers.
+const PIANO_POSITION := Vector2(0.0, -9.75)
+const FLASHLIGHT_POSITION := Vector2(-5.5, 1.0)
 const WALL_THICKNESS: float = 0.3
 const WALL_HEIGHT: float = 2.2
 const FRONT_WALL_HEIGHT: float = 0.7

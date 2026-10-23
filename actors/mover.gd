@@ -1,13 +1,20 @@
-# Moves a player and owns one grab at a time; loot applies the carry spring.
+# Moves a player and owns one grab at a time; the carried item applies its own spring.
+# On a two-person handle the mover follows its handle and its stick steers the item instead.
+# A tumble drops whatever is held and lies the mover down for TUMBLE_DURATION seconds.
 extends CharacterBody3D
+
+signal tumbled(slot: int)
 
 # --- Player state ---
 var slot: int = 0
 var facing := Vector3.FORWARD
-var held_item: Loot
+var stick := Vector2.ZERO # This frame's movement input; zero while bracing or down.
+var held_item: Carryable
 var grab_released: bool = true
+var tumble_time_left: float = 0.0
 var name_label := Label3D.new()
 var hold_point: Marker3D
+var body_pivot := Node3D.new()
 var facing_marker := MeshInstance3D.new()
 
 # --- Setup ---
@@ -29,25 +36,33 @@ func _ready() -> void:
 # --- Movement and controls ---
 func _physics_process(delta: float) -> void:
 	var player_input: InputRouter.PlayerInput = InputRouter.for_slot(slot)
-	if not is_instance_valid(held_item) or held_item.finished:
+	if is_instance_valid(held_item) and (held_item.finished or not held_item.is_held_by(self)):
 		held_item = null
-	var direction: Vector2 = player_input.direction
-	if player_input.buttons.get("brace", false):
-		direction = Vector2.ZERO
-	if not direction.is_zero_approx():
-		# Swing the facing round instead of snapping, so a carried item is never yanked across.
-		var current_angle: float = atan2(facing.x, facing.z)
-		var target_angle: float = atan2(direction.x, direction.y)
-		var angle: float = rotate_toward(current_angle, target_angle, Balance.TURN_SPEED * delta)
-		facing = Vector3(sin(angle), 0.0, cos(angle))
+
+	stick = player_input.direction
+	if player_input.buttons.get("brace", false) or is_tumbling():
+		stick = Vector2.ZERO
+	if is_tumbling():
+		tumble_time_left -= delta
+		if not player_input.buttons.get("grab", false):
+			grab_released = true # Letting go while down allows a fresh grab after standing.
+		if not is_tumbling():
+			_stand_up()
+	else:
+		_handle_carry_input(player_input)
+
+	if _on_team_handle():
+		_follow_handle()
+	else:
+		_turn_toward_stick(delta)
+		var speed: float = movement_speed()
+		velocity.x = stick.x * speed
+		velocity.z = stick.y * speed
 	_update_hold_point()
-	_handle_carry_input(player_input)
-	var speed: float = movement_speed()
-	velocity.x = direction.x * speed
-	velocity.z = direction.y * speed
 	if not is_on_floor():
 		velocity.y -= Balance.GRAVITY * delta
 	move_and_slide()
+
 	var edge: float = Balance.FLOOR_SIZE / 2.0 - Balance.CAPSULE_RADIUS
 	position.x = clampf(position.x, -edge, edge)
 	position.z = clampf(position.z, -edge, edge)
@@ -56,44 +71,120 @@ func _physics_process(delta: float) -> void:
 
 
 func movement_speed() -> float:
-	if is_instance_valid(held_item) and not held_item.finished:
-		return Balance.MOVER_SPEED * Balance.CARRY_SPEEDS[held_item.loot_kind]
+	if is_instance_valid(held_item):
+		return Balance.MOVER_SPEED * Balance.CARRY_SPEEDS[held_item.weight_class]
 	return Balance.MOVER_SPEED
+
+
+func carry_stick() -> Vector3:
+	# The stick as a world direction; two-person items read this to steer.
+	return Vector3(stick.x, 0.0, stick.y)
+
+
+func _turn_toward_stick(delta: float) -> void:
+	if stick.is_zero_approx():
+		return
+	# Swing the facing round instead of snapping, so a carried item is never yanked across.
+	var current_angle: float = atan2(facing.x, facing.z)
+	var target_angle: float = atan2(stick.x, stick.y)
+	var angle: float = rotate_toward(current_angle, target_angle, Balance.TURN_SPEED * delta)
+	facing = Vector3(sin(angle), 0.0, cos(angle))
 
 
 func _handle_carry_input(input: InputRouter.PlayerInput) -> void:
 	var grabbing: bool = input.buttons.get("grab", false)
 	if not grabbing:
 		grab_released = true
-		if is_instance_valid(held_item):
-			held_item.release()
-			held_item = null
+		_let_go()
 		return
 	if input.pressed.get("throw", false) and is_instance_valid(held_item):
-		if held_item.loot_kind == 0:
-			held_item.release(facing * Balance.THROW_SPEED + Vector3.UP * Balance.THROW_LIFT)
+		if held_item.can_throw():
+			held_item.release(facing * Balance.THROW_SPEED + Vector3.UP * Balance.THROW_LIFT, self)
 			held_item = null
 			grab_released = false # Holding GRAB must not catch the item just thrown.
 		return
 	if not is_instance_valid(held_item) and grab_released:
-		var candidate := _nearest_loot()
+		var candidate := _nearest_carryable()
 		if candidate != null and candidate.try_grab(self, hold_point, slot):
 			held_item = candidate
 
 
+func _let_go() -> void:
+	if is_instance_valid(held_item):
+		held_item.release(Vector3.ZERO, self)
+	held_item = null
+
+
+# --- Two-person handles ---
+func _on_team_handle() -> bool:
+	return is_instance_valid(held_item) and held_item.weight_class == Balance.TWO_PERSON
+
+
+func _follow_handle() -> void:
+	# Keep to our spot at the handle; let go if the item drags us too far off it.
+	var gap: Vector3 = held_item.stand_point_for(self) - global_position
+	gap.y = 0.0
+	if gap.length() > Balance.TEAM_LEASH:
+		print("Player %d lost their grip on the %s" % [slot + 1, held_item.item_name])
+		_let_go()
+		grab_released = false
+		velocity.x = 0.0
+		velocity.z = 0.0
+		return
+	var follow: Vector3 = (gap * Balance.TEAM_FOLLOW_GAIN).limit_length(Balance.MOVER_SPEED)
+	velocity.x = follow.x
+	velocity.z = follow.z
+	var to_item: Vector3 = held_item.global_position - global_position
+	to_item.y = 0.0
+	if to_item.length() > 0.01:
+		facing = to_item.normalized()
+
+
+# --- Tumbling ---
+func is_tumbling() -> bool:
+	return tumble_time_left > 0.0
+
+
+func tumble(push: Vector3 = Vector3.ZERO) -> void:
+	# Fall in the push direction (or forward), drop whatever we hold, and lie still for a moment.
+	if is_tumbling():
+		return
+	_let_go()
+	grab_released = false # Getting up must not instantly re-grab.
+	tumble_time_left = Balance.TUMBLE_DURATION
+	velocity = Vector3.ZERO
+	var fall_direction := Vector3(push.x, 0.0, push.z)
+	fall_direction = fall_direction.normalized() if fall_direction.length() > 0.01 else facing
+	var tween := create_tween()
+	tween.tween_property(body_pivot, "quaternion", Quaternion(Vector3.UP.cross(fall_direction).normalized(), PI / 2.0), Balance.TUMBLE_FALL_TIME)
+	facing_marker.hide()
+	tumbled.emit(slot)
+	var player := Net.player_for_slot(slot)
+	if not player.is_empty():
+		Net.send_to_player(player, {"type": "buzz", "ms": Balance.TUMBLE_BUZZ_MS})
+	print("Player %d tumbled" % (slot + 1))
+
+
+func _stand_up() -> void:
+	var tween := create_tween()
+	tween.tween_property(body_pivot, "quaternion", Quaternion.IDENTITY, Balance.TUMBLE_FALL_TIME)
+	facing_marker.show()
+
+
 # --- Grab selection ---
-func _nearest_loot() -> Loot:
-	var nearest: Loot
+func _nearest_carryable() -> Carryable:
+	var nearest: Carryable
 	var nearest_distance: float = Balance.GRAB_RANGE
-	for item: Loot in get_tree().get_nodes_in_group("loot"):
-		if item.finished or is_instance_valid(item.holder):
+	for item: Carryable in get_tree().get_nodes_in_group("carryables"):
+		var point: Vector3 = item.grab_point_for(self)
+		if point == Vector3.INF:
 			continue
-		var offset: Vector3 = item.global_position - global_position
+		var offset: Vector3 = point - global_position
 		var horizontal := Vector3(offset.x, 0.0, offset.z)
 		var distance: float = offset.length()
 		if distance > nearest_distance or horizontal.normalized().dot(facing) < cos(deg_to_rad(Balance.GRAB_HALF_ANGLE)):
 			continue
-		var query := PhysicsRayQueryParameters3D.create(global_position, item.global_position, Balance.WORLD_LAYER)
+		var query := PhysicsRayQueryParameters3D.create(global_position, point, Balance.WORLD_LAYER)
 		if not get_world_3d().direct_space_state.intersect_ray(query).is_empty():
 			continue
 		nearest = item
@@ -117,6 +208,9 @@ func _build_capsule() -> void:
 	collision.shape = shape
 	add_child(collision)
 
+	# The visible capsule hangs from a pivot one radius above the feet, so a tumble lays it on the floor.
+	body_pivot.position.y = Balance.CAPSULE_RADIUS - Balance.CAPSULE_HEIGHT / 2.0
+	add_child(body_pivot)
 	var capsule := CapsuleMesh.new()
 	capsule.radius = Balance.CAPSULE_RADIUS
 	capsule.height = Balance.CAPSULE_HEIGHT
@@ -125,8 +219,8 @@ func _build_capsule() -> void:
 	var mesh := MeshInstance3D.new()
 	mesh.mesh = capsule
 	mesh.material_override = material
-	add_child(mesh)
-
+	mesh.position.y = Balance.CAPSULE_HEIGHT / 2.0 - Balance.CAPSULE_RADIUS
+	body_pivot.add_child(mesh)
 
 
 func _build_facing_marker() -> void:

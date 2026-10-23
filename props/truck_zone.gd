@@ -39,7 +39,7 @@ func _ready() -> void:
 
 # --- Banking ---
 func try_bank(item: Loot) -> bool:
-	if item.finished or is_instance_valid(item.holder) or not contains_point(item.global_position):
+	if item.finished or item.is_held() or not contains_point(item.global_position):
 		return false
 	var amount: int = item.value
 	var carrier_slot: int = item.last_carrier_slot

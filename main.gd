@@ -25,12 +25,14 @@ func _ready() -> void:
 	Net.players_changed.connect(_start_ready_controllers)
 	_build_connection_text()
 	_start_ready_controllers()
-	print("Phase 2: carrying greybox ready. Carry loot through the doorway and release it on the green truck zone.")
+	print("Phase 3: carrying greybox ready. The piano needs two movers; the flashlight is by the front door.")
 
 
 # --- Test feedback ---
 func _process(delta: float) -> void:
-	status_label.text = "GHOSTED MOVERS · BANKED %s\nHold GRAB to carry · release in the green truck zone · THROW light items\n%s" % [Loot.rupees(arena.truck.banked_value), connection_text]
+	status_label.text = "GHOSTED MOVERS · BANKED %s\nHold GRAB to carry · release in the green truck zone · THROW light items · the piano needs two\n%s" % [Loot.rupees(arena.truck.banked_value), connection_text]
+	# Until match flow exists, one active player counts as the lone mover of a 2-player match.
+	Loot.lone_mover = _active_player_count() <= 1
 	hud_elapsed += delta
 	if hud_elapsed >= 1.0 / Balance.HUD_RATE:
 		hud_elapsed = fmod(hud_elapsed, 1.0 / Balance.HUD_RATE)
@@ -53,9 +55,23 @@ func _send_held_hud() -> void:
 		var player := Net.player_for_slot(mover.slot)
 		if player.is_empty():
 			continue
-		var item: Loot = mover.held_item
+		var item: Carryable = mover.held_item
 		var has_item: bool = is_instance_valid(item) and not item.finished
-		Net.send_to_player(player, {"type": "hud", "held": item.item_name if has_item else "", "value": item.value if has_item else 0, "t": 0})
+		var value: Variant = null # Items without a price, like the flashlight, show their name only.
+		if has_item and item is Loot:
+			value = item.value
+		Net.send_to_player(player, {"type": "hud", "held": item.item_name if has_item else "", "value": value, "t": 0})
+
+
+func _active_player_count() -> int:
+	# Slots driven by a connected phone, plus the keyboard's slot when no phone has it.
+	var count: int = 0
+	for slot: int in range(Balance.MAX_PLAYERS):
+		var player := Net.player_for_slot(slot)
+		var phone_connected: bool = not player.is_empty() and player.socket != null
+		if phone_connected or slot == InputRouter.selected_slot:
+			count += 1
+	return count
 
 
 func _start_ready_controllers() -> void:
@@ -69,9 +85,9 @@ func _start_ready_controllers() -> void:
 func _build_camera() -> void:
 	var camera := Camera3D.new()
 	var angle: float = deg_to_rad(Balance.CAMERA_ANGLE)
-	camera.position = Vector3(0.0, sin(angle), cos(angle)) * Balance.CAMERA_DISTANCE
+	camera.position = Balance.CAMERA_TARGET + Vector3(0.0, sin(angle), cos(angle)) * Balance.CAMERA_DISTANCE
 	add_child(camera)
-	camera.look_at(Vector3.ZERO)
+	camera.look_at(Balance.CAMERA_TARGET)
 	camera.current = true
 	var light := DirectionalLight3D.new()
 	light.rotation_degrees = Balance.LIGHT_ROTATION

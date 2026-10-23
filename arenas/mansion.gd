@@ -5,6 +5,8 @@ extends Node3D
 const VASE := preload("res://props/loot/Vase.tscn")
 const TV := preload("res://props/loot/TV.tscn")
 const CLOCK := preload("res://props/loot/Clock.tscn")
+const PIANO := preload("res://props/loot/Piano.tscn")
+const FLASHLIGHT := preload("res://props/Flashlight.tscn")
 const TRUCK := preload("res://props/TruckZone.tscn")
 
 var truck: Area3D
@@ -17,6 +19,10 @@ func _ready() -> void:
 	for point: Vector2 in Balance.TV_POSITIONS:
 		_spawn_loot(TV, point, 1)
 	_spawn_loot(CLOCK, Balance.CLOCK_POSITION, 2)
+	_spawn_loot(PIANO, Balance.PIANO_POSITION, 3)
+	var flashlight := FLASHLIGHT.instantiate()
+	flashlight.position = Vector3(Balance.FLASHLIGHT_POSITION.x, Balance.FLASHLIGHT_SIZE.y / 2.0 + Balance.LOOT_SPAWN_CLEARANCE, Balance.FLASHLIGHT_POSITION.y)
+	add_child(flashlight)
 	truck = TRUCK.instantiate()
 	truck.position = Balance.TRUCK_POSITION
 	add_child(truck)
@@ -34,6 +40,12 @@ func _build_room() -> void:
 		var centre_x: float = side * (Balance.DOOR_WIDTH / 2.0 + segment_width / 2.0)
 		_box("FrontWall", Vector3(segment_width, Balance.FRONT_WALL_HEIGHT, Balance.WALL_THICKNESS), Vector3(centre_x, Balance.FRONT_WALL_HEIGHT / 2.0, front), Color("d0bda2"))
 	_box("DoorframePractice", Balance.OBSTACLE_SIZE, Balance.OBSTACLE_POSITION, Color("9a8b7c"))
+
+	# The parlour partition: two wall segments either side of a doorway at the room's centre line.
+	var parlour_segment: float = (Balance.ROOM_WIDTH - Balance.PARLOUR_DOOR_WIDTH) / 2.0
+	for side: float in [-1.0, 1.0]:
+		var segment_x: float = side * (Balance.PARLOUR_DOOR_WIDTH / 2.0 + parlour_segment / 2.0)
+		_box("ParlourWall", Vector3(parlour_segment, Balance.PARLOUR_WALL_HEIGHT, Balance.WALL_THICKNESS), Vector3(segment_x, Balance.PARLOUR_WALL_HEIGHT / 2.0, Balance.PARLOUR_WALL_Z), Color("8f86a6"))
 
 
 func _box(node_name: String, size: Vector3, location: Vector3, colour: Color) -> void:

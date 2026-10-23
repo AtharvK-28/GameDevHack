@@ -1,145 +1,243 @@
-# Spring-carried loot. Distinct physical impacts reduce its current rupee value.
+# Valuable carryable. Distinct physical impacts reduce its rupee value; releasing it in the truck banks it.
+# Two-person items have a handle at each end: both held carries it, one held drags it and scrapes value off.
 class_name Loot
-extends RigidBody3D
+extends Carryable
 
 signal damaged(amount: int, remaining: int)
 signal shattered(last_carrier_slot: int)
 
 # --- Item settings ---
-@export_enum("Vase", "TV", "Clock") var loot_kind: int = 0
+@export_enum("Vase", "TV", "Clock", "Piano") var loot_kind: int = 0
 
-# --- Carry and damage state ---
-var item_name: String
+# Set by the match flow; one mover alone drags two-person items faster.
+static var lone_mover: bool = false
+
+# --- Value and handle state ---
 var value: int
 var initial_value: int
 var fragility: int
-var item_size: Vector3
-var holder: CharacterBody3D
-var hold_target: Node3D
-var last_carrier_slot: int = -1
-var finished: bool = false
-var previous_velocity := Vector3.ZERO
-var previous_spin := Vector3.ZERO
-var previous_contacts: Dictionary = {}
+var handle_holders: Array[CharacterBody3D] = [null, null]
+var touching_floor: bool = false
+var scrape_distance: float = 0.0
+var scrape_remainder: float = 0.0
+var scrape_unshown: int = 0
+var scrape_popup_time: float = 0.0
 var price_label := Label3D.new()
 
 # --- Setup ---
 func _ready() -> void:
-	add_to_group("loot")
 	item_name = Balance.LOOT_NAMES[loot_kind]
+	item_size = Balance.LOOT_SIZES[loot_kind]
+	weight_class = Balance.LOOT_WEIGHTS[loot_kind]
 	initial_value = Balance.LOOT_VALUES[loot_kind]
 	value = initial_value
 	fragility = Balance.LOOT_FRAGILITIES[loot_kind]
-	item_size = Balance.LOOT_SIZES[loot_kind]
-	mass = Balance.LOOT_MASSES[loot_kind]
-	collision_layer = Balance.LOOT_LAYER
-	collision_mask = Balance.WORLD_LAYER | Balance.MOVER_LAYER | Balance.LOOT_LAYER
-	continuous_cd = loot_kind == 0
-	max_contacts_reported = Balance.LOOT_CONTACT_LIMIT
-	linear_damp = Balance.LOOT_LINEAR_DAMP
-	angular_damp = Balance.LOOT_ANGULAR_DAMP
-	physics_material_override = PhysicsMaterial.new()
-	physics_material_override.friction = Balance.LOOT_FRICTION
-	physics_material_override.bounce = Balance.LOOT_BOUNCE
+	add_to_group("loot")
+	super()
 	_build_shape()
 	_build_price_label()
 
 
-# --- Physics and feedback ---
-func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
-	if finished:
-		return
-	_check_contacts(state)
-	if is_instance_valid(holder) and is_instance_valid(hold_target):
-		_apply_carry_spring(state)
-	state.linear_velocity = state.linear_velocity.limit_length(Balance.LOOT_MAX_SPEED)
-	state.angular_velocity = state.angular_velocity.limit_length(Balance.LOOT_MAX_SPIN)
-	previous_velocity = state.linear_velocity
-	previous_spin = state.angular_velocity
-
-
+# --- Feedback ---
 func _process(_delta: float) -> void:
 	price_label.global_position = global_position + Vector3.UP * (item_size.y / 2.0 + Balance.PRICE_LABEL_HEIGHT)
 	price_label.text = rupees(value)
 	price_label.modulate = Color.WHITE.lerp(Balance.DAMAGE_COLOUR, 1.0 - float(value) / initial_value)
 
 
-func _apply_carry_spring(state: PhysicsDirectBodyState3D) -> void:
-	var local_grip := Vector3.UP * item_size.y * Balance.GRIP_HEIGHT_RATIO
-	var grip_offset: Vector3 = state.transform.basis * local_grip
-	var grip_position: Vector3 = state.transform.origin + grip_offset
-	var target: Vector3 = carry_target() + local_grip
-	var grip_velocity: Vector3 = state.linear_velocity + state.angular_velocity.cross(grip_offset)
-	var stretch: Vector3 = (target - grip_position).limit_length(Balance.CARRY_MAX_STRETCH)
-	var acceleration: Vector3 = stretch * Balance.CARRY_STIFFNESS
-	acceleration -= (grip_velocity - holder.velocity) * Balance.CARRY_DAMPING
-	state.apply_force((acceleration * mass).limit_length(Balance.CARRY_MAX_FORCE), grip_offset)
-	# Support the weight at the centre, leaving the spring free to swing the item.
-	state.apply_central_force((-state.total_gravity * mass).limit_length(Balance.CARRY_MAX_FORCE))
-
-	# Turn the item back upright, so it wobbles while carried instead of tumbling over.
-	var tilt_axis: Vector3 = state.transform.basis.y.normalized().cross(Vector3.UP)
-	var angular_acceleration: Vector3 = tilt_axis * Balance.CARRY_UPRIGHT_STIFFNESS
-	angular_acceleration -= state.angular_velocity * Balance.CARRY_UPRIGHT_DAMPING
-	state.apply_torque(state.inverse_inertia_tensor.inverse() * angular_acceleration)
+func _physics_process(delta: float) -> void:
+	if scrape_distance > 0.0:
+		_apply_scrape()
+	scrape_popup_time += delta
+	if scrape_unshown > 0 and scrape_popup_time >= Balance.SCRAPE_POPUP_INTERVAL:
+		show_popup("−" + rupees(scrape_unshown), Balance.DAMAGE_COLOUR)
+		scrape_unshown = 0
+		scrape_popup_time = 0.0
 
 
-func carry_target() -> Vector3:
-	# Where the item's centre settles while carried.
-	return hold_target.global_position + Vector3.UP * item_size.y / 2.0
+# --- Two-person physics ---
+func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
+	touching_floor = false
+	super(state)
+	if weight_class == Balance.TWO_PERSON and holder_count() == 1 and touching_floor:
+		var horizontal := Vector3(state.linear_velocity.x, 0.0, state.linear_velocity.z)
+		scrape_distance += horizontal.length() * state.step
 
 
-func _check_contacts(state: PhysicsDirectBodyState3D) -> void:
-	var contacts: Dictionary = {}
-	for index: int in range(state.get_contact_count()):
-		var collider_id: int = state.get_contact_collider_id(index)
-		var normal: Vector3 = state.get_contact_local_normal(index)
-		var offset: Vector3 = state.get_contact_local_position(index) - state.transform.origin
-		var incoming: Vector3 = previous_velocity + previous_spin.cross(offset)
-		var other_velocity: Vector3 = state.get_contact_collider_velocity_at_position(index)
-		var closing_speed: float = maxf(0.0, -(incoming - other_velocity).dot(normal))
-		contacts[collider_id] = maxf(contacts.get(collider_id, 0.0), closing_speed)
-	for collider_id: int in contacts:
-		if not previous_contacts.has(collider_id):
-			apply_impact.call_deferred(contacts[collider_id])
-	previous_contacts = contacts
+func _apply_carry(state: PhysicsDirectBodyState3D) -> void:
+	if weight_class != Balance.TWO_PERSON:
+		super(state)
+		return
+
+	var holders: int = holder_count()
+	var speed_ratio: float = Balance.CARRY_SPEEDS[Balance.TWO_PERSON]
+	if holders == 1:
+		speed_ratio = Balance.LONE_DRAG_SPEED if lone_mover else Balance.DRAG_SPEED
+
+	# Each held handle is pushed toward its holder's stick: the average moves the item, a difference turns it.
+	for index: int in range(2):
+		var mover: CharacterBody3D = handle_holders[index]
+		if not is_instance_valid(mover):
+			continue
+		var offset: Vector3 = state.transform.basis * _handle_local(index)
+		var handle_velocity: Vector3 = state.linear_velocity + state.angular_velocity.cross(offset)
+		var error: Vector3 = mover.carry_stick() * Balance.MOVER_SPEED * speed_ratio - handle_velocity
+		error.y = 0.0
+		var force: Vector3 = error * Balance.TEAM_DRIVE_GAIN * mass / 2.0
+		state.apply_force(force.limit_length(Balance.TEAM_MAX_FORCE), offset)
+
+	# Both handles lift it to carry height; one handle only takes most of the weight off the floor.
+	var weight: Vector3 = -state.total_gravity * mass
+	if holders == 2:
+		var floor_y: float = (handle_holders[0].global_position.y + handle_holders[1].global_position.y) / 2.0 - Balance.CAPSULE_HEIGHT / 2.0
+		var target_y: float = floor_y + Balance.CARRY_CLEARANCE + item_size.y / 2.0
+		var lift: float = (target_y - state.transform.origin.y) * Balance.CARRY_STIFFNESS - state.linear_velocity.y * Balance.CARRY_DAMPING
+		state.apply_central_force((weight + Vector3.UP * lift * mass).limit_length(Balance.TEAM_LIFT_MAX_FORCE))
+	else:
+		state.apply_central_force(weight * Balance.DRAG_SUPPORT)
+	_apply_upright(state)
 
 
-# --- Carrying and item lifecycle ---
+func _on_contact(normal: Vector3) -> void:
+	if absf(normal.y) > Balance.FLOOR_NORMAL_MIN:
+		touching_floor = true
+
+
+# --- Grabbing, handles and banking ---
+func holder_count() -> int:
+	var count: int = 0
+	for mover: CharacterBody3D in handle_holders:
+		if is_instance_valid(mover):
+			count += 1
+	return count
+
+
+func is_held() -> bool:
+	if weight_class == Balance.TWO_PERSON:
+		return holder_count() > 0
+	return super()
+
+
+func is_held_by(mover: CharacterBody3D) -> bool:
+	if weight_class == Balance.TWO_PERSON:
+		return mover in handle_holders
+	return super(mover)
+
+
+func grab_point_for(mover: CharacterBody3D) -> Vector3:
+	if weight_class != Balance.TWO_PERSON:
+		return super(mover)
+	var index: int = _free_handle_nearest(mover.global_position)
+	return Vector3.INF if index < 0 else handle_position(index)
+
+
 func try_grab(mover: CharacterBody3D, target: Node3D, slot: int) -> bool:
-	if finished or is_instance_valid(holder):
+	if weight_class != Balance.TWO_PERSON:
+		return super(mover, target, slot)
+	var index: int = _free_handle_nearest(mover.global_position)
+	if finished or index < 0:
 		return false
-	holder = mover
-	hold_target = target
+	handle_holders[index] = mover
 	last_carrier_slot = slot
 	add_collision_exception_with(mover)
 	can_sleep = false
 	sleeping = false
-	print("Player %d grabbed %s" % [slot + 1, item_name])
+	print("Player %d grabbed a %s handle" % [slot + 1, item_name])
 	return true
 
 
-func release(throw_velocity: Vector3 = Vector3.ZERO) -> void:
-	if finished or not is_instance_valid(holder):
+func release(throw_velocity: Vector3 = Vector3.ZERO, by: CharacterBody3D = null) -> void:
+	if weight_class != Balance.TWO_PERSON:
+		super(throw_velocity, by)
 		return
-	_detach()
+	if finished:
+		return
+	# Two-person items cannot be thrown; they bank once the last hand lets go inside the truck.
+	for index: int in range(2):
+		var mover: CharacterBody3D = handle_holders[index]
+		if is_instance_valid(mover) and (by == null or mover == by):
+			remove_collision_exception_with(mover)
+			handle_holders[index] = null
+	if holder_count() == 0:
+		can_sleep = true
+		_on_released()
+
+
+func handle_position(index: int) -> Vector3:
+	return global_transform * _handle_local(index)
+
+
+func stand_point_for(mover: CharacterBody3D) -> Vector3:
+	# Where a handle's holder stands: just beyond the end of the item.
+	var index: int = handle_holders.find(mover)
+	var handle: Vector3 = handle_position(index)
+	var outward: Vector3 = handle - global_position
+	outward.y = 0.0
+	return handle + outward.normalized() * Balance.TEAM_STAND_DISTANCE
+
+
+func _handle_local(index: int) -> Vector3:
+	return Vector3((item_size.x / 2.0) * (-1.0 if index == 0 else 1.0), 0.0, 0.0)
+
+
+func _free_handle_nearest(point: Vector3) -> int:
+	var best: int = -1
+	var best_distance: float = INF
+	for index: int in range(2):
+		if is_instance_valid(handle_holders[index]):
+			continue
+		var distance: float = handle_position(index).distance_to(point)
+		if distance < best_distance:
+			best = index
+			best_distance = distance
+	return best
+
+
+func _on_released() -> bool:
 	for zone: Node in get_tree().get_nodes_in_group("truck_zones"):
 		if zone.try_bank(self):
-			return
-	if not throw_velocity.is_zero_approx():
-		apply_central_impulse(throw_velocity * mass)
-	print("Released %s at ₹%d" % [item_name, value])
+			return true
+	print("Released %s at %s" % [item_name, rupees(value)])
+	return false
+
+
+func _detach() -> void:
+	super()
+	for index: int in range(2):
+		if is_instance_valid(handle_holders[index]):
+			remove_collision_exception_with(handle_holders[index])
+		handle_holders[index] = null
+
+
+# --- Damage ---
+func _on_impact(speed: float) -> void:
+	apply_impact(speed)
 
 
 func apply_impact(speed: float) -> void:
 	if finished or speed <= Balance.DAMAGE_SPEED_THRESHOLD:
 		return
 	var loss: int = mini(value, ceili(speed * fragility * Balance.DAMAGE_MULTIPLIER * value))
+	show_popup("−" + rupees(loss), Balance.DAMAGE_COLOUR)
+	print("%s impact %.2f m/s: -₹%d, remaining ₹%d" % [item_name, speed, loss, value - loss])
+	_lose_value(loss)
+
+
+func _apply_scrape() -> void:
+	# Scraping takes a share of the current value per metre; keep the fraction for next time.
+	var exact_loss: float = value * Balance.SCRAPE_RATE * scrape_distance + scrape_remainder
+	scrape_distance = 0.0
+	var loss: int = mini(value, floori(exact_loss))
+	scrape_remainder = exact_loss - loss
+	if loss > 0:
+		scrape_unshown += loss
+		_lose_value(loss)
+
+
+func _lose_value(loss: int) -> void:
 	value -= loss
 	damaged.emit(loss, value)
-	show_popup("−" + rupees(loss), Balance.DAMAGE_COLOUR)
-	print("%s impact %.2f m/s: -₹%d, remaining ₹%d" % [item_name, speed, loss, value])
-	if is_instance_valid(holder):
+	if is_held():
 		var player := Net.player_for_slot(last_carrier_slot)
 		if not player.is_empty():
 			Net.send_to_player(player, {"type": "buzz", "ms": Balance.DAMAGE_BUZZ_MS})
@@ -155,16 +253,9 @@ func retire(message: String, colour: Color) -> void:
 	_detach()
 	show_popup(message, colour)
 	remove_from_group("loot")
+	remove_from_group("carryables")
 	hide()
 	queue_free()
-
-
-func _detach() -> void:
-	if is_instance_valid(holder):
-		remove_collision_exception_with(holder)
-	holder = null
-	hold_target = null
-	can_sleep = true
 
 
 # --- Visual helpers ---
