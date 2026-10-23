@@ -61,9 +61,9 @@ func _physics_process(delta: float) -> void:
 			if lock_left <= 0.0:
 				state = State.REOPENING
 		State.REOPENING:
-			# Reopening waits while anything stands in the swing, rather than shoving it aside.
+			# Loot in the swing holds the door, rather than being shoved; movers are simply nudged aside.
 			var next: float = minf(Balance.DOOR_OPEN_ANGLE, angle + Balance.DOOR_OPEN_ANGLE / Balance.DOOR_REOPEN_TIME * delta)
-			if _overlapping(next, Balance.MOVER_LAYER | Balance.LOOT_LAYER).is_empty():
+			if _overlapping(next, Balance.LOOT_LAYER).is_empty():
 				angle = next
 				if angle >= Balance.DOOR_OPEN_ANGLE:
 					state = State.OPEN
