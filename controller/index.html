@@ -1,0 +1,72 @@
+<!-- Offline phone controller: join the host, then send movement and button intent. -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#183a38">
+  <title>Ghosted Movers · Controller</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="nipplejs.min.js"></script>
+  <script defer src="controller.js"></script>
+</head>
+<body>
+  <main id="app">
+    <header class="topbar">
+      <span class="wordmark">GHOSTED <strong>MOVERS</strong></span>
+      <span id="connection" role="status" aria-live="polite">Not connected</span>
+    </header>
+
+    <section id="lobby" class="lobby" aria-labelledby="join-title">
+      <div class="intro">
+        <p class="eyebrow">HAUNTED HOUSE. HONEST WORK.</p>
+        <h1 id="join-title">Clock in.<br>Hold on.</h1>
+        <p>Phone in your hands.<br>Eyes on the big screen.</p>
+      </div>
+      <div class="join-panel">
+        <form id="join-form">
+          <label for="player-name">Your name</label>
+          <input id="player-name" name="name" autocomplete="nickname" placeholder="Enter your name" required>
+          <button id="join-button" class="primary" type="submit">JOIN THE CREW <span aria-hidden="true">→</span></button>
+        </form>
+        <div id="joined" hidden>
+          <p id="identity" class="identity"></p>
+          <ul id="roster" aria-label="Connected players"></ul>
+          <button id="ready-button" class="primary" type="button">READY TO MOVE</button>
+        </div>
+        <p id="lobby-note" class="small-note">Connect to the same Wi-Fi as the big screen.</p>
+      </div>
+    </section>
+
+    <section id="controls" class="controls" aria-label="Game controls" hidden>
+      <div class="player-strip">
+        <strong id="player-label">MOVER</strong>
+        <span id="held-label">Carry it to the truck. Don't break it.</span>
+      </div>
+      <div class="control-layout">
+        <div id="joystick-zone" aria-label="Movement joystick">
+          <div class="stick-guide" aria-hidden="true"><span>MOVE</span><small>thumb anywhere here</small></div>
+        </div>
+        <div id="mover-buttons" class="buttons">
+          <button class="action grab" type="button" data-button="grab"><strong>GRAB</strong><small>hold to carry</small></button>
+          <button class="action throw" type="button" data-button="throw"><strong>THROW</strong><small>tap</small></button>
+          <button class="action brace" type="button" data-button="brace"><strong>BRACE</strong><small>hold to stay put</small></button>
+        </div>
+        <div id="ghost-buttons" class="buttons ghost-buttons" hidden>
+          <button class="action" type="button" data-button="possess"><strong>POSSESS / LEAVE</strong></button>
+          <button class="action" type="button" data-button="action"><strong id="action-label">ACTION</strong></button>
+          <button class="action" type="button" data-button="haunt1"><strong id="haunt-label">SHAKE</strong></button>
+          <button class="action" type="button" data-button="haunt2"><strong>SLIME</strong></button>
+        </div>
+      </div>
+      <footer><span id="control-note">Eyes on the big screen.</span><button id="fullscreen-button" type="button">FULLSCREEN</button></footer>
+    </section>
+
+    <div id="rotate-overlay" role="status">
+      <span class="rotate-mark" aria-hidden="true">↻</span>
+      <h2>Turn your phone sideways.</h2>
+      <p>Two thumbs. More room to move.</p>
+    </div>
+  </main>
+</body>
+</html>

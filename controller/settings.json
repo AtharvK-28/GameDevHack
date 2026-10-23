@@ -1,0 +1,8 @@
+{
+	"inputRate": 30,
+	"joystickDeadzone": 0.12,
+	"joystickSize": 120,
+	"maxNameLength": 20,
+	"reconnectDelayMs": 1000,
+	"socketPort": 9080
+}

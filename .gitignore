@@ -1,0 +1,8 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# Local verification output and dependencies; keep script .uid files.
+.verification/
+node_modules/
+__pycache__/
