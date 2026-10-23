@@ -2,7 +2,7 @@
 
 The phases follow the spec's 24-hour build plan. A phase is done only when its check passes. AI agents update this file after every task.
 
-**Status:** Phases 0–3 complete. Phase 4 (ghost) plan posted; awaiting the user's go.
+**Status:** Phases 0–3 complete. Next: Phase 4 (ghost). Its plan is still to be posted for the user's go; its open questions are in DECISIONS.md.
 
 ## Phase 0 · Setup
 

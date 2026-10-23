@@ -32,3 +32,14 @@ Every approved design or technical decision, newest first. Only the user approve
 
 - **A two-person item banks when the last holder lets go inside the truck zone.** If one holder lets go first, the other is left dragging until they let go too. This is how the build behaves; it is not yet confirmed as a decision.
 - **Thrown or pushed loot landing in the truck zone does not bank.** Only releasing GRAB inside the zone banks, matching the spec's wording. This is how the build currently behaves; it is not yet confirmed as a decision.
+
+**Phase 4 (ghost) questions, with the recommendations to propose in its plan:**
+1. Ghost role before Phase 5: a host key, G, cycles the ghost between ready players. That slot's mover is hidden and a wisp takes its place.
+2. Possessable loot: every loose loot item, piano included, can be possessed as a slider; heavier items move slower. A possessed item cannot be grabbed until the ghost leaves or is exorcised.
+3. Greybox furniture, one of each type: a crate (slider), a door in the parlour doorway (door), a chandelier over the main lane (dropper), a suit of armour (hopper) and a rug in the lane (rug). None have value.
+4. Ecto Slime: for 4 s after casting, the wisp leaves a trail. Each patch lasts 4 s; movers on slime keep their momentum and steer poorly.
+5. House Shake: "moving" means the stick is pushed or the mover is sliding, and BRACE protects. "Shelf items fall" waits for the Phase 6 Mansion, since the greybox has no shelves.
+6. Stunned after an exorcism: the wisp is frozen for 1 s and cannot possess for 5 s.
+7. Keyboard fallback for the ghost: Q possess, F action, Z haunt 1, X haunt 2 (extends decision 12).
+8. The ghost's `hud` message adds `costs`, so the phone can grey out buttons without duplicating numbers (a protocol change).
+9. Numbers the spec does not give start as proposals in `Balance.gd`: wisp height and opacity, possession range, slider and shove speeds, hop timing, chandelier height, yank speed, slime patch size, camera-shake amount.
