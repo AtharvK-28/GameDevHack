@@ -2,7 +2,7 @@
 
 The phases follow the spec's 24-hour build plan. A phase is done only when its check passes. AI agents update this file after every task.
 
-**Status:** Phases 0–2 complete. Phase 3 is built and passes automated physics checks; awaiting the user's two-phone piano playtest.
+**Status:** Phases 0–3 complete. Phase 4 (ghost) plan posted; awaiting the user's go.
 
 ## Phase 0 · Setup
 
@@ -33,7 +33,7 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - [x] Two-person carry
 - [x] Tumbling
 - [x] Flashlight with beam and 1.5 s exorcism timer (connected to possession in Phase 4)
-- [ ] **Check:** two players get the piano through a doorway (fallback decision at H9) — awaiting the user's two-phone playtest
+- [x] **Check:** two players get the piano through a doorway — user confirmed phone control and two-person pickup work on 2026-10-23; the single-person fallback is not needed
 
 ## Phase 4 · H9–12 · Ghost
 

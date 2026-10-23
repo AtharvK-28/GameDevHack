@@ -67,7 +67,3 @@ The browser consumes `controller/settings.json`; do not tune it independently. n
 ## Tuning the carry feel
 
 The spring, turn speed and upright values are in `Balance.gd` under "Carrying settings"; the two-person values are under "Two-person carry settings". Change one at a time and re-run the checks.
-
-## Phase 3 acceptance still needed
-
-With two phones: carry the piano out of the parlour, through its doorway and on to the truck. The spec's fallback applies if it isn't fun by H9: centrepieces become heavy single-person items at 40% speed.
