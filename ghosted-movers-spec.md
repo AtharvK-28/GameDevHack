@@ -90,7 +90,7 @@ Movers have one job: get value onto the truck. Every control is about carrying w
 - **Two-person items** (piano, wardrobe, sofa) have two grab handles. With both handles held, they move at 70% speed, steered by the average of both joysticks. With one handle, the item can only be dragged at 25%, and dragging scrapes value off.
   - Each holder pulls their own handle toward their joystick, so pulling the same way moves the item and pulling differently turns it. Holders stay attached to their handles and let go if pulled too far off their spot.
   - Dragging scrapes 1.5% of the item's current value per metre dragged.
-- In a 2-player match, the lone mover can drag two-person items at 40% (it still scrapes). Until match flow exists, this applies whenever only one player is active.
+- In a 2-player match, the lone mover can drag two-person items at 40% (it still scrapes). Until match flow exists, this applies whenever only one mover is active; the ghost's slot does not count.
 
 **Damage**
 
@@ -102,16 +102,22 @@ Movers have one job: get value onto the truck. Every control is about carrying w
 
 **Banking.** Release an item inside the truck zone and it banks: the value locks, a cash-register sound plays, and it despawns with a floating "+₹4,500".
 
+- Only releasing GRAB inside the zone banks. Loot that is thrown, pushed or slid in by the ghost stays in play until a mover picks it up and releases it there.
+- A two-person item banks when its last holder lets go inside the zone. If one holder lets go first, the other is left dragging it.
+
 **The flashlight**
 
 - One flashlight lies in each arena; with 4 players, two. It's an item, so carrying it means not carrying loot. It is light and can be thrown; it has no value, takes no damage and does not bank.
-- Hold its beam on a glowing possessed prop for 1.5 s to exorcise the ghost. The ghost is ejected, stunned and cannot possess anything for 5 s.
+- Hold its beam on a glowing possessed prop for 1.5 s to exorcise the ghost. The ghost is ejected, stunned and cannot possess anything for 5 s. Stunned means the wisp is frozen for 1 s: it cannot move or use any button, hauntings included.
+- The beam reaches 8 m and walls block it. Its aim ignores height, so a raised prop such as a chandelier can be lit from below.
 
 **Tumbling.** You fall over if:
 
-- you move during a House Shake,
+- you move during a House Shake ("moving" means pushing the stick or sliding, for example on slime),
 - you move with a Gust of Wind, or
-- a possessed or thrown prop hits you above 4 m/s. A prop counts as thrown from THROW until it slows below 4 m/s or comes to rest.
+- a possessed or thrown prop hits you above 4 m/s.
+  - A prop counts as thrown from THROW until it slows below 4 m/s or comes to rest.
+  - A possessed prop counts by its own speed toward you, so walking into a slow possessed prop never trips you. A prop launched by a ghost action (SHOVE, DROP) keeps counting after the ghost leaves, until it slows below 4 m/s.
 
 You drop whatever you hold and are down for 1.5 s, then stand up automatically. This uses a simple fall animation, not ragdoll physics.
 
@@ -122,16 +128,18 @@ The ghost wins by smashing value and wasting time, never by cheap surprise. Ever
 **Moving as a wisp**
 
 - When not possessing anything, the ghost is a faint, shimmering wisp on the shared screen. It moves at 7 m/s and passes through walls.
-- It's hard to see, but not invisible: sharp movers can track it.
+- It's hard to see, but not invisible: sharp movers can track it. It flies 1.2 m up, its opacity shimmers between 25% and 45%, and it stays inside the house and truck area so it never leaves the screen.
+- While possessing, the wisp hides inside the prop; leaving puts it back where the prop is.
 
 **Possession**
 
-- Move the wisp into any prop with a possessable outline and tap POSSESS.
+- Move the wisp into any prop with a possessable outline and tap POSSESS. The wisp must be within 0.6 m of the prop's footprint; the prop it would take shows a bright outline.
 - The prop glows green and drips particles. The joystick now moves the prop, and the action button does that prop's special move.
-- Possession drains 8 energy per second. Leaving a prop is free.
+- Possession drains 8 energy per second. Leaving a prop is free. When energy runs out, the ghost is pushed out.
+- Every loose loot item, the piano included, can be possessed as a slider; heavier items move slower. The flashlight cannot be possessed.
 - Rules that keep it fair:
-  - The ghost can't possess an item someone is carrying.
-  - Nothing inside the truck zone can be possessed.
+  - The ghost can't possess an item someone is carrying, and a possessed item can't be grabbed until the ghost leaves or is exorcised.
+  - Nothing inside the truck zone can be possessed. A possessed prop that enters the zone pushes the ghost out, with no stun.
   - After an exorcism, the ghost can't possess anything for 5 s.
 
 | Prop type | Examples | Joystick | Action button | Action cost |
@@ -141,6 +149,14 @@ The ghost wins by smashing value and wasting time, never by cheap surprise. Ever
 | Dropper | Chandelier, ship lantern, hanging exhibit | — | DROP: creaks for 1 s, then falls. One use each. | 30 |
 | Hopper | Fridge, suit of armour, statue | Hop toward a direction | STOMP: a shockwave that tumbles anyone within 2 m | 25 |
 | Rug | Rugs, deck tarps | — | YANK: everything on it slides and movers tumble | 25 |
+
+How each prop type moves (starting values in `Balance.gd`):
+
+- **Slider.** The prop glides at 2.4 m/s, just under the 2.5 m/s damage threshold, so plain sliding never breaks anything; only SHOVE does. SHOVE launches it at 6 m/s along the stick, or the last direction it moved. Both speeds scale by weight class: light × 1.0, medium × 0.8, heavy × 0.6, two-person × 0.45.
+- **Door.** It rests open at 100° and SLAM shuts it in 0.3 s. Movers in its swing tumble. If loot is in the way, the door stops there and the item takes one hit at the door's speed where it stands. After the 3 s lock it reopens over 1 s.
+- **Dropper.** DROP is committed once triggered: the chandelier creaks for 1 s while a floor marker shows where it will land, then falls even if the ghost is exorcised meanwhile. It hangs with its bottom 2.8 m up, so it lands on a head faster than 4 m/s. Afterwards it lies on the floor as debris and can't be possessed again; the ghost pops out without a stun.
+- **Hopper.** While the stick is held it hops every 0.55 s, 2.5 m/s along the stick and 3.5 m/s up. STOMP tumbles every mover within 2 m, braced or not.
+- **Rug.** YANK pulls the rug along its own forward axis: movers standing on it tumble, and anything loose on it slides away at 3.5 m/s.
 
 **Global hauntings**
 
@@ -152,6 +168,9 @@ Each arena has its signature haunting, and Ecto Slime is available everywhere. E
 | Gust of Wind | Ghost Ship | Wind streaks and a whistle show the direction for 1 s | 3 s: moving with the wind tumbles you; standing still slowly pushes you | BRACE, or walk against or across the wind | 40 | 18 s |
 | Lights Out | Abandoned Museum | Lights flicker for 1 s | 6 s of darkness except the flashlight cone and the truck light | Stick near the flashlight carrier | 50 | 25 s |
 | Ecto Slime | All arenas | The wisp leaves a green trail | For 4 s, movers on slime slide with their momentum | Walk around it | 25 | 10 s |
+
+- **House Shake.** "Moving" means the stick is pushed or the mover is sliding; BRACE protects. Shelf items falling waits for the Phase 6 Mansion, since the greybox has no shelves.
+- **Ecto Slime.** For 4 s after casting, the wisp drops slime patches 0.8 m wide, one every 0.6 m of its path. Each patch lasts 4 s. Movers on slime keep their momentum and steer poorly.
 
 **Energy.** The ghost has 100 energy. It regenerates 12 per second while the ghost is a free wisp, and 0 while possessing. Energy is the main balance knob.
 
@@ -301,8 +320,9 @@ One web page with three screens (lobby, Mover, Ghost). The host decides which sc
 └────────────────────────────────────────────┘
 ```
 
-- The ACTION label changes with the prop type: SHOVE, SLAM, DROP, STOMP, YANK.
+- The ACTION label changes with the prop type: SHOVE, SLAM, DROP, STOMP, YANK. POSSESS reads LEAVE while the ghost is inside a prop.
 - Haunting buttons grey out when energy is too low or they're cooling down. The host still validates every action.
+- The host decides what greys out (the `hud` message's `ok` flags), so the phone never duplicates a rule. Greyed buttons still send presses, and the host ignores them.
 
 **Between rounds**
 
@@ -362,10 +382,18 @@ Phones talk directly to the Godot game over WebSocket, sending short JSON messag
 | `role` | host → phone | `{role: "mover" or "ghost", arena}` | Round start |
 | `in` | phone → host | `{x, y}` joystick, −1 to 1 | 30 per second while the screen is active; also acts as the heartbeat |
 | `btn` | phone → host | `{b, down}`; b = grab, throw, brace, possess, action, haunt1, haunt2 | On press and on release |
-| `hud` | host → phone | Mover: `{held, value}`; Ghost: `{energy, cd, action}`; both: `{t}` | 8 per second |
+| `hud` | host → phone | Mover: `{held, value}`; Ghost: `{energy, action, costs, cd, ok}`; both: `{t}` | 8 per second |
 | `buzz` | host → phone | `{ms}` | Damage, tumble, role reveal |
 | `result` | host → all | `{moversWon, points}` | Round end |
 | `final` | host → all | `{standings, awards}` | Match end |
+
+**The ghost's `hud` fields**
+
+- `energy`: whole energy points.
+- `action`: the possessed prop's ACTION label, or empty while the ghost is a free wisp.
+- `costs`: `{action, haunt1, haunt2}` energy costs, for the button labels.
+- `cd`: `{possess, haunt1, haunt2}`, the fraction of each cooldown still left (0–1), for the rings. `possess` is the 5 s lock after an exorcism.
+- `ok`: `{possess, action, haunt1, haunt2}`, whether the host would accept that button right now.
 
 **Rules that prevent bugs**
 
@@ -398,13 +426,14 @@ ghosted-movers/
 │   └── HUD.tscn
 ├── actors/
 │   ├── Mover.tscn        # CharacterBody3D, hold point, carry spring, tumble
-│   ├── GhostWisp.tscn
-│   └── PartyCamera.tscn  # framing, shake, punch-in, wall fade
+│   ├── GhostWisp.tscn    # wisp, energy, possession and the host's checks on every ghost button
+│   └── PartyCamera.tscn  # framing, shake, punch-in, wall fade (Phase 4: fixed view and shake only)
 ├── props/
 │   ├── carryable.gd      # shared spring carry, throws and impacts for loot and the flashlight
 │   ├── Loot.tscn         # base RigidBody3D: value, weight, fragility, handles, price tag
 │   ├── loot/             # inherited scenes: Piano.tscn, Vase.tscn, Chest.tscn …
 │   ├── Possessable.gd    # component: kind = slider | door | dropper | hopper | rug
+│   ├── furniture/        # valueless possessable props: Crate, Door, Chandelier, Armour, Rug
 │   ├── Flashlight.tscn
 │   └── TruckZone.tscn
 ├── hauntings/
@@ -450,6 +479,8 @@ ghosted-movers/
 **Phase 2 harness.** `Main.tscn` instances a one-room CSG greybox (`arenas/Mansion.tscn`) with vase, TV and clock loot and a `TruckZone`, plus four movers. `Sfx.gd` holds a procedural banking sound until real audio arrives in Phase 7. `core/carrying_check.gd` verifies carrying, damage, banking and grab conflicts with real Jolt physics.
 
 **Phase 3 greybox.** The grand piano (2.2 × 1.0 × 1.4 m, 100 kg) starts in a back parlour behind a partition with a 2.0 m doorway, so it must be turned to fit through. The partition is knee-high (0.7 m), like other camera-side walls, so the camera sees into the parlour; it still blocks movers and a carried piano. One flashlight lies in the main room. The flashlight's beam timer works against anything in the `possessables` group exposing `is_possessed()` and `exorcise()`; Phase 4's `Possessable` provides them. `core/team_carry_check.gd` verifies two-person carry, tumbling and the flashlight.
+
+**Phase 4 greybox.** Until Phase 5's role rotation, the host key G passes the ghost to the next active slot (a connected phone, or the keyboard's slot), and after the last one back to no ghost. That slot's mover leaves play, its phone switches to the ghost screen, and a wisp starts at the far end of the parlour with full energy. The lone-mover rule counts movers only. Keyboard ghost keys: Q possess, F action, Z haunt 1, X haunt 2. The greybox adds one valueless prop of each type from `props/furniture/`: a crate (slider), a door in the parlour doorway (door), a chandelier over the main lane (dropper), a suit of armour by the parlour wall (hopper) and a rug inside the front door (rug). Every loot item carries a slider `Possessable`. The signature haunting is House Shake. A top-right panel shows the ghost's energy to everyone. `core/ghost_check.gd` verifies the wisp, possession rules, all five actions, energy, exorcism and both hauntings with real Jolt physics.
 
 ## 24-hour build plan
 

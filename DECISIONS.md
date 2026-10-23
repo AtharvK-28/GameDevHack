@@ -6,6 +6,23 @@ Every approved design or technical decision, newest first. Only the user approve
 
 | # | Date | Decision | Reason |
 | --- | --- | --- | --- |
+| 38 | 2026-10-23 | Only releasing GRAB inside the truck zone banks. Loot that is thrown, pushed or slid in by the ghost stays in play until a mover picks it up and releases it there. | User confirmed the build's existing behaviour with the Phase 4 “go” |
+| 37 | 2026-10-23 | A two-person item banks when its last holder lets go inside the truck zone; a holder who lets go first leaves the other dragging it. | User confirmed the build's existing behaviour with the Phase 4 “go” |
+| 36 | 2026-10-23 | A possessed prop tumbles a mover it hits above 4 m/s, counting the prop's own speed toward them, so walking into a slow possessed prop never trips anyone. A prop launched by a ghost action (SHOVE, DROP) keeps counting after the ghost leaves, until it slows below 4 m/s. Completes decision 21. | Phase 4 plan approved with “go” |
+| 35 | 2026-10-23 | The flashlight's aim ignores height, so a raised prop such as a chandelier can be lit from below. The 8 m range and walls still apply; low props behave as before. | Otherwise a possessed chandelier is only reachable from 7.2–7.6 m away; Phase 4 plan approved |
+| 34 | 2026-10-23 | Chandelier DROP is committed once triggered: it falls even if the ghost is exorcised during the 1 s creak. A floor marker shows where it will land. It then lies on the floor as debris and cannot be possessed again; the ghost pops out without a stun. | Phase 4 plan approved |
+| 33 | 2026-10-23 | Door SLAM tumbles movers in its swing. If loot is in the way, the door stops there and the item takes one hit at the door's speed where it stands; the 3 s lock still runs. | Stops the physics engine launching a jammed piano; Phase 4 plan approved |
+| 32 | 2026-10-23 | Furniture scenes live in a new `props/furniture/` folder. `actors/PartyCamera.tscn` starts in Phase 4 with the fixed greybox view and trauma shake only; following the movers, punch-in and wall fade stay in Phase 6. | Folder change approved with the Phase 4 plan |
+| 31 | 2026-10-23 | Phase 4 starting numbers in `Balance.gd`: wisp 1.2 m high with opacity shimmering 25–45%; possession reach 0.6 m from a prop's footprint; slider 2.4 m/s (just under the damage threshold, so only SHOVE breaks things) and SHOVE 6 m/s, both × 1.0 / 0.8 / 0.6 / 0.45 by weight class; the door shuts in 0.3 s, opens to 100° and reopens in 1 s after its 3 s lock; the chandelier's bottom hangs at 2.8 m, so it lands on a head above 4 m/s; the hopper hops every 0.55 s at 2.5 m/s forward and 3.5 m/s up; the rug is 3 × 2 m and YANK moves things at 3.5 m/s; slime patches are 0.8 m wide, one every 0.6 m; camera-shake amounts are set during the build. | The spec gives no numbers for these; Phase 4 plan approved |
+| 30 | 2026-10-23 | The ghost's `hud` message carries `energy`; `action`, the possessed prop's ACTION label (empty while free); `costs` `{action, haunt1, haunt2}` for the button labels; `cd` `{possess, haunt1, haunt2}`, the fraction of each cooldown still left (0–1), for the rings; and `ok` `{possess, action, haunt1, haunt2}`, worked out by the host so greying matches its checks exactly. Greyed buttons still send presses; the host decides. | Protocol change approved with the Phase 4 plan |
+| 29 | 2026-10-23 | Keyboard fallback for the ghost: Q possess, F action, Z haunt 1, X haunt 2 (extends decision 12). | Phase 4 plan approved |
+| 28 | 2026-10-23 | After an exorcism the wisp is frozen for 1 s (no movement and no buttons, hauntings included) and cannot possess for 5 s. | Phase 4 plan approved |
+| 27 | 2026-10-23 | House Shake: "moving" means the stick is pushed or the mover is sliding; BRACE protects. Shelf items falling waits for the Phase 6 Mansion, since the greybox has no shelves. | Phase 4 plan approved |
+| 26 | 2026-10-23 | Ecto Slime: for 4 s after casting, the wisp drops slime patches along its path. Each patch lasts 4 s; movers on slime keep their momentum and steer poorly. | Phase 4 plan approved |
+| 25 | 2026-10-23 | Greybox furniture, one of each type, with no value and not carryable: a crate (slider), a door in the parlour doorway (door), a chandelier over the main lane (dropper), a suit of armour (hopper) and a rug inside the front door (rug). | Phase 4 plan approved |
+| 24 | 2026-10-23 | Every loose loot item, the piano included, can be possessed as a slider; heavier items move slower. The flashlight cannot be possessed. A possessed item cannot be grabbed until the ghost leaves or is exorcised. A possessed prop that enters the truck zone pushes the ghost out, with no stun. | Phase 4 plan approved |
+| 23 | 2026-10-23 | Ghost role before Phase 5: the host key G passes the ghost to the next active slot, and after the last one back to no ghost. That slot's mover leaves play and a wisp starts at the far end of the parlour with full energy. The lone-mover rule (decision 17) counts movers only, so a 2-player match is one mover against the ghost. | Phase 4 plan approved |
+| 22 | 2026-10-23 | Phase 4 build: a `GhostWisp` actor that owns energy and possession and checks every ghost button; a `Possessable` component for all 5 prop types; exorcism wired to the flashlight; House Shake and Ecto Slime on a `Haunting` base; the ghost's phone screen; `core/ghost_check.gd`. | Phase 4 plan approved with “go” |
 | 21 | 2026-10-23 | A "thrown" prop (for tumbling) is one launched with THROW, until it slows below 4 m/s or comes to rest. Possessed props join in Phase 4. | Phase 3 plan approved with “ok add it in” |
 | 20 | 2026-10-23 | The flashlight is a light, throwable item. It has no value, takes no damage and does not bank. | Phase 3 plan approved |
 | 19 | 2026-10-23 | Exorcism is split as the spec's build plan says. Phase 3 builds the flashlight, its beam and the 1.5 s beam-held timer, tested against a stand-in target. Phase 4 connects the timer to real possession. PROGRESS.md now matches the spec. | PROGRESS.md and the spec disagreed; phase 3 plan approved |
@@ -30,16 +47,4 @@ Every approved design or technical decision, newest first. Only the user approve
 
 ## Open — needs the user's confirmation
 
-- **A two-person item banks when the last holder lets go inside the truck zone.** If one holder lets go first, the other is left dragging until they let go too. This is how the build behaves; it is not yet confirmed as a decision.
-- **Thrown or pushed loot landing in the truck zone does not bank.** Only releasing GRAB inside the zone banks, matching the spec's wording. This is how the build currently behaves; it is not yet confirmed as a decision.
-
-**Phase 4 (ghost) questions, with the recommendations to propose in its plan:**
-1. Ghost role before Phase 5: a host key, G, cycles the ghost between ready players. That slot's mover is hidden and a wisp takes its place.
-2. Possessable loot: every loose loot item, piano included, can be possessed as a slider; heavier items move slower. A possessed item cannot be grabbed until the ghost leaves or is exorcised.
-3. Greybox furniture, one of each type: a crate (slider), a door in the parlour doorway (door), a chandelier over the main lane (dropper), a suit of armour (hopper) and a rug in the lane (rug). None have value.
-4. Ecto Slime: for 4 s after casting, the wisp leaves a trail. Each patch lasts 4 s; movers on slime keep their momentum and steer poorly.
-5. House Shake: "moving" means the stick is pushed or the mover is sliding, and BRACE protects. "Shelf items fall" waits for the Phase 6 Mansion, since the greybox has no shelves.
-6. Stunned after an exorcism: the wisp is frozen for 1 s and cannot possess for 5 s.
-7. Keyboard fallback for the ghost: Q possess, F action, Z haunt 1, X haunt 2 (extends decision 12).
-8. The ghost's `hud` message adds `costs`, so the phone can grey out buttons without duplicating numbers (a protocol change).
-9. Numbers the spec does not give start as proposals in `Balance.gd`: wisp height and opacity, possession range, slider and shove speeds, hop timing, chandelier height, yank speed, slime patch size, camera-shake amount.
+Nothing is open.
