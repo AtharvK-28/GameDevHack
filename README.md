@@ -4,12 +4,14 @@ Godot 4.7.2 stable · Mobile renderer · Jolt · 60 Hz physics.
 
 ## Play a match
 
-1. Press **F5** in Godot. The shared screen opens on the lobby with a QR code and the join link.
+1. Press **F5** in Godot. The shared screen opens fullscreen on the lobby with a QR code and the join link; **F11** switches between fullscreen and a window. (If Godot runs the game inside the editor's Game tab, fullscreen needs the game in its own window: turn off the Game tab's embed option.)
 2. Start the phone page server (see the next section, step 2). Phones on the same Wi-Fi scan the QR code or open the link, enter a name and tap **Ready to move**.
 3. With 2–4 phones ready, press **Enter** on the host. Each round: a 3 s role reveal, then 150 s of play. 2 players play 4 rounds, 3 play 3 and 4 play 4; the ghost passes to the next player every round.
 4. **Winning a round:** movers must deliver at least **70%** of the round's starting value. Losing more than 30% (damage, shattering, items lost) ends the round for the ghost at once. Otherwise the round ends when time runs out or every item has been delivered or destroyed; only delivered value counts.
 5. **Host keys.** Round end: **Enter** next round, **R** restart the round (same layout and roles; its points are replaced), **L** back to the lobby. Final standings: **Enter** back to the lobby. If a phone drops mid-round the round pauses until it rejoins from the same browser; **L** cancels to the lobby without scoring.
 6. **The demo ghost** has POSSESS (any loose loot or the crate), SHOVE, SHAKE (House Shake, 45) and CURSE (30, 15 s cooldown: nearby loot glows and is 30% slower to carry for 6 s). Hauntings are locked for the first 8 s and for 4 s after each one; the ghost's phone shows why a button is unavailable and for how long. Keyboard ghost: Q possess, F action, Z shake, C curse.
+
+Movers are the team's character model in their slot's colours; the model only shows what the mover is doing (walk, run, carry, two-person carry, brace, throw, tumble) and never changes how it plays. The source files and the model guide are in `assets/source/mover/`.
 
 Points: movers get 1 per ₹100 they deliver (two-person items split) plus 100 for a win; the ghost gets 1 per ₹100 lost plus 150 for a win. Awards, more arenas and the other ghost abilities come later.
 

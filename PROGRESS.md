@@ -2,7 +2,7 @@
 
 The phases follow the spec's 24-hour build plan. A phase is done only when its check passes. AI agents update this file after every task.
 
-**Status:** Phases 0–3 complete. Phase 4 (ghost) passes `core/ghost_check.gd`; its two-phone 1v1 check is still to do. Phase 5 (match flow and demo scope) is built and passes `core/match_check.gd` (60 checks) plus all four earlier checks; the user's 4-player phone test is next. Mover character art is waiting for its plan's go.
+**Status:** Phases 0–3 complete. Phase 4 (ghost) passes `core/ghost_check.gd`; its two-phone 1v1 check is still to do. Phase 5 (match flow and demo scope) is built and passes `core/match_check.gd` (60 checks) plus all four earlier checks; the user's 4-player phone test is next. The mover character model is in (art brought forward from Phase 6); the camera is mirrored, the HUD compact and the match fullscreen.
 
 ## Phase 0 · Setup
 
@@ -66,6 +66,7 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - [ ] Ghost Ship
 - [ ] Abandoned Museum
 - [ ] Gust of Wind and Lights Out
+- [x] Mover character model and animations (brought forward; ghost model still to come)
 - [ ] Party camera and wall fade finished
 - [ ] Lighting per arena
 - [ ] **Check:** every PS02 requirement met; commit and tag
@@ -123,3 +124,5 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - Phase 5 verification: `match_check.gd` passes 60 checks with two real WebSocket phones and the host keys (lobby, refused late join, seeded setup, reveal, camera yaw and follow, regen 8/s, opening protection and shared lock with phone reasons, Curse cost/no stacking/30% slower for 6 s, exact 70%/30% win, early ghost win at 30% + ₹1, restart with identical layout and replaced points, ghost rotation, timeout, disconnect pause/resume/cancel, a full 4-round match). Plumbing, carrying (75), team carry (49) and ghost checks still pass; the match-mode smoke run is clean, with no script errors or leaks. The QR encoder matches the reference `qrcode` library module for module (48 symbols, versions 1–6, all 8 masks). Host screens were rendered in the Mobile renderer and phone screens in headless Chrome at 844 × 390; both inspected.
 - Phase 5 fixes found while verifying: the phone HUD read a freed item when a carried item shattered (logged an error each time); the lobby link wrapped onto two lines; the 3D truck sign showed through the panels; the locked Curse button kept its colour; the cooldown ring covered button text.
 - Watch: the open Godot editor re-saved `project.godot`, dropping the explicit 60 Hz line (restored) and adding `import/blender/enabled=false` (left uncommitted for the art task).
+- Mover art (2026-10-23): the team's model replaces the capsule visuals, from `assets/models/mover/` (three shirt variants, 21 clips, 18-bone rig, 8,294 triangles, no textures). It is scaled 0.91 to the unchanged 1.6 m capsule, faces the mover's facing, and is driven by `MoverModel` from existing state only. Checked frame by frame: every state plays its own clip; walk 1.62 m/s plays at 1.11×, run 4.5 at 1.10×, team carry 3.11 at 1.08×, and tumble plus get-up at 1.36× to fit 1.5 s. Mobile-renderer screenshots of each state and all four colours were inspected. Four animated movers ran at 441–523 fps with vsync off on the Intel Iris Xe laptop. Plumbing, carrying, team carry, ghost and match checks all pass after the change. The source `.blend`, previews and guide are in `assets/source/mover/` (Godot skips it), and Blender import is off. Known: carried items sit at the unchanged hold point, about a metre in front of the hands.
+- User requests (2026-10-23): camera mirrored to yaw −20° (decision 54); the live HUD's top panel is one compact row; the match starts fullscreen and F11 toggles (decision 55). If Godot embeds the running game in the editor's Game tab, fullscreen needs the game in its own window.
