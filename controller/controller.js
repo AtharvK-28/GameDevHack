@@ -154,7 +154,7 @@ function showRole(message) {
   elements["mover-buttons"].hidden = isGhost;
   elements["ghost-buttons"].hidden = !isGhost;
   elements["player-label"].textContent = `${playerName} · ${isGhost ? "GHOST" : `PLAYER ${playerSlot + 1}`}`;
-  elements["held-label"].textContent = message.arena === "Plumbing test" ? "Controller check · grab / throw are input only" : (isGhost ? "Break everything." : "Carry it to the truck. Don't break it.");
+  elements["held-label"].textContent = isGhost ? "Break everything." : "Carry it to the truck. Don't break it.";
   elements["haunt-label"].textContent = message.arena === "Ghost Ship" ? "WIND" : message.arena === "Abandoned Museum" ? "LIGHTS OUT" : "SHAKE";
   setControlsEnabled(true);
 }

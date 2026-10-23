@@ -1,0 +1,56 @@
+# One CSG room for carrying tests; the full Mansion layout belongs to Phase 6.
+extends Node3D
+
+# --- Scene resources ---
+const VASE := preload("res://props/loot/Vase.tscn")
+const TV := preload("res://props/loot/TV.tscn")
+const CLOCK := preload("res://props/loot/Clock.tscn")
+const TRUCK := preload("res://props/TruckZone.tscn")
+
+var truck: Area3D
+
+# --- Setup ---
+func _ready() -> void:
+	_build_room()
+	for point: Vector2 in Balance.VASE_POSITIONS:
+		_spawn_loot(VASE, point, 0)
+	for point: Vector2 in Balance.TV_POSITIONS:
+		_spawn_loot(TV, point, 1)
+	_spawn_loot(CLOCK, Balance.CLOCK_POSITION, 2)
+	truck = TRUCK.instantiate()
+	truck.position = Balance.TRUCK_POSITION
+	add_child(truck)
+
+
+# --- Greybox helpers ---
+func _build_room() -> void:
+	_box("Ground", Vector3(Balance.FLOOR_SIZE, Balance.FLOOR_THICKNESS, Balance.FLOOR_SIZE), Vector3(0.0, -Balance.FLOOR_THICKNESS / 2.0, 0.0), Color("526761"))
+	var rear: float = Balance.ROOM_CENTRE_Z - Balance.ROOM_DEPTH / 2.0
+	var front: float = Balance.ROOM_CENTRE_Z + Balance.ROOM_DEPTH / 2.0
+	_box("RearWall", Vector3(Balance.ROOM_WIDTH, Balance.WALL_HEIGHT, Balance.WALL_THICKNESS), Vector3(0.0, Balance.WALL_HEIGHT / 2.0, rear), Color("a0a69a"))
+	for side: float in [-1.0, 1.0]:
+		_box("SideWall", Vector3(Balance.WALL_THICKNESS, Balance.WALL_HEIGHT, Balance.ROOM_DEPTH), Vector3(side * Balance.ROOM_WIDTH / 2.0, Balance.WALL_HEIGHT / 2.0, Balance.ROOM_CENTRE_Z), Color("a0a69a"))
+		var segment_width: float = (Balance.ROOM_WIDTH - Balance.DOOR_WIDTH) / 2.0
+		var centre_x: float = side * (Balance.DOOR_WIDTH / 2.0 + segment_width / 2.0)
+		_box("FrontWall", Vector3(segment_width, Balance.FRONT_WALL_HEIGHT, Balance.WALL_THICKNESS), Vector3(centre_x, Balance.FRONT_WALL_HEIGHT / 2.0, front), Color("d0bda2"))
+	_box("DoorframePractice", Balance.OBSTACLE_SIZE, Balance.OBSTACLE_POSITION, Color("9a8b7c"))
+
+
+func _box(node_name: String, size: Vector3, location: Vector3, colour: Color) -> void:
+	var box := CSGBox3D.new()
+	box.name = node_name
+	box.size = size
+	box.position = location
+	box.use_collision = true
+	box.collision_layer = Balance.WORLD_LAYER
+	box.collision_mask = Balance.MOVER_LAYER | Balance.LOOT_LAYER
+	var material := StandardMaterial3D.new()
+	material.albedo_color = colour
+	box.material = material
+	add_child(box)
+
+
+func _spawn_loot(scene: PackedScene, point: Vector2, kind: int) -> void:
+	var item := scene.instantiate()
+	item.position = Vector3(point.x, Balance.LOOT_SIZES[kind].y / 2.0 + Balance.LOOT_SPAWN_CLEARANCE, point.y)
+	add_child(item)

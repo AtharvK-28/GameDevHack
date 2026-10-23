@@ -4,3 +4,5 @@
 
 [node name="Mover" type="CharacterBody3D"]
 script = ExtResource("1")
+
+[node name="HoldPoint" type="Marker3D" parent="."]
