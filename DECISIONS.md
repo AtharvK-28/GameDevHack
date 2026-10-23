@@ -6,6 +6,13 @@ Every approved design or technical decision, newest first. Only the user approve
 
 | # | Date | Decision | Reason |
 | --- | --- | --- | --- |
+| 21 | 2026-10-23 | A "thrown" prop (for tumbling) is one launched with THROW, until it slows below 4 m/s or comes to rest. Possessed props join in Phase 4. | Phase 3 plan approved with “ok add it in” |
+| 20 | 2026-10-23 | The flashlight is a light, throwable item. It has no value, takes no damage and does not bank. | Phase 3 plan approved |
+| 19 | 2026-10-23 | Exorcism is split as the spec's build plan says. Phase 3 builds the flashlight, its beam and the 1.5 s beam-held timer, tested against a stand-in target. Phase 4 connects the timer to real possession. PROGRESS.md now matches the spec. | PROGRESS.md and the spec disagreed; phase 3 plan approved |
+| 18 | 2026-10-23 | Grand piano is 2.2 × 1.0 × 1.4 m and 100 kg. The greybox gains a back parlour behind a partition with a 2.0 m doorway, so the piano must be turned to fit through. | Phase 3 plan approved; matches "piano in the far parlour" |
+| 17 | 2026-10-23 | The lone-mover drag rule (40%) turns on automatically when only one player is active, until Phase 5 sets it for real 2-player matches. | No match roles exist before Phase 5; phase 3 plan approved |
+| 16 | 2026-10-23 | Dragging a two-person item by one handle scrapes 1.5% of its current value per metre dragged, including the lone mover's 40% drag. | Spec had no number; phase 3 plan approved |
+| 15 | 2026-10-23 | Two-person carry uses physical pulls: each holder drives their own handle toward their stick at 70% speed, so the average moves the item and a difference turns it. Holders stay attached to their handles and let go if pulled too far off their spot. Loot and the flashlight share a carry base, `props/carryable.gd`. | Phase 3 plan approved; makes the doorway a turning puzzle |
 | 14 | 2026-10-23 | A plain drop never damages loot: carried items hang a fixed 0.25 m above the floor (`CARRY_CLEARANCE`), so letting go lands below the 2.5 m/s threshold. Throws and bumps still cause damage. | Measured: the old hold height made every vase or TV drop cost about 46% of its value. User approved with “ok” |
 | 13 | 2026-10-23 | Phase 2: only light loot is throwable; impact damage uses relative closing speed, counted once per distinct impact, rounded up to whole rupees and capped at remaining value. Build single-person spring carrying, a CSG Mansion greybox, banking and phone held-item feedback. | User approved the Phase 2 plan with “go” after confirming four-player phone operation |
 | 12 | 2026-10-23 | Phase 1 uses flat JSON messages with a `type` field; slots are zero-based. Keyboard test: 1–4 selects a slot, WASD/arrows move, Space grabs, E throws, Shift braces. Connected phones take priority. | Proposed in the initial plan; implementation authorized by “replan then start” |
@@ -23,4 +30,5 @@ Every approved design or technical decision, newest first. Only the user approve
 
 ## Open — needs the user's confirmation
 
+- **A two-person item banks when the last holder lets go inside the truck zone.** If one holder lets go first, the other is left dragging until they let go too. This is how the build behaves; it is not yet confirmed as a decision.
 - **Thrown or pushed loot landing in the truck zone does not bank.** Only releasing GRAB inside the zone banks, matching the spec's wording. This is how the build currently behaves; it is not yet confirmed as a decision.
