@@ -433,7 +433,7 @@ func _park_other_movers() -> void:
 func _clear_loot() -> void:
 	for key: Key in [KEY_SPACE, KEY_E, KEY_SHIFT, KEY_D, KEY_A]:
 		_key(key, false)
-	for item: Node in get_nodes_in_group("loot"):
+	for item: Node in get_nodes_in_group("carryables"):
 		item.queue_free()
 	await _wait(INPUT_SECONDS)
 
