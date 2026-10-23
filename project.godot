@@ -41,3 +41,4 @@ common/physics_ticks_per_second=60
 
 rendering_device/driver.windows="d3d12"
 renderer/rendering_method="mobile"
+lights_and_shadows/directional_shadow/size=2048

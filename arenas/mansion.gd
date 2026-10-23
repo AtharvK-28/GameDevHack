@@ -92,6 +92,7 @@ func _build_mood() -> void:
 	moon.rotation_degrees = Balance.MOON_ROTATION
 	moon.shadow_enabled = true
 	moon.directional_shadow_max_distance = Balance.MOON_SHADOW_DISTANCE
+	moon.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS # Half the shadow passes of the default.
 	add_child(moon)
 
 

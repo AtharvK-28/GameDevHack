@@ -1,6 +1,7 @@
 # Makes the stylised, low-detail surface textures (256 px, seamless) and their triplanar materials:
 # assets/textures/surfaces/<name>.png and assets/materials/surfaces/<name>.tres. The arena builder picks a
-# material by the surface name in a layout file. Run once after changing a pattern:
+# material by the surface name in a layout file. It also makes the few decor images the Mansion dressing uses
+# (two portraits and a cobweb) in assets/textures/decor/. Run once after changing a pattern:
 #   godot --headless --path . --script res://tools/make_surface_textures.gd
 # then open the editor (or run --import) so Godot imports the new images.
 extends SceneTree
@@ -8,6 +9,7 @@ extends SceneTree
 # --- Output ---
 const TEXTURE_DIR: String = "res://assets/textures/surfaces/"
 const MATERIAL_DIR: String = "res://assets/materials/surfaces/"
+const DECOR_DIR: String = "res://assets/textures/decor/"
 const SIZE: int = 256 # Pixels per side; every texture tiles seamlessly.
 
 # --- Settings: metres covered by one texture tile, and roughness (0 to 1) ---
@@ -46,6 +48,17 @@ func _initialize() -> void:
 		_write_import_settings(surface)
 		_write_material(surface, SURFACES[surface])
 		print("made ", surface)
+
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(DECOR_DIR))
+	var decor: Dictionary = {
+		"portrait_lady": _portrait(Color("3d1f2b"), Color("6b3a4a"), false),
+		"portrait_lord": _portrait(Color("1f2d26"), Color("3f5a4a"), true),
+		"cobweb": _cobweb(),
+	}
+	for name: String in decor:
+		var image: Image = decor[name]
+		image.save_png(ProjectSettings.globalize_path(DECOR_DIR + name + ".png"))
+		print("made ", name)
 	quit()
 
 
@@ -215,6 +228,53 @@ func _ashlar() -> Image:
 	return image
 
 
+# --- Decor images ---
+func _portrait(dark: Color, light: Color, top_hat: bool) -> Image:
+	# A gilt frame around a dim painted background and a black silhouette bust (a bun, or a top hat).
+	var width: int = 128
+	var height: int = 160
+	var image := Image.create(width, height, false, Image.FORMAT_RGB8)
+	var head := Vector2(64, 66)
+	for y: int in range(height):
+		for x: int in range(width):
+			var colour: Color = dark.lerp(light, clampf(1.0 - Vector2(x, y).distance_to(Vector2(64, 60)) / 90.0, 0.0, 1.0))
+			var point := Vector2(x, y)
+			var shoulders: bool = y > 104 and pow((x - 64) / 44.0, 2.0) + pow((y - 150) / 46.0, 2.0) < 1.0
+			var neck: bool = absf(x - 64) < 9 and y > 80 and y < 110
+			var face: bool = pow((x - head.x) / 20.0, 2.0) + pow((y - head.y) / 25.0, 2.0) < 1.0
+			var extra: bool = (absf(x - 64) < 16 and y > 18 and y < 46) or (absf(x - 64) < 26 and y > 42 and y < 48) if top_hat else point.distance_to(Vector2(64, 38)) < 13.0
+			if shoulders or neck or face or extra:
+				colour = Color("120c10")
+			var edge: int = mini(mini(x, width - 1 - x), mini(y, height - 1 - y))
+			if edge < 10:
+				colour = Color("8a6a2c").lightened(0.25 if edge % 4 == 1 else 0.0).darkened(0.3 if edge < 2 else 0.0)
+			image.set_pixel(x, y, colour)
+	return image
+
+
+func _cobweb() -> Image:
+	# Pale threads on a transparent background: rays fanning down from the top edge, crossed by sagging strands.
+	var image := Image.create(128, 128, false, Image.FORMAT_RGBA8)
+	image.fill(Color(0, 0, 0, 0))
+	var thread := Color(0.85, 0.85, 0.9, 0.7)
+	var hub := Vector2(64, 0)
+	for ray: int in range(7):
+		var angle: float = PI * (ray + 0.5) / 7.0
+		for step: int in range(110):
+			var point: Vector2 = hub + Vector2(cos(angle), sin(angle)) * step
+			if point.x >= 0 and point.x < 128 and point.y < 128:
+				image.set_pixel(int(point.x), int(point.y), thread)
+	for ring: int in range(1, 6):
+		var radius: float = ring * 18.0
+		for step: int in range(200):
+			var angle: float = PI * step / 199.0
+			var sag: float = sin(angle * 7.0) * 3.0 * ring / 5.0
+			var point: Vector2 = hub + Vector2(cos(angle), sin(angle)) * (radius + absf(sag))
+			if point.x >= 0 and point.x < 128 and point.y >= 0 and point.y < 128:
+				image.set_pixel(int(point.x), int(point.y), thread)
+	return image
+
+
 # --- Noise helpers (periodic, so every texture tiles; stretch grain only by whole-number factors) ---
 func _noise_grid(cells: int, seed_value: int) -> PackedFloat32Array:
 	var random := RandomNumberGenerator.new()
@@ -247,8 +307,12 @@ func _blank() -> Image:
 
 # --- Output helpers ---
 func _write_import_settings(surface: String) -> void:
-	# Mipmaps on, lossless: small textures that stay clean at a distance.
-	var file := FileAccess.open(TEXTURE_DIR + surface + ".png.import", FileAccess.WRITE)
+	# Mipmaps on, lossless: small textures that stay clean at a distance. Only for a new image, so an existing
+	# image keeps its import file (and its uid).
+	var path: String = TEXTURE_DIR + surface + ".png.import"
+	if FileAccess.file_exists(path):
+		return
+	var file := FileAccess.open(path, FileAccess.WRITE)
 	file.store_string("[remap]\n\nimporter=\"texture\"\ntype=\"CompressedTexture2D\"\n\n[params]\n\ncompress/mode=0\nmipmaps/generate=true\ndetect_3d/compress_to=0\n")
 
 

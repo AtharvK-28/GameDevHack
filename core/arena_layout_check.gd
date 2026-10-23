@@ -1,6 +1,7 @@
 # Checks the Old Mansion built from arenas/layouts/mansion_layout.json: room zones, doorway widths, routes from
 # every room to the truck, the stairs with every carry weight and the two-person piano, that railings and
-# walls hold movers and loot, that camera-facing walls fade only while they hide a player, and the ghost's spawn. Movers are steered by writing their input snapshots, so their real movement runs.
+# walls hold movers and loot, that camera-facing walls fade only while they hide a player, the ghost's spawn, and
+# that the dressing (decor, arches, gates) keeps clear of every spawn spot and doorway. Movers are steered by writing their input snapshots, so their real movement runs.
 # This script compiles before the autoloads exist, so it reaches them through the scene tree.
 extends SceneTree
 
@@ -17,6 +18,9 @@ const VASE_KIND: int = 0
 const TV_KIND: int = 1
 const CLOCK_KIND: int = 2
 const PIANO_KIND: int = 3
+const DECOR_CLEARANCE: float = 1.0 # Metres from a spawn spot's centre to the nearest decor collider.
+const PIANO_CLEARANCE: float = 1.5 # The same for the piano, which is 2.2 m long.
+const ARCH_MIN_HEIGHT: float = 2.2 # Metres of headroom an arch must leave over its doorway.
 
 # --- Test state ---
 var playground: Node3D
@@ -47,6 +51,9 @@ func _run() -> void:
 
 	_check_room_zones()
 	_check_doorways()
+	_check_decor_clearance()
+	_check_arches()
+	_check_front_gate()
 	await _clear_carryables()
 	await _check_routes()
 	await _check_stairs()
@@ -88,6 +95,75 @@ func _check_doorways() -> void:
 		var edges: bool = _hits(space, from - along * 0.15 - across, from - along * 0.15 + across) and _hits(space, to + along * 0.15 - across, to + along * 0.15 + across)
 		_check(clear and edges and width >= door.width - 0.01, "%s is open for its full %.1f m and walled either side" % [door.id, width])
 		_check(width >= PIANO_SHORT_SIDE + 0.2, "The piano (1.4 m when turned) fits through %s" % door.id)
+
+
+# --- Dressing ---
+func _check_decor_clearance() -> void:
+	# Every decor collider stays clear of the loot, piano, flashlight, mover and ghost spawn spots.
+	var spots: Array = []
+	for spot: Dictionary in layout.spawns.loot:
+		spots.append([spot.id, Vector2(spot.at[0], spot.at[1]), DECOR_CLEARANCE])
+	spots.append(["piano", Vector2(layout.spawns.piano.at[0], layout.spawns.piano.at[1]), PIANO_CLEARANCE])
+	for spot: Dictionary in layout.spawns.flashlights:
+		spots.append(["flashlight", Vector2(spot.at[0], spot.at[1]), DECOR_CLEARANCE])
+	for spot: Array in layout.spawns.movers:
+		spots.append(["mover spawn", Vector2(spot[0], spot[1]), DECOR_CLEARANCE])
+	spots.append(["ghost spawn", Vector2(layout.spawns.ghost.at[0], layout.spawns.ghost.at[1]), DECOR_CLEARANCE])
+	var boxes: Array[Rect2] = []
+	for shape: CollisionShape3D in arena.get_node("MansionDressing").find_children("*", "CollisionShape3D", true, false):
+		var size: Vector3 = shape.shape.size if shape.shape is BoxShape3D else Vector3.ONE * shape.shape.radius * 2.0
+		var box: AABB = shape.global_transform * AABB(-size / 2.0, size)
+		boxes.append(Rect2(box.position.x, box.position.z, box.size.x, box.size.z))
+	var worst: float = INF
+	var worst_name: String = ""
+	for spot: Array in spots:
+		for box: Rect2 in boxes:
+			var nearest := Vector2(clampf(spot[1].x, box.position.x, box.end.x), clampf(spot[1].y, box.position.y, box.end.y))
+			var margin: float = spot[1].distance_to(nearest) - spot[2]
+			if margin < worst:
+				worst = margin
+				worst_name = spot[0]
+	_check(worst >= 0.0, "Decor keeps clear of every spawn spot (tightest: %s, %.2f m to spare, %d colliders)" % [worst_name, worst, boxes.size()])
+
+
+func _check_arches() -> void:
+	# No part of an arch reaches into its doorway's full width below ARCH_MIN_HEIGHT.
+	for door: Dictionary in layout.doors:
+		if not door.has("arch"):
+			continue
+		var arch: Node = arena.get_node(NodePath(door.id + "-arch"))
+		# The doorway from floor to ARCH_MIN_HEIGHT, as deep as the arch, a centimetre short of each side.
+		var start := Vector3(door.from[0], float(door.floor), door.from[1])
+		var end := Vector3(door.to[0], float(door.floor) + ARCH_MIN_HEIGHT, door.to[1])
+		var across: Vector3 = Vector3.BACK if is_equal_approx(start.z, end.z) else Vector3.RIGHT
+		var along: Vector3 = Vector3.RIGHT if across == Vector3.BACK else Vector3.BACK
+		var opening := AABB(start, Vector3.ZERO).expand(end)
+		opening.position += along * 0.01 - across * SETTINGS.ARENA_ARCH_DEPTH / 2.0
+		opening.size += across * SETTINGS.ARENA_ARCH_DEPTH - along * 0.02
+		var clear: bool = true
+		for mesh: MeshInstance3D in arch.find_children("*", "MeshInstance3D", true, false):
+			if opening.intersects(mesh.global_transform * mesh.get_aabb()):
+				clear = false
+		_check(clear, "The %s arch leaves the full %.1f m doorway and %.1f m of headroom" % [door.id, door.width, ARCH_MIN_HEIGHT])
+
+
+func _check_front_gate() -> void:
+	# Rays across the front gate's opening, under its leaves' height, hit nothing; it is wider than the path.
+	var gate: Dictionary = {}
+	for entry: Dictionary in layout.gates:
+		if entry.id == "gate-front":
+			gate = entry
+	var space: PhysicsDirectSpaceState3D = playground.get_world_3d().direct_space_state
+	var post_half: float = SETTINGS.ARENA_GATE_POST_WIDTH / 2.0
+	var from := Vector3(gate.from[0] + post_half, DOOR_RAY_HEIGHT, gate.from[1])
+	var to := Vector3(gate.to[0] - post_half, DOOR_RAY_HEIGHT, gate.to[1])
+	var clear: bool = true
+	for step: int in range(11):
+		var point: Vector3 = from.lerp(to, 0.05 + 0.9 * step / 10.0)
+		if _hits(space, point + Vector3(0, 0, -0.5), point + Vector3(0, 0, 0.5)):
+			clear = false
+	var path_width: float = layout.paths[0].rect[2]
+	_check(clear and from.distance_to(to) >= path_width, "The front gate is open for %.2f m (the path is %.1f m)" % [from.distance_to(to), path_width])
 
 
 # --- Walking routes ---

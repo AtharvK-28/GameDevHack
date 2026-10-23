@@ -12,25 +12,29 @@
 		{"id": "room-garden", "rect": [10, 15, 10, 7], "floor": 0, "floor_surface": "grass", "outdoors": true}
 	],
 	"walls": [
-		{"id": "wall-back", "from": [0, 0], "to": [20, 0], "floor": 1.2, "room": "room-first-floor"},
-		{"id": "wall-left-gallery", "from": [0, 0], "to": [0, 6], "floor": 1.2, "room": "room-first-floor", "see_through": true},
-		{"id": "wall-left-main", "from": [0, 6], "to": [0, 15], "floor": 0, "room": "room-main", "see_through": true},
+		{"id": "wall-back", "from": [0, 0], "to": [20, 0], "floor": 1.2, "room": "room-first-floor", "windows": [1.8, 10, 18.4]},
+		{"id": "wall-left-gallery", "from": [0, 0], "to": [0, 6], "floor": 1.2, "room": "room-first-floor", "see_through": true, "windows": [3]},
+		{"id": "wall-left-main", "from": [0, 6], "to": [0, 15], "floor": 0, "room": "room-main", "see_through": true, "windows": [6.5]},
 		{"id": "wall-right-gallery", "from": [20, 0], "to": [20, 6], "floor": 1.2, "room": "room-first-floor"},
-		{"id": "wall-right-kitchen", "from": [20, 6], "to": [20, 15], "floor": 0, "room": "room-kitchen"},
-		{"id": "wall-front-main", "from": [0, 15], "to": [6.5, 15], "floor": 0, "room": "room-main", "see_through": true},
+		{"id": "wall-right-kitchen", "from": [20, 6], "to": [20, 15], "floor": 0, "room": "room-kitchen", "windows": [6.8]},
+		{"id": "wall-front-main", "from": [0, 15], "to": [6.5, 15], "floor": 0, "room": "room-main", "see_through": true, "windows": [3.2]},
 		{"id": "wall-front-centre", "from": [9, 15], "to": [12, 15], "floor": 0, "room": "room-main", "see_through": true},
-		{"id": "wall-front-east", "from": [12, 15], "to": [20, 15], "floor": 0, "room": "room-kitchen", "see_through": true},
+		{"id": "wall-front-east", "from": [12, 15], "to": [20, 15], "floor": 0, "room": "room-kitchen", "see_through": true, "windows": [2.5, 5.5]},
 		{"id": "wall-kitchen-back", "from": [12, 6], "to": [12, 10], "floor": 0, "room": "room-kitchen", "see_through": true},
 		{"id": "wall-kitchen-front", "from": [12, 12], "to": [12, 15], "floor": 0, "room": "room-kitchen", "see_through": true}
 	],
 	"doors": [
-		{"id": "door-front", "from": [6.5, 15], "to": [9, 15], "width": 2.5, "floor": 0},
-		{"id": "door-kitchen", "from": [12, 10], "to": [12, 12], "width": 2, "floor": 0},
+		{"id": "door-front", "from": [6.5, 15], "to": [9, 15], "width": 2.5, "floor": 0, "arch": "stone_facade"},
+		{"id": "door-kitchen", "from": [12, 10], "to": [12, 12], "width": 2, "floor": 0, "arch": "trim_walnut"},
 		{"id": "gate-garden", "from": [10, 15.5], "to": [10, 17.5], "width": 2, "floor": 0}
 	],
+	"gates": [
+		{"id": "gate-garden-iron", "from": [10, 15.5], "to": [10, 17.5], "swing": [1, 0]},
+		{"id": "gate-front", "from": [6.2, 22.4], "to": [9.3, 22.4], "swing": [0, -1], "posts": true}
+	],
 	"railings": [
-		{"id": "railing-gallery-edge", "from": [3, 6], "to": [20, 6], "base_from": 1.2, "base_to": 1.2},
-		{"id": "railing-stairs-side", "from": [3, 6], "to": [3, 10], "base_from": 1.2, "base_to": 0}
+		{"id": "railing-gallery-edge", "from": [3, 6], "to": [20, 6], "base_from": 1.2, "base_to": 1.2, "surface": "trim_walnut"},
+		{"id": "railing-stairs-side", "from": [3, 6], "to": [3, 10], "base_from": 1.2, "base_to": 0, "surface": "trim_walnut"}
 	],
 	"stairs": [
 		{"id": "area-stairs", "rect": [0, 6, 3, 4], "rise": 1.2, "steps": 8, "surface": "wood_planks"}

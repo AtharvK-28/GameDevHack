@@ -6,3 +6,6 @@
 .verification/
 node_modules/
 __pycache__/
+
+# Raw asset downloads; only the pieces we use are copied into assets/.
+assets/_incoming/

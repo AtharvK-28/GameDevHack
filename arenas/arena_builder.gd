@@ -1,7 +1,7 @@
 # Builds an arena from a layout data file (arenas/layouts/<arena>_layout.json, metres, Y up):
 # ground, room floors (raised rooms become solid blocks), two-sided walls with trim (camera-facing walls fade
-# while they hide a player), see-through railings with solid colliders, stairs (visible steps over one invisible
-# ramp), fences, paths, the truck and one Area3D zone per room. It knows nothing about any one arena, so every
+# while they hide a player) with glowing windows, arches over doorways, iron gates standing open, see-through balustrades with solid
+# colliders, stairs (visible steps over one invisible ramp), fences, paths, the truck and one Area3D zone per room. It knows nothing about any one arena, so every
 # arena can reuse it. Surfaces are named in the layout and loaded from assets/materials/surfaces/<name>.tres
 # (triplanar, so the generated boxes need no UVs).
 class_name ArenaBuilder
@@ -10,6 +10,10 @@ extends RefCounted
 const TRUCK_SCENE := preload("res://props/TruckZone.tscn")
 const TRUCK_MODEL_SCENE := preload("res://props/Truck.tscn")
 const SURFACE_PATH: String = "res://assets/materials/surfaces/%s.tres"
+
+# Muted copies of model materials and textures, shared by every arena build.
+static var muted_materials: Dictionary = {}
+static var muted_textures: Dictionary = {}
 
 # --- Loading ---
 static func load_layout(path: String) -> Dictionary:
@@ -27,6 +31,11 @@ static func build(arena: Node3D, layout: Dictionary) -> Area3D:
 		_build_room(arena, room)
 	for wall: Dictionary in layout.walls:
 		_build_wall(arena, wall, layout)
+	for door: Dictionary in layout.doors:
+		if door.has("arch"):
+			_build_arch(arena, door)
+	for gate: Dictionary in layout.get("gates", []):
+		_build_gate(arena, gate)
 	for railing: Dictionary in layout.get("railings", []):
 		_build_railing(arena, railing)
 	for stairs: Dictionary in layout.get("stairs", []):
@@ -37,6 +46,49 @@ static func build(arena: Node3D, layout: Dictionary) -> Area3D:
 		var rect: Rect2 = rect_of(path.rect)
 		_visual_box(arena, path.id, _box_from_rect(rect, 0.0, Balance.ARENA_FLOOR_SLAB), _surface(path.surface))
 	return _build_truck(arena, layout.truck)
+
+
+# --- Decor colours ---
+static func mute_colours(model: Node) -> void:
+	# Pulls an imported model's colours toward grey (DECOR_DESATURATION) and darkens them (DECOR_SHADE), so decor
+	# sits in the dusk mood and never looks like loot. Builder meshes (which use material_override) are left alone.
+	for mesh: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
+		if mesh.material_override != null or mesh.mesh == null:
+			continue
+		for surface: int in range(mesh.mesh.get_surface_count()):
+			var material := mesh.get_active_material(surface) as StandardMaterial3D
+			if material != null:
+				mesh.set_surface_override_material(surface, muted_material(material))
+
+
+static func muted_material(material: StandardMaterial3D) -> StandardMaterial3D:
+	if not muted_materials.has(material):
+		var copy: StandardMaterial3D = material.duplicate()
+		copy.albedo_color = _muted_colour(material.albedo_color)
+		if material.albedo_texture != null:
+			copy.albedo_texture = _muted_texture(material.albedo_texture)
+		muted_materials[material] = copy
+	return muted_materials[material]
+
+
+static func _muted_texture(texture: Texture2D) -> Texture2D:
+	if not muted_textures.has(texture):
+		var image: Image = texture.get_image()
+		if image.is_compressed():
+			image.decompress()
+		image.clear_mipmaps()
+		for y: int in range(image.get_height()):
+			for x: int in range(image.get_width()):
+				image.set_pixel(x, y, _muted_colour(image.get_pixel(x, y)))
+		image.generate_mipmaps()
+		muted_textures[texture] = ImageTexture.create_from_image(image)
+	return muted_textures[texture]
+
+
+static func _muted_colour(colour: Color) -> Color:
+	var grey: float = colour.get_luminance()
+	var muted: Color = colour.lerp(Color(grey, grey, grey, colour.a), Balance.DECOR_DESATURATION)
+	return Color(muted.r * Balance.DECOR_SHADE, muted.g * Balance.DECOR_SHADE, muted.b * Balance.DECOR_SHADE, colour.a)
 
 
 # --- Small conversions ---
@@ -119,6 +171,8 @@ static func _build_wall(arena: Node3D, wall: Dictionary, layout: Dictionary) -> 
 		_add_mesh(body, _segment_box(wall.from, wall.to, 0.0, top, half, side * half / 2.0), _surface(surface), fades)
 		if not room.is_empty():
 			_add_trim(body, wall, side, float(room.floor), layout.trim, fades)
+	for along: float in wall.get("windows", []):
+		_add_window(body, wall, along, _surface(layout.trim.rail), fades)
 
 
 static func _add_trim(body: StaticBody3D, wall: Dictionary, side: float, floor_height: float, trim: Dictionary, fades: bool) -> void:
@@ -135,12 +189,35 @@ static func _add_trim(body: StaticBody3D, wall: Dictionary, side: float, floor_h
 		_add_mesh(body, _segment_box(wall.from, wall.to, part[0], part[1], depth, side * (face + depth / 2.0)), _surface(part[3]), fades)
 
 
+static func _add_window(body: StaticBody3D, wall: Dictionary, along: float, frame_material: Material, fades: bool) -> void:
+	# A glowing window "along" metres from the wall's start: a lit pane poking out of both faces, a frame and a
+	# cross of glazing bars.
+	var start := Vector3(wall.from[0], 0.0, wall.from[1])
+	var direction: Vector3 = (Vector3(wall.to[0], 0.0, wall.to[1]) - start).normalized()
+	var size: Vector2 = Balance.ARENA_WINDOW_SIZE
+	var frame: float = Balance.ARENA_WINDOW_FRAME
+	var depth: float = Balance.ARENA_WALL_THICKNESS
+	var centre: Vector3 = start + direction * along + Vector3.UP * (float(wall.get("floor", 0.0)) + Balance.ARENA_WINDOW_SILL + size.y / 2.0)
+	var glass := StandardMaterial3D.new()
+	glass.albedo_color = Balance.ARENA_WINDOW_GLASS_COLOUR
+	glass.emission_enabled = true
+	glass.emission = Balance.WINDOW_GLOW_COLOUR
+	glass.emission_energy_multiplier = Balance.WINDOW_GLOW_ENERGY
+	_add_mesh(body, _box_around(centre, direction, size.x, size.y, depth + 0.02), glass, fades)
+	for side: float in [-1.0, 1.0]:
+		_add_mesh(body, _box_around(centre + direction * side * (size.x + frame) / 2.0, direction, frame, size.y + frame * 2.0, depth + 0.04), frame_material, fades)
+		_add_mesh(body, _box_around(centre + Vector3.UP * side * (size.y + frame) / 2.0, direction, size.x, frame, depth + 0.04), frame_material, fades)
+	_add_mesh(body, _box_around(centre, direction, frame / 2.0, size.y, depth + 0.04), frame_material, fades)
+	_add_mesh(body, _box_around(centre, direction, size.x, frame / 2.0, depth + 0.04), frame_material, fades)
+
+
 static func _build_fence(arena: Node3D, fence: Dictionary, surface: String) -> void:
 	_solid_box(arena, "Fence", _segment_box(fence.from, fence.to, 0.0, Balance.ARENA_FENCE_HEIGHT, Balance.ARENA_FENCE_THICKNESS), _surface(surface))
 
 
 static func _build_railing(arena: Node3D, railing: Dictionary) -> void:
-	# Posts and a top rail you can see through, over one solid collider so nothing gets past or falls off.
+	# A balustrade you can see through (tapered balusters, newel posts, a handrail and a base rail) over one solid
+	# collider, so nothing gets past or falls off.
 	var start := Vector3(railing.from[0], railing.base_from, railing.from[1])
 	var end := Vector3(railing.to[0], railing.base_to, railing.to[1])
 	var body := StaticBody3D.new()
@@ -149,27 +226,110 @@ static func _build_railing(arena: Node3D, railing: Dictionary) -> void:
 	arena.add_child(body)
 	var rise := Vector3.UP * Balance.ARENA_RAILING_HEIGHT
 	_add_slab_shape(body, start + rise / 2.0, end + rise / 2.0, Balance.ARENA_RAILING_HEIGHT, Balance.ARENA_RAILING_THICKNESS)
+	var material: StandardMaterial3D = _surface(railing.surface)
 
-	var material := _material(Balance.ARENA_RAILING_COLOUR, 1.0)
-	var posts: int = maxi(1, ceili(start.distance_to(end) / Balance.ARENA_RAILING_POST_SPACING))
-	for index: int in range(posts + 1):
-		var base: Vector3 = start.lerp(end, float(index) / posts)
-		var post := MeshInstance3D.new()
-		var cylinder := CylinderMesh.new()
-		cylinder.top_radius = Balance.ARENA_RAILING_POST_RADIUS
-		cylinder.bottom_radius = Balance.ARENA_RAILING_POST_RADIUS
-		cylinder.height = Balance.ARENA_RAILING_HEIGHT
-		cylinder.material = material
-		post.mesh = cylinder
-		post.position = base + rise / 2.0
-		body.add_child(post)
-	var rail := MeshInstance3D.new()
-	var rail_mesh := BoxMesh.new()
-	rail_mesh.size = Vector3(Balance.ARENA_RAILING_POST_RADIUS * 3.0, Balance.ARENA_RAILING_POST_RADIUS * 3.0, start.distance_to(end))
-	rail_mesh.material = material
-	rail.mesh = rail_mesh
-	body.add_child(rail)
-	rail.global_transform = _along(start + rise, end + rise)
+	# Balusters, one MultiMesh for the whole run.
+	var baluster := CylinderMesh.new()
+	baluster.top_radius = Balance.ARENA_BALUSTER_RADIUS * 0.6
+	baluster.bottom_radius = Balance.ARENA_BALUSTER_RADIUS
+	baluster.height = Balance.ARENA_RAILING_HEIGHT
+	baluster.radial_segments = 6
+	baluster.material = material
+	var count: int = maxi(1, ceili(start.distance_to(end) / Balance.ARENA_BALUSTER_SPACING))
+	var multimesh := MultiMesh.new()
+	multimesh.transform_format = MultiMesh.TRANSFORM_3D
+	multimesh.mesh = baluster
+	multimesh.instance_count = count + 1
+	for index: int in range(count + 1):
+		multimesh.set_instance_transform(index, Transform3D(Basis(), start.lerp(end, float(index) / count) + rise / 2.0))
+	var balusters := MultiMeshInstance3D.new()
+	balusters.multimesh = multimesh
+	body.add_child(balusters)
+
+	# Newel posts at the ends and every ARENA_NEWEL_SPACING metres.
+	var newels: int = maxi(1, ceili(start.distance_to(end) / Balance.ARENA_NEWEL_SPACING))
+	for index: int in range(newels + 1):
+		var base: Vector3 = start.lerp(end, float(index) / newels)
+		var size := Vector3(Balance.ARENA_NEWEL_SIZE, Balance.ARENA_RAILING_HEIGHT + Balance.ARENA_HANDRAIL_SIZE.y, Balance.ARENA_NEWEL_SIZE)
+		_add_mesh(body, AABB(base - Vector3(size.x / 2.0, 0.0, size.z / 2.0), size), material, false)
+
+	# Handrail on top and a base rail along the floor.
+	for height: float in [Balance.ARENA_RAILING_HEIGHT, Balance.ARENA_HANDRAIL_SIZE.y / 2.0]:
+		var rail := MeshInstance3D.new()
+		var rail_mesh := BoxMesh.new()
+		rail_mesh.size = Vector3(Balance.ARENA_HANDRAIL_SIZE.x, Balance.ARENA_HANDRAIL_SIZE.y, start.distance_to(end))
+		rail_mesh.material = material
+		rail.mesh = rail_mesh
+		body.add_child(rail)
+		rail.global_transform = _along(start + Vector3.UP * height, end + Vector3.UP * height)
+
+
+# --- Arches and gates ---
+static func _build_arch(arena: Node3D, door: Dictionary) -> void:
+	# Pillars just outside the opening and a curved head from ARENA_ARCH_SPRING up to the wall top, so the doorway
+	# keeps its full width and at least ARENA_ARCH_SPRING of height. No collider: nothing reaches that high.
+	# It fades with its wall (a FadeWall of its own).
+	var floor_height: float = door.floor
+	var top: float = floor_height + Balance.ARENA_WALL_HEIGHT
+	var opening: AABB = _segment_box(door.from, door.to, floor_height, top, Balance.ARENA_ARCH_DEPTH)
+	var along: Vector3 = (Vector3(door.to[0], 0.0, door.to[1]) - Vector3(door.from[0], 0.0, door.from[1])).normalized()
+	var width: float = Vector2(door.to[0] - door.from[0], door.to[1] - door.from[1]).length()
+	var arch := FadeWall.new()
+	arch.name = door.id + "-arch"
+	arena.add_child(arch)
+	arch.box = opening.grow(Balance.ARENA_ARCH_PILLAR_WIDTH)
+	var material: StandardMaterial3D = _surface(door.arch)
+
+	# The two pillars, full height, beside the opening.
+	for end: float in [-1.0, 1.0]:
+		var centre: Vector3 = opening.get_center() + along * end * (width + Balance.ARENA_ARCH_PILLAR_WIDTH) / 2.0
+		_add_mesh(arch, _box_around(centre, along, Balance.ARENA_ARCH_PILLAR_WIDTH, Balance.ARENA_WALL_HEIGHT, Balance.ARENA_ARCH_DEPTH), material, true)
+
+	# The head: vertical slices whose undersides follow a half-ellipse from the spring line to the crown.
+	var slice_width: float = width / Balance.ARENA_ARCH_SLICES
+	for index: int in range(Balance.ARENA_ARCH_SLICES):
+		var across: float = -width / 2.0 + slice_width * (index + 0.5)
+		var curve: float = sqrt(maxf(0.0, 1.0 - pow(across / (width / 2.0), 2.0)))
+		var underside: float = floor_height + Balance.ARENA_ARCH_SPRING + (Balance.ARENA_ARCH_CROWN - Balance.ARENA_ARCH_SPRING) * curve
+		var centre: Vector3 = opening.get_center() + along * across
+		centre.y = (underside + top) / 2.0
+		_add_mesh(arch, _box_around(centre, along, slice_width, top - underside, Balance.ARENA_ARCH_DEPTH), material, true)
+
+
+static func _build_gate(arena: Node3D, gate: Dictionary) -> void:
+	# An iron gate standing open: one leaf hinged at each end of the opening, swung toward "swing", so nothing
+	# stands in the opening. Leaves get thin colliders; stone posts (optional) get box colliders.
+	var body := StaticBody3D.new()
+	body.name = gate.id
+	_set_world_layers(body)
+	arena.add_child(body)
+	var swing := Vector3(gate.swing[0], 0.0, gate.swing[1]).normalized()
+	for hinge_values: Array in [gate.from, gate.to]:
+		var hinge := Vector3(hinge_values[0], 0.0, hinge_values[1])
+		var leaf: Node3D = load(Balance.ARENA_GATE_LEAF_MODEL).instantiate()
+		var model := Node3D.new() # Hinge at its origin; the leaf runs along its +X.
+		model.position = hinge
+		model.rotation.y = atan2(-swing.z, swing.x)
+		leaf.position = Balance.ARENA_GATE_LEAF_OFFSET
+		mute_colours(leaf)
+		model.add_child(leaf)
+		body.add_child(model)
+		var leaf_centre: Vector3 = hinge + swing * Balance.ARENA_GATE_LEAF_LENGTH / 2.0 + Vector3.UP * Balance.ARENA_GATE_LEAF_HEIGHT / 2.0
+		_add_box_shape(body, _box_around(leaf_centre, swing, Balance.ARENA_GATE_LEAF_LENGTH, Balance.ARENA_GATE_LEAF_HEIGHT, Balance.ARENA_GATE_LEAF_THICKNESS))
+		if gate.get("posts", false):
+			var post: Node3D = load(Balance.ARENA_GATE_POST_MODEL).instantiate()
+			post.position = hinge
+			post.scale = Vector3.ONE * Balance.ARENA_GATE_POST_SCALE
+			mute_colours(post)
+			body.add_child(post)
+			var size := Vector3(Balance.ARENA_GATE_POST_WIDTH, Balance.ARENA_GATE_POST_HEIGHT, Balance.ARENA_GATE_POST_WIDTH)
+			_add_box_shape(body, AABB(hinge - Vector3(size.x / 2.0, 0.0, size.z / 2.0), size))
+
+
+static func _box_around(centre: Vector3, along: Vector3, length: float, height: float, depth: float) -> AABB:
+	# An axis-aligned box centred on centre: length along "along" (X or Z), depth across, height tall.
+	var size := Vector3(length, height, depth) if absf(along.x) > absf(along.z) else Vector3(depth, height, length)
+	return AABB(centre - size / 2.0, size)
 
 
 # --- Stairs ---
@@ -301,14 +461,6 @@ static func _add_mesh(body: StaticBody3D, box: AABB, material: Material, fades: 
 	if fades:
 		mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	body.add_child(mesh)
-
-
-static func _material(colour: Color, alpha: float) -> StandardMaterial3D:
-	var material := StandardMaterial3D.new()
-	material.albedo_color = Color(colour, alpha)
-	if alpha < 1.0:
-		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	return material
 
 
 static func _set_world_layers(body: StaticBody3D) -> void:
