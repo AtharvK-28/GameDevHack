@@ -266,7 +266,7 @@ The game is judged on a projector from across a room. Everything must read insta
 
 **Dollhouse camera**
 
-- A `Camera3D` angled 55° down and 20° sideways (yaw −20°, looking in from the left of the house), into roofless rooms. The match starts fullscreen; F11 toggles a window. Smooth follow/framing is part of Phase 5.
+- A `Camera3D` angled 65° down and 40° sideways (yaw −40°, looking in from the left of the house), into roofless rooms. The match starts fullscreen; F11 toggles a window. Smooth follow/framing is part of Phase 5.
 - It follows the centre point of all movers and the ghost (the wisp, or the prop it possesses). Its distance scales with how spread out they are (12 m to 26 m) and eases smoothly, so it never snaps.
 - It is clamped to the arena bounds, so it never shows the void.
 - **Shake** uses trauma (shake = trauma² × noise) for abilities such as House Shake only. Ordinary impacts, tumbles and shattering never shake the camera.

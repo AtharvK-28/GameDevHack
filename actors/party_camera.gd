@@ -1,4 +1,4 @@
-# The shared screen's camera: a three-quarter dollhouse view, 55° down and 20° sideways.
+# The shared screen's camera: a three-quarter dollhouse view, its angles set in Balance (CAMERA_ANGLE, CAMERA_YAW).
 # With follow_movers on, it eases toward the centre of the movers in play and the ghost, and pulls back far
 # enough to frame them all (12–26 m), clamped to the arena. Shake (trauma² × noise) is only raised by abilities such as House Shake.
 extends Camera3D

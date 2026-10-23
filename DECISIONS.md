@@ -6,6 +6,7 @@ Every approved design or technical decision, newest first. Only the user approve
 
 | # | Date | Decision | Reason |
 | --- | --- | --- | --- |
+| 58 | 2026-10-23 | Camera angle: 65° down and yaw −40° (still looking in from the house's left). Supersedes the angles in decisions 39 and 54. | User asked for 65 and 40 |
 | 57 | 2026-10-23 | The camera frames the ghost along with the movers: the wisp, or the prop it is possessing. | User asked for all players, ghost included, to be in view |
 | 56 | 2026-10-23 | In the lobby, an offline phone no longer holds a slot: a new phone takes the slot of an offline one. During a match, slots stay reserved so dropped phones can rejoin. | Stale identities (a QR scanner's in-app browser, then Chrome) filled all four slots and left room for only two real phones |
 | 55 | 2026-10-23 | The match starts fullscreen; F11 switches between fullscreen and a window. The live HUD's top panel is compact so more of the house shows. | User asked for a fullscreen view and a smaller timer panel |
