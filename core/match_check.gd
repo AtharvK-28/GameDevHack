@@ -24,6 +24,7 @@ var clients: Array[WebSocketPeer] = []
 var inboxes: Array[Array] = []
 var sticks: Array[Vector2] = []
 var pids: Array[String] = []
+var secrets: Array[String] = []
 var next_heartbeat: int = 0
 var fresh_layout: Array = [] # Round 1's seeded layout, before any scenario changes it.
 
@@ -55,6 +56,7 @@ func _run() -> void:
 	await _wait(INPUT_SECONDS)
 	await _check_lobby()
 	await _check_reveal()
+	await _check_host_pause()
 	await _check_live_and_ghost_limits()
 	await _check_curse_slowdown()
 	await _check_exact_boundary()
@@ -103,7 +105,7 @@ func _check_reveal() -> void:
 		total += item.value
 		if item.weight_class == SETTINGS.TWO_PERSON:
 			pianos += 1
-	_check(loot.size() == SETTINGS.LOOT_COUNTS[0] and pianos == 1, "Two players get %d seeded items with exactly one centrepiece (%d)" % [SETTINGS.LOOT_COUNTS[0], loot.size()])
+	_check(loot.size() == get_nodes_in_group("loot").size() and pianos == 1, "Two players get %d seeded items with exactly one centrepiece (%d)" % [get_nodes_in_group("loot").size(), loot.size()])
 	_check(game.starting_value == total and game.target_value() == ceili(total * 0.7), "The starting value is the spawned total (%s) and the target is 70%%" % _rupees(total))
 	fresh_layout = _layout()
 	_check(get_nodes_in_group("flashlights").size() == 1, "Two players get one flashlight")
@@ -117,10 +119,10 @@ func _check_reveal() -> void:
 	while Time.get_ticks_msec() < deadline and outsider.get_ready_state() != WebSocketPeer.STATE_CLOSED:
 		outsider.poll()
 		if outsider.get_ready_state() == WebSocketPeer.STATE_OPEN and not said_hello:
-			outsider.send_text(JSON.stringify({"type": "hello", "name": "Late"}))
+			outsider.send_text(JSON.stringify({"type": "hello", "name": "Late", "key": net.session_key}))
 			said_hello = true
 		await _frame()
-	_check(outsider.get_close_code() == 1008 and net.players.size() == 2, "A new phone is refused while the match runs")
+	_check(outsider.get_close_code() == net.CLOSE_MATCH and net.players.size() == 2, "A new phone is refused while the match runs")
 
 	# Buttons pressed during the reveal do nothing.
 	_send(1, {"type": "btn", "b": "grab", "down": true})
@@ -389,21 +391,23 @@ func _connect_phone(player_name: String) -> void:
 	inboxes.append([])
 	sticks.append(Vector2.ZERO)
 	pids.append("")
+	secrets.append("")
 	var index: int = clients.size() - 1
 	await _wait(INPUT_SECONDS)
-	_send(index, {"type": "hello", "name": player_name})
+	_send(index, {"type": "hello", "name": player_name, "key": net.session_key})
 	await _wait(INPUT_SECONDS * 2.0)
 	pids[index] = _last(index, "welcome").get("pid", "")
+	secrets[index] = _last(index, "welcome").get("secret", "")
 
 
 func _reconnect_phone(index: int) -> void:
-	# The same browser rejoining: a new socket that says hello with the stored player id.
+	# The same browser rejoining: a new socket that says hello with the stored player id and secret.
 	var client := WebSocketPeer.new()
 	client.connect_to_url("ws://127.0.0.1:%d" % SETTINGS.SOCKET_PORT)
 	clients[index] = client
 	inboxes[index].clear()
 	await _wait(INPUT_SECONDS)
-	_send(index, {"type": "hello", "name": "Bilal", "pid": pids[index]})
+	_send(index, {"type": "hello", "name": "Bilal", "key": net.session_key, "pid": pids[index], "secret": secrets[index]})
 	await _wait(INPUT_SECONDS * 2.0)
 
 
@@ -453,3 +457,15 @@ func _check(condition: bool, description: String) -> void:
 	else:
 		failures += 1
 		push_error("FAIL: " + description)
+
+
+func _check_host_pause() -> void:
+	game.pause_by_host()
+	var time_before: float = game.seconds_left
+	await _wait(INPUT_SECONDS)
+	_check(game.phase == "paused" and paused and game.seconds_left == time_before, "Host pause freezes simulation and timer")
+	game._players_changed()
+	_check(game.phase == "paused", "Connected phones do not bypass the host pause")
+	game.resume_by_host()
+	_check(game.phase == "live" and not paused, "Host resume restores live play")
+	_check(game.room_items.size() == get_nodes_in_group("loot").size(), "Room ledger tracks every spawned item")

@@ -5,10 +5,10 @@ Godot 4.7.2 stable · Mobile renderer · Jolt · 60 Hz physics.
 ## Play a match
 
 1. Press **F5** in Godot. The shared screen opens fullscreen on the lobby with a QR code and the join link; **F11** switches between fullscreen and a window. (If Godot runs the game inside the editor's Game tab, fullscreen needs the game in its own window: turn off the Game tab's embed option.)
-2. Start the phone page server (see the next section, step 2). Phones on the same Wi-Fi scan the QR code or open the link, enter a name and tap **Ready to move**.
+2. Start the phone page server (see the next section, step 2). Phones on the same Wi-Fi scan the QR code or open the link, enter a name and tap **Ready to move**. If opening the plain link, also enter the six-character code shown on the host.
 3. With 2–4 phones ready, press **Enter** on the host. Each round: a 3 s role reveal, then 150 s of play. 2 players play 4 rounds, 3 play 3 and 4 play 4; the ghost passes to the next player every round.
 4. **Winning a round:** movers must deliver at least **70%** of the round's starting value. Losing more than 30% (damage, shattering, items lost) ends the round for the ghost at once. Otherwise the round ends when time runs out or every item has been delivered or destroyed; only delivered value counts.
-5. **Host keys.** Round end: **Enter** next round, **R** restart the round (same layout and roles; its points are replaced), **L** back to the lobby. Final standings: **Enter** back to the lobby. If a phone drops mid-round the round pauses until it rejoins from the same browser; **L** cancels to the lobby without scoring.
+5. **Host keys.** Round end: **Enter** next round, **R** restart the round (same layout and roles; its points are replaced), **L** back to the lobby. Final standings: **Enter** back to the lobby. If a phone drops mid-round the round pauses until it rejoins from the same browser with its saved secret; **L** cancels to the lobby without scoring.
 6. **The demo ghost** has POSSESS (any loose loot or the crate), SHOVE, SHAKE (House Shake, 45) and CURSE (30, 15 s cooldown: nearby loot glows and is 30% slower to carry for 6 s). Hauntings are locked for the first 8 s and for 4 s after each one; the ghost's phone shows why a button is unavailable and for how long. Keyboard ghost: Q possess, F action, Z shake, C curse.
 
 Matches play in the **Old Mansion**, built from `arenas/layouts/mansion_layout.json` (the floor plan `mansion-layout.svg`): a raised gallery reached by stairs, the main room, the kitchen, a fenced garden, and the path to the truck. It is lit for dusk, with textured surfaces, glowing windows and decor. Camera-facing walls are solid until they hide a player, then fade; they always block. To change the house, edit the layout file; `arenas/arena_builder.gd` builds any arena from such a file. Decor, lamps and the grounds live in `arenas/dressing/MansionDressing.tscn`. Surface textures come from `tools/make_surface_textures.gd` (`godot --headless --path . --script res://tools/make_surface_textures.gd`, then open the editor to import). Asset sources and licences: `assets/CREDITS.md`.
@@ -104,3 +104,9 @@ The browser consumes `controller/settings.json`; do not tune it independently. n
 ## Tuning the carry feel
 
 The spring, turn speed and upright values are in `Balance.gd` under "Carrying settings"; the two-person values are under "Two-person carry settings". Change one at a time and re-run the checks.
+
+## UI preview checkpoint
+
+The themed title/map/options/credits screens are in `menus/`. The new lobby and edge HUD replace the earlier plain match panels. F5 still starts `Main.tscn` until the requested screenshot review; preview `menus/main_menu/main_menu.tscn` with F6 to inspect the title and map selection. Options include a saved 60-second Demo mode. Escape pauses, Tab holds the totals overlay. The HTTP page server command is unchanged; reload the phone page to load the new local font, colours and authenticated joining.
+
+The QR includes a session key; manual joining needs the six-character lobby code. Reconnect uses a private per-player secret saved in that browser. New join code disconnects everyone and requires the new QR/code. Five bad credentials from one address temporarily lock it out; oversized messages and floods disconnect. `core/plumbing_check.gd` covers these cases in addition to four simultaneous controllers.

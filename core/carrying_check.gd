@@ -469,7 +469,7 @@ func _connect_phone(player_name: String) -> int:
 	inboxes.append([])
 	var index: int = clients.size() - 1
 	await _wait(INPUT_SECONDS)
-	_send(index, {"type": "hello", "name": player_name})
+	_send(index, {"type": "hello", "name": player_name, "key": net.session_key})
 	await _wait(INPUT_SECONDS)
 	heartbeat = true
 	_send(index, {"type": "ready"})

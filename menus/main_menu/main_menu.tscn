@@ -1,0 +1,75 @@
+[gd_scene format=3 uid="uid://conoq2gmylqvr"]
+
+[ext_resource type="PackedScene" path="res://addons/maaacks_game_template/base/nodes/menus/main_menu/main_menu.tscn" id="1_ub2bi"]
+[ext_resource type="Script" path="res://menus/main_menu/main_menu.gd" id="2_x31ro"]
+[ext_resource type="PackedScene" path="res://menus/windows/main_menu_options_window.tscn" id="3_0jpat"]
+[ext_resource type="PackedScene" path="res://menus/windows/main_menu_credits_window.tscn" id="4_m0ubd"]
+[ext_resource type="PackedScene" path="res://menus/map_select/map_select.tscn" id="5_map"]
+[ext_resource type="PackedScene" path="res://menus/main_menu/title_backdrop.tscn" id="6_back"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/ghost.png" id="7_logo"]
+
+[node name="MainMenu" unique_id=869232425 instance=ExtResource("1_ub2bi")]
+script = ExtResource("2_x31ro")
+map_select_scene = ExtResource("5_map")
+options_packed_scene = ExtResource("3_0jpat")
+credits_packed_scene = ExtResource("4_m0ubd")
+
+[node name="BackdropLayer" type="CanvasLayer" parent="."]
+layer = -1
+
+[node name="TitleBackdrop" parent="BackdropLayer" instance=ExtResource("6_back")]
+
+[node name="TitleMargin" parent="MenuContainer" index="0" unique_id=2112060331]
+theme_override_constants/margin_top = 112
+
+[node name="TitleLabel" parent="MenuContainer/TitleMargin/TitleContainer" index="0" unique_id=359406872]
+offset_bottom = 96.0
+theme_type_variation = &"TitleLabel"
+theme_override_font_sizes/font_size = 64
+text = "GHOSTED MOVERS"
+auto_update = false
+
+[node name="SubTitleMargin" parent="MenuContainer" index="1" unique_id=1510335937]
+theme_override_constants/margin_top = 200
+
+[node name="SubTitleLabel" parent="MenuContainer/SubTitleMargin/SubTitleContainer" index="0" unique_id=1037003361]
+offset_bottom = 40.0
+theme_type_variation = &"MutedLabel"
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 20
+text = "Carry it to the truck. Don't let the ghost break it."
+
+[node name="MenuButtonsMargin" parent="MenuContainer" index="2" unique_id=210553886]
+theme_override_constants/margin_top = 250
+
+[node name="NewGameButton" parent="MenuContainer/MenuButtonsMargin/MenuButtonsContainer/MenuButtonsBoxContainer" index="0" unique_id=2044537792]
+custom_minimum_size = Vector2(280, 0)
+theme_type_variation = &"PrimaryButton"
+text = "Play"
+
+[node name="OptionsButton" parent="MenuContainer/MenuButtonsMargin/MenuButtonsContainer/MenuButtonsBoxContainer" index="1" unique_id=1486236076]
+custom_minimum_size = Vector2(280, 0)
+
+[node name="CreditsButton" parent="MenuContainer/MenuButtonsMargin/MenuButtonsContainer/MenuButtonsBoxContainer" index="2" unique_id=301223169]
+custom_minimum_size = Vector2(280, 0)
+
+[node name="ExitButton" parent="MenuContainer/MenuButtonsMargin/MenuButtonsContainer/MenuButtonsBoxContainer" index="3" unique_id=1750454379]
+custom_minimum_size = Vector2(280, 0)
+text = "Quit"
+
+[node name="VersionMargin" parent="." index="3" unique_id=1732528471]
+visible = false
+
+[node name="Logo" type="TextureRect" parent="."]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -40.0
+offset_top = 28.0
+offset_right = 40.0
+offset_bottom = 108.0
+grow_horizontal = 2
+mouse_filter = 2
+texture = ExtResource("7_logo")
+expand_mode = 1
+stretch_mode = 5

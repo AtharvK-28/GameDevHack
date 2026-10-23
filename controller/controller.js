@@ -1,9 +1,14 @@
 // Sends intent to Godot. The host owns identity, role, movement and game rules.
+// Joining needs the host's session key (from the QR link, after "#k=") or its 6-letter join code; the host then
+// gives this phone a pid and a secret, kept for this session only, so only this phone can rejoin its slot.
 "use strict";
 
 // --- Protocol constants and page elements ---
-const STORAGE_PID = "ghostedMoversPid";
+const STORAGE_IDENTITY = "ghostedMoversIdentity";
 const STORAGE_NAME = "ghostedMoversName";
+const CLOSE_NEW_LOBBY = 4002;
+const CLOSE_DENIED = 4003;
+const FIRST_APP_CLOSE_CODE = 4000; // The host's own refusals: show the reason and don't retry.
 const MILLISECONDS_PER_SECOND = 1000;
 const elements = Object.fromEntries(Array.from(document.querySelectorAll("[id]"), element => [element.id, element]));
 const actionButtons = Array.from(document.querySelectorAll("[data-button]"));
@@ -20,7 +25,8 @@ let activeRole = "";
 let movement = { x: 0, y: 0 };
 let playerSlot = 0;
 let playerName = "";
-let playerId = readStorage(STORAGE_PID);
+let sessionKey = new URLSearchParams(location.hash.slice(1)).get("k") || "";
+let identity = readIdentity(); // { key, pid, secret } from the last welcome in this session.
 let matchPhase = null; // Null outside a match: the greybox harness shows controls as soon as a role arrives.
 let matchState = {};
 const heldPointers = new Map();
@@ -42,6 +48,9 @@ async function initialize() {
   if (!window.nipplejs) throw new Error("The joystick library is missing from the host.");
   elements["player-name"].maxLength = settings.maxNameLength;
   elements["player-name"].value = readStorage(STORAGE_NAME);
+  if (!sessionKey) sessionKey = identity.key || "";
+  if (identity.key !== sessionKey) identity = {};
+  elements["code-field"].hidden = Boolean(sessionKey);
   elements["join-button"].disabled = false;
   setupJoystick();
   setupButtons();
@@ -54,6 +63,10 @@ function setupPageEvents() {
     event.preventDefault();
     playerName = elements["player-name"].value.trim();
     if (!playerName) return;
+    if (!sessionKey && elements["join-code"].value.trim().length !== settings.joinCodeLength) {
+      elements["lobby-note"].textContent = `Type the ${settings.joinCodeLength}-letter code from the big screen.`;
+      return;
+    }
     writeStorage(STORAGE_NAME, playerName);
     requestDisplay();
     connect();
@@ -84,7 +97,9 @@ function connect() {
   const hostname = location.hostname.includes(":") ? `[${location.hostname}]` : location.hostname;
   socket = new WebSocket(`ws://${hostname}:${settings.socketPort}`);
   socket.addEventListener("open", () => {
-    send({ type: "hello", name: playerName, ...(playerId ? { pid: playerId } : {}) });
+    const credentials = sessionKey ? { key: sessionKey } : { code: elements["join-code"].value.trim().toUpperCase() };
+    const rejoin = identity.pid ? { pid: identity.pid, secret: identity.secret } : {};
+    send({ type: "hello", name: playerName, ...credentials, ...rejoin });
   });
   socket.addEventListener("message", event => {
     try { handleMessage(JSON.parse(event.data)); }
@@ -95,7 +110,8 @@ function connect() {
     joined = false;
     setControlsEnabled(false);
     elements["ready-button"].disabled = true;
-    if (event.code === 1008 || event.reason === "Rejoined from another connection") {
+    if (event.code >= FIRST_APP_CLOSE_CODE || event.code === 1008 || event.reason === "Rejoined from another connection") {
+      if (event.code === CLOSE_NEW_LOBBY || event.code === CLOSE_DENIED) forgetSession();
       elements.connection.textContent = event.reason || "Join declined";
       elements["lobby-note"].textContent = event.reason;
       elements["join-button"].disabled = false;
@@ -115,9 +131,10 @@ function handleMessage(message) {
       releaseInputs();
       joined = true;
       activeRole = "";
-      playerId = message.pid;
+      sessionKey = message.key;
+      identity = { key: message.key, pid: message.pid, secret: message.secret };
+      writeStorage(STORAGE_IDENTITY, JSON.stringify(identity));
       playerSlot = message.slot;
-      writeStorage(STORAGE_PID, playerId);
       document.documentElement.style.setProperty("--player", message.colour);
       elements.connection.textContent = `Connected · Player ${playerSlot + 1}`;
       elements["join-form"].hidden = true;
@@ -417,6 +434,19 @@ async function requestWakeLock() {
   } catch {
     elements["control-note"].textContent = "Set a longer screen timeout to keep playing.";
   }
+}
+
+function readIdentity() {
+  try { return JSON.parse(readStorage(STORAGE_IDENTITY) || "{}"); }
+  catch { return {}; }
+}
+
+function forgetSession() {
+  // The key no longer works (a new lobby, or a wrong code): ask for the code on screen.
+  sessionKey = "";
+  identity = {};
+  writeStorage(STORAGE_IDENTITY, "{}");
+  elements["code-field"].hidden = false;
 }
 
 function readStorage(key) {

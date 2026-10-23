@@ -1,18 +1,20 @@
 /* Chunky moving-company controls: large thumb targets, strong contrast, no scrolling. */
 
+@font-face { font-family: Baloo; src: url("fonts/baloo2_variable.ttf") format("truetype"); font-weight: 400 800; font-display: swap; }
+
 /* --- Design settings --- */
 :root {
-  --ink: #183a38;
-  --paper: #f7f1df;
-  --orange: #ffb84d;
+  --ink: #f4efff;
+  --paper: #1a1228;
+  --orange: #ffd04a;
   --blue: #a7e4ee;
-  --green: #c2e78b;
+  --green: #6dff8a;
   --curse: #8a3fc1;
   --curse-light: #e4c6ff;
-  --line: #56706a;
+  --line: #b8acd9;
   --player: var(--orange);
   --gap: clamp(12px, 2vw, 24px);
-  font-family: "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
+  font-family: Baloo, sans-serif;
   color: var(--ink);
   background: var(--paper);
 }
@@ -122,3 +124,22 @@ body.ghost .stage h1 { color: #1f6b2f; }
   h1 { font-size: 36px; }
   .intro > p:last-child, .eyebrow { display: none; }
 }
+
+/* Shared night-purple theme; action labels keep dark ink on bright buttons. */
+.topbar { background: #2b2142; color: var(--ink); }
+button { color: #1a1228; border-color: #786299; border-radius: 14px; box-shadow: 0 4px 0 #100b1c; }
+input { background: #2b2142; color: var(--ink); border-color: var(--line); }
+body.ghost { background: #1a1228; }
+body.ghost .stage h1, #final-standings li.me { color: var(--green); }
+.notice, #rotate-overlay { background: #1a1228f5; color: var(--ink); }
+#fullscreen-button { color: var(--ink); }
+.ghost-buttons .action.unavailable small { color: #1a1228; }
+@media (max-height: 420px) {
+ .join-panel label { margin-bottom: 2px; }
+ .join-panel input { margin-bottom: 4px; padding: 5px 10px; min-height: 44px; }
+ .join-panel .small-note { margin-top: 4px; }
+ .primary { min-height: 44px; padding: 6px 12px; }
+}
+
+.ghost-buttons .action.unavailable { color: #433159; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }

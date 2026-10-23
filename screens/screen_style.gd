@@ -4,9 +4,8 @@ extends RefCounted
 # --- Building blocks ---
 static func panel(min_width: float, padding: int = Balance.HOST_PANEL_PADDING) -> PanelContainer:
 	var box := PanelContainer.new()
-	var style := StyleBoxFlat.new()
-	style.bg_color = Balance.HOST_PANEL_COLOUR
-	style.set_corner_radius_all(Balance.HOST_CORNER_RADIUS)
+	var theme: Theme = load("res://assets/ui/ghosted_theme.tres")
+	var style: StyleBox = theme.get_stylebox("panel", "PanelContainer").duplicate()
 	style.set_content_margin_all(padding)
 	box.add_theme_stylebox_override("panel", style)
 	box.custom_minimum_size.x = min_width
@@ -22,7 +21,7 @@ static func column() -> VBoxContainer:
 static func label(text: String, size: int, colour: Color = Balance.HOST_TEXT_COLOUR) -> Label:
 	var line := Label.new()
 	line.text = text
-	line.add_theme_font_size_override("font_size", size)
+	line.add_theme_font_size_override("font_size", maxi(size, Balance.UI_SMALL_SIZE))
 	line.add_theme_color_override("font_color", colour)
 	line.add_theme_constant_override("outline_size", Balance.HOST_OUTLINE_SIZE)
 	line.add_theme_color_override("font_outline_color", Balance.HOST_OUTLINE_COLOUR)
@@ -35,7 +34,7 @@ static func button(text: String) -> Button:
 	var press := Button.new()
 	press.text = text
 	press.add_theme_font_size_override("font_size", Balance.HOST_FONT_SIZE)
-	press.focus_mode = Control.FOCUS_NONE # Keys go to the screen's own shortcuts, never to a focused button.
+	press.focus_mode = Control.FOCUS_ALL
 	return press
 
 
@@ -44,6 +43,10 @@ static func centre(child: Control) -> CenterContainer:
 	holder.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	holder.add_child(child)
+	holder.visibility_changed.connect(func() -> void:
+		if holder.is_visible_in_tree():
+			UiMotion.pop_in(child)
+	)
 	return holder
 
 

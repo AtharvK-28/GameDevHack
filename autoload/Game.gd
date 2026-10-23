@@ -2,8 +2,10 @@
 extends Node
 
 signal changed
+signal delivery_notice(value: int, item_name: String, slots: Array[int])
 
 # --- Match state ---
+var room_items: Dictionary = {}
 var host: Node3D
 var phase: String = "lobby"
 var resume_phase: String = "live"
@@ -22,6 +24,7 @@ var bank_credit: Dictionary = {}
 var round_points: Dictionary = {}
 var result: Dictionary = {}
 var pause_reason: String = ""
+var host_paused: bool = false
 var broadcast_left: float = 0.0
 
 # --- Setup ---
@@ -72,12 +75,17 @@ func _begin_round(restarting: bool) -> void:
 	banked_value = 0
 	lost_value = 0
 	starting_value = 0
-	seconds_left = Balance.ROUND_SECONDS
+	room_items.clear()
+	seconds_left = Balance.DEMO_ROUND_SECONDS if PlayerConfig.get_config("GameSettings", "DemoMode", false) else Balance.ROUND_SECONDS
 	reveal_left = Balance.REVEAL_SECONDS
 	host.setup_match_round(round_seed, participants, ghost_slot)
 	for item: Node in get_tree().get_nodes_in_group("loot"):
 		starting_value += item.value
+		var item_id: int = item.get_instance_id()
+		room_items[item_id] = {"room": room_at(item.global_position), "state": "pending"}
+		item.shattered.connect(func(_slot: int) -> void: room_items[item_id].state = "broken")
 	host.arena.truck.delivered.connect(_on_delivered)
+	host.arena.truck.delivery_notice.connect(_delivery_notice)
 	for slot: int in participants:
 		var player: Dictionary = Net.player_for_slot(slot)
 		Net.send_to_player(player, {"type": "buzz", "ms": Balance.TUMBLE_BUZZ_MS})
@@ -151,6 +159,20 @@ func _finish_round(movers_won: bool, reason: String) -> void:
 
 
 # --- Host actions ---
+func pause_by_host() -> void:
+	if phase not in ["live", "reveal"]:
+		return
+	host_paused = true
+	resume_phase = phase
+	pause_reason = "Host paused the game"
+	_set_phase("paused")
+
+
+func resume_by_host() -> void:
+	host_paused = false
+	_players_changed() # A disconnected phone still keeps the match paused.
+
+
 func restart_round() -> void:
 	if phase != "result":
 		return
@@ -181,6 +203,7 @@ func return_to_lobby() -> void:
 	result.clear()
 	round_points.clear()
 	pause_reason = ""
+	host_paused = false
 	ghost_slot = -1
 	for player: Dictionary in Net.players:
 		player.ready = false
@@ -205,9 +228,11 @@ func _players_changed() -> void:
 			if phase != "paused":
 				resume_phase = phase
 				_set_phase("paused")
-		elif phase == "paused":
+		elif phase == "paused" and not host_paused:
 			pause_reason = ""
 			_set_phase(resume_phase)
+		elif host_paused:
+			pause_reason = "Host paused the game"
 	_broadcast.call_deferred() # Join sends the role after emitting players_changed.
 	changed.emit()
 
@@ -269,3 +294,26 @@ func _broadcast() -> void:
 	for player: Dictionary in Net.players:
 		Net.send_to_player(player, message)
 	changed.emit()
+
+
+func _delivery_notice(value: int, item_name: String, slots: Array[int], item_id: int) -> void:
+	if room_items.has(item_id):
+		room_items[item_id].state = "delivered"
+	delivery_notice.emit(value, item_name, slots)
+
+
+func room_at(point: Vector3) -> String:
+	if not is_instance_valid(host) or host.arena.get("layout") == null:
+		return "Main room"
+	for room: Dictionary in host.arena.layout.rooms:
+		var area: Array = room.rect
+		if Rect2(area[0], area[1], area[2], area[3]).has_point(Vector2(point.x, point.z)):
+			return String(room.id).trim_prefix("room-").replace("first-floor", "Gallery").capitalize()
+	return "Outside"
+
+
+func live_points(slot: int) -> float:
+	var total: float = scores.get(slot, 0.0)
+	if phase in ["live", "paused", "reveal"]:
+		total += (lost_value if slot == ghost_slot else bank_credit.get(slot, 0.0)) / Balance.RUPEES_PER_POINT
+	return total

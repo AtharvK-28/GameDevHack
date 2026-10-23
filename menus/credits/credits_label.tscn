@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://jljc733whdom"]
+
+[ext_resource type="Script" path="res://addons/maaacks_game_template/base/nodes/labels/credits_label.gd" id="1_yhcaj"]
+
+[node name="CreditsLabel" type="RichTextLabel" unique_id=525943618]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 5
+bbcode_enabled = true
+text = "[center][font_size=36]GHOSTED MOVERS[/font_size]
+A haunted moving-company party game
+
+[b]Engine and interface[/b]
+Godot Engine - MIT
+Maaack's Game Template, Scene Loader and UI Sound Controller - MIT
+Kenney UI Pack v2 and environment models - CC0
+Baloo 2 by Ek Type - SIL Open Font License
+nipplejs by Yoann Moinet - MIT
+
+[b]Project assets[/b]
+Mover character and animations supplied by the team.
+Truck scan supplied by the project; source attribution in assets/CREDITS.md.
+
+Full license notices are included with the assets and addons.[/center]"

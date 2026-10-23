@@ -1,0 +1,12 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://addons/maaacks_ui_sound_controller/base/scenes/autoloads/project_ui_sound_controller.tscn" id="1"]
+[ext_resource type="AudioStream" path="res://assets/ui/sounds/click-a.ogg" id="2"]
+[ext_resource type="AudioStream" path="res://assets/ui/sounds/tap-a.ogg" id="3"]
+[ext_resource type="AudioStream" path="res://assets/ui/sounds/switch-a.ogg" id="4"]
+
+[node name="ProjectUISoundController" instance=ExtResource("1")]
+button_focused = ExtResource("3")
+button_pressed = ExtResource("2")
+tab_changed = ExtResource("4")
+slider_drag_ended = ExtResource("3")

@@ -48,7 +48,7 @@ Every compulsory requirement is met by the core game. The extra features are whe
 
 ## Current demo scope — approved Phase 5
 
-The current demo uses the Mansion greybox until the user supplies the first arena layout and character assets. Build a complete match before art or extra abilities. The arena/ability catalog below includes later work; only possession/SHOVE, House Shake and Curse are enabled in the demo. Existing door, chandelier, hopper, rug and slime code is retained for regression tests. Awards, room progress rings, expanded loot, cinematic zoom and slow motion are deferred.
+The current demo uses the supplied Old Mansion layout and mover character assets; the greybox remains the regression harness. Build a complete match before art or extra abilities. The arena/ability catalog below includes later work; only possession/SHOVE, House Shake and Curse are enabled in the demo. Existing door, chandelier, hopper, rug and slime code is retained for regression tests. Awards, expanded loot, cinematic zoom and slow motion are deferred. Room progress is included in the approved UI pass.
 
 - **Curse:** the free wisp targets nearby unbanked loot, including held loot, using the existing 0.6 m footprint reach and a visible target highlight. C / haunt3 costs 30 energy, cooldown 15 s. The object glows for 6 s and carrying/dragging speed is multiplied by 0.7, including both holders. Dropping or transferring does not remove the curse; the mover is free of the slowdown when no longer carrying it. No stacking, no spring or lift-height changes. The flashlight is not loot and cannot be cursed.
 - **Haunting limits:** 8 s opening protection from live start; 4 s shared lock after a cast; individual cooldowns start at cast. House Shake works while possessing; Curse is wisp-only. Phone UI explains all refusals and displays remaining seconds, including exorcism, cooldown, opening protection, shared lock, insufficient energy and missing targets. A mover holding cursed loot sees its remaining duration.
@@ -287,9 +287,12 @@ The game is judged on a projector from across a room. Everything must read insta
 
 **On-screen HUD**
 
-- Top centre: round timer, and a truck-value bar filling toward a marked quota line.
-- Top right: the ghost's energy bar, visible to everyone (it's a tell).
-- Above each mover: a small icon for what they're holding.
+- Top centre: compact round timer, amber during the final 30 seconds.
+- Top left: majority-mover room progress ring and individual item marks.
+- Top right: truck-value bar, 70% quota tick and red loss/30% limit.
+- Bottom left: up to three delivery notices, each lasting three live seconds.
+- Bottom right: coloured names/live points and the ghost's energy. Hold Tab for totals.
+- Holding information remains explicit on each mover's phone.
 
 **Audio**
 
@@ -388,8 +391,8 @@ Phones talk directly to the Godot game over WebSocket, sending short JSON messag
 
 | Message | Direction | Payload | When |
 | --- | --- | --- | --- |
-| `hello` | phone → host | `{name, pid?}` | Page opens; `pid` is sent when rejoining |
-| `welcome` | host → phone | `{pid, slot, colour}` | Join accepted |
+| `hello` | phone → host | `{name, key? or code?, pid?, secret?}` | Join; reconnect requires the session credential plus `pid` and `secret` |
+| `welcome` | host → phone | `{pid, secret, key, slot, colour}` | Join accepted |
 | `lobby` | host → all | `{players:[{name, colour, ready}]}` | Anyone joins, leaves or readies up |
 | `ready` | phone → host | `{}` | Ready button |
 | `role` | host → phone | `{role: "mover" or "ghost", arena}` | Round start |
@@ -415,8 +418,8 @@ Phones talk directly to the Godot game over WebSocket, sending short JSON messag
 - **The joystick is state, not events.** The host keeps the latest vector per player and reads it every physics frame.
 - **Buttons send both edges.** GRAB is held from `down` until `up`.
 - **Dead-man switch.** If no `in` arrives from a phone for 500 ms, the host zeroes its joystick and releases its buttons. A dropped connection never leaves someone stuck carrying or walking.
-- **Reconnect.** The phone stores `pid` in localStorage. Rejoining with it restores the slot, role and points.
-- During a match, slots stay reserved so disconnected phones can rejoin with their `pid`, and new identities are refused. In the lobby, a new phone takes the slot of an offline one; a fifth phone is declined only when all four are connected.
+- **Reconnect.** The phone stores `{key, pid, secret}` in localStorage. Rejoining requires the current session credential and matching pid/secret to restore slot, role and points.
+- During a match, slots stay reserved so disconnected phones can rejoin with the session credential, their `pid` and matching `secret`, and new identities are refused. In the lobby, a new phone takes the slot of an offline one; a fifth phone is declined only when all four are connected.
 - The host validates every ghost action against energy and cooldowns, and ignores unknown messages.
 
 ## Godot project structure
@@ -585,3 +588,18 @@ Let the judges play within 15 seconds. A teammate plays the first ghost so the h
 - "How do you keep the ghost from being overpowered?" Energy, cooldowns, exorcism, and every haunting warns first.
 - "Why phones?" Anyone joins in seconds, and the ghost gets its own controls without a second screen.
 - "What's next?" Audience voting on hauntings, more houses, online play.
+
+
+## Approved UI and joining pass (decisions 72-76)
+
+Use Maaack's MIT template scenes for opening, main menu, options, pause, credits and loading. Restyle with the Kenney CC0 UI Pack v2 theme and locally bundled Baloo 2 OFL font; the azagaya theme is not used. `menus/` holds the adapted scenes, `assets/ui/` the theme/icons/map previews, `assets/fonts/` the font, and `controller/fonts/` its browser copy. Preserve license notices in `assets/CREDITS.md` and the respective asset/addon directories.
+
+The approved launch flow is title (dimmed, idling Mansion) -> map selection -> join lobby -> role reveal -> round -> round end -> final standings -> lobby. Only Mansion is playable; Ship and Museum explicitly say coming soon. Title has Play, Options, Credits and Quit. Lobby displays the keyed QR, manual code, four slot cards with ready state, and Start enabled with at least two ready phones. New join code disconnects all phones and replaces both credentials. The title entry switch waits for the requested screenshot checkpoint.
+
+Options persist Master, Music and SFX volumes, fullscreen, and Demo mode (60-second rounds; full rounds remain 150). Escape opens the template pause menu. Game owns pause state: the host resume action does not bypass a missing phone, and a reconnect does not bypass host pause. Back to lobby cancels without scoring the incomplete attempt.
+
+UI base is 1152 x 648 with canvas scaling, body text 18 and minimum 17 base pixels. Night purple panels, ghost green accents, amber money, and existing slot colours are shared with the phone. Permanent HUD stays at edges: centred timer (amber for last 30 seconds); top-left room where most movers are, delivered/total ring and individual pending/delivered/broken marks; top-right banked/target bar with 70% tick and red loss total/30% limit; bottom-left delivery notices with item, carrier names and banked value, maximum three for three live seconds; bottom-right names/live points, with energy under the ghost. Live points are prior-round score plus provisional banked-share/lost-value points; bonus is settled once at round end. Hold Tab for full totals. Room marks follow each item's original room. The centre stays clear except transient notices, pause, reveal and result screens.
+
+Every host start or lobby rotation generates a cryptographic 128-bit key and six-character code excluding ambiguous characters. QR URL is `http://<host>:8080/#k=<key>`; fragment is not sent to the HTTP server. Hello requires a key or manual code, plus pid and 128-bit secret for rejoin. Welcome returns the session key and player's secret; phone identities are scoped to that key. Equality checks inspect every byte for equal-length credentials. Authentication expires after 2 seconds; only four unauthenticated sockets are held. Packets over 1024 bytes disconnect; token bucket allows 100 messages per second with burst 150. Five bad credentials from an address within 60 seconds lock that address for 60 seconds. New identities are refused mid-match; valid players rejoin. Lobby rotation disconnects everyone and invalidates old keys and secrets.
+
+Close codes: 4001 auth timeout, 4002 new lobby, 4003 denied credentials, 4008 rate limit, 4009 size limit, 4010 match in progress, 4011 full, 4012 address locked. Phones show the host reason and stop retrying application refusals. Pending-cap overflow may close before WebSocket upgrade. LAN transport remains local HTTP/WebSocket.

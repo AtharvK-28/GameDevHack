@@ -8,6 +8,10 @@ const Style := preload("res://screens/screen_style.gd")
 var crew_list := VBoxContainer.new()
 var status_label: Label
 var start_button: Button
+var qr_texture: TextureRect
+var join_label: Label
+var join_address: String = ""
+var roster_signature: String = ""
 
 # --- Setup ---
 func _ready() -> void:
@@ -16,6 +20,7 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_build()
 	Game.changed.connect(_refresh)
+	Net.session_changed.connect(_refresh_join)
 	_refresh()
 
 
@@ -30,21 +35,29 @@ func _refresh() -> void:
 	visible = Game.phase == "lobby"
 	if not visible:
 		return
+	var roster: Array = []
+	for player: Dictionary in Net.players:
+		roster.append([player.slot, player.name, player.ready, player.socket != null])
+	var signature: String = JSON.stringify(roster)
+	if signature == roster_signature:
+		return
+	roster_signature = signature
 	for row: Node in crew_list.get_children():
 		row.queue_free()
 	var ready_count: int = 0
-	for player: Dictionary in Net.players:
-		var online: bool = player.socket != null
-		var state: String = "READY" if player.ready and online else ("JOINED" if online else "OFFLINE")
-		if player.ready and online:
-			ready_count += 1
-		var row := Style.label("%s   %s" % [player.name, state], Balance.HOST_FONT_SIZE, Style.player_colour(player.slot) if online else Balance.HOST_MUTED_COLOUR)
-		row.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-		crew_list.add_child(row)
-	if Net.players.is_empty():
-		var hint := Style.label("Waiting for phones…", Balance.HOST_FONT_SIZE, Balance.HOST_MUTED_COLOUR)
-		hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-		crew_list.add_child(hint)
+	for slot: int in Balance.MAX_PLAYERS:
+		var player: Dictionary = Net.player_for_slot(slot)
+		var online: bool = not player.is_empty() and player.socket != null
+		var ready: bool = online and player.ready
+		ready_count += int(ready)
+		var card := Style.panel(Balance.HOST_CREW_WIDTH, Balance.HUD_PANEL_PADDING)
+		var title: String = "%d  |  %s    %s" % [slot + 1, player.name if online else "Join with your phone", "READY" if ready else "PHONE" if online else "+"]
+		card.add_child(Style.label(title, Balance.UI_BODY_SIZE, Style.player_colour(slot)))
+		crew_list.add_child(card)
+		if not online:
+			var pulse := card.create_tween().set_loops()
+			pulse.tween_property(card, "modulate:a", Balance.LOBBY_PULSE_ALPHA, Balance.LOBBY_PULSE_SECONDS)
+			pulse.tween_property(card, "modulate:a", 1.0, Balance.LOBBY_PULSE_SECONDS)
 
 	start_button.disabled = not Game.can_start()
 	if Net.listen_error != OK:
@@ -74,18 +87,26 @@ func _build() -> void:
 	halves.add_child(join)
 	var urls: PackedStringArray = _join_urls()
 	var code := TextureRect.new()
+	qr_texture = code
 	code.custom_minimum_size = Vector2.ONE * Balance.QR_DISPLAY_SIZE
 	code.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	code.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	code.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	if not urls.is_empty():
-		var matrix: Array[PackedByteArray] = QrCode.encode(urls[0])
+		join_address = urls[0].trim_prefix("http://").get_slice(":", 0)
+		var matrix: Array[PackedByteArray] = QrCode.encode(Net.join_url(join_address))
 		code.texture = ImageTexture.create_from_image(QrCode.to_image(matrix, Balance.QR_MODULE_PIXELS, Balance.QR_QUIET_MODULES))
 	join.add_child(code)
 	join.add_child(Style.label("Scan, or open:", Balance.HOST_SMALL_SIZE, Balance.HOST_MUTED_COLOUR))
 	var link := Style.label(urls[0] if not urls.is_empty() else "No network found", Balance.HOST_FONT_SIZE, Balance.HOST_ACCENT_COLOUR)
 	link.autowrap_mode = TextServer.AUTOWRAP_OFF # The link must read as one line.
 	join.add_child(link)
+	join_label = Style.label("CODE  " + Net.join_code, Balance.HOST_FONT_SIZE, Balance.UI_GHOST)
+	join.add_child(join_label)
+	var rotate := Style.button("New join code")
+	rotate.tooltip_text = "Disconnect everyone and invalidate the old QR code"
+	rotate.pressed.connect(Net.rotate_session)
+	join.add_child(rotate)
 	if urls.size() > 1:
 		join.add_child(Style.label("Also: " + " · ".join(urls.slice(1)), Balance.HOST_SMALL_SIZE, Balance.HOST_MUTED_COLOUR))
 
@@ -121,3 +142,10 @@ func _join_urls() -> PackedStringArray:
 func _is_private_172(address: String) -> bool:
 	var parts: PackedStringArray = address.split(".")
 	return parts.size() == 4 and parts[0] == "172" and int(parts[1]) >= 16 and int(parts[1]) <= 31
+
+
+func _refresh_join() -> void:
+	if join_label == null or join_address.is_empty():
+		return
+	join_label.text = "CODE  " + Net.join_code
+	qr_texture.texture = ImageTexture.create_from_image(QrCode.to_image(QrCode.encode(Net.join_url(join_address)), Balance.QR_MODULE_PIXELS, Balance.QR_QUIET_MODULES))

@@ -72,7 +72,9 @@ func _framing() -> Array:
 	# [focus point, distance]: the players' centre, pulled back until all of them fit with some padding.
 	var points: Array[Vector3] = _player_points()
 	if points.is_empty():
-		return [Balance.CAMERA_TARGET, Balance.CAMERA_DISTANCE]
+		var centre_2d: Vector2 = bounds.get_center()
+		var overview: float = (bounds.size.length() / 2.0 + Balance.CAMERA_FRAME_PADDING) / (tan(deg_to_rad(fov / 2.0)) * Balance.CAMERA_SAFE_VIEW)
+		return [Vector3(centre_2d.x, 0.0, centre_2d.y), overview]
 	var centre := Vector3.ZERO
 	for point: Vector3 in points:
 		centre += point

@@ -22,9 +22,14 @@ Net="*res://autoload/Net.gd"
 InputRouter="*res://core/InputRouter.gd"
 Sfx="*res://autoload/Sfx.gd"
 Game="*res://autoload/Game.gd"
+SceneLoader="*res://addons/maaacks_scene_loader/base/nodes/autoloads/scene_loader/scene_loader.tscn"
+ProjectUISoundController="*res://menus/ui_sound_controller.tscn"
+UiMotion="*res://autoload/UiMotion.gd"
 
 [display]
 
+window/size/viewport_width=1152
+window/size/viewport_height=648
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
@@ -42,3 +47,28 @@ common/physics_ticks_per_second=60
 rendering_device/driver.windows="d3d12"
 renderer/rendering_method="mobile"
 lights_and_shadows/directional_shadow/size=2048
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/maaacks_game_template/plugin.cfg", "res://addons/maaacks_scene_loader/plugin.cfg", "res://addons/maaacks_ui_sound_controller/plugin.cfg")
+
+[gui]
+
+theme/custom="res://assets/ui/ghosted_theme.tres"
+
+[maaacks_game_template]
+
+copy_path="res://menus/"
+disable_install_wizard=true
+disable_install_audio_busses=true
+main_menu_scene_path="res://menus/main_menu/main_menu.tscn"
+game_scene_path="res://Main.tscn"
+ending_scene_path=""
+
+[maaacks_scene_loader]
+
+loading_scene_path="res://menus/loading_screens/loading_screen.tscn"
+
+[maaacks_ui_sound_controller]
+
+disable_install_audio_busses=true

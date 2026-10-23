@@ -30,6 +30,7 @@ func play(sound: String, pitch: float = 1.0) -> void:
 	var player := AudioStreamPlayer.new()
 	player.stream = bank_sound
 	player.pitch_scale = pitch
+	player.bus = &"SFX" # The options menu's SFX volume.
 	add_child(player)
 	player.finished.connect(player.queue_free)
 	player.play()

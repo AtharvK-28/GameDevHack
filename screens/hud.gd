@@ -1,129 +1,229 @@
-# Live HUD on the shared screen: round timer, delivered value against the 70% target, value lost against the
-# 30% limit, and the ghost's energy (a tell everyone can see). While a phone is missing it shows the pause
-# overlay; L then cancels back to the lobby without scoring the round.
+﻿# Compact edge HUD: timer, room item status, truck totals, delivery notices and live player points.
 extends Control
 
 const Style := preload("res://screens/screen_style.gd")
-
-# --- Display state ---
 var timer_label: Label
-var delivered_bar := ProgressBar.new()
-var target_marker := ColorRect.new()
 var delivered_label: Label
+var delivered_bar: ProgressBar
 var lost_label: Label
-var ghost_panel: PanelContainer
-var ghost_label: Label
-var ghost_bar := ProgressBar.new()
-var pause_box: CenterContainer
+var room_label: Label
+var discs: Control
+var refresh_left: float = 0.0
+var pause_menu: Control
+var chip_labels: Dictionary = {}
+var energy_bar: ProgressBar
+var chip_slots: Array[int] = []
+var chip_ghost_slot: int = -1
+var chips: VBoxContainer
+var toasts: VBoxContainer
+var totals: Control
+var totals_label: Label
+var pause_box: Control
 var pause_label: Label
+var toast_entries: Array[Dictionary] = []
+var previous_phase: String = ""
 
-# --- Setup ---
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_build_round_panel()
-	_build_ghost_panel()
-	_build_pause_overlay()
-	Game.changed.connect(_refresh)
-	_refresh()
+	var timer := _card(Control.PRESET_CENTER_TOP, 100.0)
+	timer_label = _label(timer, "2:30", Balance.HUD_TIMER_SIZE)
+	var truck := _card(Control.PRESET_TOP_RIGHT, Balance.HUD_CARD_WIDTH)
+	_label(truck, "TRUCK · TARGET 70%", Balance.UI_SMALL_SIZE)
+	delivered_label = _label(truck, "", Balance.UI_BODY_SIZE)
+	delivered_label.modulate = Balance.UI_MONEY
+	delivered_bar = ProgressBar.new()
+	delivered_bar.show_percentage = false
+	delivered_bar.custom_minimum_size.y = Balance.HUD_BAR_SIZE.y
+	truck.add_child(delivered_bar)
+	var tick := ColorRect.new()
+	tick.color = Balance.UI_MONEY
+	tick.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	delivered_bar.add_child(tick)
+	tick.anchor_left = 0.7
+	tick.anchor_right = 0.7
+	tick.anchor_bottom = 1.0
+	tick.offset_right = Balance.HUD_MARKER_WIDTH
+	lost_label = _label(truck, "", Balance.UI_SMALL_SIZE)
+	lost_label.modulate = Balance.UI_DANGER
+	var room := _card(Control.PRESET_TOP_LEFT, 200.0)
+	room_label = _label(room, "Main room", Balance.UI_BODY_SIZE)
+	discs = Control.new()
+	discs.custom_minimum_size = Balance.HUD_ROOM_SIZE
+	discs.draw.connect(_draw_room)
+	room.add_child(discs)
+	chips = _card(Control.PRESET_BOTTOM_RIGHT, Balance.HUD_CARD_WIDTH)
+	toasts = _card(Control.PRESET_BOTTOM_LEFT, Balance.HUD_CARD_WIDTH)
+	var box := Style.panel(Balance.HOST_PANEL_WIDTH)
+	totals_label = Style.label("", Balance.UI_BODY_SIZE)
+	box.add_child(totals_label)
+	totals = Style.centre(box)
+	add_child(totals)
+	var pause_panel := Style.panel(Balance.HOST_PANEL_WIDTH)
+	pause_label = Style.label("", Balance.UI_HEADING_SIZE)
+	pause_panel.add_child(pause_label)
+	pause_box = Style.centre(pause_panel)
+	add_child(pause_box)
+	Game.delivery_notice.connect(_delivered)
+
+func _card(preset: int, width: float) -> VBoxContainer:
+	var panel := Style.panel(width, Balance.HUD_PANEL_PADDING)
+	panel.remove_theme_stylebox_override("panel")
+	panel.theme_type_variation = &"HudPanel"
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(panel)
+	panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+	panel.set_meta("edge_preset", preset)
+	if not resized.is_connected(_layout_cards):
+		resized.connect(_layout_cards)
+	var column := VBoxContainer.new()
+	panel.add_child(column)
+	return column
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if visible and Game.phase == "paused" and Style.pressed_key(event) == KEY_L:
-		Game.return_to_lobby()
-		get_viewport().set_input_as_handled()
+func _position_card(panel: Control, preset: int) -> void:
+	var margin: float = Balance.UI_SCREEN_MARGIN
+	var screen: Vector2 = size
+	var x: float = margin
+	var y: float = margin
+	if preset in [Control.PRESET_TOP_RIGHT, Control.PRESET_BOTTOM_RIGHT]:
+		x = screen.x - margin - panel.size.x
+	elif preset == Control.PRESET_CENTER_TOP:
+		x = (screen.x - panel.size.x) / 2.0
+	if preset in [Control.PRESET_BOTTOM_LEFT, Control.PRESET_BOTTOM_RIGHT]:
+		y = screen.y - margin - panel.size.y
+	panel.position = Vector2(x, y)
 
+func _label(parent: Node, text: String, font_size: int) -> Label:
+	var label := Style.label(text, font_size)
+	parent.add_child(label)
+	return label
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	refresh_left -= delta
+	if refresh_left > 0.0:
+		return
+	var elapsed: float = 1.0 / Balance.HUD_RATE - refresh_left
+	refresh_left = 1.0 / Balance.HUD_RATE
+	visible = Game.phase in ["live", "paused"]
+	if Game.phase != previous_phase:
+		if Game.phase == "reveal":
+			toast_entries.clear()
+		previous_phase = Game.phase
 	if not visible:
 		return
+	_layout_cards()
 	timer_label.text = Style.clock(Game.seconds_left)
-	var starting: int = maxi(1, Game.starting_value)
-	delivered_bar.value = 100.0 * Game.banked_value / starting
-	delivered_label.text = "DELIVERED %s / %s · TARGET %s" % [Loot.rupees(Game.banked_value), Loot.rupees(Game.starting_value), Loot.rupees(Game.target_value())]
-	lost_label.text = "LOST %s / %s" % [Loot.rupees(Game.lost_value), Loot.rupees(Game.loss_limit())]
-	var ghost: Node3D = Game.ghost()
-	ghost_panel.visible = ghost != null
-	if ghost != null:
-		ghost_bar.value = ghost.energy
-		ghost_label.text = "GHOST ENERGY %d" % floori(ghost.energy)
+	timer_label.modulate = Balance.UI_MONEY if Game.seconds_left <= 30.0 else Color.WHITE
+	delivered_label.text = "%s / %s" % [Loot.rupees(Game.banked_value), Loot.rupees(Game.target_value())]
+	delivered_bar.value = 100.0 * Game.banked_value / maxi(1, Game.starting_value)
+	lost_label.text = "Lost %s / %s" % [Loot.rupees(Game.lost_value), Loot.rupees(Game.loss_limit())]
+	_refresh_room()
+	if chip_slots != Game.participants or chip_ghost_slot != Game.ghost_slot:
+		_clear(chips)
+		chip_slots = Game.participants.duplicate()
+		chip_ghost_slot = Game.ghost_slot
+		chip_labels.clear()
+		for slot: int in chip_slots:
+			chip_labels[slot] = _label(chips, "", Balance.UI_BODY_SIZE)
+			chip_labels[slot].modulate = Style.player_colour(slot)
+		energy_bar = ProgressBar.new()
+		energy_bar.show_percentage = false
+		energy_bar.custom_minimum_size.y = Balance.HUD_ENERGY_BAR_SIZE.y
+		chips.add_child(energy_bar)
+		chips.move_child(energy_bar, maxi(0, chip_slots.find(Game.ghost_slot)) + 1)
+	var lines: PackedStringArray = []
+	for slot: int in Game.participants:
+		var points: String = "%s%s | %.1f" % ["GHOST " if slot == Game.ghost_slot else "", Style.player_name(slot), Game.live_points(slot)]
+		chip_labels[slot].text = points
+		lines.append(points)
+	if is_instance_valid(energy_bar):
+		energy_bar.visible = Game.ghost() != null
+		if energy_bar.visible:
+			energy_bar.value = Game.ghost().energy
+	_clear(toasts)
+	for entry: Dictionary in toast_entries.duplicate():
+		entry.left -= elapsed if Game.phase == "live" else 0.0
+		if entry.left <= 0.0:
+			toast_entries.erase(entry)
+		else:
+			var notice := _label(toasts, entry.text, Balance.UI_BODY_SIZE)
+			notice.modulate = Color(Balance.UI_MONEY, minf(1.0, entry.left))
+	toasts.get_parent().visible = not toast_entries.is_empty()
+	totals.visible = Input.is_physical_key_pressed(KEY_TAB)
+	totals_label.text = "TOTALS · %s\nDelivered %s / %s\nLost %s / %s\n\n%s" % [Style.clock(Game.seconds_left), Loot.rupees(Game.banked_value), Loot.rupees(Game.target_value()), Loot.rupees(Game.lost_value), Loot.rupees(Game.loss_limit()), "\n".join(lines)]
+	pause_box.visible = Game.phase == "paused" and not Game.host_paused
+	pause_label.text = "PAUSED\n%s\nL: cancel to lobby" % Game.pause_reason
+
+func _refresh_room() -> void:
+	var votes: Dictionary = {}
+	var selected: String = "Outside"
+	var most: int = 0
+	for mover: Node3D in get_tree().get_nodes_in_group("movers"):
+		if not mover.visible:
+			continue
+		var room: String = Game.room_at(mover.global_position)
+		votes[room] = votes.get(room, 0) + 1
+		if votes[room] > most:
+			most = votes[room]
+			selected = room
+	var delivered: int = 0
+	var states: PackedStringArray = []
+	for item: Dictionary in Game.room_items.values():
+		if item.room != selected:
+			continue
+		delivered += int(item.state == "delivered")
+		states.append("●" if item.state == "delivered" else "×" if item.state == "broken" else "○")
+	room_label.text = "%s · %d / %d" % [selected, delivered, states.size()]
+	discs.set_meta("states", states)
+	discs.set_meta("delivered", delivered)
+	discs.queue_redraw()
+
+func _delivered(value: int, item_name: String, slots: Array[int]) -> void:
+	var names: PackedStringArray = []
+	for slot: int in slots:
+		if slot in Game.participants:
+			names.append(Style.player_name(slot))
+	toast_entries.push_front({"text": "+%s · %s\n%s" % [Loot.rupees(value), item_name, " + ".join(names)], "left": Balance.HUD_TOAST_SECONDS})
+	while toast_entries.size() > Balance.HUD_TOAST_LIMIT:
+		toast_entries.pop_back()
+
+func _clear(parent: Node) -> void:
+	for child: Node in parent.get_children():
+		parent.remove_child(child)
+		child.queue_free()
+
+func _unhandled_input(event: InputEvent) -> void:
+	if Game.phase in ["live", "reveal"] and Style.pressed_key(event) == KEY_ESCAPE:
+		Game.pause_by_host()
+		pause_menu = load("res://menus/windows/pause_menu.tscn").instantiate()
+		get_parent().add_child(pause_menu)
+		get_viewport().set_input_as_handled()
+	if visible and Game.phase == "paused" and Style.pressed_key(event) == KEY_L:
+		Game.return_to_lobby()
 
 
-# --- Refresh ---
-func _refresh() -> void:
-	visible = Game.phase in ["live", "paused"]
-	pause_box.visible = Game.phase == "paused"
-	if pause_box.visible:
-		pause_label.text = "PAUSED\n%s\n\nPress L to cancel to the lobby (this round scores nothing)" % Game.pause_reason
+# Ring and per-item marks share the selected room's original loot ledger.
+func _draw_room() -> void:
+	var states: PackedStringArray = discs.get_meta("states", PackedStringArray())
+	var centre := Vector2(Balance.HUD_RING_RADIUS + Balance.HUD_RING_WIDTH, discs.size.y / 2.0)
+	discs.draw_arc(centre, Balance.HUD_RING_RADIUS, 0.0, TAU, Balance.HUD_RING_SEGMENTS, Balance.UI_MUTED, Balance.HUD_RING_WIDTH, true)
+	var fraction: float = float(discs.get_meta("delivered", 0)) / maxi(1, states.size())
+	if fraction > 0.0:
+		discs.draw_arc(centre, Balance.HUD_RING_RADIUS, -PI / 2.0, TAU * fraction - PI / 2.0, Balance.HUD_RING_SEGMENTS, Balance.UI_GHOST, Balance.HUD_RING_WIDTH, true)
+	for index: int in states.size():
+		var point := Vector2(centre.x * 2.0 + Balance.HUD_DISC_STEP * (index % Balance.HUD_DISC_COLUMNS + 1), centre.y + (index / Balance.HUD_DISC_COLUMNS) * Balance.HUD_DISC_STEP)
+		var colour: Color = Balance.UI_GHOST if states[index] == "\u25cf" else Balance.UI_DANGER if states[index] == "\u00d7" else Balance.UI_MUTED
+		discs.draw_circle(point, Balance.HUD_DISC_RADIUS, colour, states[index] != "\u25cb", Balance.HUD_DISC_STROKE, true)
+		if states[index] == "\u00d7":
+			var cross := Vector2.ONE * Balance.HUD_DISC_RADIUS
+			discs.draw_line(point - cross, point + cross, Balance.UI_NIGHT, Balance.HUD_DISC_STROKE, true)
+			discs.draw_line(point + Vector2(-cross.x, cross.y), point + Vector2(cross.x, -cross.y), Balance.UI_NIGHT, Balance.HUD_DISC_STROKE, true)
 
 
-# --- Layout ---
-func _build_round_panel() -> void:
-	# One compact row, so the house stays visible: the timer, then the bar with its figures underneath.
-	var box := Style.panel(0.0, Balance.HUD_PANEL_PADDING)
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", Balance.HUD_PANEL_PADDING)
-	box.add_child(row)
-	timer_label = Style.label("2:30", Balance.HUD_TIMER_SIZE)
-	timer_label.autowrap_mode = TextServer.AUTOWRAP_OFF # In a row, wrapping labels shrink to one letter wide.
-	row.add_child(timer_label)
-	var rows := VBoxContainer.new()
-	rows.add_theme_constant_override("separation", Balance.HUD_ROW_GAP)
-	rows.alignment = BoxContainer.ALIGNMENT_CENTER
-	row.add_child(rows)
-
-	# The bar shows delivered value; a white tick marks the 70% target.
-	var track := Control.new()
-	track.custom_minimum_size = Balance.HUD_BAR_SIZE
-	rows.add_child(track)
-	delivered_bar.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	delivered_bar.show_percentage = false
-	var fill := StyleBoxFlat.new()
-	fill.bg_color = Balance.BANK_COLOUR
-	delivered_bar.add_theme_stylebox_override("fill", fill)
-	track.add_child(delivered_bar)
-	target_marker.color = Balance.HOST_TEXT_COLOUR
-	target_marker.size = Vector2(Balance.HUD_MARKER_WIDTH, Balance.HUD_BAR_SIZE.y + Balance.HUD_MARKER_OVERHANG * 2.0)
-	target_marker.position = Vector2(Balance.HUD_BAR_SIZE.x * Balance.DELIVERY_PERCENT / 100.0, -Balance.HUD_MARKER_OVERHANG)
-	track.add_child(target_marker)
-
-	var figures := HBoxContainer.new()
-	figures.add_theme_constant_override("separation", Balance.HUD_PANEL_PADDING)
-	rows.add_child(figures)
-	delivered_label = Style.label("", Balance.HUD_TEXT_SIZE)
-	delivered_label.autowrap_mode = TextServer.AUTOWRAP_OFF
-	figures.add_child(delivered_label)
-	lost_label = Style.label("", Balance.HUD_TEXT_SIZE, Balance.DAMAGE_COLOUR)
-	lost_label.autowrap_mode = TextServer.AUTOWRAP_OFF
-	figures.add_child(lost_label)
-	box.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	box.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP, Control.PRESET_MODE_MINSIZE, int(Balance.HUD_MARGIN))
-	add_child(box)
-
-
-func _build_ghost_panel() -> void:
-	ghost_panel = Style.panel(0.0, Balance.HUD_PANEL_PADDING)
-	var rows := VBoxContainer.new()
-	rows.add_theme_constant_override("separation", Balance.HUD_ROW_GAP)
-	ghost_panel.add_child(rows)
-	ghost_label = Style.label("", Balance.HUD_TEXT_SIZE, Balance.HOST_GHOST_COLOUR)
-	rows.add_child(ghost_label)
-	ghost_bar.max_value = Balance.ENERGY_MAX
-	ghost_bar.show_percentage = false
-	ghost_bar.custom_minimum_size = Balance.HUD_ENERGY_BAR_SIZE
-	var fill := StyleBoxFlat.new()
-	fill.bg_color = Balance.POSSESS_COLOUR
-	ghost_bar.add_theme_stylebox_override("fill", fill)
-	rows.add_child(ghost_bar)
-	ghost_panel.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	ghost_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT, Control.PRESET_MODE_MINSIZE, int(Balance.HUD_MARGIN))
-	add_child(ghost_panel)
-
-
-func _build_pause_overlay() -> void:
-	var box := Style.panel(Balance.HOST_PANEL_WIDTH)
-	pause_label = Style.label("", Balance.HOST_FONT_SIZE)
-	box.add_child(pause_label)
-	pause_box = Style.centre(box)
-	add_child(pause_box)
+func _layout_cards() -> void:
+	for child: Node in get_children():
+		if child.has_meta("edge_preset"):
+			child.reset_size()
+			_position_card(child, child.get_meta("edge_preset"))

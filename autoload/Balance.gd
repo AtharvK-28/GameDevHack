@@ -8,11 +8,22 @@ const MAX_PLAYERS: int = 4
 const INPUT_RATE: int = 30 # Messages per second, including idle heartbeats.
 const HUD_RATE: int = 8 # Messages per second in later gameplay phases.
 const INPUT_TIMEOUT_MS: int = 500
-const JOIN_TIMEOUT_MS: int = 5000
-const MAX_PENDING_PEERS: int = 8
-const MAX_PACKET_BYTES: int = 2048
 const MAX_PACKETS_PER_FRAME: int = 64
 const MAX_NAME_LENGTH: int = 20
+
+# --- Connection security (autoload/Net.gd; the phone page reads the same rules from controller/settings.json) ---
+const SESSION_KEY_BYTES: int = 16 # 128-bit key per host start, carried in the QR link.
+const PLAYER_SECRET_BYTES: int = 16 # 128-bit secret per player; a rejoin needs it with the pid.
+const JOIN_CODE_LENGTH: int = 6 # Short code for typing the key in by hand.
+const JOIN_CODE_LETTERS: String = "ABCDEFGHJKMNPQRSTUVWXYZ23456789" # No 0/O, 1/I/L look-alikes.
+const AUTH_TIMEOUT_MS: int = 2000 # A new socket must send a valid hello within this.
+const MAX_PENDING_PEERS: int = 4 # Sockets not yet logged in, at once.
+const MAX_MESSAGE_BYTES: int = 1024 # Larger messages disconnect.
+const RATE_LIMIT_PER_SECOND: float = 100.0 # Normal phones send about 38 messages a second.
+const RATE_LIMIT_BURST: float = 150.0 # Messages a socket may send at once before the limit applies.
+const CODE_LOCKOUT_FAILURES: int = 5 # Wrong keys or codes from one address within the window lock it out.
+const CODE_LOCKOUT_WINDOW_MS: int = 60000
+const CODE_LOCKOUT_MS: int = 60000
 const RECONNECT_DELAY_MS: int = 1000
 const PLAYER_COLOURS: Array[String] = ["#ffb84d", "#64d9ee", "#ed8bb6", "#b6de70"]
 
@@ -193,6 +204,41 @@ const HUD_BAR_SIZE := Vector2(300.0, 10.0)
 const HUD_ENERGY_BAR_SIZE := Vector2(150.0, 10.0)
 const HUD_MARKER_WIDTH: float = 3.0
 const HUD_MARKER_OVERHANG: float = 4.0 # Pixels the 70% tick reaches above and below the bar.
+
+# --- UI look (assets/ui/ghosted_theme.tres is made from these by tools/make_ui_theme.gd; base 1152 × 648) ---
+const UI_NIGHT := Color("1a1228") # Screen backgrounds.
+const UI_PANEL := Color("2b2142") # Panels and cards.
+const UI_PANEL_ALPHA: float = 0.88 # 0 to 1: menu panels.
+const UI_HUD_ALPHA: float = 0.72 # 0 to 1: HUD panels over the game.
+const UI_BUTTON := Color("5b4691") # Buttons and tabs.
+const UI_BUTTON_HOVER := Color("7a62bd")
+const UI_TEXT := Color("f4efff")
+const UI_MUTED := Color("b8acd9")
+const UI_GHOST := Color("6dff8a") # Ghost green: the ghost, Start and Play.
+const UI_MONEY := Color("ffd04a") # Gold for rupees, distinct from player 1's amber.
+const UI_DANGER := Color("ff6b6b")
+const UI_OUTLINE := Color("120b1d") # Text outline over the game world.
+const UI_FONT_WEIGHT: int = 700 # Baloo 2 is a variable font, 400 to 800.
+const UI_TITLE_WEIGHT: int = 800
+const UI_BODY_SIZE: int = 18 # 30 px at 1080p; the projector needs 28 px or more.
+const UI_SMALL_SIZE: int = 17 # 28 px at 1080p: the smallest text anywhere.
+const UI_HEADING_SIZE: int = 30
+const UI_TITLE_SIZE: int = 64
+const UI_BUTTON_SIZE: int = 22
+const UI_OUTLINE_SIZE: int = 5
+const UI_PANEL_MARGIN: int = 18 # Padding inside panels.
+const UI_FOCUS_WIDTH: int = 3 # Keyboard focus ring, ghost green.
+const UI_POP_TIME: float = 0.35 # Seconds for a pop-in with overshoot.
+const UI_POP_START: float = 0.6 # Scale a pop-in starts from.
+const UI_SQUASH_SCALE := Vector2(1.08, 0.88) # A pressed button's squash.
+const UI_SQUASH_TIME: float = 0.18 # Seconds back to normal.
+const UI_WIPE_TIME: float = 0.35 # Seconds for each half of the wipe between screens.
+const UI_SCREEN_MARGIN: float = 16.0 # 28 px at 1080p: HUD distance from the screen edges.
+const TITLE_DIM: float = 0.5 # 0 to 1: how much the night colour covers the Mansion behind the title.
+const TITLE_ORBIT_SPEED: float = 3.0 # Degrees per second the title camera circles the Mansion.
+const TITLE_CAMERA_PITCH: float = 38.0 # Degrees down.
+const TITLE_CAMERA_DISTANCE: float = 30.0 # Metres from the Mansion's centre.
+const MAP_TILE_SIZE := Vector2(300.0, 300.0) # Map select tiles.
 
 # --- Possession settings ---
 const ACTION_LABELS: Array[String] = ["SHOVE", "SLAM", "DROP", "STOMP", "YANK"] # By possessable kind: slider, door, dropper, hopper, rug.
@@ -443,3 +489,20 @@ const BANK_SOUND_VOLUME: float = 0.3 # Linear amplitude, 0 to 1.
 const BANK_SOUND_DECAY: float = 12.0
 const BANK_LARGE_VALUE: int = 5000 # Rupees, pitch lift threshold.
 const BANK_LARGE_PITCH: float = 1.15
+
+# --- Edge HUD settings ---
+const HUD_CARD_WIDTH: float = 260.0
+const HUD_TOAST_SECONDS: float = 3.0
+const HUD_TOAST_LIMIT: int = 3
+const DEMO_ROUND_SECONDS: float = 60.0
+
+const HUD_ROOM_SIZE := Vector2(190, 64)
+const HUD_RING_RADIUS: float = 23.0
+const HUD_RING_WIDTH: float = 5.0
+const HUD_RING_SEGMENTS: int = 48
+const HUD_DISC_STEP: float = 17.0
+const HUD_DISC_COLUMNS: int = 7
+const HUD_DISC_RADIUS: float = 5.0
+const HUD_DISC_STROKE: float = 2.0
+const LOBBY_PULSE_SECONDS: float = 1.2
+const LOBBY_PULSE_ALPHA: float = 0.5

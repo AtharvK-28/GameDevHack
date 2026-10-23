@@ -4,6 +4,7 @@
 extends Area3D
 
 signal banked(value: int, carrier_slot: int)
+signal delivery_notice(value: int, item_name: String, slots: Array[int], item_id: int)
 signal delivered(value: int, carrier_slots: Array[int])
 
 # --- Shape, set by the arena before the zone enters the tree ---
@@ -43,6 +44,7 @@ func try_bank(item: Loot) -> bool:
 	var slots: Array[int] = item.delivery_slots.duplicate()
 	if slots.is_empty():
 		slots.append(carrier_slot)
+	delivery_notice.emit(amount, item.item_name, slots, item.get_instance_id())
 	item.retire("+" + Loot.rupees(amount), Balance.BANK_COLOUR)
 	banked_value += amount
 	banked_items += 1

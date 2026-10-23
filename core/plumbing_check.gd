@@ -33,7 +33,7 @@ func _run() -> void:
 	root.add_child(playground)
 	for slot: int in range(SETTINGS.MAX_PLAYERS):
 		await _connect_client()
-		_send(slot, {"type": "hello", "name": TEST_NAMES[slot]})
+		_send(slot, {"type": "hello", "name": TEST_NAMES[slot], "key": net.session_key})
 		await _pump(WAIT_SECONDS)
 		var welcome := _find_message(slot, "welcome")
 		_check(welcome.get("slot", -1) == slot, "Client %d gets a distinct slot" % slot)
@@ -50,6 +50,7 @@ func _run() -> void:
 	for client: WebSocketPeer in clients:
 		client.close()
 	await _pump(WAIT_SECONDS)
+	await _check_security()
 	print("PLUMBING CHECK: %s" % ("PASS" if failures == 0 else "%d failures" % failures))
 	quit(0 if failures == 0 else 1)
 
@@ -116,16 +117,16 @@ func _check_reconnect_and_capacity() -> void:
 	_check(player.socket == null and player.direction == Vector2.ZERO and player.buttons.is_empty(), "Disconnect immediately clears held input")
 	await _connect_client()
 	var reconnect_index: int = clients.size() - 1
-	_send(reconnect_index, {"type": "hello", "name": "Blue", "pid": pid})
+	_send(reconnect_index, {"type": "hello", "name": "Blue", "pid": pid, "secret": player.secret, "key": net.session_key})
 	await _pump(WAIT_SECONDS)
 	_check(_find_message(reconnect_index, "welcome").get("slot") == 1, "Reconnect restores the same slot")
 	_check(_find_message(reconnect_index, "role").get("role") == "mover" and player.points == 75, "Reconnect preserves role and points")
 	_check(player.direction == Vector2.ZERO and player.buttons.is_empty(), "Reconnect starts with released controls")
 	await _connect_client()
 	var extra_index: int = clients.size() - 1
-	_send(extra_index, {"type": "hello", "name": "Fifth"})
+	_send(extra_index, {"type": "hello", "name": "Fifth", "key": net.session_key})
 	await _pump(WAIT_SECONDS)
-	_check(clients[extra_index].get_close_code() == 1008 and net.players.size() == 4, "Fifth player cannot claim another slot")
+	_check(clients[extra_index].get_close_code() == net.CLOSE_FULL and net.players.size() == 4, "Fifth player cannot claim another slot")
 
 
 func _check_keyboard() -> void:
@@ -198,3 +199,76 @@ func _check(condition: bool, description: String) -> void:
 	else:
 		failures += 1
 		push_error("FAIL: " + description)
+
+
+# Real wire tests: rejected requests must not take over an existing identity.
+func _reject_hello(message: Dictionary, code: int, description: String) -> void:
+	await _connect_client()
+	var index: int = clients.size() - 1
+	_send(index, message)
+	await _pump(WAIT_SECONDS)
+	_check(clients[index].get_close_code() == code, description)
+
+
+func _check_security() -> void:
+	net.rotate_session()
+	await _pump(WAIT_SECONDS)
+	await _reject_hello({"type": "hello", "name": "Missing"}, net.CLOSE_DENIED, "Missing key rejected")
+	await _reject_hello({"type": "hello", "name": "Wrong", "key": "wrong"}, net.CLOSE_DENIED, "Wrong key rejected")
+	await _reject_hello({"type": "hello", "name": "Wrong code", "code": "BADBAD"}, net.CLOSE_DENIED, "Wrong manual code rejected")
+	await _connect_client()
+	var valid: int = clients.size() - 1
+	_send(valid, {"type": "hello", "name": "Owner", "code": net.join_code})
+	await _pump(WAIT_SECONDS)
+	var player: Dictionary = net.player_for_slot(0)
+	_check(not _find_message(valid, "welcome").is_empty(), "Six-character manual code joins")
+	var owner_socket: WebSocketPeer = player.socket
+	await _reject_hello({"type": "hello", "name": "Thief", "key": net.session_key, "pid": player.pid, "secret": "forged"}, net.CLOSE_DENIED, "Forged reconnect secret rejected")
+	_check(player.socket == owner_socket, "Forgery leaves the real player connected")
+	net.accept_new_players = false
+	await _reject_hello({"type": "hello", "name": "Late", "key": net.session_key}, net.CLOSE_MATCH, "New identities rejected mid-match")
+	var old_key: String = net.session_key
+	net.rotate_session()
+	_check(net.session_key == old_key, "Rotation is blocked during a match")
+	net.accept_new_players = true
+	clients[valid].send_text("x".repeat(SETTINGS.MAX_MESSAGE_BYTES + 1))
+	await _pump(WAIT_SECONDS)
+	_check(clients[valid].get_close_code() == net.CLOSE_TOO_BIG, "Oversized message rejected")
+	net.rotate_session()
+	await _pump(WAIT_SECONDS)
+	await _reject_hello({"type": "hello", "name": "Old", "key": old_key, "pid": player.pid, "secret": player.secret}, net.CLOSE_DENIED, "Rotation invalidates old key and credentials")
+	net.failed_attempts.clear() # Separate rejection scenarios from the dedicated lockout test.
+	await _connect_client()
+	var flood: int = clients.size() - 1
+	_send(flood, {"type": "hello", "name": "Flood", "key": net.session_key})
+	await _pump(WAIT_SECONDS)
+	for index: int in SETTINGS.RATE_LIMIT_BURST * 3:
+		clients[flood].send_text("{}")
+	await _pump(0.5)
+	_check(clients[flood].get_close_code() == net.CLOSE_RATE, "Message flood rejected")
+	await _connect_client()
+	var silent: int = clients.size() - 1
+	await _pump(SETTINGS.AUTH_TIMEOUT_MS / 1000.0 + WAIT_SECONDS)
+	_check(clients[silent].get_close_code() == net.CLOSE_TIMED_OUT, "Silent socket expires after auth deadline")
+	for index: int in SETTINGS.MAX_PENDING_PEERS:
+		await _connect_client()
+	var extra := WebSocketPeer.new()
+	extra.connect_to_url("ws://127.0.0.1:%d" % SETTINGS.SOCKET_PORT)
+	clients.append(extra)
+	inboxes.append([])
+	await _pump(WAIT_SECONDS)
+	_check(extra.get_ready_state() == WebSocketPeer.STATE_CLOSED and net._pending_count() == SETTINGS.MAX_PENDING_PEERS, "Pending socket cap enforced")
+	net.rotate_session()
+	await _pump(WAIT_SECONDS)
+	net.failed_attempts.clear()
+	for index: int in SETTINGS.CODE_LOCKOUT_FAILURES:
+		await _reject_hello({"type": "hello", "name": "Guess", "code": "BADBAD"}, net.CLOSE_DENIED, "Wrong-code attempt rejected")
+	_check(net._is_locked_out("127.0.0.1"), "Repeated guesses lock the address")
+	var locked := WebSocketPeer.new()
+	locked.connect_to_url("ws://127.0.0.1:%d" % SETTINGS.SOCKET_PORT)
+	clients.append(locked)
+	inboxes.append([])
+	await _pump(WAIT_SECONDS)
+	_check(locked.get_close_code() == net.CLOSE_LOCKED, "Locked phone receives a readable application refusal")
+	net.failed_attempts.clear()
+
