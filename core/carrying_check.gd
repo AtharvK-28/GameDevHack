@@ -50,6 +50,7 @@ func _run() -> void:
 		return
 
 	playground = load("res://Main.tscn").instantiate()
+	playground.match_mode = false # The greybox harness, not the match flow.
 	root.add_child(playground)
 	mover = playground.movers[0]
 	_park_other_movers()

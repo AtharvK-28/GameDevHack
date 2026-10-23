@@ -56,6 +56,7 @@ func _run() -> void:
 		return
 
 	playground = load("res://Main.tscn").instantiate()
+	playground.match_mode = false # The greybox harness, not the match flow.
 	root.add_child(playground)
 	_check_greybox_contents()
 	# The ghost's furniture has its own check (with the parlour door in place); this one carries in an empty room.

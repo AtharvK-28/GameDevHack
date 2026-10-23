@@ -29,6 +29,7 @@ func _run() -> void:
 		quit(1)
 		return
 	playground = load("res://Main.tscn").instantiate()
+	playground.match_mode = false # The greybox harness, not the match flow.
 	root.add_child(playground)
 	for slot: int in range(SETTINGS.MAX_PLAYERS):
 		await _connect_client()

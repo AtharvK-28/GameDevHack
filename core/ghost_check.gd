@@ -33,8 +33,9 @@ const INPUT_SECONDS: float = 0.12
 const MOVER_HEIGHT: float = 0.8 # Mover centre above the floor, metres.
 const SPEED_TOLERANCE: float = 0.35 # Metres per second.
 const ENERGY_TOLERANCE: float = 1.5
-const DOORWAY_TIMEOUT: float = 8.0 # Seconds allowed to steer the piano through the parlour door.
-const DOOR_STEER_GAIN: float = 2.0 # Stick per metre each holder steers their end toward the door's centre line.
+const DOORWAY_TIMEOUT: float = 8.0 # Seconds allowed to steer a mover or the piano through the parlour door.
+const DOOR_STEER_GAIN: float = 2.0 # Stick per metre of offset from the door's centre line.
+const DROP_TIMEOUT: float = 3.0 # Seconds allowed for the creak and physical landing.
 
 # --- Test state ---
 var loot_scene: PackedScene
@@ -89,6 +90,7 @@ func _run() -> void:
 	chandelier_scene = load("res://props/furniture/Chandelier.tscn")
 
 	playground = load("res://Main.tscn").instantiate()
+	playground.match_mode = false # The greybox harness, not the match flow.
 	root.add_child(playground)
 	await _wait(INPUT_SECONDS)
 	_check_greybox_contents()
@@ -449,8 +451,22 @@ func _check_door() -> void:
 	_check(_ghost_ok("action") == false, "ACTION greys out while the door is shut")
 	await _wait(SETTINGS.DOOR_LOCK_TIME + SETTINGS.DOOR_REOPEN_TIME - 1.8 + 0.6)
 	_check(door.state == DOOR_OPEN, "After its 3 s lock the door swings open again, nudging the mover aside")
-	await _wait(1.0)
-	_check(mover_a.global_position.z < SETTINGS.PARLOUR_WALL_Z - 0.5, "Once it is open, the mover walks through")
+	# The swing pushes the mover outside the open panel. Walk around its free end before entering the doorway.
+	var clear_z: float = SETTINGS.PARLOUR_WALL_Z + SETTINGS.PARLOUR_DOOR_WIDTH + SETTINGS.CAPSULE_RADIUS * 2.0
+	var route: Array[Vector2] = [
+		Vector2(mover_a.global_position.x, clear_z),
+		Vector2(0.0, clear_z),
+		Vector2(0.0, SETTINGS.PARLOUR_WALL_Z - SETTINGS.CAPSULE_RADIUS * 2.0),
+	]
+	var doorway_deadline: int = Time.get_ticks_msec() + int(DOORWAY_TIMEOUT * 1000.0)
+	for waypoint: Vector2 in route:
+		while Time.get_ticks_msec() < doorway_deadline:
+			var offset: Vector2 = waypoint - Vector2(mover_a.global_position.x, mover_a.global_position.z)
+			if offset.length() < SETTINGS.CAPSULE_RADIUS / 2.0:
+				break
+			_set_stick(MOVER_PHONE, (offset * DOOR_STEER_GAIN).limit_length())
+			await _wait(INPUT_SECONDS)
+	_check(mover_a.global_position.z < SETTINGS.PARLOUR_WALL_Z - 0.5, "Once it is open, the mover steers back through the doorway (position %s)" % mover_a.global_position)
 	_set_stick(MOVER_PHONE, Vector2.ZERO)
 
 	# A slam knocks over a mover in its swing.
@@ -538,8 +554,11 @@ func _check_dropper() -> void:
 	await _tap(GHOST_PHONE, "action")
 	second_p.exorcise() # Stands in for the flashlight, which _check_exorcism uses for real.
 	_check(ghost.possessing == null and ghost.is_frozen() and second.state == CREAKING, "Exorcised during the creak, the ghost is ejected")
-	await _wait(1.4)
-	_check(second.state >= FALLING and _value_of(vase) < SETTINGS.LOOT_VALUES[VASE_KIND], "The chandelier still falls and smashes the vase beneath (₹%d left)" % _value_of(vase))
+	# Check the physical landing, not a fixed delay that can expire just before contact with the vase.
+	var drop_deadline: int = Time.get_ticks_msec() + int(DROP_TIMEOUT * 1000.0)
+	while second.state != DOWN and Time.get_ticks_msec() < drop_deadline:
+		await _frame()
+	_check(second.state == DOWN and second.global_position.y < hang_height - 1.0 and _value_of(vase) < SETTINGS.LOOT_VALUES[VASE_KIND], "The chandelier still lands and damages the vase beneath (₹%d left)" % _value_of(vase))
 	await _clear_carryables()
 
 
