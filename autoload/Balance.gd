@@ -326,11 +326,17 @@ const DELIVERY_LIFT: float = 0.01 # Metres above the ground: flush, but clear of
 # --- Arena build settings (arenas/arena_builder.gd; geometry lives in arenas/layouts/) ---
 const ARENA_WALL_HEIGHT: float = 3.0 # Metres above each room's floor: a 3.3 m mansion ceiling scaled to 1.6 m movers.
 const ARENA_WALL_THICKNESS: float = 0.2
-const ARENA_SEE_THROUGH_ALPHA: float = 0.15 # Opacity of camera-facing walls, 0 to 1; they still block.
-const ARENA_WALL_COLOUR := Color("b9ad98")
+const ARENA_SEE_THROUGH_ALPHA: float = 0.15 # Opacity of a faded camera-facing wall, 0 to 1; it still blocks.
+const ARENA_WAINSCOT_HEIGHT: float = 0.9 # Metres above the room's floor.
+const ARENA_WAINSCOT_DEPTH: float = 0.015 # Metres proud of the wall face.
+const ARENA_RAIL_HEIGHT: float = 0.06 # The dado rail on top of the wainscoting, metres.
+const ARENA_RAIL_DEPTH: float = 0.03 # Dado rail and skirting, metres proud of the wall face.
+const ARENA_SKIRTING_HEIGHT: float = 0.12 # Metres.
+const WALL_FADE_TIME: float = 0.25 # Seconds to fade between solid and see-through.
+const WALL_FADE_HOLD: float = 1.0 # Seconds a wall stays see-through after it stops hiding a player.
+const WALL_FADE_REACH: float = 0.7 # Metres above and below each player's centre that a wall must not hide.
 const ARENA_FENCE_HEIGHT: float = 0.9
 const ARENA_FENCE_THICKNESS: float = 0.1
-const ARENA_FENCE_COLOUR := Color("639922")
 const ARENA_RAILING_HEIGHT: float = 1.0
 const ARENA_RAILING_THICKNESS: float = 0.1 # The railing's invisible collider.
 const ARENA_RAILING_COLOUR := Color("534ab7")
@@ -338,6 +344,32 @@ const ARENA_RAILING_POST_SPACING: float = 1.0
 const ARENA_RAILING_POST_RADIUS: float = 0.04
 const ARENA_RAMP_THICKNESS: float = 0.2 # The invisible ramp over the stairs.
 const ARENA_FLOOR_SLAB: float = 0.02 # Thin coloured floor tiles over the ground.
+
+# --- Mansion mood (arenas/mansion.gd builds it; the lamps sit in arenas/dressing/MansionDressing.tscn) ---
+const MOOD_BACKGROUND := Color("1b1530") # Dusk violet; the fog fades into the same colour.
+const MOOD_AMBIENT_COLOUR := Color("7a6fa8")
+const MOOD_AMBIENT_ENERGY: float = 0.55 # 0 to 1: low, so the lamps and the moon do the lighting.
+const MOOD_EXPOSURE: float = 1.15
+const MOOD_GLOW_INTENSITY: float = 0.8 # Bloom on emissive windows, flames and the ghost.
+const MOOD_GLOW_THRESHOLD: float = 1.0 # Only brightness above this blooms.
+const MOOD_FOG_BEGIN: float = 30.0 # Metres from the camera where the fog starts.
+const MOOD_FOG_END: float = 75.0 # Metres from the camera where the fog is solid.
+const MOOD_FOG_CURVE: float = 1.5 # Above 1 keeps the near ground clearer.
+const MOON_COLOUR := Color("c3cbff")
+const MOON_ENERGY: float = 0.8
+const MOON_ROTATION := Vector3(-50.0, -70.0, 0.0) # Degrees; the only light that casts shadows.
+const MOON_SHADOW_DISTANCE: float = 60.0 # Metres from the camera that get shadows.
+const LAMP_COLOUR := Color("ffb35c") # Warm lamplight, about 2700 K.
+const LAMP_ENERGY: float = 2.2 # Ceiling lamps (and where the possessable chandeliers will hang).
+const LAMP_RANGE: float = 8.0 # Metres.
+const FIRE_COLOUR := Color("ff8a3d")
+const FIRE_ENERGY: float = 1.4
+const FIRE_RANGE: float = 4.5 # Metres.
+const LANTERN_COLOUR := Color("ffc070")
+const LANTERN_ENERGY: float = 1.2 # Garden lanterns and the street lamp.
+const LANTERN_RANGE: float = 5.0 # Metres.
+const WINDOW_GLOW_COLOUR := Color("ffc070")
+const WINDOW_GLOW_ENERGY: float = 2.0 # Emission strength; above the glow threshold, so windows bloom.
 
 # --- Greybox room settings ---
 const ROOM_WIDTH: float = 14.0

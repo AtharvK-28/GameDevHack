@@ -1,6 +1,7 @@
 # The shared screen's camera: a three-quarter dollhouse view, its angles set in Balance (CAMERA_ANGLE, CAMERA_YAW).
 # With follow_movers on, it eases toward the centre of the movers in play and the ghost, and pulls back far
 # enough to frame them all (12–26 m), clamped to the arena. Shake (trauma² × noise) is only raised by abilities such as House Shake.
+# Camera-facing walls (FadeWall) turn see-through while the line from the camera to a player passes through them.
 extends Camera3D
 
 # --- Settings ---
@@ -45,6 +46,7 @@ func _process(delta: float) -> void:
 	var offset := Vector3(noise.get_noise_2d(sample, 0.0), noise.get_noise_2d(sample, 100.0), 0.0) * Balance.CAMERA_SHAKE_OFFSET * strength
 	var roll: float = noise.get_noise_2d(sample, 200.0) * deg_to_rad(Balance.CAMERA_SHAKE_ROLL) * strength
 	_place(offset, roll)
+	_update_wall_fade(delta)
 
 
 func snap() -> void:
@@ -56,14 +58,19 @@ func snap() -> void:
 	_place(Vector3.ZERO, 0.0)
 
 
-func _framing() -> Array:
-	# [focus point, distance]: the movers' centre, pulled back until all of them fit with some padding.
+func _player_points() -> Array[Vector3]:
+	# Every mover in play, and the ghost: where the wisp is, or the prop it is hiding in.
 	var points: Array[Vector3] = []
 	for mover: Node3D in get_tree().get_nodes_in_group("movers"):
 		points.append(mover.global_position)
-	# The ghost counts too: where the wisp is, or the prop it is hiding in.
 	for ghost: Node3D in get_tree().get_nodes_in_group("ghosts"):
 		points.append(ghost.possessing.global_position if is_instance_valid(ghost.possessing) else ghost.global_position)
+	return points
+
+
+func _framing() -> Array:
+	# [focus point, distance]: the players' centre, pulled back until all of them fit with some padding.
+	var points: Array[Vector3] = _player_points()
 	if points.is_empty():
 		return [Balance.CAMERA_TARGET, Balance.CAMERA_DISTANCE]
 	var centre := Vector3.ZERO
@@ -79,6 +86,20 @@ func _framing() -> Array:
 	centre.z = clampf(centre.z, bounds.position.y, bounds.end.y)
 	centre.y = 0.0
 	return [centre, clampf(needed, Balance.CAMERA_MIN_DISTANCE, Balance.CAMERA_MAX_DISTANCE)]
+
+
+# --- Wall fade ---
+func _update_wall_fade(delta: float) -> void:
+	# A wall hides a player when the line from the camera to their head or feet passes through it.
+	var points: Array[Vector3] = _player_points()
+	var reach := Vector3.UP * Balance.WALL_FADE_REACH
+	for wall: FadeWall in get_tree().get_nodes_in_group("fade_walls"):
+		var hiding: bool = false
+		for point: Vector3 in points:
+			if wall.box.intersects_segment(global_position, point + reach) or wall.box.intersects_segment(global_position, point - reach):
+				hiding = true
+				break
+		wall.update_fade(hiding, delta)
 
 
 func _place(offset: Vector3, roll: float) -> void:

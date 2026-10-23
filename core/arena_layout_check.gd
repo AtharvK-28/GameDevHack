@@ -1,6 +1,6 @@
 # Checks the Old Mansion built from arenas/layouts/mansion_layout.json: room zones, doorway widths, routes from
-# every room to the truck, the stairs with every carry weight and the two-person piano, and that railings and
-# walls hold movers and loot. Movers are steered by writing their input snapshots, so their real movement runs.
+# every room to the truck, the stairs with every carry weight and the two-person piano, that railings and
+# walls hold movers and loot, that camera-facing walls fade only while they hide a player, and the ghost's spawn. Movers are steered by writing their input snapshots, so their real movement runs.
 # This script compiles before the autoloads exist, so it reaches them through the scene tree.
 extends SceneTree
 
@@ -53,6 +53,8 @@ func _run() -> void:
 	await _check_piano_stairs()
 	await _check_containment()
 	await _check_truck()
+	await _check_wall_fade()
+	_check_ghost_spawn()
 	print("ARENA LAYOUT CHECK: %s" % ("PASS" if failures == 0 else "%d failures" % failures))
 	quit(0 if failures == 0 else 1)
 
@@ -204,6 +206,34 @@ func _check_truck() -> void:
 	await _seconds(1.5)
 	_check(mover.global_position.z < 23.6, "The truck is solid (mover stopped at z %.2f)" % mover.global_position.z)
 	_input(0, Vector2.ZERO, {})
+
+
+func _check_wall_fade() -> void:
+	# The party camera follows; a mover just inside the front wall makes it fade, and it turns solid once they leave.
+	var camera: Camera3D = get_first_node_in_group("party_camera")
+	camera.follow_movers = true
+	var front_wall: StaticBody3D = arena.get_node("wall-front-main")
+	await _start(0, Vector3(4, 0, 13.5), 0.0)
+	camera.snap()
+	await _seconds(0.6)
+	_check(front_wall.alpha <= SETTINGS.ARENA_SEE_THROUGH_ALPHA + 0.01, "The front wall fades while it hides a mover (opacity %.2f)" % front_wall.alpha)
+	await _start(0, Vector3(7.75, 0, 19), 0.0)
+	camera.snap()
+	await _seconds(SETTINGS.WALL_FADE_HOLD + SETTINGS.WALL_FADE_TIME + 0.4)
+	var all_solid: bool = true
+	for wall: StaticBody3D in get_nodes_in_group("fade_walls"):
+		all_solid = all_solid and wall.alpha == 1.0
+	_check(all_solid, "Every camera-facing wall is solid again once the mover is outside")
+	camera.follow_movers = false
+
+
+func _check_ghost_spawn() -> void:
+	var spawn: Vector3 = arena.ghost_spawn()
+	var outside: bool = true
+	for room: Dictionary in layout.rooms:
+		var rect := Rect2(room.rect[0], room.rect[1], room.rect[2], room.rect[3])
+		outside = outside and not rect.has_point(Vector2(spawn.x, spawn.z))
+	_check(outside and arena.ghost_bounds().has_point(Vector2(spawn.x, spawn.z)), "The ghost spawns outside the house, inside its bounds")
 
 
 # --- Movement helpers ---

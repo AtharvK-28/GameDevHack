@@ -258,6 +258,8 @@ func _build_camera() -> void:
 	camera = CAMERA_SCENE.instantiate()
 	camera.follow_movers = match_mode
 	add_child(camera)
+	if arena.has_node("WorldEnvironment"):
+		return # The arena brings its own lighting and mood.
 	var light := DirectionalLight3D.new()
 	light.rotation_degrees = Balance.LIGHT_ROTATION
 	add_child(light)

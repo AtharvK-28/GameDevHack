@@ -1,0 +1,29 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://arenas/dressing/mansion_dressing.gd" id="1"]
+
+[node name="MansionDressing" type="Node3D"]
+script = ExtResource("1")
+
+[node name="Lamps" type="Node3D" parent="."]
+
+[node name="MainRoomLamp" type="OmniLight3D" parent="Lamps" groups=["ceiling_lamps"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 2.7, 10.5)
+
+[node name="KitchenLamp" type="OmniLight3D" parent="Lamps" groups=["ceiling_lamps"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 2.7, 10.5)
+
+[node name="GalleryLamp" type="OmniLight3D" parent="Lamps" groups=["ceiling_lamps"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 3.9, 3)
+
+[node name="FireplaceGlow" type="OmniLight3D" parent="Lamps" groups=["fires"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 0.7, 6.9)
+
+[node name="GardenLanternWest" type="OmniLight3D" parent="Lamps" groups=["lanterns"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.6, 1, 21.4)
+
+[node name="GardenLanternEast" type="OmniLight3D" parent="Lamps" groups=["lanterns"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.4, 1, 15.6)
+
+[node name="StreetLamp" type="OmniLight3D" parent="Lamps" groups=["lanterns"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.2, 2.6, 27)
