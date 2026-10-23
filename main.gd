@@ -12,6 +12,7 @@ const CAMERA_SCENE := preload("res://actors/PartyCamera.tscn")
 const MANSION_SCENE := preload("res://arenas/Mansion.tscn")
 const GREYBOX_SCENE := preload("res://arenas/Greybox.tscn")
 const WINDOW_KEYS := preload("res://core/window_keys.gd")
+const WIPE_PHASES: Array[String] = ["lobby", "reveal", "result", "final"]
 const SCREEN_SCENES: Array[PackedScene] = [
 	preload("res://screens/HUD.tscn"), preload("res://screens/Lobby.tscn"), preload("res://screens/RoleReveal.tscn"),
 	preload("res://screens/RoundEnd.tscn"), preload("res://screens/Results.tscn"),
@@ -26,6 +27,7 @@ var movers: Array[CharacterBody3D] = []
 var ghost: Node3D
 var connection_text: String = ""
 var hud_elapsed: float = 0.0
+var shown_phase: String = "lobby" # The match phase on screen, so the wipe plays once per change.
 
 # --- Setup ---
 func _ready() -> void:
@@ -280,6 +282,14 @@ func _build_match_screens() -> void:
 	add_child(canvas)
 	for scene: PackedScene in SCREEN_SCENES:
 		canvas.add_child(scene.instantiate())
+	Game.changed.connect(_wipe_on_new_screen)
+
+
+func _wipe_on_new_screen() -> void:
+	# A wipe across the screen whenever the match moves to a new full screen (not into live play).
+	if Game.phase != shown_phase and Game.phase in WIPE_PHASES:
+		UiMotion.flash()
+	shown_phase = Game.phase
 
 
 func _build_overlay() -> void:

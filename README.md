@@ -4,7 +4,7 @@ Godot 4.7.2 stable · Mobile renderer · Jolt · 60 Hz physics.
 
 ## Play a match
 
-1. Press **F5** in Godot. The shared screen opens fullscreen on the lobby with a QR code and the join link; **F11** switches between fullscreen and a window. (If Godot runs the game inside the editor's Game tab, fullscreen needs the game in its own window: turn off the Game tab's embed option.)
+1. Press **F5** in Godot. The title screen opens over the Mansion; choose **Play**, then the **Old Mansion**, to reach the lobby with its QR code, join link and six-character code. **F11** switches between fullscreen and a window. (If Godot runs the game inside the editor's Game tab, fullscreen needs the game in its own window: turn off the Game tab's embed option.)
 2. Start the phone page server (see the next section, step 2). Phones on the same Wi-Fi scan the QR code or open the link, enter a name and tap **Ready to move**. If opening the plain link, also enter the six-character code shown on the host.
 3. With 2–4 phones ready, press **Enter** on the host. Each round: a 3 s role reveal, then 150 s of play. 2 players play 4 rounds, 3 play 3 and 4 play 4; the ghost passes to the next player every round.
 4. **Winning a round:** movers must deliver at least **70%** of the round's starting value. Losing more than 30% (damage, shattering, items lost) ends the round for the ghost at once. Otherwise the round ends when time runs out or every item has been delivered or destroyed; only delivered value counts.
@@ -105,8 +105,8 @@ The browser consumes `controller/settings.json`; do not tune it independently. n
 
 The spring, turn speed and upright values are in `Balance.gd` under "Carrying settings"; the two-person values are under "Two-person carry settings". Change one at a time and re-run the checks.
 
-## UI preview checkpoint
+## Menus and HUD
 
-The themed title/map/options/credits screens are in `menus/`. The new lobby and edge HUD replace the earlier plain match panels. F5 still starts `Main.tscn` until the requested screenshot review; preview `menus/main_menu/main_menu.tscn` with F6 to inspect the title and map selection. Options include a saved 60-second Demo mode. Escape pauses, Tab holds the totals overlay. The HTTP page server command is unchanged; reload the phone page to load the new local font, colours and authenticated joining.
+The game starts at the template's opening (`menus/opening/opening.tscn`), then the title, map select and the match (`Main.tscn`). The menus are customised copies of Maaack's Game Template scenes in `menus/`, themed by `assets/ui/ghosted_theme.tres` (made by `tools/make_ui_theme.gd`). Options include a saved 60-second Demo mode. In a round, Escape opens the pause menu and holding Tab shows the totals. The HTTP page server command is unchanged; reload the phone page to load the new local font, colours and authenticated joining.
 
 The QR includes a session key; manual joining needs the six-character lobby code. Reconnect uses a private per-player secret saved in that browser. New join code disconnects everyone and requires the new QR/code. Five bad credentials from one address temporarily lock it out; oversized messages and floods disconnect. `core/plumbing_check.gd` covers these cases in addition to four simultaneous controllers.

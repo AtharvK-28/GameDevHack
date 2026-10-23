@@ -1,4 +1,5 @@
-﻿# Compact edge HUD: timer, room item status, truck totals, delivery notices and live player points.
+# Compact edge HUD: timer, room item status, truck totals, delivery notices and live player points. Panels sit
+# at the screen edges so the centre stays clear; holding Tab shows the full totals, Esc opens the pause menu.
 extends Control
 
 const Style := preload("res://screens/screen_style.gd")
@@ -115,7 +116,7 @@ func _process(delta: float) -> void:
 		return
 	_layout_cards()
 	timer_label.text = Style.clock(Game.seconds_left)
-	timer_label.modulate = Balance.UI_MONEY if Game.seconds_left <= 30.0 else Color.WHITE
+	timer_label.modulate = Balance.UI_MONEY if Game.seconds_left <= Balance.HUD_WARNING_SECONDS else Color.WHITE
 	delivered_label.text = "%s / %s" % [Loot.rupees(Game.banked_value), Loot.rupees(Game.target_value())]
 	delivered_bar.value = 100.0 * Game.banked_value / maxi(1, Game.starting_value)
 	lost_label.text = "Lost %s / %s" % [Loot.rupees(Game.lost_value), Loot.rupees(Game.loss_limit())]
@@ -135,7 +136,7 @@ func _process(delta: float) -> void:
 		chips.move_child(energy_bar, maxi(0, chip_slots.find(Game.ghost_slot)) + 1)
 	var lines: PackedStringArray = []
 	for slot: int in Game.participants:
-		var points: String = "%s%s | %.1f" % ["GHOST " if slot == Game.ghost_slot else "", Style.player_name(slot), Game.live_points(slot)]
+		var points: String = "%s%s · %d" % ["GHOST · " if slot == Game.ghost_slot else "", Style.player_name(slot), roundi(Game.live_points(slot))]
 		chip_labels[slot].text = points
 		lines.append(points)
 	if is_instance_valid(energy_bar):

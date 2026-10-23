@@ -494,6 +494,7 @@ const BANK_LARGE_PITCH: float = 1.15
 const HUD_CARD_WIDTH: float = 260.0
 const HUD_TOAST_SECONDS: float = 3.0
 const HUD_TOAST_LIMIT: int = 3
+const HUD_WARNING_SECONDS: float = 30.0 # The timer turns gold for the last stretch.
 const DEMO_ROUND_SECONDS: float = 60.0
 
 const HUD_ROOM_SIZE := Vector2(190, 64)

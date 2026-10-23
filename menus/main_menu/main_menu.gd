@@ -10,6 +10,9 @@ extends MainMenu
 func _ready() -> void:
 	super._ready()
 	$Logo.modulate = Balance.UI_GHOST
+	# A sub menu (map select, options, credits) gets the screen to itself.
+	sub_menu_opened.connect(_show_title.bind(false))
+	sub_menu_closed.connect(_show_title.bind(true))
 
 
 # --- Menu actions ---
@@ -20,3 +23,8 @@ func new_game() -> void:
 
 func _on_map_chosen(_arena_path: String) -> void:
 	UiMotion.cover(load_game_scene) # The wipe slides away once the match scene is showing.
+
+
+func _show_title(shown: bool) -> void:
+	%MenuContainer.visible = shown
+	$Logo.visible = shown

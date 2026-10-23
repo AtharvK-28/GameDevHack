@@ -55,7 +55,7 @@ func _process(_delta: float) -> void:
 			continue
 		if socket.get_ready_state() == WebSocketPeer.STATE_OPEN:
 			if connection.pid.is_empty() and _is_locked_out(connection.address):
-				_drop(connection, CLOSE_LOCKED, "Too many wrong codes. Wait 60 seconds, then try again.")
+				_drop(connection, CLOSE_LOCKED, "Too many wrong codes. Wait %d seconds, then try again." % (Balance.CODE_LOCKOUT_MS / 1000))
 				continue
 			_read_messages(connection)
 
