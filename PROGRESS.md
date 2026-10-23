@@ -2,7 +2,7 @@
 
 The phases follow the spec's 24-hour build plan. A phase is done only when its check passes. AI agents update this file after every task.
 
-**Status:** Phases 0–2 complete. Phase 3 is being planned; nothing built yet.
+**Status:** Phases 0–2 complete. Phase 3 is built and passes automated physics checks; awaiting the user's two-phone piano playtest.
 
 ## Phase 0 · Setup
 
@@ -30,15 +30,16 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 
 ## Phase 3 · H6–9 · Two-person carry, tumbling, flashlight
 
-- [ ] Two-person carry
-- [ ] Tumbling
-- [ ] Flashlight and exorcism
-- [ ] **Check:** two players get the piano through a doorway (fallback decision at H9)
+- [x] Two-person carry
+- [x] Tumbling
+- [x] Flashlight with beam and 1.5 s exorcism timer (connected to possession in Phase 4)
+- [ ] **Check:** two players get the piano through a doorway (fallback decision at H9) — awaiting the user's two-phone playtest
 
 ## Phase 4 · H9–12 · Ghost
 
 - [ ] Wisp movement
 - [ ] `Possessable` component with all 5 prop types
+- [ ] Exorcism wired to the flashlight's beam timer
 - [ ] Energy
 - [ ] House Shake and Ecto Slime
 - [ ] **Check:** a 1v1 greybox round is tense and fair
@@ -95,4 +96,16 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - Phase 2 handover (2026-10-23): the previous agent's `carrying_check.gd` never really ran, because preloading loot before the autoloads existed failed to compile, so several of its passes were false. Fixed; the check now stops if loot fails to load.
 - `core/carrying_check.gd`: 75 checks pass with real Jolt physics. Measured carry worst cases: 6.4 m/s relative to the mover, centre at most 1.24 m high, 1.03 m behind the carry target during a 180° turn. Plain drops are free even at walking speed. A carried vase walked into a wall lost value (₹3,000 → ₹1,383); slow wall contact, resting contact and holding an item against a wall caused no damage. Banking happens exactly once, including repeated release/bank calls in one frame. Two movers grabbing in the same tick give exactly one holder. `plumbing_check.gd` still passes; the 120-frame smoke run is clean.
 - Phase 2 fixes from those checks: carried items are kept upright by a torque (they were flipping up to 168°); facing turns at 5 rad/s instead of snapping (the hold point jumped 2.5 m, which flung items); the spring is stiffer (150 / 18) with a 1 m stretch cap; a fixed 0.25 m carry clearance makes drops free (decision 14). Price tags are larger, use ₹ grouping and are drawn over walls; damage popups start above the tag. Rendered frames inspected with the Mobile renderer.
-- Known: the four "Unclaimed" mover name tags overlap at spawn until phones join (Phase 1 harness). Loot speed and mass tables are indexed by item kind, which only works while vase/TV/clock map to light/medium/heavy; add a per-item weight class when more loot arrives in Phase 6.
+- Known: the four "Unclaimed" mover name tags overlap at spawn until phones join (Phase 1 harness).
+- Phase 3 build (2026-10-23): `props/carryable.gd` now holds the shared carry, so loot and the flashlight both use it. Each loot item has its own weight class (this fixes the item-kind indexing noted in Phase 2). New: piano with two handles, flashlight with beam and exorcism timer, tumbling, a parlour with a 2 m door, and a camera pulled back to frame it.
+- `core/team_carry_check.gd`: 49 checks pass with real Jolt physics and two simulated phones. Measured:
+  - Two holders lift the piano to 0.75 m and carry it at 3.07 m/s (target 3.15), peaking at 3.11.
+  - Average steering lands 10° off the 45° average; opposite pulls turn it 68° in 0.8 s without moving its centre.
+  - One-handle drag runs at 1.03 m/s (target 1.125) and scrapes ₹363 over 1.23 m (expected ₹366); the lone mover drags at 1.67 m/s (target 1.8).
+  - A scripted pair turns the piano and takes it through the parlour door in 1.3 s with no damage.
+  - A thrown vase knocks a mover over, drops their item and buzzes their phone. They stay down for 1.5 s and ignore the stick meanwhile. Slower hits, and fast items that were not thrown, tumble nobody.
+  - The flashlight beam follows facing; 1.5 s in the beam exorcises the stand-in once. Cone, walls and a loose torch all prevent exorcism.
+
+  `carrying_check.gd` (75) and `plumbing_check.gd` still pass; the smoke run is clean.
+- Phase 3 fixes found by the checks: hits on a mover counted only about half the item's speed, because the physics engine reported the mover's shove-out-of-the-way motion as its velocity. Hits now use the mover's own walking velocity: a vase arriving at 5.39 m/s registers 5.39 m/s, not 2.62. The parlour partition is knee-high (0.7 m), so the camera can see into the parlour; it still blocks movers and a carried piano. Rendered frames inspected.
+- Deferred to Phase 5: the second flashlight for 4-player matches (spawned at round setup); the lone-mover flag is set by match flow.
