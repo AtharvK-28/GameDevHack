@@ -6,6 +6,8 @@ Every approved design or technical decision, newest first. Only the user approve
 
 | # | Date | Decision | Reason |
 | --- | --- | --- | --- |
+| 14 | 2026-10-23 | A plain drop never damages loot: carried items hang a fixed 0.25 m above the floor (`CARRY_CLEARANCE`), so letting go lands below the 2.5 m/s threshold. Throws and bumps still cause damage. | Measured: the old hold height made every vase or TV drop cost about 46% of its value. User approved with “ok” |
+| 13 | 2026-10-23 | Phase 2: only light loot is throwable; impact damage uses relative closing speed, counted once per distinct impact, rounded up to whole rupees and capped at remaining value. Build single-person spring carrying, a CSG Mansion greybox, banking and phone held-item feedback. | User approved the Phase 2 plan with “go” after confirming four-player phone operation |
 | 12 | 2026-10-23 | Phase 1 uses flat JSON messages with a `type` field; slots are zero-based. Keyboard test: 1–4 selects a slot, WASD/arrows move, Space grabs, E throws, Shift braces. Connected phones take priority. | Proposed in the initial plan; implementation authorized by “replan then start” |
 | 11 | 2026-10-23 | Keep local HTTP/WebSocket serving. Request Wake Lock where available and show manual screen-timeout guidance otherwise. | The plain LAN HTTP page is not a secure context; browser features must fail gracefully |
 | 10 | 2026-10-23 | Typed GDScript, tabs, snake_case members/functions, PascalCase classes, UPPER_SNAKE_CASE constants, short header/section comments. Preserve filenames explicitly named in the spec; new supporting scripts use snake_case. All tunables live in Balance.gd; generate browser settings from it. | Style proposed in the plan and applied under the user's instruction to start Phase 1 |
@@ -21,4 +23,4 @@ Every approved design or technical decision, newest first. Only the user approve
 
 ## Open — needs the user's confirmation
 
-_None for Phase 1 implementation. The four-physical-phone acceptance check is still pending in PROGRESS.md._
+- **Thrown or pushed loot landing in the truck zone does not bank.** Only releasing GRAB inside the zone banks, matching the spec's wording. This is how the build currently behaves; it is not yet confirmed as a decision.

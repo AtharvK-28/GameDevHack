@@ -2,7 +2,7 @@
 
 The phases follow the spec's 24-hour build plan. A phase is done only when its check passes. AI agents update this file after every task.
 
-**Status:** Phase 0 complete. Phase 1 implemented and locally verified; awaiting four physical phones on the target network. No later phase started.
+**Status:** Phases 0–1 complete. Phase 2 carrying core is built and passes automated physics checks; awaiting the user's phone playtest.
 
 ## Phase 0 · Setup
 
@@ -17,16 +17,16 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - [x] `Net.gd` WebSocket server
 - [x] Controller page served from the laptop
 - [x] Keyboard fallback in `InputRouter`
-- [ ] **Check:** 4 phones each move their own capsule, with no noticeable lag
+- [x] **Check:** 4 phones each move their own capsule — user confirmed all four players work on 2026-10-23
 
 ## Phase 2 · H2–6 · Carrying core
 
-- [ ] Mover controller
-- [ ] Base `Loot` with spring carry
-- [ ] Impact damage and price tags
-- [ ] Truck banking
-- [ ] Greybox room built from CSG shapes
-- [ ] **Check:** carry a vase to the truck; bumping a wall visibly drops its value
+- [x] Mover controller
+- [x] Base `Loot` with spring carry
+- [x] Impact damage and price tags
+- [x] Truck banking
+- [x] Greybox room built from CSG shapes
+- [ ] **Check:** carry a vase to the truck; bumping a wall visibly drops its value (awaiting the user's phone playtest)
 
 ## Phase 3 · H6–9 · Two-person carry, tumbling, flashlight
 
@@ -89,6 +89,10 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - `core/plumbing_check.gd`: passed four real WebSocket clients, separate capsule movement, malformed input, magnitude clamping, short taps, timeout, disconnect, reconnect with role/points preservation, fifth-player rejection and keyboard/focus release.
 - Browser verification: four isolated Chrome contexts; 30 input messages per second at rest; simultaneous joystick/button touch; touch cancellation; reload/rejoin; no uncaught JavaScript errors; landscape layouts at 568×320, 667×375, 844×390 and 1024×768; portrait rotate overlay at 375×667. Screenshots visually inspected.
 - Main scene rendered and visually inspected with the actual Mobile renderer. Godot emitted an environment-level root certificate-store warning during local checks; LAN HTTP/WebSocket checks still passed. This was not a script/scene error.
-- Four physical phones and actual network latency remain unverified. Phase 2 is gated on that acceptance check.
+- User confirmed the controller page loaded and all four phone players worked; Phase 1 accepted. Phase 2 approved with “go”.
 - Initial project and Phase 1 checkpoint `9bfc228` pushed successfully to `origin/main`; generated caches, local test dependencies and verification captures are ignored.
 - Run instructions and the browser feature limitations are in `README.md`.
+- Phase 2 handover (2026-10-23): the previous agent's `carrying_check.gd` never really ran, because preloading loot before the autoloads existed failed to compile, so several of its passes were false. Fixed; the check now stops if loot fails to load.
+- `core/carrying_check.gd`: 75 checks pass with real Jolt physics. Measured carry worst cases: 6.4 m/s relative to the mover, centre at most 1.24 m high, 1.03 m behind the carry target during a 180° turn. Plain drops are free even at walking speed. A carried vase walked into a wall lost value (₹3,000 → ₹1,383); slow wall contact, resting contact and holding an item against a wall caused no damage. Banking happens exactly once, including repeated release/bank calls in one frame. Two movers grabbing in the same tick give exactly one holder. `plumbing_check.gd` still passes; the 120-frame smoke run is clean.
+- Phase 2 fixes from those checks: carried items are kept upright by a torque (they were flipping up to 168°); facing turns at 5 rad/s instead of snapping (the hold point jumped 2.5 m, which flung items); the spring is stiffer (150 / 18) with a 1 m stretch cap; a fixed 0.25 m carry clearance makes drops free (decision 14). Price tags are larger, use ₹ grouping and are drawn over walls; damage popups start above the tag. Rendered frames inspected with the Mobile renderer.
+- Known: the four "Unclaimed" mover name tags overlap at spawn until phones join (Phase 1 harness). Loot speed and mass tables are indexed by item kind, which only works while vase/TV/clock map to light/medium/heavy; add a per-item weight class when more loot arrives in Phase 6.

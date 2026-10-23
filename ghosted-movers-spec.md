@@ -79,12 +79,13 @@ Movers have one job: get value onto the truck. Every control is about carrying w
 | --- | --- |
 | Joystick | Move. Base speed 4.5 m/s, reduced by what you carry. |
 | GRAB (hold) | Pick up the nearest item in front of you. Let go to drop it. |
-| THROW (tap while holding) | Throw a small item. Fast, but it lands hard and takes damage. |
+| THROW (tap while holding) | Throw a light item. Fast, but it lands hard and takes damage. Medium and heavy loot cannot be thrown. |
 | BRACE (hold) | Plant your feet. You can't move, but shake and wind can't knock you over. |
 
 **Carrying**
 
 - The held item is pulled toward a hold point in front of the mover by a spring force, not locked rigidly. It wobbles, swings and clips doorframes, which is where the comedy comes from.
+- Carried items hang low, a fixed gap above the floor, so letting go never damages them. Throws and bumps still do.
 - Speed while carrying: light 100%, medium 80%, heavy 60%.
 - **Two-person items** (piano, wardrobe, sofa) have two grab handles. With both handles held, they move at 70% speed, steered by the average of both joysticks. With one handle, the item can only be dragged at 25%, and dragging scrapes value off.
 - In a 2-player match, the lone mover can drag two-person items at 40%.
@@ -93,6 +94,7 @@ Movers have one job: get value onto the truck. Every control is about carrying w
 
 - Every item has a value, a weight and a fragility (1–3).
 - Any collision above 2.5 m/s costs `impact speed × fragility × 4%` of its current value.
+- Impact speed is relative closing speed along the collision normal. Count each distinct impact once, rather than each physics frame of resting contact. Round damage up to whole rupees and cap it at the item's remaining value.
 - A floating red price drop pops off the item ("−₹1,200") and the price tag above it ticks down.
 - At zero value the item shatters, disappears, and counts toward the ghost.
 
@@ -441,6 +443,8 @@ ghosted-movers/
 **Implementation style.** Use typed GDScript with tabs, snake_case members/functions, PascalCase classes and UPPER_SNAKE_CASE constants. Keep header/section comments short. Preserve filenames named in this spec; new supporting scripts use snake_case. All tunable numbers live in `autoload/Balance.gd`. `core/export_controller_settings.gd` generates the controller's `settings.json` from those values; regenerate it after changing browser settings.
 
 **Phase 1 harness.** `Main.tscn` with `main.gd` instances four minimal `actors/Mover.tscn` capsules, using `actors/mover.gd`. `Balance`, `Net` and `InputRouter` are autoloads. `InputRouter` exposes one `PlayerInput` snapshot per slot, with direction, held buttons and both edge sets. Connected phones take priority; keys 1–4 select an unconnected keyboard slot, WASD/arrows move, Space grabs, E throws and Shift braces. Ready phones receive mover controls in this test only; real role rotation remains Phase 5. Grab/throw are displayed as input only until Phase 2. `core/plumbing_check.gd` verifies real socket traffic and capsule movement. See `README.md` for run and check commands. No match-flow or sound stubs are required in Phase 1.
+
+**Phase 2 harness.** `Main.tscn` instances a one-room CSG greybox (`arenas/Mansion.tscn`) with vase, TV and clock loot and a `TruckZone`, plus four movers. `Sfx.gd` holds a procedural banking sound until real audio arrives in Phase 7. `core/carrying_check.gd` verifies carrying, damage, banking and grab conflicts with real Jolt physics.
 
 ## 24-hour build plan
 
