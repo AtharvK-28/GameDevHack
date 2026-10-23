@@ -188,8 +188,8 @@ func _check_containment() -> void:
 func _check_truck() -> void:
 	# Loot released anywhere in the half-circle banks; beside the truck or past the radius it doesn't.
 	var truck: Area3D = arena.truck
-	_check(truck.contains_point(Vector3(4.2, 0.5, 24.5)) and truck.contains_point(Vector3(6.8, 0.5, 26.9)), "The half-circle behind the tailgate counts as the truck")
-	_check(not truck.contains_point(Vector3(3.8, 0.5, 24.5)) and not truck.contains_point(Vector3(8.0, 0.5, 22.0)), "Past the radius or beside the truck doesn't count")
+	_check(truck.contains_point(Vector3(5.2, 0.5, 24.5)) and truck.contains_point(Vector3(6.8, 0.5, 26.3)), "The half-circle behind the tailgate counts as the truck")
+	_check(not truck.contains_point(Vector3(4.8, 0.5, 24.5)) and not truck.contains_point(Vector3(8.0, 0.5, 22.0)), "Past the radius or beside the truck doesn't count")
 	await _start(0, DELIVERY_POINT, 0.0)
 	await _pick_up(0, VASE_KIND)
 	var banked_before: int = truck.banked_items

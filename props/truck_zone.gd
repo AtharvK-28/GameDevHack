@@ -89,7 +89,7 @@ func _build_half_circle() -> void:
 	collision.shape = shape
 	collision.position.y = zone_size.y / 2.0
 	add_child(collision)
-	var lift: float = Balance.ARENA_FLOOR_SLAB * 2.0
+	var lift: float = Balance.DELIVERY_LIFT
 	var vertices := PackedVector3Array()
 	for step: int in range(Balance.DELIVERY_SEGMENTS):
 		var from: float = PI / 2.0 + PI * step / Balance.DELIVERY_SEGMENTS

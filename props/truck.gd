@@ -21,7 +21,7 @@ func _build_model() -> void:
 	var turn: float = deg_to_rad(Balance.TRUCK_MODEL_HEADING) - PI
 	var basis := Basis(Vector3.UP, turn).scaled(Vector3.ONE * scale_factor)
 	var origin: Vector3 = -(basis * Balance.TRUCK_MODEL_TAILGATE)
-	origin.y = -Balance.TRUCK_MODEL_FLOOR * scale_factor
+	origin.y = -Balance.TRUCK_MODEL_FLOOR * scale_factor - Balance.TRUCK_SINK
 	var model := MeshInstance3D.new()
 	model.mesh = load(Balance.TRUCK_MODEL_PATH)
 	model.transform = Transform3D(basis, origin)
