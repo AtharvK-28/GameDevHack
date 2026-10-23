@@ -119,6 +119,7 @@ const BEAM_CONE_ALPHA: float = 0.15 # Opacity of the visible beam cone, 0 to 1.
 const EXORCISE_TIME: float = 1.5 # Seconds a possessed prop must stay in the beam.
 
 # --- Ghost settings ---
+const GHOST_MODEL_PATH: String = "res://assets/models/ghost/ghost.glb"
 const WISP_SPEED: float = 7.0 # Metres per second; the wisp passes through walls.
 const WISP_HEIGHT: float = 1.2 # Metres above the floor.
 const WISP_RADIUS: float = 0.35

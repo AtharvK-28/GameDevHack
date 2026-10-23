@@ -179,10 +179,10 @@ func setup_match_round(round_seed: int, participants: Array[int], ghost_slot: in
 
 
 func reset_for_lobby() -> void:
-	# Between matches: no ghost, and every mover back at the truck.
+	# Between matches: no ghost and no movers on the board; players appear when a round starts.
 	_remove_ghost()
 	for mover: CharacterBody3D in movers:
-		mover.reset_for_round(_spawn_point(mover.slot), true)
+		mover.reset_for_round(_spawn_point(mover.slot), false)
 	camera.snap()
 
 
@@ -244,6 +244,7 @@ func _build_camera() -> void:
 	environment.environment.background_color = Color("162a2b")
 	environment.environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	environment.environment.ambient_light_color = Color.WHITE
+	environment.environment.glow_enabled = true # Bloom on the ghost's glow, as the art direction asks.
 	add_child(environment)
 
 

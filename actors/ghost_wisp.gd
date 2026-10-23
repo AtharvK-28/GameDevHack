@@ -15,7 +15,8 @@ var freeze_left: float = 0.0
 var lockout_left: float = 0.0
 var hauntings: Array[Haunting] = []
 var shimmer_time: float = 0.0
-var body_mesh := MeshInstance3D.new()
+var body_mesh := MeshInstance3D.new() # Holds the ghost model; hidden while possessing.
+var model: GhostModel
 var material := StandardMaterial3D.new()
 var demo_rules: bool = false # Archived harnesses retain all five furniture actions and slime.
 var mover_count: int = 1
@@ -134,6 +135,7 @@ func leave() -> void:
 	position = Vector3(at.x, Balance.WISP_HEIGHT, at.z)
 	_clamp_to_bounds()
 	body_mesh.show()
+	model.play_emerge()
 
 
 func exorcised_from(prop: Possessable) -> void:
@@ -142,6 +144,7 @@ func exorcised_from(prop: Possessable) -> void:
 	leave()
 	freeze_left = Balance.EXORCISE_FREEZE
 	lockout_left = Balance.POSSESS_LOCKOUT
+	model.play_exorcised(Balance.EXORCISE_FREEZE)
 	print("Ghost exorcised: frozen for %.0f s, no possessing for %.0f s" % [Balance.EXORCISE_FREEZE, Balance.POSSESS_LOCKOUT])
 	exorcised.emit(slot)
 
@@ -192,6 +195,7 @@ func _try_haunting(index: int) -> void:
 		return
 	energy -= hauntings[index].cost
 	hauntings[index].trigger(self)
+	model.play_cast()
 	if demo_rules:
 		shared_lock_left = Balance.HAUNT_SHARED_LOCK
 
@@ -227,6 +231,7 @@ func _try_curse() -> void:
 		return
 	energy -= Balance.CURSE_COST
 	curse_target.curse()
+	model.play_cast()
 	curse_cooldown_left = Balance.CURSE_COOLDOWN
 	shared_lock_left = Balance.HAUNT_SHARED_LOCK
 	_update_curse_target()
@@ -303,6 +308,8 @@ func _process(delta: float) -> void:
 	var colour: Color = Balance.WISP_FROZEN_COLOUR if is_frozen() else Balance.WISP_COLOUR
 	material.albedo_color = Color(colour, lerpf(Balance.WISP_ALPHA_MIN, Balance.WISP_ALPHA_MAX, 0.5 + 0.5 * wave))
 	body_mesh.position.y = wave * Balance.WISP_BOB_HEIGHT
+	if not is_instance_valid(possessing) and not is_frozen():
+		model.update_motion(Vector3(stick.x, 0.0, stick.y) * Balance.WISP_SPEED, delta)
 
 
 func _clamp_to_bounds() -> void:
@@ -312,10 +319,13 @@ func _clamp_to_bounds() -> void:
 
 
 func _build_body() -> void:
-	var egg := SphereMesh.new()
-	egg.radius = Balance.WISP_RADIUS
-	egg.height = Balance.WISP_BODY_HEIGHT
-	body_mesh.mesh = egg
+	# The ghost model (assets/source/ghost/GHOST_GUIDE.md) shimmers 25–45% itself; the material below only
+	# tracks that shimmer for the checks.
+	model = GhostModel.new()
+	model.add_child(load(Balance.GHOST_MODEL_PATH).instantiate())
+	body_mesh.add_child(model)
+	for part: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
+		part.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF # A shadow would give the wisp away.
 	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	body_mesh.material_override = material
