@@ -165,14 +165,19 @@ static func _build_wall(arena: Node3D, wall: Dictionary, layout: Dictionary) -> 
 
 	var half: float = Balance.ARENA_WALL_THICKNESS / 2.0
 	var middle: Vector3 = box.get_center()
+	var outside_sides: Array[float] = [] # Faces that look out of the house get shutters by their windows.
 	for side: float in [-1.0, 1.0]:
 		var room: Dictionary = _indoor_room_at(layout, middle + _wall_normal(wall) * side * (half + 0.05))
 		var surface: String = layout.exterior_surface if room.is_empty() else room.wall_surface
 		_add_mesh(body, _segment_box(wall.from, wall.to, 0.0, top, half, side * half / 2.0), _surface(surface), fades)
-		if not room.is_empty():
+		if room.is_empty():
+			outside_sides.append(side)
+		else:
 			_add_trim(body, wall, side, float(room.floor), layout.trim, fades)
 	for along: float in wall.get("windows", []):
 		_add_window(body, wall, along, _surface(layout.trim.rail), fades)
+		for side: float in outside_sides:
+			_add_shutters(body, wall, along, side, _surface(layout.trim.wainscot), fades)
 
 
 static func _add_trim(body: StaticBody3D, wall: Dictionary, side: float, floor_height: float, trim: Dictionary, fades: bool) -> void:
@@ -203,12 +208,30 @@ static func _add_window(body: StaticBody3D, wall: Dictionary, along: float, fram
 	glass.emission_enabled = true
 	glass.emission = Balance.WINDOW_GLOW_COLOUR
 	glass.emission_energy_multiplier = Balance.WINDOW_GLOW_ENERGY
-	_add_mesh(body, _box_around(centre, direction, size.x, size.y, depth + 0.02), glass, fades)
+	_add_mesh(body, _box_around(centre, direction, size.x, size.y, depth + 0.02), glass, fades).add_to_group("window_glass")
 	for side: float in [-1.0, 1.0]:
 		_add_mesh(body, _box_around(centre + direction * side * (size.x + frame) / 2.0, direction, frame, size.y + frame * 2.0, depth + 0.04), frame_material, fades)
 		_add_mesh(body, _box_around(centre + Vector3.UP * side * (size.y + frame) / 2.0, direction, size.x, frame, depth + 0.04), frame_material, fades)
 	_add_mesh(body, _box_around(centre, direction, frame / 2.0, size.y, depth + 0.04), frame_material, fades)
 	_add_mesh(body, _box_around(centre, direction, size.x, frame / 2.0, depth + 0.04), frame_material, fades)
+
+
+static func _add_shutters(body: StaticBody3D, wall: Dictionary, along: float, side: float, material: Material, fades: bool) -> void:
+	# Two shutters folded back against the outside face, one each side of the window, each on its own hinge so
+	# the surroundings can make them creak (group "shutters").
+	var start := Vector3(wall.from[0], 0.0, wall.from[1])
+	var direction: Vector3 = (Vector3(wall.to[0], 0.0, wall.to[1]) - start).normalized()
+	var size: Vector2 = Balance.ARENA_WINDOW_SIZE
+	var outward: Vector3 = _wall_normal(wall) * side * (Balance.ARENA_WALL_THICKNESS / 2.0 + Balance.ARENA_SHUTTER_THICKNESS)
+	var centre: Vector3 = start + direction * along + Vector3.UP * (float(wall.get("floor", 0.0)) + Balance.ARENA_WINDOW_SILL + size.y / 2.0)
+	for edge: float in [-1.0, 1.0]:
+		var hinge := Node3D.new()
+		hinge.position = centre + direction * edge * (size.x / 2.0 + Balance.ARENA_WINDOW_FRAME) + outward
+		hinge.set_meta("swing", edge * side)
+		hinge.add_to_group("shutters")
+		body.add_child(hinge)
+		var panel: AABB = _box_around(direction * edge * size.x / 4.0, direction, size.x / 2.0, size.y, Balance.ARENA_SHUTTER_THICKNESS)
+		_add_mesh(hinge, panel, material, fades)
 
 
 static func _build_fence(arena: Node3D, fence: Dictionary, surface: String) -> void:
@@ -450,8 +473,9 @@ static func _add_box_shape(body: StaticBody3D, box: AABB) -> void:
 	body.add_child(shape)
 
 
-static func _add_mesh(body: StaticBody3D, box: AABB, material: Material, fades: bool) -> void:
-	# A fading wall's parts each get their own copy of the material, and never cast shadows.
+static func _add_mesh(body: Node3D, box: AABB, material: Material, fades: bool) -> MeshInstance3D:
+	# A fading wall's parts each get their own copy of the material, and never cast shadows. Positions are in
+	# the parent's space (the arena's, for wall bodies at the origin).
 	var mesh := MeshInstance3D.new()
 	var box_mesh := BoxMesh.new()
 	box_mesh.size = box.size
@@ -461,6 +485,7 @@ static func _add_mesh(body: StaticBody3D, box: AABB, material: Material, fades: 
 	if fades:
 		mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	body.add_child(mesh)
+	return mesh
 
 
 static func _set_world_layers(body: StaticBody3D) -> void:

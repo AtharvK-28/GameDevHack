@@ -469,7 +469,7 @@ ghosted-movers/
 │   ├── arena_builder.gd  # builds any arena from its layout data: floors, walls, railings, stairs, truck, room zones
 │   ├── layouts/          # <arena>_layout.json (metres) and the floor-plan SVGs they come from
 │   ├── fade_wall.gd      # a camera-facing wall that fades while it hides a player
-│   ├── dressing/         # hand-placed decor, lamps and grounds per arena (MansionDressing.tscn)
+│   ├── dressing/         # per arena: decor and lamps (MansionDressing.tscn); surroundings, wildlife and weather (MansionEnvironment.tscn)
 │   ├── Greybox.tscn      # the one-room test arena the headless checks use
 │   ├── Mansion.tscn      # built from layouts/mansion_layout.json
 │   ├── Ship.tscn

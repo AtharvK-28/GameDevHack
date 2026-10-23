@@ -8,6 +8,8 @@ Every third-party asset in the game, where it came from, and its licence. This f
 Made for the Artificial Arcade hackathon (PS02: Chaos Control).  
 Mover and ghost characters: the team's own models (`assets/models/mover/`, `assets/models/ghost/`).  
 Surface textures, portraits, cobweb and ghost icon: made by the project's own `tools/` scripts.  
+Wildlife (crows, bats, cat, rats, frogs, owl), the scarecrow, mailbox and hydrant: built from simple shapes in `arenas/dressing/`.  
+All sounds (banking chime, night ambience, thunder, owl, howl, crows): synthesized in `autoload/Sfx.gd`.  
 
 ## Menus
 
@@ -38,6 +40,11 @@ Author: Kenney
 Source: [kenney.nl: Fantasy Town Kit](https://kenney.nl/assets/fantasy-town-kit)  
 License: CC0 1.0. Fountain, hedges, street lamp (`assets/models/decor/town/`).  
 
+### Kenney City Kit (Roads)
+Author: Kenney  
+Source: [kenney.nl: City Kit Roads](https://kenney.nl/assets/city-kit-roads)  
+License: CC0 1.0. Road, street lamp and street sign (`assets/models/decor/roads/`).  
+
 ### Kenney Furniture Kit
 Author: Kenney  
 Source: [kenney.nl: Furniture Kit](https://kenney.nl/assets/furniture-kit)  
@@ -46,7 +53,7 @@ License: CC0 1.0. Bookcases, sofas, armchair, kitchen units (`assets/models/deco
 ### Kenney Nature Kit
 Author: Kenney  
 Source: [kenney.nl: Nature Kit](https://kenney.nl/assets/nature-kit)  
-License: CC0 1.0. Statue and grass tufts (`assets/models/decor/nature/`).  
+License: CC0 1.0. Statue, grass, trees, bushes, mushrooms, stumps, logs and rocks (`assets/models/decor/nature/`).  
 
 The Kenney models are unchanged files. In the game their colours are muted toward grey and darkened (`DECOR_DESATURATION`, `DECOR_SHADE` in `autoload/Balance.gd`) so decor sits in the Mansion's dusk mood.
 
