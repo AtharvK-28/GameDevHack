@@ -142,8 +142,11 @@ func _check_live_and_ghost_limits() -> void:
 	_check(absf(yaw - SETTINGS.CAMERA_YAW) < 1.0 and absf(pitch - SETTINGS.CAMERA_ANGLE) < 1.0, "Three-quarter camera: %.1f° down, %.1f° sideways" % [pitch, yaw])
 	var mover_b: CharacterBody3D = playground.movers[1]
 	await _wait(1.5)
-	var focus_gap: float = Vector2(camera.focus.x - mover_b.global_position.x, camera.focus.z - mover_b.global_position.z).length()
-	_check(focus_gap < 1.0 and not playground.movers[0].visible, "The camera follows the one mover in play (%.2f m off); the ghost's mover is hidden" % focus_gap)
+	# The camera frames the movers and the ghost; with one of each, it centres between them.
+	var ghost_point: Vector3 = game.ghost().global_position
+	var middle := (mover_b.global_position + ghost_point) / 2.0
+	var focus_gap: float = Vector2(camera.focus.x - middle.x, camera.focus.z - middle.z).length()
+	_check(focus_gap < 1.0 and not playground.movers[0].visible, "The camera frames the mover and the ghost together (%.2f m off); the ghost's mover is hidden" % focus_gap)
 
 	var ghost: Node3D = game.ghost()
 	_check(ghost != null and ghost.demo_rules and ghost.mover_count == 1, "The demo ghost is in play against one mover")
@@ -183,8 +186,9 @@ func _check_curse_slowdown() -> void:
 		for candidate: Node in get_nodes_in_group("loot"):
 			if candidate.weight_class != SETTINGS.TWO_PERSON:
 				item = candidate
-	_place(mover_b, Vector3(-3.5, MOVER_HEIGHT, 0.8), Vector3.RIGHT)
-	item.global_position = Vector3(-3.5 + SETTINGS.HOLD_DISTANCE, SETTINGS.LOOT_SIZES[item.loot_kind].y / 2.0 + 0.03, 0.8)
+	# Open ground in front of the house, where seeded loot never spawns, so nothing else can be bumped or grabbed.
+	_place(mover_b, Vector3(-5.0, MOVER_HEIGHT, 7.0), Vector3.RIGHT)
+	item.global_position = Vector3(-5.0 + SETTINGS.HOLD_DISTANCE, SETTINGS.LOOT_SIZES[item.loot_kind].y / 2.0 + 0.03, 7.0)
 	item.linear_velocity = Vector3.ZERO
 	await _wait(SETTLE_SECONDS)
 	_send(1, {"type": "btn", "b": "grab", "down": true})

@@ -1,6 +1,6 @@
 # The shared screen's camera: a three-quarter dollhouse view, 55° down and 20° sideways.
-# With follow_movers on, it eases toward the centre of the movers in play and pulls back far enough to frame
-# them all (12–26 m), clamped to the arena. Shake (trauma² × noise) is only raised by abilities such as House Shake.
+# With follow_movers on, it eases toward the centre of the movers in play and the ghost, and pulls back far
+# enough to frame them all (12–26 m), clamped to the arena. Shake (trauma² × noise) is only raised by abilities such as House Shake.
 extends Camera3D
 
 # --- Settings ---
@@ -60,6 +60,9 @@ func _framing() -> Array:
 	var points: Array[Vector3] = []
 	for mover: Node3D in get_tree().get_nodes_in_group("movers"):
 		points.append(mover.global_position)
+	# The ghost counts too: where the wisp is, or the prop it is hiding in.
+	for ghost: Node3D in get_tree().get_nodes_in_group("ghosts"):
+		points.append(ghost.possessing.global_position if is_instance_valid(ghost.possessing) else ghost.global_position)
 	if points.is_empty():
 		return [Balance.CAMERA_TARGET, Balance.CAMERA_DISTANCE]
 	var centre := Vector3.ZERO
