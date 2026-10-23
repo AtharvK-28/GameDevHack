@@ -111,7 +111,7 @@ Movers have one job: get value onto the truck. Every control is about carrying w
 - A floating red price drop pops off the item ("−₹1,200") and the price tag above it ticks down.
 - At zero value the item shatters, disappears, and counts toward the ghost.
 
-**Banking.** Release an item inside the truck zone and it banks: the value locks, a cash-register sound plays, and it despawns with a floating "+₹4,500".
+**Banking.** Release an item inside the truck zone and it banks. In the Old Mansion the zone is a green half-circle (3 m radius) on the ground behind the truck's open tailgate; the truck itself is solid. When an item banks the value locks, a cash-register sound plays, and it despawns with a floating "+₹4,500".
 
 - Only releasing GRAB inside the zone banks. Loot that is thrown, pushed or slid in by the ghost stays in play until a mover picks it up and releases it there.
 - A two-person item banks when its last holder lets go inside the zone. If one holder lets go first, the other is left dragging it.
@@ -454,7 +454,8 @@ ghosted-movers/
 │   ├── Possessable.gd    # component: kind = slider | door | dropper | hopper | rug
 │   ├── furniture/        # valueless possessable props: Crate, Door, Chandelier, Armour, Rug
 │   ├── Flashlight.tscn
-│   └── TruckZone.tscn
+│   ├── Truck.tscn        # the scanned pickup, scaled to the movers, with box colliders
+│   └── TruckZone.tscn    # banking zone: a box, or a half-circle behind a tailgate
 ├── hauntings/
 │   ├── Haunting.gd       # base: warn() → run() → end(), cost, cooldown
 │   ├── HouseShake.gd

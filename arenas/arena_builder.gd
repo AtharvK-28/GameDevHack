@@ -6,6 +6,7 @@ class_name ArenaBuilder
 extends RefCounted
 
 const TRUCK_SCENE := preload("res://props/TruckZone.tscn")
+const TRUCK_MODEL_SCENE := preload("res://props/Truck.tscn")
 
 # --- Loading ---
 static func load_layout(path: String) -> Dictionary:
@@ -160,14 +161,18 @@ static func _build_stairs(arena: Node3D, stairs: Dictionary) -> void:
 
 # --- Truck ---
 static func _build_truck(arena: Node3D, truck: Dictionary) -> Area3D:
-	var bed: Rect2 = rect_of(truck.bed)
-	_visual_box(arena, "TruckBed", _box_from_rect(bed, 0.0, Balance.ARENA_FLOOR_SLAB * 2.0), Color(truck.colour))
-	var cab: Rect2 = rect_of(truck.cab)
-	_solid_box(arena, "TruckCab", _box_from_rect(cab, 0.0, truck.cab_height), Color(truck.cab_colour), 1.0)
-	var zone_rect: Rect2 = rect_of(truck.zone)
+	# The truck model sits with its tailgate on the given point, its open back facing "faces";
+	# the delivery half-circle shares that point and direction.
+	var tailgate := Vector3(truck.tailgate[0], 0.0, truck.tailgate[1])
+	var yaw: float = atan2(truck.faces[1], -truck.faces[0]) # Turns local −X onto the faces direction.
+	var body: Node3D = TRUCK_MODEL_SCENE.instantiate()
+	body.position = tailgate
+	body.rotation.y = yaw
+	arena.add_child(body)
 	var zone: Area3D = TRUCK_SCENE.instantiate()
-	zone.zone_size = Vector3(zone_rect.size.x, Balance.TRUCK_SIZE.y, zone_rect.size.y)
-	zone.position = Vector3(zone_rect.get_center().x, 0.0, zone_rect.get_center().y)
+	zone.radius = Balance.DELIVERY_RADIUS
+	zone.position = tailgate
+	zone.rotation.y = yaw
 	arena.add_child(zone)
 	return zone
 

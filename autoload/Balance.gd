@@ -306,6 +306,21 @@ const DAMAGE_COLOUR := Color("ff7676")
 const BANK_COLOUR := Color("c2e78b")
 const DAMAGE_BUZZ_MS: int = 60
 
+# --- Truck (the scanned pickup, decimated; visual size scaled to the 1.6 m movers) ---
+const TRUCK_MODEL_PATH: String = "res://assets/models/truck/truck.obj"
+const TRUCK_MODEL_HEADING: float = -10.56 # Degrees from +X toward +Z of the scan's cab-to-tailgate line.
+const TRUCK_MODEL_LENGTH: float = 41.54 # The scan's length in its own units.
+const TRUCK_MODEL_TAILGATE := Vector3(10.48, 0.0, -26.82) # Middle of the tailgate in the scan's units.
+const TRUCK_MODEL_FLOOR: float = -7.15 # The scan's wheel bottoms (its y).
+const TRUCK_LENGTH: float = 4.5 # Metres: a 4.9 m pickup × 0.914 (1.6 m movers for 1.75 m people).
+const TRUCK_WIDTH: float = 1.85
+const TRUCK_BED_LENGTH: float = 2.1 # From the tailgate to the cab.
+const TRUCK_BED_HEIGHT: float = 1.0 # The bed's sides; its solid collider.
+const TRUCK_CAB_HEIGHT: float = 1.67 # Roof height; the cab's solid collider.
+const DELIVERY_RADIUS: float = 3.0 # Metres: the half-circle behind the tailgate where released loot banks.
+const DELIVERY_COLOUR := Color(0.43, 0.85, 0.35, 0.45)
+const DELIVERY_SEGMENTS: int = 32 # Half-circle smoothness.
+
 # --- Arena build settings (arenas/arena_builder.gd; geometry lives in arenas/layouts/) ---
 const ARENA_WALL_HEIGHT: float = 3.0 # Metres above each room's floor: a 3.3 m mansion ceiling scaled to 1.6 m movers.
 const ARENA_WALL_THICKNESS: float = 0.2

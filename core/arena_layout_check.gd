@@ -12,6 +12,7 @@ const ARRIVE_DISTANCE: float = 0.4 # Metres from a waypoint that counts as reach
 const ROUTE_TIMEOUT: float = 25.0 # Seconds allowed for a route.
 const PIANO_SHORT_SIDE: float = 1.4 # The piano's footprint is 2.2 × 1.4 m; turned, it needs 1.4 m.
 const DOOR_RAY_HEIGHT: float = 0.5 # Above the floor, where rays cross a doorway (under the 0.9 m fence).
+const DELIVERY_POINT := Vector3(5.5, 0, 24.5) # Inside the half-circle behind the tailgate at (7, 24.5).
 const VASE_KIND: int = 0
 const TV_KIND: int = 1
 const CLOCK_KIND: int = 2
@@ -51,6 +52,7 @@ func _run() -> void:
 	await _check_stairs()
 	await _check_piano_stairs()
 	await _check_containment()
+	await _check_truck()
 	print("ARENA LAYOUT CHECK: %s" % ("PASS" if failures == 0 else "%d failures" % failures))
 	quit(0 if failures == 0 else 1)
 
@@ -90,9 +92,9 @@ func _check_doorways() -> void:
 func _check_routes() -> void:
 	# Every room to the truck; the gallery route carries a vase down the stairs.
 	var routes: Dictionary = {
-		"main room": [Vector3(6, 0, 11), Vector3(7.75, 0, 14), Vector3(7.75, 0, 17), Vector3(8.5, 0, 24.5)],
-		"kitchen": [Vector3(16, 0, 11), Vector3(13, 0, 11), Vector3(11, 0, 11), Vector3(7.75, 0, 14), Vector3(7.75, 0, 17), Vector3(8.5, 0, 24.5)],
-		"garden": [Vector3(15, 0, 19), Vector3(11, 0, 16.5), Vector3(9, 0, 16.5), Vector3(8.5, 0, 20), Vector3(8.5, 0, 24.5)],
+		"main room": [Vector3(6, 0, 11), Vector3(7.75, 0, 14), Vector3(7.75, 0, 17), Vector3(7.75, 0, 21.5), DELIVERY_POINT],
+		"kitchen": [Vector3(16, 0, 11), Vector3(13, 0, 11), Vector3(11, 0, 11), Vector3(7.75, 0, 14), Vector3(7.75, 0, 17), Vector3(7.75, 0, 21.5), DELIVERY_POINT],
+		"garden": [Vector3(15, 0, 19), Vector3(11, 0, 16.5), Vector3(9, 0, 16.5), Vector3(8.5, 0, 20), Vector3(7.75, 0, 21.5), DELIVERY_POINT],
 	}
 	for room: String in routes:
 		var points: Array = routes[room]
@@ -102,7 +104,7 @@ func _check_routes() -> void:
 	# From the gallery, carrying a vase down the stairs.
 	await _start(0, Vector3(6, 0, 3), 1.2)
 	var vase := await _pick_up(0, VASE_KIND)
-	var gallery_route: Array = [Vector3(1.5, 0, 4.5), Vector3(1.5, 0, 11.5), Vector3(7.75, 0, 14), Vector3(7.75, 0, 17), Vector3(8.5, 0, 22.5)]
+	var gallery_route: Array = [Vector3(1.5, 0, 4.5), Vector3(1.5, 0, 11.5), Vector3(7.75, 0, 14), Vector3(7.75, 0, 17), Vector3(7.75, 0, 21.5), DELIVERY_POINT]
 	var reached: bool = await _walk(0, gallery_route)
 	_check(reached and playground.movers[0].held_item == vase, "A mover carries a vase from the gallery, down the stairs, to the truck")
 	await _release_all()
@@ -180,6 +182,27 @@ func _check_containment() -> void:
 	_input(0, Vector2(-1.0, 0.0), {})
 	await _seconds(1.2)
 	_check(mover.global_position.x > 0.0, "A see-through wall still blocks (x %.2f)" % mover.global_position.x)
+	_input(0, Vector2.ZERO, {})
+
+
+func _check_truck() -> void:
+	# Loot released anywhere in the half-circle banks; beside the truck or past the radius it doesn't.
+	var truck: Area3D = arena.truck
+	_check(truck.contains_point(Vector3(4.2, 0.5, 24.5)) and truck.contains_point(Vector3(6.8, 0.5, 26.9)), "The half-circle behind the tailgate counts as the truck")
+	_check(not truck.contains_point(Vector3(3.8, 0.5, 24.5)) and not truck.contains_point(Vector3(8.0, 0.5, 22.0)), "Past the radius or beside the truck doesn't count")
+	await _start(0, DELIVERY_POINT, 0.0)
+	await _pick_up(0, VASE_KIND)
+	var banked_before: int = truck.banked_items
+	await _release_all()
+	await _seconds(0.5)
+	_check(truck.banked_items == banked_before + 1, "A vase released in the half-circle is delivered")
+	await _clear_carryables()
+	# The truck is solid: a mover walking into its side stops.
+	var mover: CharacterBody3D = playground.movers[0]
+	await _start(0, Vector3(9.0, 0, 22.3), 0.0)
+	_input(0, Vector2(0.0, 1.0), {})
+	await _seconds(1.5)
+	_check(mover.global_position.z < 23.6, "The truck is solid (mover stopped at z %.2f)" % mover.global_position.z)
 	_input(0, Vector2.ZERO, {})
 
 

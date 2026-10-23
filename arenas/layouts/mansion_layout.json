@@ -41,12 +41,8 @@
 		{"id": "path-driveway", "rect": [6.5, 15, 2.5, 7.5], "colour": "DCD6C8"}
 	],
 	"truck": {
-		"zone": [6.27, 23.2, 4.47, 2.6],
-		"bed": [6, 23, 5, 3],
-		"cab": [11, 23.33, 1.5, 2.34],
-		"cab_height": 2.2,
-		"colour": "D6E6F7",
-		"cab_colour": "7FAEDF"
+		"tailgate": [7.0, 24.5],
+		"faces": [-1, 0]
 	},
 	"spawns": {
 		"movers": [[7.0, 21.0], [8.5, 21.0], [7.0, 19.8], [8.5, 19.8]],
