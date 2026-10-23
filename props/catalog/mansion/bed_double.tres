@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="CatalogItem" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://props/catalog/catalog_item.gd" id="1"]
+[ext_resource type="PackedScene" path="res://assets/models/furniture/kenney/bedDouble.glb" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"bed_double"
+display_name = "Bed double"
+category = 2
+model = ExtResource("2")
+model_scale = 1.0
+value = 0
+weight_class = 0
+fragility = 1
+throwable = false
+two_person_handles = false
+count = 1
+possessable_kind = 0
+footprint = Vector3(1.82, 0.71, 2.14)
+spot_roles = Array[StringName]([])
+pools = Array[StringName]([&"mansion"])

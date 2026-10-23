@@ -1,0 +1,179 @@
+[gd_scene load_steps=18 format=3]
+
+[sub_resource type="TorusMesh" id="TorusMesh_1"]
+inner_radius = 0.5
+outer_radius = 0.58
+rings = 16
+ring_segments = 6
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2"]
+albedo_color = Color(0.788, 0.631, 0.29, 1)
+roughness = 0.8
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_3"]
+top_radius = 0.1
+bottom_radius = 0.16
+height = 0.3
+radial_segments = 10
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_4"]
+top_radius = 0.035
+bottom_radius = 0.035
+height = 0.16
+radial_segments = 6
+rings = 1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5"]
+albedo_color = Color(0.937, 0.902, 0.824, 1)
+roughness = 0.8
+
+[sub_resource type="SphereMesh" id="SphereMesh_6"]
+radius = 0.035
+height = 0.07
+radial_segments = 8
+rings = 4
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7"]
+albedo_color = Color(1.0, 0.851, 0.541, 1)
+roughness = 0.8
+emission_enabled = true
+emission = Color(1.0, 0.851, 0.541, 1)
+emission_energy_multiplier = 1.6
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_8"]
+top_radius = 0.035
+bottom_radius = 0.035
+height = 0.16
+radial_segments = 6
+rings = 1
+
+[sub_resource type="SphereMesh" id="SphereMesh_9"]
+radius = 0.035
+height = 0.07
+radial_segments = 8
+rings = 4
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_10"]
+top_radius = 0.035
+bottom_radius = 0.035
+height = 0.16
+radial_segments = 6
+rings = 1
+
+[sub_resource type="SphereMesh" id="SphereMesh_11"]
+radius = 0.035
+height = 0.07
+radial_segments = 8
+rings = 4
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_12"]
+top_radius = 0.035
+bottom_radius = 0.035
+height = 0.16
+radial_segments = 6
+rings = 1
+
+[sub_resource type="SphereMesh" id="SphereMesh_13"]
+radius = 0.035
+height = 0.07
+radial_segments = 8
+rings = 4
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_14"]
+top_radius = 0.035
+bottom_radius = 0.035
+height = 0.16
+radial_segments = 6
+rings = 1
+
+[sub_resource type="SphereMesh" id="SphereMesh_15"]
+radius = 0.035
+height = 0.07
+radial_segments = 8
+rings = 4
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_16"]
+top_radius = 0.035
+bottom_radius = 0.035
+height = 0.16
+radial_segments = 6
+rings = 1
+
+[sub_resource type="SphereMesh" id="SphereMesh_17"]
+radius = 0.035
+height = 0.07
+radial_segments = 8
+rings = 4
+
+[node name="ChandelierModel" type="Node3D"]
+
+[node name="Ring" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.12, 0)
+mesh = SubResource("TorusMesh_1")
+material_override = SubResource("StandardMaterial3D_2")
+
+[node name="Hub" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.2, 0)
+mesh = SubResource("CylinderMesh_3")
+material_override = SubResource("StandardMaterial3D_2")
+
+[node name="Candle0" type="MeshInstance3D" parent="."]
+position = Vector3(0.54, 0.24, 0.0)
+mesh = SubResource("CylinderMesh_4")
+material_override = SubResource("StandardMaterial3D_5")
+
+[node name="Flame0" type="MeshInstance3D" parent="."]
+position = Vector3(0.54, 0.35, 0.0)
+mesh = SubResource("SphereMesh_6")
+material_override = SubResource("StandardMaterial3D_7")
+
+[node name="Candle1" type="MeshInstance3D" parent="."]
+position = Vector3(0.27, 0.24, 0.4677)
+mesh = SubResource("CylinderMesh_8")
+material_override = SubResource("StandardMaterial3D_5")
+
+[node name="Flame1" type="MeshInstance3D" parent="."]
+position = Vector3(0.27, 0.35, 0.4677)
+mesh = SubResource("SphereMesh_9")
+material_override = SubResource("StandardMaterial3D_7")
+
+[node name="Candle2" type="MeshInstance3D" parent="."]
+position = Vector3(-0.27, 0.24, 0.4677)
+mesh = SubResource("CylinderMesh_10")
+material_override = SubResource("StandardMaterial3D_5")
+
+[node name="Flame2" type="MeshInstance3D" parent="."]
+position = Vector3(-0.27, 0.35, 0.4677)
+mesh = SubResource("SphereMesh_11")
+material_override = SubResource("StandardMaterial3D_7")
+
+[node name="Candle3" type="MeshInstance3D" parent="."]
+position = Vector3(-0.54, 0.24, 0.0)
+mesh = SubResource("CylinderMesh_12")
+material_override = SubResource("StandardMaterial3D_5")
+
+[node name="Flame3" type="MeshInstance3D" parent="."]
+position = Vector3(-0.54, 0.35, 0.0)
+mesh = SubResource("SphereMesh_13")
+material_override = SubResource("StandardMaterial3D_7")
+
+[node name="Candle4" type="MeshInstance3D" parent="."]
+position = Vector3(-0.27, 0.24, -0.4677)
+mesh = SubResource("CylinderMesh_14")
+material_override = SubResource("StandardMaterial3D_5")
+
+[node name="Flame4" type="MeshInstance3D" parent="."]
+position = Vector3(-0.27, 0.35, -0.4677)
+mesh = SubResource("SphereMesh_15")
+material_override = SubResource("StandardMaterial3D_7")
+
+[node name="Candle5" type="MeshInstance3D" parent="."]
+position = Vector3(0.27, 0.24, -0.4677)
+mesh = SubResource("CylinderMesh_16")
+material_override = SubResource("StandardMaterial3D_5")
+
+[node name="Flame5" type="MeshInstance3D" parent="."]
+position = Vector3(0.27, 0.35, -0.4677)
+mesh = SubResource("SphereMesh_17")
+material_override = SubResource("StandardMaterial3D_7")

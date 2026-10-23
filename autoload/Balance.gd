@@ -163,6 +163,7 @@ const ROUND_SECONDS: float = 150.0
 const REVEAL_SECONDS: float = 3.0
 const DELIVERY_PERCENT: int = 70 # Integer arithmetic keeps the exact boundary fair.
 const LOOT_COUNTS: Array[int] = [6, 9, 12] # For 2, 3, 4 players.
+const HEAVY_LOOT_LIMITS: Array[int] = [1, 2, 2] # Most heavy items a round spawns, for 2, 3, 4 players.
 const MATCH_ROUNDS: Array[int] = [4, 3, 4]
 const RUPEES_PER_POINT: float = 100.0
 const MOVER_WIN_BONUS: float = 100.0

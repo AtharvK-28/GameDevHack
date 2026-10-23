@@ -8,6 +8,7 @@ signal shattered(last_carrier_slot: int)
 
 # --- Item settings ---
 @export_enum("Vase", "TV", "Clock", "Piano") var loot_kind: int = 0
+@export var catalog_item: CatalogItem # When set (the Mansion's pool), it replaces the kind's numbers and look.
 
 # Set by the match flow; one mover alone drags two-person items faster.
 static var lone_mover: bool = false
@@ -26,16 +27,26 @@ var price_label := Label3D.new()
 var curse_left: float = 0.0
 var curse_targeted: bool = false
 var body_material: StandardMaterial3D
+var model: Node3D # A catalog item's model, when there is one.
+var model_meshes: Array[MeshInstance3D] = []
+var curse_overlay: StandardMaterial3D
 var delivery_slots: Array[int] = [] # Last two-person team; retained while its last holder releases.
 
 # --- Setup ---
 func _ready() -> void:
-	item_name = Balance.LOOT_NAMES[loot_kind]
-	item_size = Balance.LOOT_SIZES[loot_kind]
-	weight_class = Balance.LOOT_WEIGHTS[loot_kind]
-	initial_value = Balance.LOOT_VALUES[loot_kind]
+	if catalog_item != null:
+		item_name = catalog_item.display_name
+		item_size = catalog_item.footprint
+		weight_class = catalog_item.weight_class
+		initial_value = catalog_item.value
+		fragility = catalog_item.fragility
+	else:
+		item_name = Balance.LOOT_NAMES[loot_kind]
+		item_size = Balance.LOOT_SIZES[loot_kind]
+		weight_class = Balance.LOOT_WEIGHTS[loot_kind]
+		initial_value = Balance.LOOT_VALUES[loot_kind]
+		fragility = Balance.LOOT_FRAGILITIES[loot_kind]
 	value = initial_value
-	fragility = Balance.LOOT_FRAGILITIES[loot_kind]
 	add_to_group("loot")
 	super()
 	_build_shape()
@@ -51,6 +62,11 @@ func _process(_delta: float) -> void:
 		body_material.emission_enabled = curse_left > 0.0 or curse_targeted
 		body_material.emission = Balance.CURSE_COLOUR
 		body_material.albedo_color = Balance.CURSE_COLOUR if curse_left > 0.0 else Balance.LOOT_COLOURS[loot_kind]
+	elif model != null:
+		# A catalog model keeps its own colours; a curse glows over it.
+		var cursed: bool = curse_left > 0.0 or curse_targeted
+		for mesh: MeshInstance3D in model_meshes:
+			mesh.material_overlay = curse_overlay if cursed else null
 
 
 func _physics_process(delta: float) -> void:
@@ -318,6 +334,19 @@ func _build_shape() -> void:
 	shape.size = item_size
 	collision.shape = shape
 	add_child(collision)
+	if catalog_item != null:
+		model = catalog_item.model.instantiate()
+		model.position.y = -item_size.y / 2.0 # Models are bottom-centred; the body's origin is its centre.
+		model.scale = Vector3.ONE * catalog_item.model_scale
+		add_child(model)
+		for mesh: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
+			model_meshes.append(mesh)
+		curse_overlay = StandardMaterial3D.new()
+		curse_overlay.albedo_color = Color(Balance.CURSE_COLOUR, 0.55)
+		curse_overlay.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		curse_overlay.emission_enabled = true
+		curse_overlay.emission = Balance.CURSE_COLOUR
+		return
 	var mesh := MeshInstance3D.new()
 	if loot_kind == 0:
 		var vase := CylinderMesh.new()

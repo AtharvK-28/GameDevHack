@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="CatalogItem" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://props/catalog/catalog_item.gd" id="1"]
+[ext_resource type="PackedScene" path="res://assets/models/furniture/kenney/loungeChair.glb" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"armchair"
+display_name = "Armchair"
+category = 0
+model = ExtResource("2")
+model_scale = 1.0
+value = 2000
+weight_class = 1
+fragility = 1
+throwable = false
+two_person_handles = false
+count = 2
+possessable_kind = 0
+footprint = Vector3(0.93, 0.87, 0.78)
+spot_roles = Array[StringName]([&"seat"])
+pools = Array[StringName]([&"mansion"])

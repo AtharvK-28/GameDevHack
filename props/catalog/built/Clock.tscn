@@ -1,0 +1,107 @@
+[gd_scene load_steps=15 format=3]
+
+[sub_resource type="BoxMesh" id="BoxMesh_1"]
+size = Vector3(0.56, 1.62, 0.42)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2"]
+albedo_color = Color(0.353, 0.227, 0.141, 1)
+roughness = 0.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_3"]
+size = Vector3(0.66, 0.16, 0.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_4"]
+size = Vector3(0.7, 0.18, 0.5)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_5"]
+top_radius = 0.21
+bottom_radius = 0.21
+height = 0.03
+radial_segments = 16
+rings = 1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6"]
+albedo_color = Color(0.937, 0.902, 0.824, 1)
+roughness = 0.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_7"]
+size = Vector3(0.03, 0.12, 0.01)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8"]
+albedo_color = Color(0.114, 0.102, 0.133, 1)
+roughness = 0.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_9"]
+size = Vector3(0.02, 0.17, 0.01)
+
+[sub_resource type="BoxMesh" id="BoxMesh_10"]
+size = Vector3(0.3, 0.7, 0.02)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_11"]
+albedo_color = Color(0.165, 0.149, 0.188, 1)
+roughness = 0.8
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_12"]
+top_radius = 0.07
+bottom_radius = 0.07
+height = 0.02
+radial_segments = 12
+rings = 1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_13"]
+albedo_color = Color(0.788, 0.631, 0.29, 1)
+roughness = 0.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_14"]
+size = Vector3(0.015, 0.4, 0.01)
+
+[node name="Clock" type="Node3D"]
+
+[node name="Body" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.81, 0)
+mesh = SubResource("BoxMesh_1")
+material_override = SubResource("StandardMaterial3D_2")
+
+[node name="Base" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.08, 0)
+mesh = SubResource("BoxMesh_3")
+material_override = SubResource("StandardMaterial3D_2")
+
+[node name="Hood" type="MeshInstance3D" parent="."]
+position = Vector3(0, 1.71, 0)
+mesh = SubResource("BoxMesh_4")
+material_override = SubResource("StandardMaterial3D_2")
+
+[node name="Face" type="MeshInstance3D" parent="."]
+position = Vector3(0, 1.42, 0.215)
+rotation = Vector3(1.5708, 0.0, 0.0)
+mesh = SubResource("CylinderMesh_5")
+material_override = SubResource("StandardMaterial3D_6")
+
+[node name="HourHand" type="MeshInstance3D" parent="."]
+position = Vector3(0.03, 1.45, 0.235)
+rotation = Vector3(0.0, 0.0, -0.5236)
+mesh = SubResource("BoxMesh_7")
+material_override = SubResource("StandardMaterial3D_8")
+
+[node name="MinuteHand" type="MeshInstance3D" parent="."]
+position = Vector3(-0.04, 1.47, 0.236)
+rotation = Vector3(0.0, 0.0, 0.4363)
+mesh = SubResource("BoxMesh_9")
+material_override = SubResource("StandardMaterial3D_8")
+
+[node name="Window" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.72, 0.215)
+mesh = SubResource("BoxMesh_10")
+material_override = SubResource("StandardMaterial3D_11")
+
+[node name="Pendulum" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.55, 0.225)
+rotation = Vector3(1.5708, 0.0, 0.0)
+mesh = SubResource("CylinderMesh_12")
+material_override = SubResource("StandardMaterial3D_13")
+
+[node name="Rod" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.78, 0.225)
+mesh = SubResource("BoxMesh_14")
+material_override = SubResource("StandardMaterial3D_13")

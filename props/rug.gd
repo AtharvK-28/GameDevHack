@@ -2,6 +2,9 @@
 # anything loose on it slides away at YANK_SPEED. It has no collision, so it never trips anyone just walking.
 extends Node3D
 
+# --- Look (optional) ---
+@export var model_scene: PackedScene # Replaces the plain red slab (the Mansion's patterned rug).
+
 # --- Rug state ---
 var item_name: String = "Rug"
 var rug_mesh := MeshInstance3D.new()
@@ -13,11 +16,14 @@ func _ready() -> void:
 	add_to_group("furniture")
 	var box := BoxMesh.new()
 	box.size = Vector3(Balance.RUG_SIZE.x, Balance.RUG_THICKNESS, Balance.RUG_SIZE.y)
-	rug_mesh.mesh = box
-	rug_mesh.position.y = Balance.RUG_THICKNESS / 2.0
-	var material := StandardMaterial3D.new()
-	material.albedo_color = Balance.RUG_COLOUR
-	rug_mesh.material_override = material
+	if model_scene != null:
+		rug_mesh.add_child(model_scene.instantiate())
+	else:
+		rug_mesh.mesh = box
+		rug_mesh.position.y = Balance.RUG_THICKNESS / 2.0
+		var material := StandardMaterial3D.new()
+		material.albedo_color = Balance.RUG_COLOUR
+		rug_mesh.material_override = material
 	add_child(rug_mesh)
 	area_shape.size = Vector3(Balance.RUG_SIZE.x, Balance.YANK_HEIGHT, Balance.RUG_SIZE.y)
 

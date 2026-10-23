@@ -4,6 +4,7 @@ extends RigidBody3D
 
 # --- Furniture settings ---
 @export_enum("Crate", "Armour") var furniture_kind: int = 0
+@export var catalog_item: CatalogItem # When set, its name, size, weight and model replace the kind's.
 
 var item_name: String
 var item_size: Vector3
@@ -11,9 +12,9 @@ var weight_class: int
 
 # --- Setup ---
 func _ready() -> void:
-	item_name = Balance.FURNITURE_NAMES[furniture_kind]
-	item_size = Balance.FURNITURE_SIZES[furniture_kind]
-	weight_class = Balance.FURNITURE_WEIGHTS[furniture_kind]
+	item_name = Balance.FURNITURE_NAMES[furniture_kind] if catalog_item == null else catalog_item.display_name
+	item_size = Balance.FURNITURE_SIZES[furniture_kind] if catalog_item == null else catalog_item.footprint
+	weight_class = Balance.FURNITURE_WEIGHTS[furniture_kind] if catalog_item == null else catalog_item.weight_class
 	add_to_group("furniture")
 	mass = Balance.WEIGHT_MASSES[weight_class]
 	collision_layer = Balance.LOOT_LAYER
@@ -33,6 +34,12 @@ func _build_shape() -> void:
 	shape.size = item_size
 	collision.shape = shape
 	add_child(collision)
+	if catalog_item != null:
+		var model: Node3D = catalog_item.model.instantiate()
+		model.position.y = -item_size.y / 2.0 # Models are bottom-centred; the body's origin is its centre.
+		model.scale = Vector3.ONE * catalog_item.model_scale
+		add_child(model)
+		return
 	var mesh := MeshInstance3D.new()
 	var box := BoxMesh.new()
 	box.size = item_size

@@ -200,11 +200,17 @@ Three single-floor, roofless houses, each with its own layout, signature hauntin
 | Arena | Item | Count | Value each (₹) | Weight | Fragility |
 | --- | --- | --- | --- | --- | --- |
 | Old Mansion | Grand piano | 1 | 20,000 | Two-person | 2 |
+| Old Mansion | Bookcase | 1 | 4,000 | Heavy | 1 |
 | Old Mansion | Grandfather clock | 1 | 8,000 | Heavy | 2 |
 | Old Mansion | Oil painting | 2 | 6,000 | Light | 1 |
 | Old Mansion | Old TV | 2 | 5,000 | Medium | 3 |
 | Old Mansion | Antique vase | 4 | 3,000 | Light | 3 |
 | Old Mansion | Armchair | 2 | 2,000 | Medium | 1 |
+| Old Mansion | Radio | 1 | 2,500 | Light | 3 |
+| Old Mansion | Side table | 1 | 2,500 | Medium | 1 |
+| Old Mansion | Coat stand | 1 | 1,500 | Medium | 2 |
+| Old Mansion | Table lamp | 1 | 1,500 | Light | 3 |
+| Old Mansion | Teddy bear | 1 | 1,000 | Light | 1 |
 | Ghost Ship | Treasure chest | 1 | 18,000 | Two-person | 1 |
 | Ghost Ship | Ship-in-a-bottle | 3 | 5,000 | Light | 3 |
 | Ghost Ship | Brass telescope | 2 | 4,000 | Light | 2 |
@@ -453,7 +459,8 @@ ghosted-movers/
 ├── props/
 │   ├── carryable.gd      # shared spring carry, throws and impacts for loot and the flashlight
 │   ├── Loot.tscn         # base RigidBody3D: value, weight, fragility, handles, price tag
-│   ├── loot/             # inherited scenes: Piano.tscn, Vase.tscn, Chest.tscn …
+│   ├── loot/             # the greybox loot kinds used by the checks: Piano.tscn, Vase.tscn …
+│   ├── catalog/          # furniture catalog: catalog_item.gd, catalog.gd, <arena>/*.tres entries, built/ hero models, furniture/ possessable props
 │   ├── Possessable.gd    # component: kind = slider | door | dropper | hopper | rug
 │   ├── furniture/        # valueless possessable props: Crate, Door, Chandelier, Armour, Rug
 │   ├── Flashlight.tscn

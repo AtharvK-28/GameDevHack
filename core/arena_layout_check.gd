@@ -99,11 +99,12 @@ func _check_doorways() -> void:
 
 # --- Dressing ---
 func _check_decor_clearance() -> void:
-	# Every decor collider stays clear of the loot, piano, flashlight, mover and ghost spawn spots.
+	# Decor and furniture stay clear of the piano, flashlight, mover and ghost spawn spots. Other loot spots sit
+	# on decor on purpose (a vase on a table); core/catalog_check.gd proves loot rests where it spawns.
 	var spots: Array = []
 	for spot: Dictionary in layout.spawns.loot:
-		spots.append([spot.id, Vector2(spot.at[0], spot.at[1]), DECOR_CLEARANCE])
-	spots.append(["piano", Vector2(layout.spawns.piano.at[0], layout.spawns.piano.at[1]), PIANO_CLEARANCE])
+		if spot.role == "piano":
+			spots.append([spot.id, Vector2(spot.at[0], spot.at[1]), PIANO_CLEARANCE])
 	for spot: Dictionary in layout.spawns.flashlights:
 		spots.append(["flashlight", Vector2(spot.at[0], spot.at[1]), DECOR_CLEARANCE])
 	for spot: Array in layout.spawns.movers:
@@ -123,7 +124,7 @@ func _check_decor_clearance() -> void:
 			if margin < worst:
 				worst = margin
 				worst_name = spot[0]
-	_check(worst >= 0.0, "Decor keeps clear of every spawn spot (tightest: %s, %.2f m to spare, %d colliders)" % [worst_name, worst, boxes.size()])
+	_check(worst >= 0.0, "Decor keeps clear of the piano, flashlight, mover and ghost spawns (tightest: %s, %.2f m to spare, %d colliders)" % [worst_name, worst, boxes.size()])
 
 
 func _check_arches() -> void:

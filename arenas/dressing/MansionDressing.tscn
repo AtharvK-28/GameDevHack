@@ -1,192 +1,241 @@
-[gd_scene load_steps=73 format=3]
+[gd_scene load_steps=98 format=3]
 
 [ext_resource type="Script" path="res://arenas/dressing/mansion_dressing.gd" id="1"]
-[ext_resource type="PackedScene" path="res://assets/models/decor/furniture/bookcaseClosedWide.glb" id="2"]
-[ext_resource type="PackedScene" path="res://assets/models/decor/furniture/loungeSofa.glb" id="3"]
-[ext_resource type="PackedScene" path="res://assets/models/decor/graveyard/candle-multiple.glb" id="4"]
-[ext_resource type="Texture2D" path="res://assets/textures/decor/portrait_lady.png" id="5"]
-[ext_resource type="Texture2D" path="res://assets/textures/decor/portrait_lord.png" id="6"]
-[ext_resource type="Texture2D" path="res://assets/textures/decor/cobweb.png" id="7"]
-[ext_resource type="Material" path="res://assets/materials/surfaces/stone_facade.tres" id="8"]
-[ext_resource type="Material" path="res://assets/materials/surfaces/trim_walnut.tres" id="9"]
-[ext_resource type="PackedScene" path="res://assets/models/decor/graveyard/fire-basket.glb" id="10"]
-[ext_resource type="PackedScene" path="res://assets/models/decor/furniture/loungeChair.glb" id="11"]
-[ext_resource type="PackedScene" path="res://assets/models/decor/furniture/kitchenCabinet.glb" id="12"]
-[ext_resource type="PackedScene" path="res://assets/models/decor/furniture/kitchenSink.glb" id="13"]
-[ext_resource type="PackedScene" path="res://assets/models/decor/furniture/kitchenStove.glb" id="14"]
-[ext_resource type="PackedScene" path="res://assets/models/decor/furniture/kitchenCabinetUpper.glb" id="15"]
-[ext_resource type="PackedScene" path="res://assets/models/decor/town/fountain-round-detail.glb" id="16"]
-[ext_resource type="PackedScene" path="res://assets/models/decor/town/hedge-large.glb" id="17"]
-[ext_resource type="PackedScene" path="res://assets/models/decor/town/hedge.glb" id="18"]
-[ext_resource type="PackedScene" path="res://assets/models/decor/graveyard/gravestone-round.glb" id="19"]
-[ext_resource type="PackedScene" path="res://assets/models/decor/graveyard/gravestone-cross.glb" id="20"]
-[ext_resource type="PackedScene" path="res://assets/models/decor/graveyard/gravestone-broken.glb" id="21"]
-[ext_resource type="PackedScene" path="res://assets/models/decor/nature/statue_column.glb" id="22"]
-[ext_resource type="PackedScene" path="res://assets/models/decor/graveyard/lantern-candle.glb" id="23"]
-[ext_resource type="PackedScene" path="res://assets/models/decor/town/lantern.glb" id="24"]
+[ext_resource type="PackedScene" path="res://assets/models/furniture/kenney/bookcaseClosedWide.glb" id="2"]
+[ext_resource type="PackedScene" path="res://assets/models/decor/graveyard/candle-multiple.glb" id="3"]
+[ext_resource type="PackedScene" path="res://assets/models/furniture/kenney/bedDouble.glb" id="4"]
+[ext_resource type="PackedScene" path="res://assets/models/furniture/kenney/cabinetBedDrawerTable.glb" id="5"]
+[ext_resource type="PackedScene" path="res://assets/models/furniture/kenney/cabinetTelevision.glb" id="6"]
+[ext_resource type="PackedScene" path="res://assets/models/furniture/kenney/sideTable.glb" id="7"]
+[ext_resource type="Texture2D" path="res://assets/textures/decor/portrait_lady.png" id="8"]
+[ext_resource type="Texture2D" path="res://assets/textures/decor/portrait_lord.png" id="9"]
+[ext_resource type="Texture2D" path="res://assets/textures/decor/cobweb.png" id="10"]
+[ext_resource type="Material" path="res://assets/materials/surfaces/stone_facade.tres" id="11"]
+[ext_resource type="Material" path="res://assets/materials/surfaces/trim_walnut.tres" id="12"]
+[ext_resource type="PackedScene" path="res://assets/models/decor/graveyard/fire-basket.glb" id="13"]
+[ext_resource type="PackedScene" path="res://assets/models/furniture/kenney/tableCoffee.glb" id="14"]
+[ext_resource type="PackedScene" path="res://props/catalog/furniture/MansionSofa.tscn" id="15"]
+[ext_resource type="PackedScene" path="res://props/catalog/furniture/MansionArmour.tscn" id="16"]
+[ext_resource type="PackedScene" path="res://props/catalog/furniture/MansionChandelier.tscn" id="17"]
+[ext_resource type="PackedScene" path="res://props/catalog/furniture/HallRug.tscn" id="18"]
+[ext_resource type="PackedScene" path="res://assets/models/furniture/kenney/kitchenCabinet.glb" id="19"]
+[ext_resource type="PackedScene" path="res://assets/models/furniture/kenney/kitchenSink.glb" id="20"]
+[ext_resource type="PackedScene" path="res://assets/models/furniture/kenney/kitchenStove.glb" id="21"]
+[ext_resource type="PackedScene" path="res://assets/models/furniture/kenney/kitchenCabinetUpper.glb" id="22"]
+[ext_resource type="PackedScene" path="res://assets/models/furniture/kenney/kitchenFridge.glb" id="23"]
+[ext_resource type="PackedScene" path="res://assets/models/furniture/kenney/tableRound.glb" id="24"]
+[ext_resource type="PackedScene" path="res://assets/models/furniture/kenney/chair.glb" id="25"]
+[ext_resource type="PackedScene" path="res://props/catalog/furniture/KitchenDoor.tscn" id="26"]
+[ext_resource type="PackedScene" path="res://assets/models/decor/town/fountain-round-detail.glb" id="27"]
+[ext_resource type="PackedScene" path="res://assets/models/decor/town/hedge-large.glb" id="28"]
+[ext_resource type="PackedScene" path="res://assets/models/decor/town/hedge.glb" id="29"]
+[ext_resource type="PackedScene" path="res://assets/models/decor/graveyard/gravestone-round.glb" id="30"]
+[ext_resource type="PackedScene" path="res://assets/models/decor/graveyard/gravestone-cross.glb" id="31"]
+[ext_resource type="PackedScene" path="res://assets/models/decor/graveyard/gravestone-broken.glb" id="32"]
+[ext_resource type="PackedScene" path="res://assets/models/decor/nature/statue_column.glb" id="33"]
+[ext_resource type="PackedScene" path="res://assets/models/decor/graveyard/lantern-candle.glb" id="34"]
+[ext_resource type="PackedScene" path="res://assets/models/furniture/kenney/bench.glb" id="35"]
+[ext_resource type="PackedScene" path="res://assets/models/furniture/kenney/pottedPlant.glb" id="36"]
+[ext_resource type="PackedScene" path="res://assets/models/decor/town/lantern.glb" id="37"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_1"]
-size = Vector3(1.52, 1.501, 0.475)
+size = Vector3(1.52, 1.5, 0.48)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_2"]
-size = Vector3(1.52, 1.501, 0.475)
+size = Vector3(1.52, 1.5, 0.48)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_3"]
-size = Vector3(1.862, 0.874, 0.779)
+size = Vector3(1.82, 0.71, 2.14)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_4"]
-size = Vector3(1.862, 0.874, 0.779)
+size = Vector3(0.51, 0.5, 0.41)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5"]
-albedo_texture = ExtResource("5")
+[sub_resource type="BoxShape3D" id="BoxShape3D_5"]
+size = Vector3(0.51, 0.5, 0.41)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_6"]
+size = Vector3(1.52, 0.59, 0.48)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_7"]
+size = Vector3(1.02, 0.73, 0.42)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8"]
+albedo_texture = ExtResource("8")
 roughness = 0.9
 
-[sub_resource type="QuadMesh" id="QuadMesh_6"]
+[sub_resource type="QuadMesh" id="QuadMesh_9"]
 size = Vector2(0.7, 0.875)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7"]
-albedo_texture = ExtResource("6")
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_10"]
+albedo_texture = ExtResource("9")
 roughness = 0.9
 
-[sub_resource type="QuadMesh" id="QuadMesh_8"]
+[sub_resource type="QuadMesh" id="QuadMesh_11"]
 size = Vector2(0.7, 0.875)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_9"]
-albedo_texture = ExtResource("5")
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_12"]
+albedo_texture = ExtResource("8")
 roughness = 0.9
 
-[sub_resource type="QuadMesh" id="QuadMesh_10"]
+[sub_resource type="QuadMesh" id="QuadMesh_13"]
 size = Vector2(0.7, 0.875)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_11"]
-albedo_texture = ExtResource("6")
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_14"]
+albedo_texture = ExtResource("9")
 roughness = 0.9
 
-[sub_resource type="QuadMesh" id="QuadMesh_12"]
+[sub_resource type="QuadMesh" id="QuadMesh_15"]
 size = Vector2(0.7, 0.875)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_13"]
-albedo_texture = ExtResource("7")
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_16"]
+albedo_texture = ExtResource("10")
 roughness = 0.9
 transparency = 1
 cull_mode = 2
 
-[sub_resource type="QuadMesh" id="QuadMesh_14"]
+[sub_resource type="QuadMesh" id="QuadMesh_17"]
 size = Vector2(1.13, 0.8)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_15"]
-albedo_texture = ExtResource("7")
-roughness = 0.9
-transparency = 1
-cull_mode = 2
-
-[sub_resource type="QuadMesh" id="QuadMesh_16"]
-size = Vector2(1.13, 0.8)
-
-[sub_resource type="BoxMesh" id="BoxMesh_17"]
-size = Vector3(1.8, 1.1, 0.5)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_18"]
-albedo_color = Color(0.06, 0.04, 0.04, 1)
+albedo_texture = ExtResource("10")
+roughness = 0.9
+transparency = 1
+cull_mode = 2
 
-[sub_resource type="BoxMesh" id="BoxMesh_19"]
-size = Vector3(0.9, 0.6, 0.04)
+[sub_resource type="QuadMesh" id="QuadMesh_19"]
+size = Vector2(1.13, 0.8)
 
 [sub_resource type="BoxMesh" id="BoxMesh_20"]
+size = Vector3(1.8, 1.1, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_21"]
+albedo_color = Color(0.06, 0.04, 0.04, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_22"]
+size = Vector3(0.9, 0.6, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_23"]
 size = Vector3(2.0, 0.08, 0.6)
 
-[sub_resource type="BoxMesh" id="BoxMesh_21"]
+[sub_resource type="BoxMesh" id="BoxMesh_24"]
 size = Vector3(2.0, 0.04, 0.45)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_22"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_25"]
 albedo_color = Color(1, 0.55, 0.2, 1)
 emission_enabled = true
 emission = Color(1, 0.54, 0.24, 1)
 emission_energy_multiplier = 3.0
 
-[sub_resource type="SphereMesh" id="SphereMesh_23"]
+[sub_resource type="SphereMesh" id="SphereMesh_26"]
 radius = 0.13
 height = 0.34
 radial_segments = 8
 rings = 4
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_24"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_27"]
 size = Vector3(2.0, 1.18, 0.95)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_25"]
-size = Vector3(0.931, 0.874, 0.779)
+[sub_resource type="BoxShape3D" id="BoxShape3D_28"]
+size = Vector3(1.26, 0.44, 0.76)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_26"]
-albedo_texture = ExtResource("7")
+[sub_resource type="BoxShape3D" id="BoxShape3D_29"]
+size = Vector3(1.52, 0.59, 0.48)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_30"]
+albedo_texture = ExtResource("10")
 roughness = 0.9
 transparency = 1
 cull_mode = 2
 
-[sub_resource type="QuadMesh" id="QuadMesh_27"]
+[sub_resource type="QuadMesh" id="QuadMesh_31"]
 size = Vector2(0.85, 0.6)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_28"]
-size = Vector3(0.817, 0.855, 0.855)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_29"]
-size = Vector3(0.817, 0.931, 0.855)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_30"]
-size = Vector3(0.817, 0.855, 0.855)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_31"]
-size = Vector3(0.817, 0.855, 0.855)
-
 [sub_resource type="BoxShape3D" id="BoxShape3D_32"]
-size = Vector3(0.817, 0.855, 0.855)
+size = Vector3(0.82, 0.85, 0.85)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_33"]
-size = Vector3(0.817, 0.855, 0.855)
+size = Vector3(0.82, 0.93, 0.85)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_34"]
-size = Vector3(0.817, 0.855, 0.855)
+size = Vector3(0.82, 0.85, 0.85)
 
-[sub_resource type="CylinderShape3D" id="CylinderShape3D_35"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_35"]
+size = Vector3(0.82, 0.85, 0.85)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_36"]
+size = Vector3(0.82, 0.85, 0.85)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_37"]
+size = Vector3(0.82, 1.75, 0.55)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_38"]
+size = Vector3(0.82, 0.85, 0.85)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_39"]
+size = Vector3(0.82, 0.85, 0.85)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_40"]
+size = Vector3(1.32, 0.7, 1.52)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_41"]
+size = Vector3(0.38, 0.89, 0.38)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_42"]
+size = Vector3(0.38, 0.89, 0.38)
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_43"]
 radius = 1.0
 height = 0.48
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_36"]
-size = Vector3(0.4, 0.6, 1.0)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_37"]
-size = Vector3(0.4, 0.6, 1.0)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_38"]
-size = Vector3(0.4, 0.6, 1.0)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_39"]
-size = Vector3(0.4, 0.4, 1.6)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_40"]
-size = Vector3(0.4, 0.4, 1.6)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_41"]
-size = Vector3(0.4, 0.4, 1.6)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_42"]
-size = Vector3(0.675, 0.87, 0.375)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_43"]
-size = Vector3(0.63, 1.274, 0.462)
-
 [sub_resource type="BoxShape3D" id="BoxShape3D_44"]
-size = Vector3(0.765, 0.51, 0.585)
+size = Vector3(0.4, 0.6, 1.0)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_45"]
-size = Vector3(0.39, 1.3, 0.39)
+size = Vector3(0.4, 0.6, 1.0)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_46"]
-size = Vector3(0.36, 0.585, 0.36)
+size = Vector3(0.4, 0.6, 1.0)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_47"]
-size = Vector3(0.36, 0.585, 0.36)
+size = Vector3(0.4, 0.4, 1.6)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_48"]
+size = Vector3(0.4, 0.4, 1.6)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_49"]
+size = Vector3(0.4, 0.4, 1.6)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_50"]
+size = Vector3(0.675, 0.87, 0.375)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_51"]
+size = Vector3(0.63, 1.274, 0.462)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_52"]
+size = Vector3(0.765, 0.51, 0.585)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_53"]
+size = Vector3(0.39, 1.3, 0.39)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_54"]
+size = Vector3(0.36, 0.585, 0.36)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_55"]
+size = Vector3(0.36, 0.585, 0.36)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_56"]
+size = Vector3(0.76, 0.89, 0.38)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_57"]
+size = Vector3(0.76, 0.89, 0.38)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_58"]
+size = Vector3(0.4, 1.24, 0.46)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_59"]
+size = Vector3(0.4, 1.24, 0.46)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_60"]
 size = Vector3(0.374, 2.652, 0.374)
 
 [node name="MansionDressing" type="Node3D"]
@@ -205,99 +254,132 @@ script = ExtResource("1")
 [node name="Lamps" type="Node3D" parent="."]
 
 [node name="BookcaseWest" type="StaticBody3D" parent="Gallery"]
-position = Vector3(7.0, 1.2, 0.575)
+position = Vector3(4.95, 1.2, 0.35)
 rotation = Vector3(0, 0.0, 0)
 
 [node name="Model" parent="Gallery/BookcaseWest" instance=ExtResource("2")]
-scale = Vector3(1.9, 1.9, 1.9)
+scale = Vector3(1.0, 1.0, 1.0)
 
 [node name="Shape" type="CollisionShape3D" parent="Gallery/BookcaseWest"]
-position = Vector3(0.76, 0.7505, -0.2375)
+position = Vector3(0.0, 0.75, 0.0)
 shape = SubResource("BoxShape3D_1")
 
 [node name="BookcaseEast" type="StaticBody3D" parent="Gallery"]
-position = Vector3(11.8, 1.2, 0.575)
+position = Vector3(8.25, 1.2, 0.35)
 rotation = Vector3(0, 0.0, 0)
 
 [node name="Model" parent="Gallery/BookcaseEast" instance=ExtResource("2")]
-scale = Vector3(1.9, 1.9, 1.9)
+scale = Vector3(1.0, 1.0, 1.0)
 
 [node name="Shape" type="CollisionShape3D" parent="Gallery/BookcaseEast"]
-position = Vector3(0.76, 0.7505, -0.2375)
+position = Vector3(0.0, 0.75, 0.0)
 shape = SubResource("BoxShape3D_2")
 
-[node name="SofaBack" type="StaticBody3D" parent="Gallery"]
-position = Vector3(15.3, 1.2, 0.88)
-rotation = Vector3(0, 0.0, 0)
-
-[node name="Model" parent="Gallery/SofaBack" instance=ExtResource("3")]
-scale = Vector3(1.9, 1.9, 1.9)
-
-[node name="Shape" type="CollisionShape3D" parent="Gallery/SofaBack"]
-position = Vector3(0.931, 0.437, -0.3895)
-shape = SubResource("BoxShape3D_3")
-
-[node name="SofaSide" type="StaticBody3D" parent="Gallery"]
-position = Vector3(19.12, 1.2, 1.6)
-rotation = Vector3(0, -1.5708, 0)
-
-[node name="Model" parent="Gallery/SofaSide" instance=ExtResource("3")]
-scale = Vector3(1.9, 1.9, 1.9)
-
-[node name="Shape" type="CollisionShape3D" parent="Gallery/SofaSide"]
-position = Vector3(0.931, 0.437, -0.3895)
-shape = SubResource("BoxShape3D_4")
-
-[node name="CandlesWest" parent="Gallery" instance=ExtResource("4")]
-position = Vector3(7.76, 2.7, 0.34)
+[node name="CandlesWest" parent="Gallery" instance=ExtResource("3")]
+position = Vector3(4.95, 2.7, 0.34)
 rotation = Vector3(0, 0.0, 0)
 scale = Vector3(1.5, 1.5, 1.5)
 
-[node name="CandlesEast" parent="Gallery" instance=ExtResource("4")]
-position = Vector3(12.56, 2.7, 0.34)
+[node name="CandlesEast" parent="Gallery" instance=ExtResource("3")]
+position = Vector3(8.25, 2.7, 0.34)
 rotation = Vector3(0, 0.3491, 0)
 scale = Vector3(1.5, 1.5, 1.5)
 
-[node name="PortraitLady" type="MeshInstance3D" parent="Gallery"]
-position = Vector3(4.5, 3.1, 0.115)
+[node name="Bed" type="StaticBody3D" parent="Gallery"]
+position = Vector3(16.5, 1.2, 1.17)
 rotation = Vector3(0, 0.0, 0)
-mesh = SubResource("QuadMesh_6")
-material_override = SubResource("StandardMaterial3D_5")
+
+[node name="Model" parent="Gallery/Bed" instance=ExtResource("4")]
+scale = Vector3(1.0, 1.0, 1.0)
+
+[node name="Shape" type="CollisionShape3D" parent="Gallery/Bed"]
+position = Vector3(0.0, 0.355, 0.0)
+shape = SubResource("BoxShape3D_3")
+
+[node name="BedsideLeft" type="StaticBody3D" parent="Gallery"]
+position = Vector3(15.0, 1.2, 0.31)
+rotation = Vector3(0, 0.0, 0)
+
+[node name="Model" parent="Gallery/BedsideLeft" instance=ExtResource("5")]
+scale = Vector3(1.0, 1.0, 1.0)
+
+[node name="Shape" type="CollisionShape3D" parent="Gallery/BedsideLeft"]
+position = Vector3(0.0, 0.25, 0.0)
+shape = SubResource("BoxShape3D_4")
+
+[node name="BedsideRight" type="StaticBody3D" parent="Gallery"]
+position = Vector3(18.0, 1.2, 0.31)
+rotation = Vector3(0, 0.0, 0)
+
+[node name="Model" parent="Gallery/BedsideRight" instance=ExtResource("5")]
+scale = Vector3(1.0, 1.0, 1.0)
+
+[node name="Shape" type="CollisionShape3D" parent="Gallery/BedsideRight"]
+position = Vector3(0.0, 0.25, 0.0)
+shape = SubResource("BoxShape3D_5")
+
+[node name="TvCabinet" type="StaticBody3D" parent="Gallery"]
+position = Vector3(19.66, 1.2, 4.2)
+rotation = Vector3(0, -1.5708, 0)
+
+[node name="Model" parent="Gallery/TvCabinet" instance=ExtResource("6")]
+scale = Vector3(1.0, 1.0, 1.0)
+
+[node name="Shape" type="CollisionShape3D" parent="Gallery/TvCabinet"]
+position = Vector3(0.0, 0.295, 0.0)
+shape = SubResource("BoxShape3D_6")
+
+[node name="HallTable" type="StaticBody3D" parent="Gallery"]
+position = Vector3(13.5, 1.2, 5.6)
+rotation = Vector3(0, 3.1416, 0)
+
+[node name="Model" parent="Gallery/HallTable" instance=ExtResource("7")]
+scale = Vector3(1.0, 1.0, 1.0)
+
+[node name="Shape" type="CollisionShape3D" parent="Gallery/HallTable"]
+position = Vector3(0.0, 0.365, 0.0)
+shape = SubResource("BoxShape3D_7")
+
+[node name="PortraitLady" type="MeshInstance3D" parent="Gallery"]
+position = Vector3(4.95, 3.45, 0.115)
+rotation = Vector3(0, 0.0, 0)
+mesh = SubResource("QuadMesh_9")
+material_override = SubResource("StandardMaterial3D_8")
 cast_shadow = 0
 
 [node name="PortraitLord" type="MeshInstance3D" parent="Gallery"]
-position = Vector3(7.76, 3.35, 0.115)
+position = Vector3(8.25, 3.45, 0.115)
 rotation = Vector3(0, 0.0, 0)
-mesh = SubResource("QuadMesh_8")
-material_override = SubResource("StandardMaterial3D_7")
+mesh = SubResource("QuadMesh_11")
+material_override = SubResource("StandardMaterial3D_10")
 cast_shadow = 0
 
 [node name="PortraitLadyEast" type="MeshInstance3D" parent="Gallery"]
-position = Vector3(12.56, 3.35, 0.115)
+position = Vector3(12.4, 3.3, 0.115)
 rotation = Vector3(0, 0.0, 0)
-mesh = SubResource("QuadMesh_10")
-material_override = SubResource("StandardMaterial3D_9")
+mesh = SubResource("QuadMesh_13")
+material_override = SubResource("StandardMaterial3D_12")
 cast_shadow = 0
 
 [node name="PortraitLordEast" type="MeshInstance3D" parent="Gallery"]
-position = Vector3(16.23, 3.0, 0.115)
+position = Vector3(16.5, 3.3, 0.115)
 rotation = Vector3(0, 0.0, 0)
-mesh = SubResource("QuadMesh_12")
-material_override = SubResource("StandardMaterial3D_11")
+mesh = SubResource("QuadMesh_15")
+material_override = SubResource("StandardMaterial3D_14")
 cast_shadow = 0
 
 [node name="CobwebWest" type="MeshInstance3D" parent="Gallery"]
 position = Vector3(0.5, 3.8, 0.5)
 rotation = Vector3(0, 0.7854, 0)
-mesh = SubResource("QuadMesh_14")
-material_override = SubResource("StandardMaterial3D_13")
+mesh = SubResource("QuadMesh_17")
+material_override = SubResource("StandardMaterial3D_16")
 cast_shadow = 0
 
 [node name="CobwebEast" type="MeshInstance3D" parent="Gallery"]
 position = Vector3(19.5, 3.8, 0.5)
 rotation = Vector3(0, -0.7854, 0)
-mesh = SubResource("QuadMesh_16")
-material_override = SubResource("StandardMaterial3D_15")
+mesh = SubResource("QuadMesh_19")
+material_override = SubResource("StandardMaterial3D_18")
 cast_shadow = 0
 
 [node name="Fireplace" type="StaticBody3D" parent="MainRoom"]
@@ -305,324 +387,442 @@ position = Vector3(10.0, 0, 6.0)
 
 [node name="Surround" type="MeshInstance3D" parent="MainRoom/Fireplace"]
 position = Vector3(0, 0.55, 0.25)
-mesh = SubResource("BoxMesh_17")
-material_override = ExtResource("8")
+mesh = SubResource("BoxMesh_20")
+material_override = ExtResource("11")
 
 [node name="Firebox" type="MeshInstance3D" parent="MainRoom/Fireplace"]
 position = Vector3(0, 0.35, 0.51)
-mesh = SubResource("BoxMesh_19")
-material_override = SubResource("StandardMaterial3D_18")
+mesh = SubResource("BoxMesh_22")
+material_override = SubResource("StandardMaterial3D_21")
 
 [node name="Mantel" type="MeshInstance3D" parent="MainRoom/Fireplace"]
 position = Vector3(0, 1.14, 0.28)
-mesh = SubResource("BoxMesh_20")
-material_override = ExtResource("9")
+mesh = SubResource("BoxMesh_23")
+material_override = ExtResource("12")
 
 [node name="Hearth" type="MeshInstance3D" parent="MainRoom/Fireplace"]
 position = Vector3(0, 0.02, 0.72)
-mesh = SubResource("BoxMesh_21")
-material_override = ExtResource("8")
+mesh = SubResource("BoxMesh_24")
+material_override = ExtResource("11")
 
-[node name="Basket" parent="MainRoom/Fireplace" instance=ExtResource("10")]
+[node name="Basket" parent="MainRoom/Fireplace" instance=ExtResource("13")]
 position = Vector3(0, 0.04, 0.68)
 scale = Vector3(1.4, 1.4, 1.4)
 
 [node name="Flame" type="MeshInstance3D" parent="MainRoom/Fireplace" groups=["flames"]]
 position = Vector3(0, 0.3, 0.68)
-mesh = SubResource("SphereMesh_23")
-material_override = SubResource("StandardMaterial3D_22")
+mesh = SubResource("SphereMesh_26")
+material_override = SubResource("StandardMaterial3D_25")
 cast_shadow = 0
 
 [node name="Shape" type="CollisionShape3D" parent="MainRoom/Fireplace"]
 position = Vector3(0, 0.59, 0.475)
-shape = SubResource("BoxShape3D_24")
+shape = SubResource("BoxShape3D_27")
 
-[node name="MantelCandlesWest" parent="MainRoom" instance=ExtResource("4")]
+[node name="MantelCandlesWest" parent="MainRoom" instance=ExtResource("3")]
 position = Vector3(9.4, 1.18, 6.3)
 rotation = Vector3(0, 0.0, 0)
 scale = Vector3(1.5, 1.5, 1.5)
 
-[node name="MantelCandlesEast" parent="MainRoom" instance=ExtResource("4")]
+[node name="MantelCandlesEast" parent="MainRoom" instance=ExtResource("3")]
 position = Vector3(10.6, 1.18, 6.3)
 rotation = Vector3(0, 0.6981, 0)
 scale = Vector3(1.5, 1.5, 1.5)
 
-[node name="Armchair" type="StaticBody3D" parent="MainRoom"]
-position = Vector3(11.07, 0, 7.3)
-rotation = Vector3(0, -1.5708, 0)
+[node name="CoffeeTable" type="StaticBody3D" parent="MainRoom"]
+position = Vector3(10.0, 0, 8.0)
+rotation = Vector3(0, 0.0, 0)
 
-[node name="Model" parent="MainRoom/Armchair" instance=ExtResource("11")]
-scale = Vector3(1.9, 1.9, 1.9)
+[node name="Model" parent="MainRoom/CoffeeTable" instance=ExtResource("14")]
+scale = Vector3(1.0, 1.0, 1.0)
 
-[node name="Shape" type="CollisionShape3D" parent="MainRoom/Armchair"]
-position = Vector3(0.4655, 0.437, -0.3895)
-shape = SubResource("BoxShape3D_25")
+[node name="Shape" type="CollisionShape3D" parent="MainRoom/CoffeeTable"]
+position = Vector3(0.0, 0.22, 0.0)
+shape = SubResource("BoxShape3D_28")
+
+[node name="TvCabinet" type="StaticBody3D" parent="MainRoom"]
+position = Vector3(0.34, 0, 12.6)
+rotation = Vector3(0, 1.5708, 0)
+
+[node name="Model" parent="MainRoom/TvCabinet" instance=ExtResource("6")]
+scale = Vector3(1.0, 1.0, 1.0)
+
+[node name="Shape" type="CollisionShape3D" parent="MainRoom/TvCabinet"]
+position = Vector3(0.0, 0.295, 0.0)
+shape = SubResource("BoxShape3D_29")
 
 [node name="CobwebLow" type="MeshInstance3D" parent="MainRoom"]
 position = Vector3(11.6, 0.9, 6.3)
 rotation = Vector3(0, -0.7854, 0)
-mesh = SubResource("QuadMesh_27")
-material_override = SubResource("StandardMaterial3D_26")
+mesh = SubResource("QuadMesh_31")
+material_override = SubResource("StandardMaterial3D_30")
 cast_shadow = 0
 
+[node name="Sofa" parent="MainRoom" instance=ExtResource("15")]
+position = Vector3(10.0, 0.435, 9.3)
+rotation = Vector3(0, 3.1416, 0)
+
+[node name="Armour" parent="MainRoom" instance=ExtResource("16")]
+position = Vector3(3.6, 0.9, 6.6)
+
+[node name="Chandelier" parent="MainRoom" instance=ExtResource("17")]
+position = Vector3(7.0, 3.05, 11.2)
+
+[node name="HallRug" parent="MainRoom" instance=ExtResource("18")]
+position = Vector3(7.75, 0, 13.8)
+
 [node name="Counter1" type="StaticBody3D" parent="Kitchen"]
-position = Vector3(19.045, 0, 6.6)
+position = Vector3(19.475, 0, 7.0)
 rotation = Vector3(0, -1.5708, 0)
 
-[node name="Model" parent="Kitchen/Counter1" instance=ExtResource("12")]
-scale = Vector3(1.9, 1.9, 1.9)
+[node name="Model" parent="Kitchen/Counter1" instance=ExtResource("19")]
+scale = Vector3(1.0, 1.0, 1.0)
 
 [node name="Shape" type="CollisionShape3D" parent="Kitchen/Counter1"]
-position = Vector3(0.4085, 0.4275, -0.4275)
-shape = SubResource("BoxShape3D_28")
-
-[node name="Counter2" type="StaticBody3D" parent="Kitchen"]
-position = Vector3(19.045, 0, 7.417)
-rotation = Vector3(0, -1.5708, 0)
-
-[node name="Model" parent="Kitchen/Counter2" instance=ExtResource("13")]
-scale = Vector3(1.9, 1.9, 1.9)
-
-[node name="Shape" type="CollisionShape3D" parent="Kitchen/Counter2"]
-position = Vector3(0.4085, 0.4655, -0.4275)
-shape = SubResource("BoxShape3D_29")
-
-[node name="Counter3" type="StaticBody3D" parent="Kitchen"]
-position = Vector3(19.045, 0, 8.234)
-rotation = Vector3(0, -1.5708, 0)
-
-[node name="Model" parent="Kitchen/Counter3" instance=ExtResource("12")]
-scale = Vector3(1.9, 1.9, 1.9)
-
-[node name="Shape" type="CollisionShape3D" parent="Kitchen/Counter3"]
-position = Vector3(0.4085, 0.4275, -0.4275)
-shape = SubResource("BoxShape3D_30")
-
-[node name="Counter4" type="StaticBody3D" parent="Kitchen"]
-position = Vector3(19.045, 0, 9.051)
-rotation = Vector3(0, -1.5708, 0)
-
-[node name="Model" parent="Kitchen/Counter4" instance=ExtResource("14")]
-scale = Vector3(1.9, 1.9, 1.9)
-
-[node name="Shape" type="CollisionShape3D" parent="Kitchen/Counter4"]
-position = Vector3(0.4085, 0.4275, -0.4275)
-shape = SubResource("BoxShape3D_31")
-
-[node name="Counter5" type="StaticBody3D" parent="Kitchen"]
-position = Vector3(19.045, 0, 9.868)
-rotation = Vector3(0, -1.5708, 0)
-
-[node name="Model" parent="Kitchen/Counter5" instance=ExtResource("12")]
-scale = Vector3(1.9, 1.9, 1.9)
-
-[node name="Shape" type="CollisionShape3D" parent="Kitchen/Counter5"]
-position = Vector3(0.4085, 0.4275, -0.4275)
+position = Vector3(0.0, 0.425, 0.0)
 shape = SubResource("BoxShape3D_32")
 
-[node name="UpperCabinet1" parent="Kitchen" instance=ExtResource("15")]
-position = Vector3(19.48, 1.6, 6.6)
+[node name="Counter2" type="StaticBody3D" parent="Kitchen"]
+position = Vector3(19.475, 0, 7.82)
 rotation = Vector3(0, -1.5708, 0)
-scale = Vector3(1.9, 1.9, 1.9)
 
-[node name="UpperCabinet2" parent="Kitchen" instance=ExtResource("15")]
-position = Vector3(19.48, 1.6, 7.417)
-rotation = Vector3(0, -1.5708, 0)
-scale = Vector3(1.9, 1.9, 1.9)
+[node name="Model" parent="Kitchen/Counter2" instance=ExtResource("20")]
+scale = Vector3(1.0, 1.0, 1.0)
 
-[node name="UpperCabinet3" parent="Kitchen" instance=ExtResource("15")]
-position = Vector3(19.48, 1.6, 9.868)
-rotation = Vector3(0, -1.5708, 0)
-scale = Vector3(1.9, 1.9, 1.9)
-
-[node name="BackCounter1" type="StaticBody3D" parent="Kitchen"]
-position = Vector3(12.2, 0, 6.855)
-rotation = Vector3(0, 0.0, 0)
-
-[node name="Model" parent="Kitchen/BackCounter1" instance=ExtResource("12")]
-scale = Vector3(1.9, 1.9, 1.9)
-
-[node name="Shape" type="CollisionShape3D" parent="Kitchen/BackCounter1"]
-position = Vector3(0.4085, 0.4275, -0.4275)
+[node name="Shape" type="CollisionShape3D" parent="Kitchen/Counter2"]
+position = Vector3(0.0, 0.465, 0.0)
 shape = SubResource("BoxShape3D_33")
 
-[node name="BackCounter2" type="StaticBody3D" parent="Kitchen"]
-position = Vector3(13.017, 0, 6.855)
+[node name="Counter3" type="StaticBody3D" parent="Kitchen"]
+position = Vector3(19.475, 0, 8.64)
+rotation = Vector3(0, -1.5708, 0)
+
+[node name="Model" parent="Kitchen/Counter3" instance=ExtResource("19")]
+scale = Vector3(1.0, 1.0, 1.0)
+
+[node name="Shape" type="CollisionShape3D" parent="Kitchen/Counter3"]
+position = Vector3(0.0, 0.425, 0.0)
+shape = SubResource("BoxShape3D_34")
+
+[node name="Counter4" type="StaticBody3D" parent="Kitchen"]
+position = Vector3(19.475, 0, 9.46)
+rotation = Vector3(0, -1.5708, 0)
+
+[node name="Model" parent="Kitchen/Counter4" instance=ExtResource("21")]
+scale = Vector3(1.0, 1.0, 1.0)
+
+[node name="Shape" type="CollisionShape3D" parent="Kitchen/Counter4"]
+position = Vector3(0.0, 0.425, 0.0)
+shape = SubResource("BoxShape3D_35")
+
+[node name="Counter5" type="StaticBody3D" parent="Kitchen"]
+position = Vector3(19.475, 0, 10.28)
+rotation = Vector3(0, -1.5708, 0)
+
+[node name="Model" parent="Kitchen/Counter5" instance=ExtResource("19")]
+scale = Vector3(1.0, 1.0, 1.0)
+
+[node name="Shape" type="CollisionShape3D" parent="Kitchen/Counter5"]
+position = Vector3(0.0, 0.425, 0.0)
+shape = SubResource("BoxShape3D_36")
+
+[node name="UpperCabinet1" parent="Kitchen" instance=ExtResource("22")]
+position = Vector3(19.69, 1.6, 7.0)
+rotation = Vector3(0, -1.5708, 0)
+scale = Vector3(1.0, 1.0, 1.0)
+
+[node name="UpperCabinet2" parent="Kitchen" instance=ExtResource("22")]
+position = Vector3(19.69, 1.6, 7.82)
+rotation = Vector3(0, -1.5708, 0)
+scale = Vector3(1.0, 1.0, 1.0)
+
+[node name="UpperCabinet3" parent="Kitchen" instance=ExtResource("22")]
+position = Vector3(19.69, 1.6, 10.28)
+rotation = Vector3(0, -1.5708, 0)
+scale = Vector3(1.0, 1.0, 1.0)
+
+[node name="Fridge" type="StaticBody3D" parent="Kitchen"]
+position = Vector3(19.62, 0, 11.2)
+rotation = Vector3(0, -1.5708, 0)
+
+[node name="Model" parent="Kitchen/Fridge" instance=ExtResource("23")]
+scale = Vector3(1.0, 1.0, 1.0)
+
+[node name="Shape" type="CollisionShape3D" parent="Kitchen/Fridge"]
+position = Vector3(0.0, 0.875, 0.0)
+shape = SubResource("BoxShape3D_37")
+
+[node name="BackCounter1" type="StaticBody3D" parent="Kitchen"]
+position = Vector3(12.6, 0, 6.425)
 rotation = Vector3(0, 0.0, 0)
 
-[node name="Model" parent="Kitchen/BackCounter2" instance=ExtResource("12")]
-scale = Vector3(1.9, 1.9, 1.9)
+[node name="Model" parent="Kitchen/BackCounter1" instance=ExtResource("19")]
+scale = Vector3(1.0, 1.0, 1.0)
+
+[node name="Shape" type="CollisionShape3D" parent="Kitchen/BackCounter1"]
+position = Vector3(0.0, 0.425, 0.0)
+shape = SubResource("BoxShape3D_38")
+
+[node name="BackCounter2" type="StaticBody3D" parent="Kitchen"]
+position = Vector3(13.42, 0, 6.425)
+rotation = Vector3(0, 0.0, 0)
+
+[node name="Model" parent="Kitchen/BackCounter2" instance=ExtResource("19")]
+scale = Vector3(1.0, 1.0, 1.0)
 
 [node name="Shape" type="CollisionShape3D" parent="Kitchen/BackCounter2"]
-position = Vector3(0.4085, 0.4275, -0.4275)
-shape = SubResource("BoxShape3D_34")
+position = Vector3(0.0, 0.425, 0.0)
+shape = SubResource("BoxShape3D_39")
+
+[node name="KitchenTable" type="StaticBody3D" parent="Kitchen"]
+position = Vector3(16.2, 0, 12.6)
+rotation = Vector3(0, 0.0, 0)
+
+[node name="Model" parent="Kitchen/KitchenTable" instance=ExtResource("24")]
+scale = Vector3(1.0, 1.0, 1.0)
+
+[node name="Shape" type="CollisionShape3D" parent="Kitchen/KitchenTable"]
+position = Vector3(0.0, 0.35, 0.0)
+shape = SubResource("BoxShape3D_40")
+
+[node name="ChairWest" type="StaticBody3D" parent="Kitchen"]
+position = Vector3(15.2, 0, 12.6)
+rotation = Vector3(0, 1.5708, 0)
+
+[node name="Model" parent="Kitchen/ChairWest" instance=ExtResource("25")]
+scale = Vector3(1.0, 1.0, 1.0)
+
+[node name="Shape" type="CollisionShape3D" parent="Kitchen/ChairWest"]
+position = Vector3(0.0, 0.445, 0.0)
+shape = SubResource("BoxShape3D_41")
+
+[node name="ChairEast" type="StaticBody3D" parent="Kitchen"]
+position = Vector3(17.2, 0, 12.6)
+rotation = Vector3(0, -1.5708, 0)
+
+[node name="Model" parent="Kitchen/ChairEast" instance=ExtResource("25")]
+scale = Vector3(1.0, 1.0, 1.0)
+
+[node name="Shape" type="CollisionShape3D" parent="Kitchen/ChairEast"]
+position = Vector3(0.0, 0.445, 0.0)
+shape = SubResource("BoxShape3D_42")
+
+[node name="KitchenDoorMount" type="Node3D" parent="Kitchen"]
+position = Vector3(12.0, 0, 10.0)
+rotation = Vector3(0, 1.3963, 0)
+
+[node name="KitchenDoor" parent="Kitchen/KitchenDoorMount" instance=ExtResource("26")]
 
 [node name="Fountain" type="StaticBody3D" parent="Garden"]
 position = Vector3(16.0, 0, 17.3)
 rotation = Vector3(0, 0.0, 0)
 
-[node name="Model" parent="Garden/Fountain" instance=ExtResource("16")]
+[node name="Model" parent="Garden/Fountain" instance=ExtResource("27")]
 scale = Vector3(1.0, 1.0, 1.0)
 
 [node name="Shape" type="CollisionShape3D" parent="Garden/Fountain"]
 position = Vector3(0.0, 0.24, 0.0)
-shape = SubResource("CylinderShape3D_35")
+shape = SubResource("CylinderShape3D_43")
 
 [node name="HedgeEast1" type="StaticBody3D" parent="Garden"]
 position = Vector3(19.45, 0, 16.0)
 rotation = Vector3(0, 0.0, 0)
 
-[node name="Model" parent="Garden/HedgeEast1" instance=ExtResource("17")]
+[node name="Model" parent="Garden/HedgeEast1" instance=ExtResource("28")]
 scale = Vector3(1.0, 1.0, 1.0)
 
 [node name="Shape" type="CollisionShape3D" parent="Garden/HedgeEast1"]
 position = Vector3(0.3, 0.3, 0.0)
-shape = SubResource("BoxShape3D_36")
+shape = SubResource("BoxShape3D_44")
 
 [node name="HedgeEast2" type="StaticBody3D" parent="Garden"]
 position = Vector3(19.45, 0, 17.0)
 rotation = Vector3(0, 0.0, 0)
 
-[node name="Model" parent="Garden/HedgeEast2" instance=ExtResource("17")]
+[node name="Model" parent="Garden/HedgeEast2" instance=ExtResource("28")]
 scale = Vector3(1.0, 1.0, 1.0)
 
 [node name="Shape" type="CollisionShape3D" parent="Garden/HedgeEast2"]
 position = Vector3(0.3, 0.3, 0.0)
-shape = SubResource("BoxShape3D_37")
+shape = SubResource("BoxShape3D_45")
 
 [node name="HedgeEast3" type="StaticBody3D" parent="Garden"]
 position = Vector3(19.45, 0, 18.0)
 rotation = Vector3(0, 0.0, 0)
 
-[node name="Model" parent="Garden/HedgeEast3" instance=ExtResource("17")]
+[node name="Model" parent="Garden/HedgeEast3" instance=ExtResource("28")]
 scale = Vector3(1.0, 1.0, 1.0)
 
 [node name="Shape" type="CollisionShape3D" parent="Garden/HedgeEast3"]
 position = Vector3(0.3, 0.3, 0.0)
-shape = SubResource("BoxShape3D_38")
+shape = SubResource("BoxShape3D_46")
 
 [node name="HedgeFront1" type="StaticBody3D" parent="Garden"]
 position = Vector3(11.1, 0, 22.35)
 rotation = Vector3(0, 1.5708, 0)
 
-[node name="Model" parent="Garden/HedgeFront1" instance=ExtResource("18")]
+[node name="Model" parent="Garden/HedgeFront1" instance=ExtResource("29")]
 scale = Vector3(1.6, 1.6, 1.6)
 
 [node name="Shape" type="CollisionShape3D" parent="Garden/HedgeFront1"]
 position = Vector3(0.6, 0.2, 0.0)
-shape = SubResource("BoxShape3D_39")
+shape = SubResource("BoxShape3D_47")
 
 [node name="HedgeFront2" type="StaticBody3D" parent="Garden"]
 position = Vector3(12.7, 0, 22.35)
 rotation = Vector3(0, 1.5708, 0)
 
-[node name="Model" parent="Garden/HedgeFront2" instance=ExtResource("18")]
+[node name="Model" parent="Garden/HedgeFront2" instance=ExtResource("29")]
 scale = Vector3(1.6, 1.6, 1.6)
 
 [node name="Shape" type="CollisionShape3D" parent="Garden/HedgeFront2"]
 position = Vector3(0.6, 0.2, 0.0)
-shape = SubResource("BoxShape3D_40")
+shape = SubResource("BoxShape3D_48")
 
 [node name="HedgeFront3" type="StaticBody3D" parent="Garden"]
 position = Vector3(14.3, 0, 22.35)
 rotation = Vector3(0, 1.5708, 0)
 
-[node name="Model" parent="Garden/HedgeFront3" instance=ExtResource("18")]
+[node name="Model" parent="Garden/HedgeFront3" instance=ExtResource("29")]
 scale = Vector3(1.6, 1.6, 1.6)
 
 [node name="Shape" type="CollisionShape3D" parent="Garden/HedgeFront3"]
 position = Vector3(0.6, 0.2, 0.0)
-shape = SubResource("BoxShape3D_41")
+shape = SubResource("BoxShape3D_49")
 
 [node name="GraveRound" type="StaticBody3D" parent="Garden"]
 position = Vector3(19.0, 0, 20.0)
 rotation = Vector3(0, 0.0, 0)
 
-[node name="Model" parent="Garden/GraveRound" instance=ExtResource("19")]
+[node name="Model" parent="Garden/GraveRound" instance=ExtResource("30")]
 scale = Vector3(1.5, 1.5, 1.5)
 
 [node name="Shape" type="CollisionShape3D" parent="Garden/GraveRound"]
 position = Vector3(0.0075, 0.435, -0.0075)
-shape = SubResource("BoxShape3D_42")
+shape = SubResource("BoxShape3D_50")
 
 [node name="GraveCross" type="StaticBody3D" parent="Garden"]
 position = Vector3(19.1, 0, 21.0)
 rotation = Vector3(0, 0.0, 0)
 
-[node name="Model" parent="Garden/GraveCross" instance=ExtResource("20")]
+[node name="Model" parent="Garden/GraveCross" instance=ExtResource("31")]
 scale = Vector3(1.4, 1.4, 1.4)
 
 [node name="Shape" type="CollisionShape3D" parent="Garden/GraveCross"]
 position = Vector3(0.007, 0.637, 0.007)
-shape = SubResource("BoxShape3D_43")
+shape = SubResource("BoxShape3D_51")
 
 [node name="GraveBroken" type="StaticBody3D" parent="Garden"]
 position = Vector3(18.2, 0, 21.2)
 rotation = Vector3(0, 0.2618, 0)
 
-[node name="Model" parent="Garden/GraveBroken" instance=ExtResource("21")]
+[node name="Model" parent="Garden/GraveBroken" instance=ExtResource("32")]
 scale = Vector3(1.5, 1.5, 1.5)
 
 [node name="Shape" type="CollisionShape3D" parent="Garden/GraveBroken"]
 position = Vector3(0.0525, 0.255, 0.0975)
-shape = SubResource("BoxShape3D_44")
+shape = SubResource("BoxShape3D_52")
 
 [node name="Statue" type="StaticBody3D" parent="Garden"]
 position = Vector3(13.2, 0, 15.6)
 rotation = Vector3(0, 0.0, 0)
 
-[node name="Model" parent="Garden/Statue" instance=ExtResource("22")]
+[node name="Model" parent="Garden/Statue" instance=ExtResource("33")]
 scale = Vector3(1.3, 1.3, 1.3)
 
 [node name="Shape" type="CollisionShape3D" parent="Garden/Statue"]
 position = Vector3(0.0, 0.65, 0.0)
-shape = SubResource("BoxShape3D_45")
+shape = SubResource("BoxShape3D_53")
 
 [node name="LanternWest" type="StaticBody3D" parent="Garden"]
 position = Vector3(10.35, 0, 21.2)
 rotation = Vector3(0, 0.0, 0)
 
-[node name="Model" parent="Garden/LanternWest" instance=ExtResource("23")]
+[node name="Model" parent="Garden/LanternWest" instance=ExtResource("34")]
 scale = Vector3(1.5, 1.5, 1.5)
 
 [node name="Shape" type="CollisionShape3D" parent="Garden/LanternWest"]
 position = Vector3(0.0, 0.2925, 0.0)
-shape = SubResource("BoxShape3D_46")
+shape = SubResource("BoxShape3D_54")
 
 [node name="LanternEast" type="StaticBody3D" parent="Garden"]
 position = Vector3(19.55, 0, 15.3)
 rotation = Vector3(0, 0.0, 0)
 
-[node name="Model" parent="Garden/LanternEast" instance=ExtResource("23")]
+[node name="Model" parent="Garden/LanternEast" instance=ExtResource("34")]
 scale = Vector3(1.5, 1.5, 1.5)
 
 [node name="Shape" type="CollisionShape3D" parent="Garden/LanternEast"]
 position = Vector3(0.0, 0.2925, 0.0)
-shape = SubResource("BoxShape3D_47")
+shape = SubResource("BoxShape3D_55")
+
+[node name="BenchWest" type="StaticBody3D" parent="Garden"]
+position = Vector3(14.1, 0, 17.3)
+rotation = Vector3(0, 1.5708, 0)
+
+[node name="Model" parent="Garden/BenchWest" instance=ExtResource("35")]
+scale = Vector3(1.0, 1.0, 1.0)
+
+[node name="Shape" type="CollisionShape3D" parent="Garden/BenchWest"]
+position = Vector3(0.0, 0.445, 0.0)
+shape = SubResource("BoxShape3D_56")
+
+[node name="BenchSouth" type="StaticBody3D" parent="Garden"]
+position = Vector3(16.0, 0, 19.25)
+rotation = Vector3(0, 3.1416, 0)
+
+[node name="Model" parent="Garden/BenchSouth" instance=ExtResource("35")]
+scale = Vector3(1.0, 1.0, 1.0)
+
+[node name="Shape" type="CollisionShape3D" parent="Garden/BenchSouth"]
+position = Vector3(0.0, 0.445, 0.0)
+shape = SubResource("BoxShape3D_57")
+
+[node name="PlanterWest" type="StaticBody3D" parent="Grounds"]
+position = Vector3(6.0, 0, 15.33)
+rotation = Vector3(0, 0.0, 0)
+
+[node name="Model" parent="Grounds/PlanterWest" instance=ExtResource("36")]
+scale = Vector3(1.0, 1.0, 1.0)
+
+[node name="Shape" type="CollisionShape3D" parent="Grounds/PlanterWest"]
+position = Vector3(0.0, 0.62, 0.0)
+shape = SubResource("BoxShape3D_58")
+
+[node name="PlanterEast" type="StaticBody3D" parent="Grounds"]
+position = Vector3(9.5, 0, 15.33)
+rotation = Vector3(0, 0.0, 0)
+
+[node name="Model" parent="Grounds/PlanterEast" instance=ExtResource("36")]
+scale = Vector3(1.0, 1.0, 1.0)
+
+[node name="Shape" type="CollisionShape3D" parent="Grounds/PlanterEast"]
+position = Vector3(0.0, 0.62, 0.0)
+shape = SubResource("BoxShape3D_59")
 
 [node name="StreetLamp" type="StaticBody3D" parent="Grounds"]
 position = Vector3(4.2, 0, 27.0)
 rotation = Vector3(0, 0.0, 0)
 
-[node name="Model" parent="Grounds/StreetLamp" instance=ExtResource("24")]
+[node name="Model" parent="Grounds/StreetLamp" instance=ExtResource("37")]
 scale = Vector3(1.7, 1.7, 1.7)
 
 [node name="Shape" type="CollisionShape3D" parent="Grounds/StreetLamp"]
 position = Vector3(0.0, 1.326, 0.0)
-shape = SubResource("BoxShape3D_48")
+shape = SubResource("BoxShape3D_60")
 
-[node name="GatePostLanternWest" parent="Grounds" instance=ExtResource("23")]
+[node name="GatePostLanternWest" parent="Grounds" instance=ExtResource("34")]
 position = Vector3(6.2, 1.52, 22.4)
 rotation = Vector3(0, 0.0, 0)
 scale = Vector3(1.2, 1.2, 1.2)
 
-[node name="GatePostLanternEast" parent="Grounds" instance=ExtResource("23")]
+[node name="GatePostLanternEast" parent="Grounds" instance=ExtResource("34")]
 position = Vector3(9.3, 1.52, 22.4)
 rotation = Vector3(0, 0.0, 0)
 scale = Vector3(1.2, 1.2, 1.2)
 
 [node name="MainRoomLamp" type="OmniLight3D" parent="Lamps" groups=["ceiling_lamps"]]
-position = Vector3(6, 2.7, 10.5)
+position = Vector3(7.0, 2.6, 11.2)
 
 [node name="KitchenLamp" type="OmniLight3D" parent="Lamps" groups=["ceiling_lamps"]]
 position = Vector3(16, 2.7, 10.5)

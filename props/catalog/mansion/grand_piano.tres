@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="CatalogItem" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://props/catalog/catalog_item.gd" id="1"]
+[ext_resource type="PackedScene" path="res://props/catalog/built/Piano.tscn" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"grand_piano"
+display_name = "Grand piano"
+category = 0
+model = ExtResource("2")
+model_scale = 1.0
+value = 20000
+weight_class = 3
+fragility = 2
+throwable = false
+two_person_handles = true
+count = 1
+possessable_kind = 0
+footprint = Vector3(2.2, 1.0, 1.4)
+spot_roles = Array[StringName]([&"piano"])
+pools = Array[StringName]([&"mansion"])

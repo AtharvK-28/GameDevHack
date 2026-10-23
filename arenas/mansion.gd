@@ -1,15 +1,12 @@
 # The Old Mansion, built from arenas/layouts/mansion_layout.json (the floor plan in mansion-layout.svg).
-# The builder makes the house; this script sets the dusk mood (environment and moonlight) and places the loot,
-# piano and flashlights on the layout's spawn spots. Decor and lamps live in arenas/dressing/MansionDressing.tscn.
+# The builder makes the house; this script sets the dusk mood (environment and moonlight), spawns the round's loot
+# from the furniture catalog onto the layout's role-tagged spawn spots, and places the flashlights. Decor, lamps
+# and possessable furniture live in arenas/dressing/MansionDressing.tscn; the surroundings in MansionEnvironment.
 extends Node3D
 
 # --- Scene resources ---
 const LAYOUT_PATH: String = "res://arenas/layouts/mansion_layout.json"
-const LOOT_SCENES: Array[PackedScene] = [
-	preload("res://props/loot/Vase.tscn"), preload("res://props/loot/TV.tscn"), preload("res://props/loot/Clock.tscn"),
-]
-const PIANO := preload("res://props/loot/Piano.tscn")
-const PIANO_KIND: int = 3
+const LOOT_SCENE := preload("res://props/Loot.tscn")
 const FLASHLIGHT := preload("res://props/Flashlight.tscn")
 
 # --- Arena identity ---
@@ -30,7 +27,6 @@ func _ready() -> void:
 	truck = ArenaBuilder.build(self, layout)
 	_build_mood()
 	_spawn_loot()
-	_spawn(PIANO, ArenaBuilder.point_of(layout.spawns.piano, Balance.LOOT_SIZES[PIANO_KIND].y / 2.0 + Balance.LOOT_SPAWN_CLEARANCE))
 	var flashlights: int = 2 if demo_mode and player_count == 4 else 1
 	for index: int in range(flashlights):
 		var spot: Dictionary = layout.spawns.flashlights[index]
@@ -98,19 +94,21 @@ func _build_mood() -> void:
 
 # --- Spawning ---
 func _spawn_loot() -> void:
-	# A round gets 6/9/12 items (counting the piano) on shuffled spots; outside a match, every spot gets one.
+	# The round's loot from the catalog's Mansion pool, each on a spawn spot that suits it (a vase on a table, the
+	# TV on its cabinet): 6/9/12 items with exactly one centrepiece in a match; outside one, the whole pool.
 	var random := RandomNumberGenerator.new()
 	random.seed = spawn_seed
-	var spots: Array = layout.spawns.loot.duplicate()
-	for index: int in range(spots.size() - 1, 0, -1):
-		var other: int = random.randi_range(0, index)
-		var saved: Variant = spots[index]
-		spots[index] = spots[other]
-		spots[other] = saved
-	var count: int = Balance.LOOT_COUNTS[player_count - 2] - 1 if demo_mode else spots.size()
-	for index: int in range(mini(count, spots.size())):
-		var kind: int = random.randi_range(0, LOOT_SCENES.size() - 1)
-		_spawn(LOOT_SCENES[kind], ArenaBuilder.point_of(spots[index], Balance.LOOT_SIZES[kind].y / 2.0 + Balance.LOOT_SPAWN_CLEARANCE))
+	var total: int = Balance.LOOT_COUNTS[player_count - 2] if demo_mode else -1
+	var heavy_limit: int = Balance.HEAVY_LOOT_LIMITS[player_count - 2] if demo_mode else -1
+	for placement: Dictionary in Catalog.pick_loot(&"mansion", layout.spawns.loot, total, heavy_limit, random):
+		var item: CatalogItem = placement.item
+		var spot: Dictionary = placement.spot
+		var loot: RigidBody3D = LOOT_SCENE.instantiate()
+		loot.catalog_item = item
+		loot.position = ArenaBuilder.point_of(spot, item.footprint.y / 2.0 + Balance.LOOT_SPAWN_CLEARANCE)
+		# "lean" tips the top back toward the wall behind, so a painting rests against it.
+		loot.rotation = Vector3(-deg_to_rad(spot.get("lean", 0.0)), deg_to_rad(spot.get("yaw", 0.0)), 0.0)
+		add_child(loot)
 
 
 func _spawn(scene: PackedScene, location: Vector3) -> void:

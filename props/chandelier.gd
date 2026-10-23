@@ -7,6 +7,9 @@ signal landed
 
 enum State { HANGING, CREAKING, FALLING, DOWN }
 
+# --- Look (optional) ---
+@export var model_scene: PackedScene # Replaces the plain bowl (the Mansion's brass chandelier); the chain stays.
+
 # --- Chandelier state ---
 var item_name: String = "Chandelier"
 var weight_class: int = Balance.HEAVY
@@ -88,10 +91,15 @@ func _build_body() -> void:
 	bowl.top_radius = radius
 	bowl.bottom_radius = radius / 2.0
 	bowl.height = height
-	body_mesh.mesh = bowl
 	var material := StandardMaterial3D.new()
 	material.albedo_color = Balance.CHANDELIER_COLOUR
-	body_mesh.material_override = material
+	if model_scene != null:
+		var model: Node3D = model_scene.instantiate()
+		model.position.y = -height / 2.0 # Models are bottom-centred.
+		body_mesh.add_child(model)
+	else:
+		body_mesh.mesh = bowl
+		body_mesh.material_override = material
 	add_child(body_mesh)
 	var link := CylinderMesh.new()
 	link.top_radius = Balance.CHANDELIER_CHAIN_RADIUS

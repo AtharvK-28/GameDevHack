@@ -5,6 +5,10 @@ extends AnimatableBody3D
 
 enum State { OPEN, SLAMMING, LOCKED, REOPENING }
 
+# --- Look and size (optional) ---
+@export var model_scene: PackedScene # Replaces the plain panel; hinged at its origin, reaching along -X.
+@export var panel_height: float = 0.0 # Metres; 0 keeps the greybox partition's height.
+
 # --- Door state ---
 var item_name: String = "Parlour door"
 var state: State = State.OPEN
@@ -20,21 +24,25 @@ func _ready() -> void:
 	sync_to_physics = true
 	collision_layer = Balance.WORLD_LAYER
 	collision_mask = Balance.MOVER_LAYER | Balance.LOOT_LAYER
-	panel_size = Vector3(Balance.PARLOUR_DOOR_WIDTH - Balance.DOOR_GAP, Balance.PARLOUR_WALL_HEIGHT, Balance.DOOR_THICKNESS)
+	var height: float = panel_height if panel_height > 0.0 else Balance.PARLOUR_WALL_HEIGHT
+	panel_size = Vector3(Balance.PARLOUR_DOOR_WIDTH - Balance.DOOR_GAP, height, Balance.DOOR_THICKNESS)
 	panel_shape.size = panel_size
 	var collision := CollisionShape3D.new()
 	collision.shape = panel_shape
 	collision.position = _panel_centre()
 	add_child(collision)
-	var mesh := MeshInstance3D.new()
-	var box := BoxMesh.new()
-	box.size = panel_size
-	mesh.mesh = box
-	mesh.position = _panel_centre()
-	var material := StandardMaterial3D.new()
-	material.albedo_color = Balance.DOOR_COLOUR
-	mesh.material_override = material
-	add_child(mesh)
+	if model_scene != null:
+		add_child(model_scene.instantiate())
+	else:
+		var mesh := MeshInstance3D.new()
+		var box := BoxMesh.new()
+		box.size = panel_size
+		mesh.mesh = box
+		mesh.position = _panel_centre()
+		var material := StandardMaterial3D.new()
+		material.albedo_color = Balance.DOOR_COLOUR
+		mesh.material_override = material
+		add_child(mesh)
 	rotation.y = deg_to_rad(angle)
 
 
