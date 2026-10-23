@@ -2,6 +2,7 @@
 extends Area3D
 
 signal banked(value: int, carrier_slot: int)
+signal delivered(value: int, carrier_slots: Array[int])
 
 # --- Bank state ---
 var banked_value: int = 0
@@ -43,10 +44,14 @@ func try_bank(item: Loot) -> bool:
 		return false
 	var amount: int = item.value
 	var carrier_slot: int = item.last_carrier_slot
+	var slots: Array[int] = item.delivery_slots.duplicate()
+	if slots.is_empty():
+		slots.append(carrier_slot)
 	item.retire("+" + Loot.rupees(amount), Balance.BANK_COLOUR)
 	banked_value += amount
 	banked_items += 1
 	banked.emit(amount, carrier_slot)
+	delivered.emit(amount, slots)
 	Sfx.play("bank", Balance.BANK_LARGE_PITCH if amount >= Balance.BANK_LARGE_VALUE else 1.0)
 	print("Banked ₹%d. Truck total: ₹%d" % [amount, banked_value])
 	return true

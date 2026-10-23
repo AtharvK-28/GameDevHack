@@ -19,19 +19,30 @@ const ARENA_NAME: String = "Old Mansion"
 const SIGNATURE_HAUNTING := preload("res://hauntings/HouseShake.gd")
 
 var truck: Area3D
+var demo_mode: bool = false
+var player_count: int = 2
+var spawn_seed: int = 0
 
 # --- Setup ---
 func _ready() -> void:
 	_build_room()
-	for point: Vector2 in Balance.VASE_POSITIONS:
-		_spawn_loot(VASE, point, 0)
-	for point: Vector2 in Balance.TV_POSITIONS:
-		_spawn_loot(TV, point, 1)
-	_spawn_loot(CLOCK, Balance.CLOCK_POSITION, 2)
+	if demo_mode:
+		_spawn_seeded_loot()
+	else:
+		for point: Vector2 in Balance.VASE_POSITIONS:
+			_spawn_loot(VASE, point, 0)
+		for point: Vector2 in Balance.TV_POSITIONS:
+			_spawn_loot(TV, point, 1)
+		_spawn_loot(CLOCK, Balance.CLOCK_POSITION, 2)
 	_spawn_loot(PIANO, Balance.PIANO_POSITION, 3)
 	var flashlight := FLASHLIGHT.instantiate()
 	flashlight.position = Vector3(Balance.FLASHLIGHT_POSITION.x, Balance.FLASHLIGHT_SIZE.y / 2.0 + Balance.LOOT_SPAWN_CLEARANCE, Balance.FLASHLIGHT_POSITION.y)
 	add_child(flashlight)
+	if demo_mode and player_count == 4:
+		var second := FLASHLIGHT.instantiate()
+		second.position = flashlight.position
+		second.position.x = -second.position.x
+		add_child(second)
 	_spawn_furniture()
 	truck = TRUCK.instantiate()
 	truck.position = Balance.TRUCK_POSITION
@@ -47,6 +58,8 @@ func _spawn_furniture() -> void:
 	var crate_size: Vector3 = Balance.FURNITURE_SIZES[0]
 	var armour_size: Vector3 = Balance.FURNITURE_SIZES[1]
 	_spawn(CRATE, Vector3(Balance.CRATE_POSITION.x, crate_size.y / 2.0 + Balance.LOOT_SPAWN_CLEARANCE, Balance.CRATE_POSITION.y))
+	if demo_mode:
+		return # Extra furniture abilities remain in the regression harness, not the first demo.
 	_spawn(ARMOUR, Vector3(Balance.ARMOUR_POSITION.x, armour_size.y / 2.0 + Balance.LOOT_SPAWN_CLEARANCE, Balance.ARMOUR_POSITION.y))
 	# The door hangs on the parlour doorway's right-hand jamb.
 	_spawn(DOOR, Vector3(Balance.PARLOUR_DOOR_WIDTH / 2.0, 0.0, Balance.PARLOUR_WALL_Z))
@@ -56,6 +69,21 @@ func _spawn_furniture() -> void:
 
 
 # --- Greybox helpers ---
+func _spawn_seeded_loot() -> void:
+	var random := RandomNumberGenerator.new()
+	random.seed = spawn_seed
+	var points: Array[Vector2] = Balance.MATCH_SPAWN_POINTS.duplicate()
+	for index: int in range(points.size() - 1, 0, -1):
+		var other: int = random.randi_range(0, index)
+		var saved: Vector2 = points[index]
+		points[index] = points[other]
+		points[other] = saved
+	var scenes: Array[PackedScene] = [VASE, TV, CLOCK]
+	for index: int in range(Balance.LOOT_COUNTS[player_count - 2] - 1):
+		var kind: int = random.randi_range(0, scenes.size() - 1)
+		_spawn_loot(scenes[kind], points[index], kind)
+
+
 func _build_room() -> void:
 	_box("Ground", Vector3(Balance.FLOOR_SIZE, Balance.FLOOR_THICKNESS, Balance.FLOOR_SIZE), Vector3(0.0, -Balance.FLOOR_THICKNESS / 2.0, 0.0), Color("526761"))
 	var rear: float = Balance.ROOM_CENTRE_Z - Balance.ROOM_DEPTH / 2.0

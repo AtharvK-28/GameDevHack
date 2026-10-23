@@ -23,6 +23,10 @@ var scrape_remainder: float = 0.0
 var scrape_unshown: int = 0
 var scrape_popup_time: float = 0.0
 var price_label := Label3D.new()
+var curse_left: float = 0.0
+var curse_targeted: bool = false
+var body_material: StandardMaterial3D
+var delivery_slots: Array[int] = [] # Last two-person team; retained while its last holder releases.
 
 # --- Setup ---
 func _ready() -> void:
@@ -43,9 +47,14 @@ func _process(_delta: float) -> void:
 	price_label.global_position = global_position + Vector3.UP * (item_size.y / 2.0 + Balance.PRICE_LABEL_HEIGHT)
 	price_label.text = rupees(value)
 	price_label.modulate = Color.WHITE.lerp(Balance.DAMAGE_COLOUR, 1.0 - float(value) / initial_value)
+	if body_material != null:
+		body_material.emission_enabled = curse_left > 0.0 or curse_targeted
+		body_material.emission = Balance.CURSE_COLOUR
+		body_material.albedo_color = Balance.CURSE_COLOUR if curse_left > 0.0 else Balance.LOOT_COLOURS[loot_kind]
 
 
 func _physics_process(delta: float) -> void:
+	curse_left = maxf(0.0, curse_left - delta)
 	if scrape_distance > 0.0:
 		_apply_scrape()
 	scrape_popup_time += delta
@@ -73,6 +82,7 @@ func _apply_carry(state: PhysicsDirectBodyState3D) -> void:
 	var speed_ratio: float = Balance.CARRY_SPEEDS[Balance.TWO_PERSON]
 	if holders == 1:
 		speed_ratio = Balance.LONE_DRAG_SPEED if lone_mover else Balance.DRAG_SPEED
+	speed_ratio *= carry_speed_ratio()
 
 	# Each held handle is pushed toward its holder's stick: the average moves the item, a difference turns it.
 	for index: int in range(2):
@@ -104,6 +114,15 @@ func _on_contact(normal: Vector3) -> void:
 
 
 # --- Grabbing, handles and banking ---
+func carry_speed_ratio() -> float:
+	return Balance.CURSE_CARRY_RATIO if curse_left > 0.0 else 1.0
+
+
+func curse() -> void:
+	curse_left = Balance.CURSE_DURATION
+	print("Cursed %s for %.0f seconds" % [item_name, curse_left])
+
+
 func holder_count() -> int:
 	var count: int = 0
 	for mover: CharacterBody3D in handle_holders:
@@ -138,6 +157,13 @@ func try_grab(mover: CharacterBody3D, target: Node3D, slot: int) -> bool:
 	if finished or haunted or index < 0:
 		return false
 	handle_holders[index] = mover
+	if holder_count() == 1:
+		delivery_slots = [slot]
+	else:
+		delivery_slots.clear()
+		for carrier: CharacterBody3D in handle_holders:
+			if is_instance_valid(carrier):
+				delivery_slots.append(carrier.slot)
 	last_carrier_slot = slot
 	add_collision_exception_with(mover)
 	can_sleep = false
@@ -305,6 +331,7 @@ func _build_shape() -> void:
 		mesh.mesh = box
 	var material := StandardMaterial3D.new()
 	material.albedo_color = Balance.LOOT_COLOURS[loot_kind]
+	body_material = material
 	mesh.material_override = material
 	add_child(mesh)
 

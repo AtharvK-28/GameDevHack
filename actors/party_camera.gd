@@ -1,22 +1,25 @@
-# The shared screen's camera. Phase 4: the fixed greybox view plus trauma shake (shake = trauma² × noise).
-# Following the movers, punch-in and wall fade arrive in Phase 6.
+# The shared screen's camera: a three-quarter dollhouse view, 55° down and 20° sideways.
+# With follow_movers on, it eases toward the centre of the movers in play and pulls back far enough to frame
+# them all (12–26 m), clamped to the arena. Shake (trauma² × noise) is only raised by abilities such as House Shake.
 extends Camera3D
 
-# --- Shake state ---
+# --- Settings ---
+var follow_movers: bool = false # Off for the fixed regression view; the match turns it on.
+
+# --- Framing and shake state ---
+var focus: Vector3 = Balance.CAMERA_TARGET
+var distance: float = Balance.CAMERA_DISTANCE
 var trauma: float = 0.0
-var rest := Transform3D()
 var noise := FastNoiseLite.new()
 var time: float = 0.0
 
 # --- Setup ---
 func _ready() -> void:
 	add_to_group("party_camera")
-	var angle: float = deg_to_rad(Balance.CAMERA_ANGLE)
-	var eye: Vector3 = Balance.CAMERA_TARGET + Vector3(0.0, sin(angle), cos(angle)) * Balance.CAMERA_DISTANCE
-	look_at_from_position(eye, Balance.CAMERA_TARGET)
-	rest = transform
+	process_mode = Node.PROCESS_MODE_ALWAYS # Keeps easing while the match is paused between rounds.
 	noise.frequency = 1.0 # Sampled at CAMERA_SHAKE_FREQUENCY units per second.
 	current = true
+	_place(Vector3.ZERO, 0.0)
 
 
 # --- Shake ---
@@ -25,11 +28,59 @@ func shake(amount: float) -> void:
 	trauma = clampf(maxf(trauma, amount), 0.0, 1.0)
 
 
+# --- Following ---
 func _process(delta: float) -> void:
 	time += delta
 	trauma = maxf(0.0, trauma - Balance.TRAUMA_DECAY * delta)
+	if follow_movers:
+		var framing: Array = _framing()
+		var blend: float = 1.0 - exp(-Balance.CAMERA_FOLLOW_RATE * delta)
+		focus = focus.lerp(framing[0], blend)
+		distance = lerpf(distance, framing[1], blend)
+
+	# Shake: shake = trauma² × noise, as a small offset and roll.
 	var strength: float = trauma * trauma
 	var sample: float = time * Balance.CAMERA_SHAKE_FREQUENCY
 	var offset := Vector3(noise.get_noise_2d(sample, 0.0), noise.get_noise_2d(sample, 100.0), 0.0) * Balance.CAMERA_SHAKE_OFFSET * strength
 	var roll: float = noise.get_noise_2d(sample, 200.0) * deg_to_rad(Balance.CAMERA_SHAKE_ROLL) * strength
-	transform = rest.translated_local(offset).rotated_local(Vector3.BACK, roll)
+	_place(offset, roll)
+
+
+func snap() -> void:
+	# Jump straight to the framing, for the start of a round.
+	if follow_movers:
+		var framing: Array = _framing()
+		focus = framing[0]
+		distance = framing[1]
+	_place(Vector3.ZERO, 0.0)
+
+
+func _framing() -> Array:
+	# [focus point, distance]: the movers' centre, pulled back until all of them fit with some padding.
+	var points: Array[Vector3] = []
+	for mover: Node3D in get_tree().get_nodes_in_group("movers"):
+		points.append(mover.global_position)
+	if points.is_empty():
+		return [Balance.CAMERA_TARGET, Balance.CAMERA_DISTANCE]
+	var centre := Vector3.ZERO
+	for point: Vector3 in points:
+		centre += point
+	centre /= points.size()
+	var spread: float = 0.0
+	for point: Vector3 in points:
+		spread = maxf(spread, Vector2(point.x - centre.x, point.z - centre.z).length())
+	var half_view: float = tan(deg_to_rad(fov / 2.0)) * Balance.CAMERA_SAFE_VIEW
+	var needed: float = (spread + Balance.CAMERA_FRAME_PADDING) / half_view
+	var bounds: Rect2 = Balance.CAMERA_BOUNDS
+	centre.x = clampf(centre.x, bounds.position.x, bounds.end.x)
+	centre.z = clampf(centre.z, bounds.position.y, bounds.end.y)
+	centre.y = 0.0
+	return [centre, clampf(needed, Balance.CAMERA_MIN_DISTANCE, Balance.CAMERA_MAX_DISTANCE)]
+
+
+func _place(offset: Vector3, roll: float) -> void:
+	var pitch: float = deg_to_rad(Balance.CAMERA_ANGLE)
+	var yaw: float = deg_to_rad(Balance.CAMERA_YAW)
+	var back := Vector3(sin(yaw) * cos(pitch), sin(pitch), cos(yaw) * cos(pitch))
+	look_at_from_position(focus + back * distance, focus)
+	transform = transform.translated_local(offset).rotated_local(Vector3.BACK, roll)

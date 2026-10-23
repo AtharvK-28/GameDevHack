@@ -1,0 +1,270 @@
+# Owns the match lifecycle, frozen result snapshots and score ledger. Networking and host UI keep running while paused.
+extends Node
+
+signal changed
+
+# --- Match state ---
+var host: Node3D
+var phase: String = "lobby"
+var resume_phase: String = "live"
+var participants: Array[int] = []
+var round_index: int = 0
+var round_count: int = 0
+var round_seed: int = 0
+var ghost_slot: int = -1
+var seconds_left: float = 0.0
+var reveal_left: float = 0.0
+var starting_value: int = 0
+var banked_value: int = 0
+var lost_value: int = 0
+var scores: Dictionary = {}
+var bank_credit: Dictionary = {}
+var round_points: Dictionary = {}
+var result: Dictionary = {}
+var pause_reason: String = ""
+var broadcast_left: float = 0.0
+
+# --- Setup ---
+func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	Net.players_changed.connect(_players_changed)
+
+
+func attach(world: Node3D) -> void:
+	host = world
+	return_to_lobby()
+
+
+func ready_slots() -> Array[int]:
+	var slots: Array[int] = []
+	for player: Dictionary in Net.players:
+		if player.socket != null and player.ready:
+			slots.append(player.slot)
+	return slots
+
+
+func can_start() -> bool:
+	return Net.listen_error == OK and phase == "lobby" and ready_slots().size() >= 2
+
+
+func start_match() -> void:
+	if not can_start():
+		return
+	participants = ready_slots()
+	round_count = Balance.MATCH_ROUNDS[participants.size() - 2]
+	round_index = 0
+	scores.clear()
+	for slot: int in participants:
+		scores[slot] = 0.0
+	Net.accept_new_players = false
+	_begin_round(false)
+
+
+func _begin_round(restarting: bool) -> void:
+	_set_phase("setup")
+	if not restarting:
+		round_seed = randi()
+	ghost_slot = participants[round_index % participants.size()]
+	bank_credit.clear()
+	round_points.clear()
+	result.clear()
+	banked_value = 0
+	lost_value = 0
+	starting_value = 0
+	seconds_left = Balance.ROUND_SECONDS
+	reveal_left = Balance.REVEAL_SECONDS
+	host.setup_match_round(round_seed, participants, ghost_slot)
+	for item: Node in get_tree().get_nodes_in_group("loot"):
+		starting_value += item.value
+	host.arena.truck.delivered.connect(_on_delivered)
+	for slot: int in participants:
+		var player: Dictionary = Net.player_for_slot(slot)
+		Net.send_to_player(player, {"type": "buzz", "ms": Balance.TUMBLE_BUZZ_MS})
+	_set_phase("reveal")
+	_players_changed()
+
+
+# --- Round loop ---
+func _process(delta: float) -> void:
+	if not is_instance_valid(host):
+		return
+	if phase == "reveal":
+		reveal_left = maxf(0.0, reveal_left - delta)
+		if reveal_left <= 0.0:
+			_set_phase("live")
+	elif phase == "live":
+		seconds_left = maxf(0.0, seconds_left - delta)
+		_evaluate_round()
+	broadcast_left -= delta
+	if broadcast_left <= 0.0:
+		broadcast_left = 1.0 / Balance.HUD_RATE
+		_broadcast()
+
+
+func _evaluate_round() -> void:
+	var remaining: int = 0
+	var unresolved: int = 0
+	for item: Node3D in get_tree().get_nodes_in_group("loot"):
+		if item.finished:
+			continue
+		if item.global_position.y < Balance.LOST_ITEM_Y:
+			item._lose_value(item.value)
+			continue
+		remaining += item.value
+		unresolved += 1
+	lost_value = maxi(0, starting_value - banked_value - remaining)
+	if (banked_value + remaining) * 100 < starting_value * Balance.DELIVERY_PERCENT:
+		_finish_round(false, "More than 30% of the starting value was lost.")
+	elif seconds_left <= 0.0 or unresolved == 0:
+		var won: bool = banked_value * 100 >= starting_value * Balance.DELIVERY_PERCENT
+		_finish_round(won, "Time is up." if seconds_left <= 0.0 else "All items are accounted for.")
+
+
+func _on_delivered(value: int, carrier_slots: Array[int]) -> void:
+	if phase != "live":
+		return
+	banked_value += value
+	if carrier_slots.is_empty():
+		return
+	for slot: int in carrier_slots:
+		if slot in participants and slot != ghost_slot:
+			bank_credit[slot] = bank_credit.get(slot, 0.0) + float(value) / carrier_slots.size()
+
+
+func _finish_round(movers_won: bool, reason: String) -> void:
+	if phase != "live":
+		return
+	for slot: int in participants:
+		var points: float
+		if slot == ghost_slot:
+			points = lost_value / Balance.RUPEES_PER_POINT + (0.0 if movers_won else Balance.GHOST_WIN_BONUS)
+		else:
+			points = bank_credit.get(slot, 0.0) / Balance.RUPEES_PER_POINT + (Balance.MOVER_WIN_BONUS if movers_won else 0.0)
+		round_points[slot] = points
+		scores[slot] += points
+		Net.player_for_slot(slot).points = scores[slot]
+	result = {"moversWon": movers_won, "reason": reason, "banked": banked_value, "starting": starting_value, "lost": lost_value}
+	_set_phase("result")
+	for slot: int in participants:
+		Net.send_to_player(Net.player_for_slot(slot), {"type": "result", "moversWon": movers_won, "points": round_points})
+
+
+# --- Host actions ---
+func restart_round() -> void:
+	if phase != "result":
+		return
+	for slot: int in participants:
+		scores[slot] -= round_points.get(slot, 0.0)
+		Net.player_for_slot(slot).points = scores[slot]
+	_begin_round(true)
+
+
+func next_round() -> void:
+	if phase != "result":
+		return
+	if round_index + 1 >= round_count:
+		_set_phase("final")
+		for player: Dictionary in Net.players:
+			Net.send_to_player(player, {"type": "final", "standings": standings(), "awards": []})
+		return
+	round_index += 1
+	_begin_round(false)
+
+
+func return_to_lobby() -> void:
+	if is_instance_valid(host):
+		host.reset_for_lobby()
+	Net.accept_new_players = true
+	participants.clear()
+	scores.clear()
+	result.clear()
+	round_points.clear()
+	pause_reason = ""
+	ghost_slot = -1
+	for player: Dictionary in Net.players:
+		player.ready = false
+		player.role = ""
+		player.points = 0
+	_set_phase("lobby")
+	Net._broadcast_lobby()
+
+
+# --- Connection and phase synchronisation ---
+func _players_changed() -> void:
+	if not is_instance_valid(host):
+		return
+	if phase in ["live", "reveal", "paused"]:
+		var missing: PackedStringArray = []
+		for slot: int in participants:
+			var player: Dictionary = Net.player_for_slot(slot)
+			if player.socket == null:
+				missing.append(player.name)
+		if not missing.is_empty():
+			pause_reason = "Waiting for " + ", ".join(missing) + " to reconnect"
+			if phase != "paused":
+				resume_phase = phase
+				_set_phase("paused")
+		elif phase == "paused":
+			pause_reason = ""
+			_set_phase(resume_phase)
+	_broadcast.call_deferred() # Join sends the role after emitting players_changed.
+	changed.emit()
+
+
+func _set_phase(next: String) -> void:
+	phase = next
+	InputRouter.input_enabled = phase == "live"
+	InputRouter._clear_keyboard()
+	for player: Dictionary in Net.players:
+		Net._reset_input(player)
+	get_tree().paused = phase != "live"
+	changed.emit()
+	_broadcast()
+
+
+func snapshot() -> Dictionary:
+	var players: Array[Dictionary] = []
+	for player: Dictionary in Net.players:
+		players.append({"slot": player.slot, "name": player.name, "ready": player.ready, "online": player.socket != null})
+	return {"type": "match", "phase": phase, "round": round_index + 1, "rounds": round_count,
+		"t": ceili(seconds_left), "countdown": ceili(reveal_left), "target": target_value(),
+		"starting": starting_value, "banked": banked_value, "lost": lost_value, "ghost": ghost_slot,
+		"result": result, "standings": standings(), "pauseReason": pause_reason, "canStart": can_start(),
+		"players": players}
+
+
+# --- Queries for the host screens ---
+func target_value() -> int:
+	# The smallest whole-rupee delivery that reaches DELIVERY_PERCENT of the starting value.
+	return ceili(starting_value * Balance.DELIVERY_PERCENT / 100.0)
+
+
+func loss_limit() -> int:
+	# Losing more than this makes the target impossible, which ends the round for the ghost.
+	return starting_value - target_value()
+
+
+func ghost() -> Node3D:
+	return host.ghost if is_instance_valid(host) and is_instance_valid(host.ghost) else null
+
+
+func arena_name() -> String:
+	return host.arena.ARENA_NAME if is_instance_valid(host) and is_instance_valid(host.arena) else ""
+
+
+func standings() -> Array[Dictionary]:
+	var rows: Array[Dictionary] = []
+	for slot: int in participants:
+		var player: Dictionary = Net.player_for_slot(slot)
+		rows.append({"slot": slot, "name": player.get("name", "Player %d" % (slot + 1)), "points": scores.get(slot, 0.0), "roundPoints": round_points.get(slot, 0.0)})
+	rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a.points > b.points)
+	return rows
+
+
+func _broadcast() -> void:
+	if not is_instance_valid(host):
+		return
+	var message: Dictionary = snapshot()
+	for player: Dictionary in Net.players:
+		Net.send_to_player(player, message)
+	changed.emit()

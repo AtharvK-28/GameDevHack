@@ -5,7 +5,7 @@ extends Node
 const SLOT_KEYS: Array[Key] = [KEY_1, KEY_2, KEY_3, KEY_4]
 const BUTTON_KEYS: Dictionary = {
 	KEY_SPACE: "grab", KEY_E: "throw", KEY_SHIFT: "brace",
-	KEY_Q: "possess", KEY_F: "action", KEY_Z: "haunt1", KEY_X: "haunt2",
+	KEY_Q: "possess", KEY_F: "action", KEY_Z: "haunt1", KEY_X: "haunt2", KEY_C: "haunt3",
 }
 
 class PlayerInput:
@@ -21,9 +21,11 @@ var keyboard_buttons: Dictionary = {}
 var keyboard_pressed: Dictionary = {}
 var keyboard_released: Dictionary = {}
 var has_focus: bool = true
+var input_enabled: bool = true
 
 # --- Setup and event collection ---
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	process_physics_priority = -100 # Sample before the actors consume their input.
 	for slot: int in range(Balance.MAX_PLAYERS):
 		snapshots.append(PlayerInput.new())
@@ -72,6 +74,8 @@ func _sample_slot(slot: int) -> void:
 	snapshot.buttons = {}
 	snapshot.pressed = {}
 	snapshot.released = {}
+	if not input_enabled:
+		return
 	var player := Net.player_for_slot(slot)
 	if not player.is_empty() and player.socket != null:
 		snapshot.direction = player.direction

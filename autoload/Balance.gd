@@ -27,6 +27,13 @@ const SPAWN_SPACING: float = 2.5
 const CAMERA_DISTANCE: float = 21.0
 const CAMERA_TARGET := Vector3(0.0, 0.0, -3.0) # Centre of the greybox between the parlour and the truck.
 const CAMERA_ANGLE: float = 55.0 # Degrees down from horizontal.
+const CAMERA_YAW: float = 20.0 # Three-quarter view, degrees.
+const CAMERA_MIN_DISTANCE: float = 12.0
+const CAMERA_MAX_DISTANCE: float = 26.0
+const CAMERA_FOLLOW_RATE: float = 3.0 # Exponential easing per second.
+const CAMERA_FRAME_PADDING: float = 2.5 # Metres around the movers.
+const CAMERA_SAFE_VIEW: float = 0.8 # Fraction of the viewport used for framing.
+const CAMERA_BOUNDS := Rect2(-6.0, -10.0, 12.0, 15.0) # The x/z area the camera's focus may move within: house and truck.
 const LABEL_HEIGHT: float = 1.35
 const LABEL_FONT_SIZE: int = 48
 const LABEL_PIXEL_SIZE: float = 0.01 # World metres per label pixel.
@@ -110,10 +117,60 @@ const GHOST_BOUNDS := Rect2(-7.5, -12.0, 15.0, 19.0) # The x/z area the wisp may
 const GHOST_SPAWN := Vector2(0.0, -10.9) # Far end of the parlour.
 const ENERGY_MAX: float = 100.0
 const ENERGY_REGEN: float = 12.0 # Per second while a free wisp.
+const MATCH_ENERGY_REGEN: Array[float] = [8.0, 10.0, 12.0] # By number of movers.
+const HAUNT_SHARED_LOCK: float = 4.0 # Seconds between hauntings.
+const HAUNT_OPENING_GRACE: float = 8.0 # Seconds from live round start.
+const CURSE_DURATION: float = 6.0
+const CURSE_COST: int = 30
+const CURSE_COOLDOWN: float = 15.0
+const CURSE_CARRY_RATIO: float = 0.7 # Multiplies carry and drag speed, not the spring.
+const CURSE_COLOUR := Color("cf80ff")
 const POSSESS_DRAIN: float = 8.0 # Per second while possessing.
 const POSSESS_RANGE: float = 0.6 # Metres from a prop's footprint.
 const POSSESS_LOCKOUT: float = 5.0 # Seconds after an exorcism before the ghost can possess again.
 const EXORCISE_FREEZE: float = 1.0 # Seconds the ejected wisp cannot move or press anything.
+
+# --- Match settings ---
+const ROUND_SECONDS: float = 150.0
+const REVEAL_SECONDS: float = 3.0
+const DELIVERY_PERCENT: int = 70 # Integer arithmetic keeps the exact boundary fair.
+const LOOT_COUNTS: Array[int] = [6, 9, 12] # For 2, 3, 4 players.
+const MATCH_ROUNDS: Array[int] = [4, 3, 4]
+const RUPEES_PER_POINT: float = 100.0
+const MOVER_WIN_BONUS: float = 100.0
+const GHOST_WIN_BONUS: float = 150.0
+const LOST_ITEM_Y: float = -10.0 # Metres below the arena; permanently lost.
+const MATCH_SPAWN_POINTS: Array[Vector2] = [
+	Vector2(-4.5, -10.5), Vector2(4.5, -10.5), Vector2(-4.5, -6.5),
+	Vector2(4.5, -6.5), Vector2(-4.5, -3.5), Vector2(4.5, -3.5),
+	Vector2(-4.5, -0.5), Vector2(4.5, -0.5), Vector2(-2.0, -3.5),
+	Vector2(2.0, -3.5), Vector2(0.0, -0.5),
+]
+
+# --- Host screen settings (pixels at the 1152 × 648 base size; the window scales them) ---
+const HOST_FONT_SIZE: int = 22
+const HOST_SMALL_SIZE: int = 16
+const HOST_TITLE_SIZE: int = 42
+const HOST_COUNTDOWN_SIZE: int = 96
+const HOST_PANEL_WIDTH: float = 680.0
+const HOST_CREW_WIDTH: float = 260.0
+const HOST_PANEL_PADDING: int = 20
+const HOST_ROW_GAP: int = 10
+const HOST_CORNER_RADIUS: int = 12
+const HOST_OUTLINE_SIZE: int = 4
+const HOST_PANEL_COLOUR := Color(0.086, 0.165, 0.169, 0.97)
+const HOST_TEXT_COLOUR := Color("f7f1df")
+const HOST_MUTED_COLOUR := Color("a9bdb8")
+const HOST_ACCENT_COLOUR := Color("ffb84d")
+const HOST_GHOST_COLOUR := Color("6dff8a")
+const HOST_OUTLINE_COLOUR := Color("0b1414")
+const QR_DISPLAY_SIZE: float = 222.0
+const QR_MODULE_PIXELS: int = 6 # Source image pixels per QR module; scaled with nearest filtering.
+const QR_QUIET_MODULES: int = 4 # Light border the standard asks for.
+const HUD_MARGIN: float = 20.0
+const HUD_BAR_SIZE := Vector2(420.0, 18.0)
+const HUD_MARKER_WIDTH: float = 3.0
+const HUD_MARKER_OVERHANG: float = 4.0 # Pixels the 70% tick reaches above and below the bar.
 
 # --- Possession settings ---
 const ACTION_LABELS: Array[String] = ["SHOVE", "SLAM", "DROP", "STOMP", "YANK"] # By possessable kind: slider, door, dropper, hopper, rug.

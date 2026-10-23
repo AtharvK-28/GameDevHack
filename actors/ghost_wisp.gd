@@ -17,10 +17,18 @@ var hauntings: Array[Haunting] = []
 var shimmer_time: float = 0.0
 var body_mesh := MeshInstance3D.new()
 var material := StandardMaterial3D.new()
+var demo_rules: bool = false # Archived harnesses retain all five furniture actions and slime.
+var mover_count: int = 1
+var opening_left: float = 0.0
+var shared_lock_left: float = 0.0
+var curse_cooldown_left: float = 0.0
+var curse_target: Loot
 
 # --- Setup ---
 func _ready() -> void:
 	add_to_group("ghosts")
+	if demo_rules:
+		opening_left = Balance.HAUNT_OPENING_GRACE
 	for script: Script in [signature_haunting, EctoSlime]:
 		var haunting: Haunting = script.new()
 		hauntings.append(haunting)
@@ -29,6 +37,8 @@ func _ready() -> void:
 
 
 func _exit_tree() -> void:
+	if is_instance_valid(curse_target):
+		curse_target.curse_targeted = false
 	# Leaving play when the role passes on hands any possessed prop back.
 	if is_instance_valid(possessing):
 		possessing.release()
@@ -40,6 +50,9 @@ func _exit_tree() -> void:
 
 # --- Controls ---
 func _physics_process(delta: float) -> void:
+	opening_left = maxf(0.0, opening_left - delta)
+	shared_lock_left = maxf(0.0, shared_lock_left - delta)
+	curse_cooldown_left = maxf(0.0, curse_cooldown_left - delta)
 	var input: InputRouter.PlayerInput = InputRouter.for_slot(slot)
 	freeze_left = maxf(0.0, freeze_left - delta)
 	lockout_left = maxf(0.0, lockout_left - delta)
@@ -55,6 +68,8 @@ func _physics_process(delta: float) -> void:
 		for index: int in range(hauntings.size()):
 			if input.pressed.get("haunt%d" % (index + 1), false):
 				_try_haunting(index)
+		if input.pressed.get("haunt3", false):
+			_try_curse()
 	_update_energy(delta)
 	if is_instance_valid(possessing):
 		possessing.drive(stick, delta)
@@ -64,6 +79,7 @@ func _physics_process(delta: float) -> void:
 		position += Vector3(stick.x, 0.0, stick.y) * Balance.WISP_SPEED * delta
 		_clamp_to_bounds()
 	_update_target()
+	_update_curse_target()
 
 
 func is_frozen() -> bool:
@@ -77,7 +93,8 @@ func _update_energy(delta: float) -> void:
 			print("Ghost ran out of energy")
 			leave()
 	else:
-		energy = minf(Balance.ENERGY_MAX, energy + Balance.ENERGY_REGEN * delta)
+		var regen: float = Balance.MATCH_ENERGY_REGEN[clampi(mover_count - 1, 0, 2)] if demo_rules else Balance.ENERGY_REGEN
+		energy = minf(Balance.ENERGY_MAX, energy + regen * delta)
 
 
 # --- Possession ---
@@ -136,6 +153,8 @@ func _update_target() -> void:
 		var best_distance: float = Balance.POSSESS_RANGE
 		for node: Node in get_tree().get_nodes_in_group("possessables"):
 			if node is Possessable and node.can_be_possessed():
+				if demo_rules and node.kind != Possessable.Kind.SLIDER:
+					continue
 				var distance: float = node.reach_distance(global_position)
 				if distance <= best_distance:
 					best = node
@@ -162,6 +181,8 @@ func _try_action() -> void:
 
 
 func can_haunt(index: int) -> bool:
+	if demo_rules and (index != 0 or opening_left > 0.0 or shared_lock_left > 0.0):
+		return false
 	var haunting: Haunting = hauntings[index]
 	return not is_frozen() and haunting.can_trigger() and energy >= haunting.cost
 
@@ -171,6 +192,44 @@ func _try_haunting(index: int) -> void:
 		return
 	energy -= hauntings[index].cost
 	hauntings[index].trigger(self)
+	if demo_rules:
+		shared_lock_left = Balance.HAUNT_SHARED_LOCK
+
+
+# --- Temporary heavy-item Curse ---
+func _update_curse_target() -> void:
+	var best: Loot = null
+	var nearest: float = Balance.POSSESS_RANGE
+	if demo_rules and not is_instance_valid(possessing) and not is_frozen():
+		for node: Node in get_tree().get_nodes_in_group("possessables"):
+			if not node is Possessable or not node.prop is Loot:
+				continue
+			var item: Loot = node.prop
+			if item.finished or item.curse_left > 0.0 or node._in_truck():
+				continue
+			var distance: float = node.reach_distance(global_position)
+			if distance <= nearest:
+				nearest = distance
+				best = item
+	if is_instance_valid(curse_target):
+		curse_target.curse_targeted = false
+	curse_target = best
+	if best != null:
+		best.curse_targeted = true
+
+
+func can_curse() -> bool:
+	return demo_rules and not is_frozen() and not is_instance_valid(possessing) and opening_left <= 0.0 and shared_lock_left <= 0.0 and curse_cooldown_left <= 0.0 and energy >= Balance.CURSE_COST and is_instance_valid(curse_target) and not curse_target.finished and curse_target.curse_left <= 0.0
+
+
+func _try_curse() -> void:
+	if not can_curse():
+		return
+	energy -= Balance.CURSE_COST
+	curse_target.curse()
+	curse_cooldown_left = Balance.CURSE_COOLDOWN
+	shared_lock_left = Balance.HAUNT_SHARED_LOCK
+	_update_curse_target()
 
 
 # --- Phone feedback ---
@@ -181,7 +240,7 @@ func hud() -> Dictionary:
 	if is_instance_valid(possessing):
 		label = possessing.action_label()
 		cost = possessing.action_cost()
-	return {
+	var message: Dictionary = {
 		"type": "hud", "energy": floori(energy), "action": label,
 		"costs": {"action": cost, "haunt1": hauntings[0].cost, "haunt2": hauntings[1].cost},
 		"cd": {
@@ -192,6 +251,48 @@ func hud() -> Dictionary:
 		"ok": {"possess": can_toggle_possession(), "action": can_act(), "haunt1": can_haunt(0), "haunt2": can_haunt(1)},
 		"t": 0,
 	}
+	message.costs.haunt3 = Balance.CURSE_COST
+	message.cd.haunt3 = curse_cooldown_left / Balance.CURSE_COOLDOWN
+	message.ok.haunt3 = can_curse()
+	message.simple = demo_rules
+	message.target = curse_target.item_name if is_instance_valid(curse_target) else ""
+	message.seconds = {"opening": ceilf(opening_left), "shared": ceilf(shared_lock_left), "possess": ceilf(lockout_left), "haunt1": ceilf(hauntings[0].cooldown_left), "haunt3": ceilf(curse_cooldown_left)}
+	message.reasons = {}
+	for button: String in ["possess", "action", "haunt1", "haunt3"]:
+		message.reasons[button] = _button_reason(button)
+	return message
+
+
+func _button_reason(button: String) -> String:
+	if is_frozen():
+		return "Exorcised: %ds" % ceili(freeze_left)
+	if button == "possess":
+		if is_instance_valid(possessing):
+			return "Leave for free"
+		if lockout_left > 0.0:
+			return "Exorcised: %ds" % ceili(lockout_left)
+		return "Ready" if can_toggle_possession() else "Move near a loose prop"
+	if button == "action":
+		if not is_instance_valid(possessing):
+			return "Possess a prop first"
+		if energy < possessing.action_cost():
+			return "Need %d energy" % possessing.action_cost()
+		return "Ready" if can_act() else "Action recovering"
+	if demo_rules and opening_left > 0.0:
+		return "Opening protection: %ds" % ceili(opening_left)
+	if demo_rules and shared_lock_left > 0.0:
+		return "Haunting lock: %ds" % ceili(shared_lock_left)
+	var cooldown: float = curse_cooldown_left if button == "haunt3" else hauntings[0].cooldown_left
+	if cooldown > 0.0:
+		return "Cooldown: %ds" % ceili(cooldown)
+	if button == "haunt3" and is_instance_valid(possessing):
+		return "Leave prop first"
+	var required: int = Balance.CURSE_COST if button == "haunt3" else hauntings[0].cost
+	if energy < required:
+		return "Need %d energy" % required
+	if button == "haunt3" and not is_instance_valid(curse_target):
+		return "Move near uncursed loot"
+	return "Ready"
 
 
 # --- Visual helpers ---

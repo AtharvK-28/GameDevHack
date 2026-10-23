@@ -21,6 +21,7 @@ Balance="*res://autoload/Balance.gd"
 Net="*res://autoload/Net.gd"
 InputRouter="*res://core/InputRouter.gd"
 Sfx="*res://autoload/Sfx.gd"
+Game="*res://autoload/Game.gd"
 
 [display]
 

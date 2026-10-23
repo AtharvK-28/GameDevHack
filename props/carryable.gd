@@ -113,6 +113,10 @@ func _on_impact(_speed: float) -> void:
 
 
 # --- Grabbing and releasing ---
+func carry_speed_ratio() -> float:
+	return 1.0
+
+
 func is_held() -> bool:
 	return is_instance_valid(holder) and is_instance_valid(hold_target)
 

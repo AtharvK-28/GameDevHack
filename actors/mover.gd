@@ -75,7 +75,7 @@ func _physics_process(delta: float) -> void:
 
 func movement_speed() -> float:
 	if is_instance_valid(held_item):
-		return Balance.MOVER_SPEED * Balance.CARRY_SPEEDS[held_item.weight_class]
+		return Balance.MOVER_SPEED * Balance.CARRY_SPEEDS[held_item.weight_class] * held_item.carry_speed_ratio()
 	return Balance.MOVER_SPEED
 
 
@@ -135,6 +135,17 @@ func set_in_play(active: bool) -> void:
 	collision_layer = Balance.MOVER_LAYER if active else 0
 	collision_mask = (Balance.WORLD_LAYER | Balance.MOVER_LAYER | Balance.LOOT_LAYER) if active else 0
 	process_mode = Node.PROCESS_MODE_INHERIT if active else Node.PROCESS_MODE_DISABLED
+
+
+func reset_for_round(location: Vector3, playing: bool) -> void:
+	# Hands empty, standing up, facing the house, at a fresh spot; out of play if this player is not a mover.
+	set_in_play(false)
+	position = location
+	facing = Vector3.FORWARD
+	grab_released = true
+	_update_hold_point()
+	if playing:
+		set_in_play(true)
 
 
 func _turn_toward_stick(delta: float) -> void:

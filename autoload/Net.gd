@@ -5,16 +5,18 @@ signal players_changed
 signal role_changed(slot: int)
 
 # --- Protocol constants ---
-const BUTTONS: Array[String] = ["grab", "throw", "brace", "possess", "action", "haunt1", "haunt2"]
+const BUTTONS: Array[String] = ["grab", "throw", "brace", "possess", "action", "haunt1", "haunt2", "haunt3"]
 
 # --- Session state ---
 var server := TCPServer.new()
 var peers: Array[Dictionary] = []
 var players: Array[Dictionary] = []
 var listen_error: Error = OK
+var accept_new_players: bool = true
 
 # --- Setup ---
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	listen_error = server.listen(Balance.SOCKET_PORT)
 	if listen_error != OK:
 		push_error("Controller port %d unavailable: %s" % [Balance.SOCKET_PORT, error_string(listen_error)])
@@ -129,6 +131,9 @@ func _join(connection: Dictionary, message: Dictionary) -> void:
 	if message.get("pid") is String:
 		player = _player_for_pid(message.pid)
 	if player.is_empty():
+		if not accept_new_players:
+			connection.socket.close(1008, "Match in progress. Rejoin with your original browser or wait for the lobby.")
+			return
 		if players.size() >= Balance.MAX_PLAYERS:
 			var rejected: WebSocketPeer = connection.socket
 			rejected.close(1008, "All four slots are reserved. Rejoin with your original browser.")

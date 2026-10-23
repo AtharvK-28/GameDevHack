@@ -1,15 +1,23 @@
-# Four-player greybox with an optional ghost; full match flow is added in Phase 5.
+# Runs the match world: Game drives the phases and calls setup_match_round() for each seeded round.
+# With match_mode off it is the Phase 4 greybox harness (G passes the ghost), kept for the physics checks.
 extends Node3D
+
+@export var match_mode: bool = true
 
 # --- Resources and display state ---
 const MOVER_SCENE := preload("res://actors/Mover.tscn")
 const GHOST_SCENE := preload("res://actors/GhostWisp.tscn")
 const CAMERA_SCENE := preload("res://actors/PartyCamera.tscn")
 const ARENA_SCENE := preload("res://arenas/Mansion.tscn")
-var status_label := Label.new()
-var ghost_panel := PanelContainer.new()
-var ghost_label := Label.new()
-var ghost_bar := ProgressBar.new()
+const SCREEN_SCENES: Array[PackedScene] = [
+	preload("res://screens/HUD.tscn"), preload("res://screens/Lobby.tscn"), preload("res://screens/RoleReveal.tscn"),
+	preload("res://screens/RoundEnd.tscn"), preload("res://screens/Results.tscn"),
+]
+var camera: Camera3D
+var status_label: Label # Harness overlay only; the match uses the screens instead.
+var ghost_panel: PanelContainer
+var ghost_label: Label
+var ghost_bar: ProgressBar
 var arena: Node3D
 var movers: Array[CharacterBody3D] = []
 var ghost: Node3D
@@ -31,19 +39,29 @@ func _ready() -> void:
 	Net.players_changed.connect(_start_ready_controllers)
 	_build_connection_text()
 	_start_ready_controllers()
-	print("Phase 4: ghost greybox ready. Press G to pass the ghost role; the piano needs two movers.")
+	if match_mode:
+		_build_match_screens()
+		Game.attach(self)
+		print("Match lobby ready: phones join, tap Ready, then press Enter to start.")
+	else:
+		print("Phase 4: ghost greybox ready. Press G to pass the ghost role; the piano needs two movers.")
 
 
 # --- Test feedback ---
 func _process(delta: float) -> void:
-	status_label.text = "GHOSTED MOVERS · BANKED %s\nHold GRAB to carry · release in the green truck zone · THROW light items · the piano needs two\nG passes the ghost role · ghost keys: Q possess · F action · Z shake · X slime\n%s" % [Loot.rupees(arena.truck.banked_value), connection_text]
-	# Until match flow exists, one active mover counts as the lone mover of a 2-player match.
-	Loot.lone_mover = _active_mover_count() <= 1
-	_update_ghost_panel()
+	if not match_mode:
+		_update_harness_overlay()
+	# A 2-player match is one mover against the ghost; in the harness, count the active movers.
+	Loot.lone_mover = Game.participants.size() == 2 if match_mode else _active_mover_count() <= 1
 	hud_elapsed += delta
 	if hud_elapsed >= 1.0 / Balance.HUD_RATE:
 		hud_elapsed = fmod(hud_elapsed, 1.0 / Balance.HUD_RATE)
 		_send_hud()
+
+
+func _update_harness_overlay() -> void:
+	status_label.text = "GHOSTED MOVERS · BANKED %s\nHold GRAB to carry · release in the green truck zone · THROW light items · the piano needs two\nG passes the ghost role · ghost keys: Q possess · F action · Z shake · X slime\n%s" % [Loot.rupees(arena.truck.banked_value), connection_text]
+	_update_ghost_panel()
 
 
 func _build_connection_text() -> void:
@@ -65,12 +83,14 @@ func _send_hud() -> void:
 		if is_ghost_slot(mover.slot):
 			Net.send_to_player(player, ghost.hud())
 			continue
-		var item: Carryable = mover.held_item
-		var has_item: bool = is_instance_valid(item) and not item.finished
+		# A carried item that just shattered is already freed; check before taking a typed reference.
+		var has_item: bool = is_instance_valid(mover.held_item) and not mover.held_item.finished
+		var item: Carryable = mover.held_item if has_item else null
 		var value: Variant = null # Items without a price, like the flashlight, show their name only.
 		if has_item and item is Loot:
 			value = item.value
-		Net.send_to_player(player, {"type": "hud", "held": item.item_name if has_item else "", "value": value, "t": 0})
+		var cursed: float = item.curse_left if has_item and item is Loot else 0.0
+		Net.send_to_player(player, {"type": "hud", "held": item.item_name if has_item else "", "value": value, "cursed": ceili(cursed), "t": ceili(Game.seconds_left) if match_mode else 0})
 
 
 func _update_ghost_panel() -> void:
@@ -83,6 +103,8 @@ func _update_ghost_panel() -> void:
 
 # --- Roles ---
 func _unhandled_input(event: InputEvent) -> void:
+	if match_mode:
+		return # The match screens own the host keys.
 	# Host key G passes the ghost role along until Phase 5's role rotation exists.
 	if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_G:
 		cycle_ghost()
@@ -114,12 +136,57 @@ func set_ghost_slot(slot: int) -> void:
 		return
 	movers[slot].set_in_play(false)
 	ghost = GHOST_SCENE.instantiate()
+	ghost.demo_rules = match_mode
+	ghost.mover_count = maxi(1, Game.participants.size() - 1)
 	ghost.slot = slot
 	ghost.signature_haunting = arena.SIGNATURE_HAUNTING
 	ghost.position = arena.ghost_spawn()
 	add_child(ghost)
 	Net.set_role(slot, "ghost", arena.ARENA_NAME)
 	print("Player %d is the ghost" % (slot + 1))
+
+
+# --- Match rounds, called by Game ---
+func setup_match_round(round_seed: int, participants: Array[int], ghost_slot: int) -> void:
+	# A fresh seeded arena, every mover back at the truck, and the ghost at the far end of the parlour.
+	_remove_ghost()
+	for mover: CharacterBody3D in movers:
+		mover.reset_for_round(_spawn_point(mover.slot), mover.slot in participants and mover.slot != ghost_slot)
+	remove_child(arena)
+	arena.free() # Freed now, so Game counts only the new round's loot.
+	arena = ARENA_SCENE.instantiate()
+	arena.demo_mode = true
+	arena.player_count = participants.size()
+	arena.spawn_seed = round_seed
+	add_child(arena)
+	Loot.lone_mover = participants.size() == 2
+
+	ghost = GHOST_SCENE.instantiate()
+	ghost.demo_rules = true
+	ghost.mover_count = participants.size() - 1
+	ghost.slot = ghost_slot
+	ghost.signature_haunting = arena.SIGNATURE_HAUNTING
+	ghost.position = arena.ghost_spawn()
+	add_child(ghost)
+	for slot: int in participants:
+		Net.set_role(slot, "ghost" if slot == ghost_slot else "mover", arena.ARENA_NAME)
+	camera.snap()
+	print("Round set up: seed %d, ghost is player %d" % [round_seed, ghost_slot + 1])
+
+
+func reset_for_lobby() -> void:
+	# Between matches: no ghost, and every mover back at the truck.
+	_remove_ghost()
+	for mover: CharacterBody3D in movers:
+		mover.reset_for_round(_spawn_point(mover.slot), true)
+	camera.snap()
+
+
+func _remove_ghost() -> void:
+	if is_instance_valid(ghost):
+		remove_child(ghost) # Hands back any possessed prop straight away.
+		ghost.free()
+	ghost = null
 
 
 func is_ghost_slot(slot: int) -> bool:
@@ -147,6 +214,8 @@ func _active_mover_count() -> int:
 
 
 func _start_ready_controllers() -> void:
+	if match_mode:
+		return
 	# This harness gives ready phones mover controls; real roles belong to Game in Phase 5.
 	for player: Dictionary in Net.players:
 		if player.ready and player.role.is_empty():
@@ -159,7 +228,9 @@ func _spawn_point(slot: int) -> Vector3:
 
 
 func _build_camera() -> void:
-	add_child(CAMERA_SCENE.instantiate())
+	camera = CAMERA_SCENE.instantiate()
+	camera.follow_movers = match_mode
+	add_child(camera)
 	var light := DirectionalLight3D.new()
 	light.rotation_degrees = Balance.LIGHT_ROTATION
 	add_child(light)
@@ -172,7 +243,22 @@ func _build_camera() -> void:
 	add_child(environment)
 
 
+func _build_match_screens() -> void:
+	# The screens keep running while the world is paused between rounds.
+	var canvas := CanvasLayer.new()
+	canvas.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(canvas)
+	for scene: PackedScene in SCREEN_SCENES:
+		canvas.add_child(scene.instantiate())
+
+
 func _build_overlay() -> void:
+	if match_mode:
+		return
+	status_label = Label.new()
+	ghost_panel = PanelContainer.new()
+	ghost_label = Label.new()
+	ghost_bar = ProgressBar.new()
 	var canvas := CanvasLayer.new()
 	add_child(canvas)
 	var panel := PanelContainer.new()
