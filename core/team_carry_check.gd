@@ -66,6 +66,7 @@ func _run() -> void:
 	for index: int in range(2):
 		await _connect_phone("Team %d" % (index + 1))
 	_check(_welcome_slot(0) == 0 and _welcome_slot(1) == 1, "Two phones control movers 1 and 2")
+	net.accept_new_players = false # Real phones left open on the network must not join the test.
 	mover_a = playground.movers[0]
 	mover_b = playground.movers[1]
 	router.selected_slot = 0 # The keyboard shares phone A's slot, so it never drives another mover.
