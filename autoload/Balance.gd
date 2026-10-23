@@ -89,8 +89,24 @@ const TEAM_LEASH: float = 1.0 # Metres a holder can be pulled off their spot bef
 # --- Tumbling settings ---
 const TUMBLE_HIT_SPEED: float = 4.0 # Metres per second; a thrown prop faster than this knocks a mover over.
 const TUMBLE_DURATION: float = 1.5 # Seconds lying down.
-const TUMBLE_FALL_TIME: float = 0.2 # Seconds for the fall and stand-up animation.
+const TUMBLE_FALL_TIME: float = 0.2 # Seconds of margin the checks allow after the down time.
 const TUMBLE_BUZZ_MS: int = 200
+
+# --- Mover character model (visual only; from assets/source/mover/MOVER_GUIDE.md) ---
+const MOVER_MODEL_PATH: String = "res://assets/models/mover/mover_%s.glb" # Filled with the shirt colour.
+const MOVER_SHIRTS: Array[String] = ["green", "orange", "green", "red"] # By slot, to contrast with the overalls.
+const MOVER_MODEL_HEIGHT: float = 1.757 # Metres, as modelled.
+const MOVER_MODEL_SCALE: float = CAPSULE_HEIGHT / MOVER_MODEL_HEIGHT # Fits the model to the 1.6 m capsule.
+const MODEL_NATURAL_SPEEDS: Dictionary = { # Ground speed (m/s, at full model size) where each clip's feet don't slide.
+	"walk": 1.6, "run": 4.5, "carry_run": 3.6, "carry_heavy_walk": 2.7, "team_carry_walk": 3.15, "drag": 1.1,
+}
+const MODEL_WALK_RUN_SWITCH: float = 2.2 # Metres per second; empty-handed walk/run cut-over.
+const MODEL_MOVE_THRESHOLD: float = 0.2 # Metres per second; slower counts as standing.
+const MODEL_BLEND_TIME: float = 0.12 # Seconds of cross-fade between clips.
+const MODEL_SPEED_SCALE_MIN: float = 0.5 # Limits on clip playback speed.
+const MODEL_SPEED_SCALE_MAX: float = 1.8
+const MODEL_TRIM_LIGHTEN: float = 0.35 # Overall cuffs and cap strap, lighter than the slot colour.
+const MODEL_SEAM_DARKEN: float = 0.55 # Seams and pocket edges, darker than the slot colour.
 
 # --- Flashlight settings ---
 const FLASHLIGHT_SIZE := Vector3(0.25, 0.25, 0.6)
@@ -315,8 +331,6 @@ const FURNITURE_SIZES: Array[Vector3] = [Vector3(1.0, 1.0, 1.0), Vector3(0.6, 1.
 const FURNITURE_WEIGHTS: Array[int] = [MEDIUM, HEAVY]
 const FURNITURE_COLOURS: Array[Color] = [Color("a87a4f"), Color("9aa3ad")]
 const GHOST_PANEL_WIDTH: float = 240.0 # Pixels; the ghost energy bar shown to everyone.
-const FACING_MARKER_SIZE := Vector3(0.18, 0.18, 0.18)
-const FACING_MARKER_DISTANCE: float = 0.4
 const HUD_FONT_SIZE: int = 20
 const HUD_SMALL_FONT_SIZE: int = 15
 

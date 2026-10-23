@@ -1,7 +1,8 @@
 # Moves a player and owns one grab at a time; the carried item applies its own spring.
 # On a two-person handle the mover follows its handle and its stick steers the item instead.
 # A tumble drops whatever is held and lies the mover down for TUMBLE_DURATION seconds. On slime the mover keeps
-# its momentum. While its player is the ghost, the mover is out of play.
+# its momentum. While its player is the ghost, the mover is out of play. The character model (MoverModel) only
+# shows this state: every frame it is told the speed, what is held and whether the mover braces or slides.
 extends CharacterBody3D
 
 signal tumbled(slot: int)
@@ -15,11 +16,9 @@ var in_play: bool = true
 var held_item: Carryable
 var grab_released: bool = true
 var tumble_time_left: float = 0.0
-var pose_tween: Tween
 var name_label := Label3D.new()
 var hold_point: Marker3D
-var body_pivot := Node3D.new()
-var facing_marker := MeshInstance3D.new()
+var model: MoverModel
 
 # --- Setup ---
 func _ready() -> void:
@@ -27,8 +26,8 @@ func _ready() -> void:
 	collision_layer = Balance.MOVER_LAYER
 	collision_mask = Balance.WORLD_LAYER | Balance.MOVER_LAYER | Balance.LOOT_LAYER
 	hold_point = $HoldPoint
-	_build_capsule()
-	_build_facing_marker()
+	_build_collider()
+	_build_model()
 	name_label.position.y = Balance.LABEL_HEIGHT
 	name_label.font_size = Balance.LABEL_FONT_SIZE
 	name_label.pixel_size = Balance.LABEL_PIXEL_SIZE
@@ -51,8 +50,6 @@ func _physics_process(delta: float) -> void:
 		tumble_time_left -= delta
 		if not player_input.buttons.get("grab", false):
 			grab_released = true # Letting go while down allows a fresh grab after standing.
-		if not is_tumbling():
-			_stand_up()
 	else:
 		_handle_carry_input(player_input)
 
@@ -71,6 +68,7 @@ func _physics_process(delta: float) -> void:
 	position.z = clampf(position.z, -edge, edge)
 	var player := Net.player_for_slot(slot)
 	name_label.text = "%d · %s" % [slot + 1, player.get("name", "Unclaimed")]
+	_update_model()
 
 
 func movement_speed() -> float:
@@ -120,10 +118,7 @@ func set_in_play(active: bool) -> void:
 	if not active:
 		_let_go()
 		tumble_time_left = 0.0
-		if pose_tween != null:
-			pose_tween.kill()
-		body_pivot.quaternion = Quaternion.IDENTITY
-		facing_marker.show()
+		model.reset()
 		remove_from_group("movers")
 	else:
 		add_to_group("movers")
@@ -168,17 +163,22 @@ func _handle_carry_input(input: InputRouter.PlayerInput) -> void:
 		if held_item.can_throw():
 			held_item.release(facing * Balance.THROW_SPEED + Vector3.UP * Balance.THROW_LIFT, self)
 			held_item = null
+			model.play_throw()
 			grab_released = false # Holding GRAB must not catch the item just thrown.
 		return
 	if not is_instance_valid(held_item) and grab_released:
 		var candidate := _nearest_carryable()
 		if candidate != null and candidate.try_grab(self, hold_point, slot):
 			held_item = candidate
+			model.play_grab()
 
 
 func _let_go() -> void:
 	if is_instance_valid(held_item):
-		held_item.release(Vector3.ZERO, self)
+		var item: Carryable = held_item
+		item.release(Vector3.ZERO, self)
+		if item.finished:
+			model.play_bank() # Let go in the truck: it banked.
 	held_item = null
 
 
@@ -212,30 +212,20 @@ func is_tumbling() -> bool:
 	return tumble_time_left > 0.0
 
 
-func tumble(push: Vector3 = Vector3.ZERO) -> void:
-	# Fall in the push direction (or forward), drop whatever we hold, and lie still for a moment.
+func tumble(_push: Vector3 = Vector3.ZERO) -> void:
+	# Drop whatever we hold and lie still for TUMBLE_DURATION; the model falls and gets up in that time.
 	if is_tumbling():
 		return
 	_let_go()
 	grab_released = false # Getting up must not instantly re-grab.
 	tumble_time_left = Balance.TUMBLE_DURATION
 	velocity = Vector3.ZERO
-	var fall_direction := Vector3(push.x, 0.0, push.z)
-	fall_direction = fall_direction.normalized() if fall_direction.length() > 0.01 else facing
-	pose_tween = create_tween()
-	pose_tween.tween_property(body_pivot, "quaternion", Quaternion(Vector3.UP.cross(fall_direction).normalized(), PI / 2.0), Balance.TUMBLE_FALL_TIME)
-	facing_marker.hide()
+	model.play_tumble(Balance.TUMBLE_DURATION)
 	tumbled.emit(slot)
 	var player := Net.player_for_slot(slot)
 	if not player.is_empty():
 		Net.send_to_player(player, {"type": "buzz", "ms": Balance.TUMBLE_BUZZ_MS})
 	print("Player %d tumbled" % (slot + 1))
-
-
-func _stand_up() -> void:
-	pose_tween = create_tween()
-	pose_tween.tween_property(body_pivot, "quaternion", Quaternion.IDENTITY, Balance.TUMBLE_FALL_TIME)
-	facing_marker.show()
 
 
 # --- Grab selection ---
@@ -263,11 +253,31 @@ func _update_hold_point() -> void:
 	# The hold point marks the bottom of the carried item, a fixed gap above the floor.
 	var clearance: float = Balance.CARRY_CLEARANCE - Balance.CAPSULE_HEIGHT / 2.0
 	hold_point.position = facing * Balance.HOLD_DISTANCE + Vector3.UP * clearance
-	facing_marker.position = facing * Balance.FACING_MARKER_DISTANCE
 
 
-# --- Visual helpers ---
-func _build_capsule() -> void:
+# --- Model ---
+func _update_model() -> void:
+	model.face(facing)
+	model.update_locomotion(Vector2(velocity.x, velocity.z).length(), _carry_pose(), bracing, on_slime() and is_moving())
+
+
+func _carry_pose() -> MoverModel.Carry:
+	if not is_instance_valid(held_item):
+		return MoverModel.Carry.NONE
+	if held_item is Flashlight:
+		return MoverModel.Carry.FLASHLIGHT
+	if held_item.weight_class == Balance.TWO_PERSON:
+		return MoverModel.Carry.TEAM if held_item.holder_count() == 2 else MoverModel.Carry.DRAG
+	# A cursed item looks one weight class heavier (decision 52); its speed is unchanged by this.
+	var weight: int = held_item.weight_class
+	if held_item is Loot and held_item.curse_left > 0.0:
+		weight = mini(weight + 1, Balance.HEAVY)
+	var poses: Array[MoverModel.Carry] = [MoverModel.Carry.LIGHT, MoverModel.Carry.MEDIUM, MoverModel.Carry.HEAVY]
+	return poses[weight]
+
+
+# --- Setup helpers ---
+func _build_collider() -> void:
 	var shape := CapsuleShape3D.new()
 	shape.radius = Balance.CAPSULE_RADIUS
 	shape.height = Balance.CAPSULE_HEIGHT
@@ -275,26 +285,11 @@ func _build_capsule() -> void:
 	collision.shape = shape
 	add_child(collision)
 
-	# The visible capsule hangs from a pivot one radius above the feet, so a tumble lays it on the floor.
-	body_pivot.position.y = Balance.CAPSULE_RADIUS - Balance.CAPSULE_HEIGHT / 2.0
-	add_child(body_pivot)
-	var capsule := CapsuleMesh.new()
-	capsule.radius = Balance.CAPSULE_RADIUS
-	capsule.height = Balance.CAPSULE_HEIGHT
-	var material := StandardMaterial3D.new()
-	material.albedo_color = Color(Balance.PLAYER_COLOURS[slot])
-	var mesh := MeshInstance3D.new()
-	mesh.mesh = capsule
-	mesh.material_override = material
-	mesh.position.y = Balance.CAPSULE_HEIGHT / 2.0 - Balance.CAPSULE_RADIUS
-	body_pivot.add_child(mesh)
 
-
-func _build_facing_marker() -> void:
-	var mesh := BoxMesh.new()
-	mesh.size = Balance.FACING_MARKER_SIZE
-	facing_marker.mesh = mesh
-	var material := StandardMaterial3D.new()
-	material.albedo_color = Color("183a38")
-	facing_marker.material_override = material
-	add_child(facing_marker)
+func _build_model() -> void:
+	# Feet at the capsule's base, scaled to the capsule, in this slot's shirt and overall colours.
+	model = $Model
+	model.position.y = -Balance.CAPSULE_HEIGHT / 2.0
+	model.scale = Vector3.ONE * Balance.MOVER_MODEL_SCALE
+	var scene: PackedScene = load(Balance.MOVER_MODEL_PATH % Balance.MOVER_SHIRTS[slot])
+	model.setup(scene, Color(Balance.PLAYER_COLOURS[slot]))
