@@ -75,7 +75,7 @@ flowchart LR
 
 **Round rules**
 
-- **Start.** A 3-second countdown: movers spawn at the truck, the ghost wisp spawns at the far end of the house.
+- **Start.** A 3-second countdown: movers spawn at the truck, the ghost wisp spawns at the far end of the house (in the Old Mansion, for now, outside beyond the garden).
 - **Live.** The timer and the truck-value bar show on screen. In the last 30 s the music speeds up and the quota line pulses.
 - **End.** The round ends on timeout, when all items are banked/destroyed/lost, or immediately once irreversible loss exceeds 30%. Reaching the bank target alone does not end play. The screen shows the reason, winner and each player's points.
 - **Restart.** Replays the same arena with the same roles; points from the aborted attempt are discarded.
@@ -187,11 +187,11 @@ The demo enables House Shake and Curse. The following catalog also preserves def
 
 ## Arenas
 
-Three single-floor, roofless houses, each with its own layout, signature haunting and hazard. The demo spawns 6/9/12 items by player count; the following arena layouts and loot catalog are later work. Each sits on one ground plane (ramps allowed, no stairs; the Old Mansion's gallery stairs are the one exception) so the shared camera always works. Arenas are built from data files in `arenas/layouts/` by `arenas/arena_builder.gd`; walls stand 3.0 m above their floor with no roofs, and camera-facing walls are see-through.
+Three single-floor, roofless houses, each with its own layout, signature haunting and hazard. The demo spawns 6/9/12 items by player count; the following arena layouts and loot catalog are later work. Each sits on one ground plane (ramps allowed, no stairs; the Old Mansion's gallery stairs are the one exception) so the shared camera always works. Arenas are built from data files in `arenas/layouts/` by `arenas/arena_builder.gd`; walls stand 3.0 m above their floor with no roofs, and camera-facing walls fade while they hide a player. Surfaces, arches, gates and windows come from the layout data; hand-placed decor lives in a separate dressing scene per arena (`arenas/dressing/`).
 
 | Arena | Layout | Signature haunting | Arena-only hazard | Light and colour |
 | --- | --- | --- | --- | --- |
-| Old Mansion | From `arenas/layouts/mansion-layout.svg`: main room and kitchen with a raised 1.2 m gallery behind them (reached only by stairs), a fenced garden, and a path from the front door to the truck; the piano starts on the gallery. The only arena with stairs. | House Shake | Many doors and two chandeliers over the main route | Warm lamplight, purple wallpaper |
+| Old Mansion | From `arenas/layouts/mansion-layout.svg`: main room and kitchen with a raised 1.2 m gallery behind them (reached only by stairs), a fenced garden, and a path from the front door to the truck; the piano starts on the gallery. The only arena with stairs. | House Shake | Many doors and two chandeliers over the main route | Dusk: violet fog and moonlight, warm lamplight, glowing windows, purple wallpaper |
 | Ghost Ship | Open deck, crate stacks, a narrow gangplank with no rails down to the truck on the dock | Gust of Wind | Water: anything that falls overboard is lost | Moonlight blue, green lanterns |
 | Abandoned Museum | Long galleries of pedestals; the furthest distance to the truck | Lights Out | Very fragile, very valuable exhibits | Cold white spotlights, dusty fog |
 
@@ -274,12 +274,12 @@ The game is judged on a projector from across a room. Everything must read insta
 
 **Walls never hide players**
 
-- Walls on the camera side are knee-high, the Moving Out trick.
-- For any other wall, cast a ray from the camera to each mover. A wall it hits fades to 30% opacity through a shader parameter.
+- Camera-facing walls are full height and solid until they hide a player: when the line from the camera to any mover or the ghost passes through one, it fades to 15% opacity in 0.25 s and stays faded 1 s after. Its collider never changes.
+- Back and right walls never hide players at this camera angle and never fade.
 
 **Art direction**
 
-- One consistent low-poly style. Movers use the team's own character model (`assets/models/mover/`); props and arenas should match it, using CC0 packs such as Kenney Furniture Kit and KayKit where they fit. Don't mix styles.
+- One consistent low-poly style. Movers use the team's own character model (`assets/models/mover/`); props and arenas should match it, using CC0 packs such as Kenney Furniture Kit and KayKit where they fit. Don't mix styles. The Old Mansion uses Kenney kits only, with decor colours muted so they never look like loot; surface textures are the project's own (`tools/make_surface_textures.gd`); every source is listed in `assets/CREDITS.md`.
 - Movers: chunky characters with overalls and cap in their slot's colour and a contrasting shirt, with a name tag overhead. The model is scaled to the 1.6 m capsule; it only shows the mover's state and never changes gameplay.
 - Every item shows a price tag above it that ticks down and turns red as value drops.
 - Ghost: a translucent bedsheet wisp with trailing particles. Possessed props get a green glow, an outline shader and dripping ectoplasm.
@@ -446,7 +446,7 @@ ghosted-movers/
 │   ├── Mover.tscn        # CharacterBody3D, hold point, carry spring, tumble
 │   ├── mover_model.gd    # the character model: clip choice from the mover's state, playback speed, team colours
 │   ├── GhostWisp.tscn    # wisp, energy, possession and the host's checks on every ghost button
-│   └── PartyCamera.tscn  # three-quarter view, smooth follow and framing, ability-only shake; wall fade later
+│   └── PartyCamera.tscn  # three-quarter view, smooth follow and framing, ability-only shake, wall fade
 ├── props/
 │   ├── carryable.gd      # shared spring carry, throws and impacts for loot and the flashlight
 │   ├── Loot.tscn         # base RigidBody3D: value, weight, fragility, handles, price tag
@@ -465,11 +465,14 @@ ghosted-movers/
 ├── arenas/
 │   ├── arena_builder.gd  # builds any arena from its layout data: floors, walls, railings, stairs, truck, room zones
 │   ├── layouts/          # <arena>_layout.json (metres) and the floor-plan SVGs they come from
+│   ├── fade_wall.gd      # a camera-facing wall that fades while it hides a player
+│   ├── dressing/         # hand-placed decor, lamps and grounds per arena (MansionDressing.tscn)
 │   ├── Greybox.tscn      # the one-room test arena the headless checks use
 │   ├── Mansion.tscn      # built from layouts/mansion_layout.json
 │   ├── Ship.tscn
 │   └── Museum.tscn
-├── assets/               # models/ (mover/: the character .glb files), audio/, fonts/; source/ holds art sources Godot skips
+├── assets/               # models/ (mover/, ghost/, truck/, decor/), textures/, materials/, audio/, fonts/; source/ holds art sources Godot skips; _incoming/ holds raw downloads (ignored); CREDITS.md lists every source
+├── tools/                # one-off generators, e.g. make_surface_textures.gd
 └── controller/           # the phone web page; contains a .gdignore so Godot skips it
     ├── index.html
     ├── controller.js
