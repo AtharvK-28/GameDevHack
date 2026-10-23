@@ -1,6 +1,6 @@
 # Carryable flashlight. While held, its beam follows the holder's facing; a possessed prop kept in the
 # beam for EXORCISE_TIME seconds is exorcised. Targets join the "possessables" group and expose
-# is_possessed() and exorcise(); Phase 4's Possessable component provides them.
+# is_possessed() and exorcise(), as the Possessable component does.
 class_name Flashlight
 extends Carryable
 
@@ -38,13 +38,15 @@ func beam_direction() -> Vector3:
 	return forward.normalized() if forward.length() > 0.01 else Vector3.FORWARD
 
 
-func in_beam(point: Vector3) -> bool:
+func in_beam(point: Vector3, exclude: Array[RID] = []) -> bool:
 	var offset: Vector3 = point - global_position
 	if offset.length() > Balance.FLASHLIGHT_RANGE:
 		return false
-	if offset.normalized().dot(beam_direction()) < cos(deg_to_rad(Balance.FLASHLIGHT_HALF_ANGLE)):
+	# The aim ignores height, so a raised prop such as a chandelier can be lit from below.
+	var flat := Vector3(offset.x, 0.0, offset.z)
+	if flat.normalized().dot(beam_direction()) < cos(deg_to_rad(Balance.FLASHLIGHT_HALF_ANGLE)):
 		return false
-	var query := PhysicsRayQueryParameters3D.create(global_position, point, Balance.WORLD_LAYER)
+	var query := PhysicsRayQueryParameters3D.create(global_position, point, Balance.WORLD_LAYER, exclude)
 	return get_world_3d().direct_space_state.intersect_ray(query).is_empty()
 
 
@@ -55,7 +57,14 @@ func _update_exposure(delta: float) -> void:
 		return
 	var still_lit: Dictionary = {}
 	for target: Node in get_tree().get_nodes_in_group("possessables"):
-		if not target.is_possessed() or not in_beam(target.global_position):
+		if not target.is_possessed():
+			continue
+		# A possessed door is part of the world, so its own panel must not block the beam aimed at it.
+		var exclude: Array[RID] = []
+		var body: Node = target.get_parent()
+		if body is CollisionObject3D:
+			exclude.append(body.get_rid())
+		if not in_beam(target.global_position, exclude):
 			continue
 		var id: int = target.get_instance_id()
 		var seconds: float = exposure.get(id, 0.0) + delta

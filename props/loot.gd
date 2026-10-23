@@ -128,14 +128,14 @@ func grab_point_for(mover: CharacterBody3D) -> Vector3:
 	if weight_class != Balance.TWO_PERSON:
 		return super(mover)
 	var index: int = _free_handle_nearest(mover.global_position)
-	return Vector3.INF if index < 0 else handle_position(index)
+	return Vector3.INF if index < 0 or haunted else handle_position(index)
 
 
 func try_grab(mover: CharacterBody3D, target: Node3D, slot: int) -> bool:
 	if weight_class != Balance.TWO_PERSON:
 		return super(mover, target, slot)
 	var index: int = _free_handle_nearest(mover.global_position)
-	if finished or index < 0:
+	if finished or haunted or index < 0:
 		return false
 	handle_holders[index] = mover
 	last_carrier_slot = slot

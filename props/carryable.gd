@@ -12,6 +12,7 @@ var hold_target: Node3D
 var last_carrier_slot: int = -1
 var finished: bool = false
 var thrown: bool = false
+var haunted: bool = false # Set by a Possessable while the ghost is inside; a haunted item cannot be grabbed.
 var previous_velocity := Vector3.ZERO
 var previous_spin := Vector3.ZERO
 var previous_contacts: Dictionary = {}
@@ -126,11 +127,11 @@ func can_throw() -> bool:
 
 func grab_point_for(_mover: CharacterBody3D) -> Vector3:
 	# Where a mover reaches to grab this item; Vector3.INF when nothing is free.
-	return Vector3.INF if finished or is_held() else global_position
+	return Vector3.INF if finished or haunted or is_held() else global_position
 
 
 func try_grab(mover: CharacterBody3D, target: Node3D, slot: int) -> bool:
-	if finished or is_held():
+	if finished or haunted or is_held():
 		return false
 	holder = mover
 	hold_target = target

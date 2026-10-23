@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://props/furniture.gd" id="1"]
+[ext_resource type="Script" path="res://props/Possessable.gd" id="2"]
+
+[node name="Armour" type="RigidBody3D"]
+script = ExtResource("1")
+furniture_kind = 1
+
+[node name="Possessable" type="Node3D" parent="."]
+script = ExtResource("2")
+kind = 3
