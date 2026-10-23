@@ -7,6 +7,7 @@ const STORAGE_NAME = "ghostedMoversName";
 const MILLISECONDS_PER_SECOND = 1000;
 const elements = Object.fromEntries(Array.from(document.querySelectorAll("[id]"), element => [element.id, element]));
 const actionButtons = Array.from(document.querySelectorAll("[data-button]"));
+const ghostButtons = Array.from(document.querySelectorAll("#ghost-buttons [data-button]"));
 
 // --- Connection and input state ---
 let settings;
@@ -133,9 +134,8 @@ function handleMessage(message) {
     case "hud":
       if (activeRole === "mover") {
         elements["held-label"].textContent = !message.held ? "Hands free" : Number.isFinite(message.value) ? `${message.held} · ₹${message.value.toLocaleString("en-IN")}` : message.held;
-      } else {
-        elements["held-label"].textContent = `Energy ${Math.round(message.energy)}`;
-        elements["action-label"].textContent = message.action || "ACTION";
+      } else if (activeRole === "ghost") {
+        renderGhostHud(message);
       }
       break;
     case "buzz":
@@ -154,9 +154,40 @@ function showRole(message) {
   elements["mover-buttons"].hidden = isGhost;
   elements["ghost-buttons"].hidden = !isGhost;
   elements["player-label"].textContent = `${playerName} · ${isGhost ? "GHOST" : `PLAYER ${playerSlot + 1}`}`;
-  elements["held-label"].textContent = isGhost ? "Break everything." : "Carry it to the truck. Don't break it.";
+  elements["held-label"].textContent = "Carry it to the truck. Don't break it.";
+  elements["held-label"].hidden = isGhost;
+  elements.energy.hidden = !isGhost;
   elements["haunt-label"].textContent = message.arena === "Ghost Ship" ? "WIND" : message.arena === "Abandoned Museum" ? "LIGHTS OUT" : "SHAKE";
+  for (const button of ghostButtons) {
+    button.classList.remove("unavailable");
+    button.style.setProperty("--cooldown", 0);
+  }
   setControlsEnabled(true);
+}
+
+function renderGhostHud(message) {
+  // The host decides what is available (ok) and sends the costs, so no game rule lives here.
+  const energy = Number.isFinite(message.energy) ? message.energy : 0;
+  const costs = message.costs ?? {};
+  const possessing = typeof message.action === "string" && message.action !== "";
+  const locked = Number(message.cd?.possess) > 0;
+  elements["energy-value"].textContent = Math.floor(energy);
+  elements["energy-fill"].style.width = `${Math.max(0, Math.min(1, energy / settings.ghostEnergyMax)) * 100}%`;
+  elements["possess-label"].textContent = possessing ? "LEAVE" : "POSSESS";
+  elements["possess-note"].textContent = possessing ? "free" : locked ? "exorcised · wait" : "fly into a prop";
+  elements["action-label"].textContent = possessing ? message.action : "ACTION";
+  elements["action-cost"].textContent = possessing ? costLabel(costs.action) : "possess first";
+  elements["haunt1-cost"].textContent = costLabel(costs.haunt1);
+  elements["haunt2-cost"].textContent = costLabel(costs.haunt2);
+  for (const button of ghostButtons) {
+    const name = button.dataset.button;
+    button.classList.toggle("unavailable", message.ok?.[name] === false);
+    button.style.setProperty("--cooldown", Math.max(0, Math.min(1, Number(message.cd?.[name]) || 0)));
+  }
+}
+
+function costLabel(cost) {
+  return Number.isFinite(cost) ? `${cost} energy` : "";
 }
 
 function renderRoster(players) {

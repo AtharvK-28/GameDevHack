@@ -42,6 +42,11 @@
       <div class="player-strip">
         <strong id="player-label">MOVER</strong>
         <span id="held-label">Carry it to the truck. Don't break it.</span>
+        <span id="energy" class="energy" hidden>
+          <span class="energy-word">ENERGY</span>
+          <span class="energy-track" aria-hidden="true"><span id="energy-fill"></span></span>
+          <strong id="energy-value" aria-live="off">100</strong>
+        </span>
       </div>
       <div class="control-layout">
         <div id="joystick-zone" aria-label="Movement joystick">
@@ -53,10 +58,10 @@
           <button class="action brace" type="button" data-button="brace"><strong>BRACE</strong><small>hold to stay put</small></button>
         </div>
         <div id="ghost-buttons" class="buttons ghost-buttons" hidden>
-          <button class="action" type="button" data-button="possess"><strong>POSSESS / LEAVE</strong></button>
-          <button class="action" type="button" data-button="action"><strong id="action-label">ACTION</strong></button>
-          <button class="action" type="button" data-button="haunt1"><strong id="haunt-label">SHAKE</strong></button>
-          <button class="action" type="button" data-button="haunt2"><strong>SLIME</strong></button>
+          <button class="action" type="button" data-button="possess"><strong id="possess-label">POSSESS</strong><small id="possess-note">fly into a prop</small></button>
+          <button class="action" type="button" data-button="action"><strong id="action-label">ACTION</strong><small id="action-cost">possess first</small></button>
+          <button class="action" type="button" data-button="haunt1"><strong id="haunt-label">SHAKE</strong><small id="haunt1-cost"></small></button>
+          <button class="action" type="button" data-button="haunt2"><strong>SLIME</strong><small id="haunt2-cost"></small></button>
         </div>
       </div>
       <footer><span id="control-note">Eyes on the big screen.</span><button id="fullscreen-button" type="button">FULLSCREEN</button></footer>

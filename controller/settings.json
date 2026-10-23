@@ -1,4 +1,5 @@
 {
+	"ghostEnergyMax": 100.0,
 	"inputRate": 30,
 	"joystickDeadzone": 0.12,
 	"joystickSize": 120,
