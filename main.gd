@@ -3,12 +3,14 @@
 extends Node3D
 
 @export var match_mode: bool = true
+var arena_scene: PackedScene # A check may choose the arena; otherwise matches use the Mansion and the harness the greybox.
 
 # --- Resources and display state ---
 const MOVER_SCENE := preload("res://actors/Mover.tscn")
 const GHOST_SCENE := preload("res://actors/GhostWisp.tscn")
 const CAMERA_SCENE := preload("res://actors/PartyCamera.tscn")
-const ARENA_SCENE := preload("res://arenas/Mansion.tscn")
+const MANSION_SCENE := preload("res://arenas/Mansion.tscn")
+const GREYBOX_SCENE := preload("res://arenas/Greybox.tscn")
 const WINDOW_KEYS := preload("res://core/window_keys.gd")
 const SCREEN_SCENES: Array[PackedScene] = [
 	preload("res://screens/HUD.tscn"), preload("res://screens/Lobby.tscn"), preload("res://screens/RoleReveal.tscn"),
@@ -27,7 +29,7 @@ var hud_elapsed: float = 0.0
 
 # --- Setup ---
 func _ready() -> void:
-	arena = ARENA_SCENE.instantiate()
+	arena = _arena_scene().instantiate()
 	add_child(arena)
 	_build_camera()
 	_build_overlay()
@@ -37,6 +39,7 @@ func _ready() -> void:
 		mover.position = _spawn_point(slot)
 		add_child(mover)
 		movers.append(mover)
+	_apply_arena_bounds()
 	Net.players_changed.connect(_start_ready_controllers)
 	_build_connection_text()
 	_start_ready_controllers()
@@ -145,6 +148,7 @@ func set_ghost_slot(slot: int) -> void:
 	ghost.slot = slot
 	ghost.signature_haunting = arena.SIGNATURE_HAUNTING
 	ghost.position = arena.ghost_spawn()
+	ghost.bounds = arena.ghost_bounds()
 	add_child(ghost)
 	Net.set_role(slot, "ghost", arena.ARENA_NAME)
 	print("Player %d is the ghost" % (slot + 1))
@@ -152,17 +156,20 @@ func set_ghost_slot(slot: int) -> void:
 
 # --- Match rounds, called by Game ---
 func setup_match_round(round_seed: int, participants: Array[int], ghost_slot: int) -> void:
-	# A fresh seeded arena, every mover back at the truck, and the ghost at the far end of the parlour.
+	# A fresh seeded arena, every mover back at its spawn, and the ghost at the arena's ghost spawn.
 	_remove_ghost()
 	for mover: CharacterBody3D in movers:
 		mover.reset_for_round(_spawn_point(mover.slot), mover.slot in participants and mover.slot != ghost_slot)
 	remove_child(arena)
 	arena.free() # Freed now, so Game counts only the new round's loot.
-	arena = ARENA_SCENE.instantiate()
+	arena = _arena_scene().instantiate()
 	arena.demo_mode = true
 	arena.player_count = participants.size()
 	arena.spawn_seed = round_seed
 	add_child(arena)
+	_apply_arena_bounds()
+	for mover: CharacterBody3D in movers:
+		mover.position = _spawn_point(mover.slot)
 	Loot.lone_mover = participants.size() == 2
 
 	ghost = GHOST_SCENE.instantiate()
@@ -171,6 +178,7 @@ func setup_match_round(round_seed: int, participants: Array[int], ghost_slot: in
 	ghost.slot = ghost_slot
 	ghost.signature_haunting = arena.SIGNATURE_HAUNTING
 	ghost.position = arena.ghost_spawn()
+	ghost.bounds = arena.ghost_bounds()
 	add_child(ghost)
 	for slot: int in participants:
 		Net.set_role(slot, "ghost" if slot == ghost_slot else "mover", arena.ARENA_NAME)
@@ -228,7 +236,22 @@ func _start_ready_controllers() -> void:
 
 # --- Scene helpers ---
 func _spawn_point(slot: int) -> Vector3:
-	return Vector3((slot - (Balance.MAX_PLAYERS - 1) / 2.0) * Balance.SPAWN_SPACING, Balance.CAPSULE_HEIGHT / 2.0, Balance.MOVER_SPAWN_Z)
+	return arena.mover_spawn(slot)
+
+
+func _arena_scene() -> PackedScene:
+	if arena_scene != null:
+		return arena_scene
+	return MANSION_SCENE if match_mode else GREYBOX_SCENE
+
+
+func _apply_arena_bounds() -> void:
+	# The camera, movers and ghost stay within the current arena's limits.
+	camera.bounds = arena.camera_bounds()
+	for mover: CharacterBody3D in movers:
+		mover.bounds = arena.mover_bounds()
+	if is_instance_valid(ghost):
+		ghost.bounds = arena.ghost_bounds()
 
 
 func _build_camera() -> void:

@@ -19,6 +19,7 @@ var tumble_time_left: float = 0.0
 var name_label := Label3D.new()
 var hold_point: Marker3D
 var model: MoverModel
+var bounds := Rect2(-Balance.FLOOR_SIZE / 2.0, -Balance.FLOOR_SIZE / 2.0, Balance.FLOOR_SIZE, Balance.FLOOR_SIZE) # Set from the arena.
 
 # --- Setup ---
 func _ready() -> void:
@@ -63,9 +64,8 @@ func _physics_process(delta: float) -> void:
 		velocity.y -= Balance.GRAVITY * delta
 	move_and_slide()
 
-	var edge: float = Balance.FLOOR_SIZE / 2.0 - Balance.CAPSULE_RADIUS
-	position.x = clampf(position.x, -edge, edge)
-	position.z = clampf(position.z, -edge, edge)
+	position.x = clampf(position.x, bounds.position.x + Balance.CAPSULE_RADIUS, bounds.end.x - Balance.CAPSULE_RADIUS)
+	position.z = clampf(position.z, bounds.position.y + Balance.CAPSULE_RADIUS, bounds.end.y - Balance.CAPSULE_RADIUS)
 	var player := Net.player_for_slot(slot)
 	name_label.text = "%d · %s" % [slot + 1, player.get("name", "Unclaimed")]
 	_update_model()

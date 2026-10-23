@@ -12,7 +12,8 @@ var zone_size: Vector3
 # --- Setup ---
 func _ready() -> void:
 	add_to_group("truck_zones")
-	zone_size = Balance.TRUCK_SIZE
+	if zone_size == Vector3.ZERO:
+		zone_size = Balance.TRUCK_SIZE # Arenas built from data set their own size first.
 	collision_layer = 0
 	collision_mask = Balance.LOOT_LAYER
 	var collision := CollisionShape3D.new()

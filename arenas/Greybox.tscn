@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://arenas/mansion.gd" id="1"]
+[ext_resource type="Script" path="res://arenas/greybox.gd" id="1"]
 
-[node name="Mansion" type="Node3D"]
+[node name="Greybox" type="Node3D"]
 script = ExtResource("1")

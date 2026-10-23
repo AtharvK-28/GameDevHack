@@ -5,6 +5,7 @@ extends Camera3D
 
 # --- Settings ---
 var follow_movers: bool = false # Off for the fixed regression view; the match turns it on.
+var bounds: Rect2 = Balance.CAMERA_BOUNDS # The x/z area the focus may move within; set from the arena.
 
 # --- Framing and shake state ---
 var focus: Vector3 = Balance.CAMERA_TARGET
@@ -74,7 +75,6 @@ func _framing() -> Array:
 		spread = maxf(spread, Vector2(point.x - centre.x, point.z - centre.z).length())
 	var half_view: float = tan(deg_to_rad(fov / 2.0)) * Balance.CAMERA_SAFE_VIEW
 	var needed: float = (spread + Balance.CAMERA_FRAME_PADDING) / half_view
-	var bounds: Rect2 = Balance.CAMERA_BOUNDS
 	centre.x = clampf(centre.x, bounds.position.x, bounds.end.x)
 	centre.z = clampf(centre.z, bounds.position.y, bounds.end.y)
 	centre.y = 0.0

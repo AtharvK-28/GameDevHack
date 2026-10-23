@@ -1,0 +1,76 @@
+{
+	"name": "Old Mansion",
+	"source": "arenas/layouts/mansion-layout.svg v1. Metres; plan x = X, plan depth = Z, origin = back-left corner of the house at ground level.",
+	"ground": {"rect": [-12, -10, 44, 48], "colour": "526761"},
+	"rooms": [
+		{"id": "room-first-floor", "rect": [0, 0, 20, 6], "floor": 1.2, "colour": "C9C3F2", "wall_colour": "8E86C9"},
+		{"id": "room-main", "rect": [0, 6, 12, 9], "floor": 0, "colour": "EED9B4", "wall_colour": "B08A57"},
+		{"id": "room-kitchen", "rect": [12, 6, 8, 9], "floor": 0, "colour": "BFE6D8", "wall_colour": "6FA894"},
+		{"id": "room-garden", "rect": [10, 15, 10, 7], "floor": 0, "colour": "B9D99A", "outdoors": true}
+	],
+	"walls": [
+		{"id": "wall-back", "from": [0, 0], "to": [20, 0], "floor": 1.2, "room": "room-first-floor"},
+		{"id": "wall-left-gallery", "from": [0, 0], "to": [0, 6], "floor": 1.2, "room": "room-first-floor", "see_through": true},
+		{"id": "wall-left-main", "from": [0, 6], "to": [0, 15], "floor": 0, "room": "room-main", "see_through": true},
+		{"id": "wall-right-gallery", "from": [20, 0], "to": [20, 6], "floor": 1.2, "room": "room-first-floor"},
+		{"id": "wall-right-kitchen", "from": [20, 6], "to": [20, 15], "floor": 0, "room": "room-kitchen"},
+		{"id": "wall-front-main", "from": [0, 15], "to": [6.5, 15], "floor": 0, "room": "room-main", "see_through": true},
+		{"id": "wall-front-east", "from": [9, 15], "to": [20, 15], "floor": 0, "room": "room-kitchen", "see_through": true},
+		{"id": "wall-kitchen-back", "from": [12, 6], "to": [12, 10], "floor": 0, "room": "room-kitchen", "see_through": true},
+		{"id": "wall-kitchen-front", "from": [12, 12], "to": [12, 15], "floor": 0, "room": "room-kitchen", "see_through": true}
+	],
+	"doors": [
+		{"id": "door-front", "from": [6.5, 15], "to": [9, 15], "width": 2.5, "floor": 0},
+		{"id": "door-kitchen", "from": [12, 10], "to": [12, 12], "width": 2, "floor": 0},
+		{"id": "gate-garden", "from": [10, 15.5], "to": [10, 17.5], "width": 2, "floor": 0}
+	],
+	"railings": [
+		{"id": "railing-gallery-edge", "from": [3, 6], "to": [20, 6], "base_from": 1.2, "base_to": 1.2},
+		{"id": "railing-stairs-side", "from": [3, 6], "to": [3, 10], "base_from": 1.2, "base_to": 0}
+	],
+	"stairs": [
+		{"id": "area-stairs", "rect": [0, 6, 3, 4], "rise": 1.2, "steps": 8, "colour": "D8D2C4"}
+	],
+	"fences": [
+		{"from": [10, 15], "to": [10, 15.5]},
+		{"from": [10, 17.5], "to": [10, 22]},
+		{"from": [10, 22], "to": [20, 22]},
+		{"from": [20, 15], "to": [20, 22]}
+	],
+	"paths": [
+		{"id": "path-driveway", "rect": [6.5, 15, 2.5, 7.5], "colour": "DCD6C8"}
+	],
+	"truck": {
+		"zone": [6.27, 23.2, 4.47, 2.6],
+		"bed": [6, 23, 5, 3],
+		"cab": [11, 23.33, 1.5, 2.34],
+		"cab_height": 2.2,
+		"colour": "D6E6F7",
+		"cab_colour": "7FAEDF"
+	},
+	"spawns": {
+		"movers": [[7.0, 21.0], [8.5, 21.0], [7.0, 19.8], [8.5, 19.8]],
+		"ghost": {"at": [18.5, 1.5], "floor": 1.2},
+		"flashlights": [{"at": [10.5, 13.5], "floor": 0}, {"at": [13.5, 13.5], "floor": 0}],
+		"piano": {"at": [10, 3], "floor": 1.2},
+		"loot": [
+			{"id": "loot-gallery-1", "at": [6, 1.5], "floor": 1.2},
+			{"id": "loot-gallery-2", "at": [14, 1.5], "floor": 1.2},
+			{"id": "loot-gallery-3", "at": [17, 4], "floor": 1.2},
+			{"id": "loot-gallery-4", "at": [6, 4], "floor": 1.2},
+			{"id": "loot-gallery-5", "at": [14, 4.2], "floor": 1.2},
+			{"id": "loot-main-1", "at": [6, 8], "floor": 0},
+			{"id": "loot-main-2", "at": [9.5, 8], "floor": 0},
+			{"id": "loot-main-3", "at": [4.5, 13], "floor": 0},
+			{"id": "loot-main-4", "at": [10, 13], "floor": 0},
+			{"id": "loot-kitchen-1", "at": [14.5, 8], "floor": 0},
+			{"id": "loot-kitchen-2", "at": [18, 8], "floor": 0},
+			{"id": "loot-kitchen-3", "at": [16.5, 13], "floor": 0},
+			{"id": "loot-garden-1", "at": [13, 19], "floor": 0},
+			{"id": "loot-garden-2", "at": [17, 19.5], "floor": 0}
+		]
+	},
+	"camera_bounds": [1, 2, 18, 23],
+	"ghost_bounds": [-1, -1, 22, 28],
+	"mover_bounds": [-10, -8, 40, 44]
+}

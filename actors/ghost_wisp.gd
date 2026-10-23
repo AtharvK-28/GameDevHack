@@ -18,6 +18,7 @@ var shimmer_time: float = 0.0
 var body_mesh := MeshInstance3D.new() # Holds the ghost model; hidden while possessing.
 var model: GhostModel
 var material := StandardMaterial3D.new()
+var bounds: Rect2 = Balance.GHOST_BOUNDS # The x/z area the wisp may roam; set from the arena.
 var demo_rules: bool = false # Archived harnesses retain all five furniture actions and slime.
 var mover_count: int = 1
 var opening_left: float = 0.0
@@ -313,7 +314,6 @@ func _process(delta: float) -> void:
 
 
 func _clamp_to_bounds() -> void:
-	var bounds: Rect2 = Balance.GHOST_BOUNDS
 	position.x = clampf(position.x, bounds.position.x, bounds.end.x)
 	position.z = clampf(position.z, bounds.position.y, bounds.end.y)
 

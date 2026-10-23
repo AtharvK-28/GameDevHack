@@ -306,6 +306,22 @@ const DAMAGE_COLOUR := Color("ff7676")
 const BANK_COLOUR := Color("c2e78b")
 const DAMAGE_BUZZ_MS: int = 60
 
+# --- Arena build settings (arenas/arena_builder.gd; geometry lives in arenas/layouts/) ---
+const ARENA_WALL_HEIGHT: float = 3.0 # Metres above each room's floor: a 3.3 m mansion ceiling scaled to 1.6 m movers.
+const ARENA_WALL_THICKNESS: float = 0.2
+const ARENA_SEE_THROUGH_ALPHA: float = 0.15 # Opacity of camera-facing walls, 0 to 1; they still block.
+const ARENA_WALL_COLOUR := Color("b9ad98")
+const ARENA_FENCE_HEIGHT: float = 0.9
+const ARENA_FENCE_THICKNESS: float = 0.1
+const ARENA_FENCE_COLOUR := Color("639922")
+const ARENA_RAILING_HEIGHT: float = 1.0
+const ARENA_RAILING_THICKNESS: float = 0.1 # The railing's invisible collider.
+const ARENA_RAILING_COLOUR := Color("534ab7")
+const ARENA_RAILING_POST_SPACING: float = 1.0
+const ARENA_RAILING_POST_RADIUS: float = 0.04
+const ARENA_RAMP_THICKNESS: float = 0.2 # The invisible ramp over the stairs.
+const ARENA_FLOOR_SLAB: float = 0.02 # Thin coloured floor tiles over the ground.
+
 # --- Greybox room settings ---
 const ROOM_WIDTH: float = 14.0
 const ROOM_DEPTH: float = 13.5

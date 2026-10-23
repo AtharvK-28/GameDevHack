@@ -50,6 +50,7 @@ func _run() -> void:
 		return
 
 	playground = load("res://Main.tscn").instantiate()
+	playground.arena_scene = load("res://arenas/Greybox.tscn") # Its scenarios use the greybox's coordinates.
 	root.add_child(playground)
 	await _wait(INPUT_SECONDS)
 	await _check_lobby()

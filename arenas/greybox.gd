@@ -1,4 +1,4 @@
-# One CSG room with a back parlour for carrying and ghost tests; the full Mansion layout belongs to Phase 6.
+# The one-room CSG greybox with a back parlour, kept for the headless checks. Real matches use arenas/Mansion.tscn.
 extends Node3D
 
 # --- Scene resources ---
@@ -51,6 +51,23 @@ func _ready() -> void:
 
 func ghost_spawn() -> Vector3:
 	return Vector3(Balance.GHOST_SPAWN.x, Balance.WISP_HEIGHT, Balance.GHOST_SPAWN.y)
+
+
+# --- Arena interface (shared with the data-built arenas) ---
+func mover_spawn(slot: int) -> Vector3:
+	return Vector3((slot - (Balance.MAX_PLAYERS - 1) / 2.0) * Balance.SPAWN_SPACING, Balance.CAPSULE_HEIGHT / 2.0, Balance.MOVER_SPAWN_Z)
+
+
+func camera_bounds() -> Rect2:
+	return Balance.CAMERA_BOUNDS
+
+
+func ghost_bounds() -> Rect2:
+	return Balance.GHOST_BOUNDS
+
+
+func mover_bounds() -> Rect2:
+	return Rect2(-Balance.FLOOR_SIZE / 2.0, -Balance.FLOOR_SIZE / 2.0, Balance.FLOOR_SIZE, Balance.FLOOR_SIZE)
 
 
 func _spawn_furniture() -> void:
