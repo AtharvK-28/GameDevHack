@@ -46,6 +46,17 @@ Every compulsory requirement is met by the core game. The extra features are whe
 - **Awards on the results screen**, such as Butterfingers and Piano Killer, so every player gets a moment.
 - **Stretch: audience mode.** Spectators vote on the ghost's next global haunting.
 
+## Current demo scope — approved Phase 5
+
+The current demo uses the Mansion greybox until the user supplies the first arena layout and character assets. Build a complete match before art or extra abilities. The arena/ability catalog below includes later work; only possession/SHOVE, House Shake and Curse are enabled in the demo. Existing door, chandelier, hopper, rug and slime code is retained for regression tests. Awards, room progress rings, expanded loot, cinematic zoom and slow motion are deferred.
+
+- **Curse:** the free wisp targets nearby unbanked loot, including held loot, using the existing 0.6 m footprint reach and a visible target highlight. C / haunt3 costs 30 energy, cooldown 15 s. The object glows for 6 s and carrying/dragging speed is multiplied by 0.7, including both holders. Dropping or transferring does not remove the curse; the mover is free of the slowdown when no longer carrying it. No stacking, no spring or lift-height changes. The flashlight is not loot and cannot be cursed.
+- **Haunting limits:** 8 s opening protection from live start; 4 s shared lock after a cast; individual cooldowns start at cast. House Shake works while possessing; Curse is wisp-only. Phone UI explains all refusals and displays remaining seconds, including exorcism, cooldown, opening protection, shared lock, insufficient energy and missing targets. A mover holding cursed loot sees its remaining duration.
+- **Seeded setup:** 6/9/12 loot items for 2/3/4 players, exactly one centrepiece, using existing types. Original total is calculated from that spawn. Restart restores the same seed, layout, roles and values. One flashlight, two for four players. Keep the lone-mover 40% drag rule. New rounds receive a new seed.
+- **Disconnect:** pause the round simulation and timers until all participants reconnect; the host may cancel to the lobby without scoring the unfinished round. Reject new identities during a match; existing participants may rejoin.
+- **Host flow:** lobby/QR → 3 s role reveal/countdown → 150 s round → round result/restart → next role → final leaderboard. 2 players play 4 rounds, 3 play 3, 4 play 4. The demo uses Mansion for all rounds; additional arenas remain later work.
+- **Results:** frozen once per attempt; restarting replaces rather than adds that attempt's score. Host controls start, next, restart and return to lobby. Phones display the same current phase and their own role/points after reconnect.
+
 ## Match flow
 
 A match is a set of rounds where the ghost role passes along each time. Each state is its own Godot scene; `Game.gd` broadcasts the current state so every phone switches to the right screen.
@@ -53,12 +64,12 @@ A match is a set of rounds where the ghost role passes along each time. Each sta
 ```mermaid
 flowchart LR
   L["Lobby<br/>2–4 phones join"] --> R["Role reveal<br/>phones buzz roles"]
-  R --> LIVE["Round live<br/>150 s · quota 55%"]
+  R --> LIVE["Round live<br/>150 s · target 70%"]
   LIVE --> E["Round end<br/>winner + restart"]
   E -- restart --> LIVE
   E --> D{"All rounds<br/>played?"}
   D -- "no: next player is the ghost" --> R
-  D -- yes --> F["Final results<br/>points + awards"]
+  D -- yes --> F["Final results<br/>points; awards deferred"]
   F -- play again --> L
 ```
 
@@ -66,7 +77,7 @@ flowchart LR
 
 - **Start.** A 3-second countdown: movers spawn at the truck, the ghost wisp spawns at the far end of the house.
 - **Live.** The timer and the truck-value bar show on screen. In the last 30 s the music speeds up and the quota line pulses.
-- **End.** The round ends when the timer hits zero, or early once the quota is met and nothing is being carried. The screen shows who won and each player's points.
+- **End.** The round ends on timeout, when all items are banked/destroyed/lost, or immediately once irreversible loss exceeds 30%. Reaching the bank target alone does not end play. The screen shows the reason, winner and each player's points.
 - **Restart.** Replays the same arena with the same roles; points from the aborted attempt are discarded.
 
 ## Movers
@@ -160,7 +171,7 @@ How each prop type moves (starting values in `Balance.gd`):
 
 **Global hauntings**
 
-Each arena has its signature haunting, and Ecto Slime is available everywhere. Each haunting has a warning first and a clear counter.
+The demo enables House Shake and Curse. The following catalog also preserves deferred hauntings; Ecto Slime is disabled in the demo. Each haunting has a warning first and a clear counter.
 
 | Haunting | Arena | Warning (before it hits) | Effect | Counter | Energy | Cooldown |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -172,11 +183,11 @@ Each arena has its signature haunting, and Ecto Slime is available everywhere. E
 - **House Shake.** "Moving" means the stick is pushed or the mover is sliding; BRACE protects. Shelf items falling waits for the Phase 6 Mansion, since the greybox has no shelves.
 - **Ecto Slime.** For 4 s after casting, the wisp drops slime patches 0.8 m wide, one every 0.6 m of its path. Each patch lasts 4 s. Movers on slime keep their momentum and steer poorly.
 
-**Energy.** The ghost has 100 energy. It regenerates 12 per second while the ghost is a free wisp, and 0 while possessing. Energy is the main balance knob.
+**Energy.** The ghost has 100 energy. Free-wisp regeneration is 8/10/12 per second against 1/2/3 movers, and 0 while possessing. Possession drains 8/s.
 
 ## Arenas
 
-Three single-floor, roofless houses, each with its own layout, signature haunting and hazard. Each holds 9–12 items worth ₹60,000–70,000 in total. Each sits on one ground plane (ramps allowed, no stairs) so the shared camera always works.
+Three single-floor, roofless houses, each with its own layout, signature haunting and hazard. The demo spawns 6/9/12 items by player count; the following arena layouts and loot catalog are later work. Each sits on one ground plane (ramps allowed, no stairs) so the shared camera always works.
 
 | Arena | Layout | Signature haunting | Arena-only hazard | Light and colour |
 | --- | --- | --- | --- | --- |
@@ -213,9 +224,11 @@ Each round has a clear team result: the movers either hit the quota or they don'
 
 **Round result**
 
-- Movers win if banked value reaches **55% of the house's total value** before the 150 s timer runs out.
-- The round ends early if the quota is met and nothing more is being carried, or if nothing bankable is left.
-- If the quota is missed, the ghost wins the round.
+- Movers win if the final banked value is **at least 70% of original spawned value**. Exactly 30% loss is allowed.
+- End on 150 s timeout or when every loot item has been banked, destroyed or permanently lost. Undelivered items count as zero delivered value.
+- End immediately for the ghost if original value minus (banked plus remaining loot value) exceeds 30% of original value: the target is then impossible. Count damage and destruction only once.
+- Reaching 70% banked does not end the round while loot and time remain. Evaluate final results once, then freeze scoring and gameplay.
+- The ghost wins whenever final banked value misses the target. Restart restores original values and replaces the previous attempt score.
 
 **Individual points**
 
@@ -224,11 +237,11 @@ Each round has a clear team result: the movers either hit the quota or they don'
 | Mover | 1 point per ₹100 you bank; two-person items split evenly. +100 each if the quota is met. |
 | Ghost | 1 point per ₹100 destroyed (damage, shattering, overboard). +150 if the quota fails. |
 
-**Rounds per match.** Every player is the ghost the same number of times, so totals stay fair: 2 players play 4 rounds, 3 players play 3, and 4 players play 4. Arenas cycle Mansion → Ship → Museum.
+**Rounds per match.** Every player is the ghost the same number of times, so totals stay fair: 2 players play 4 rounds, 3 players play 3, and 4 players play 4. The demo repeats Mansion; later arenas cycle Mansion → Ship → Museum.
 
 **Restart.** A restart button on the round-end screen (or the R key on the host laptop) replays the same arena with the same roles.
 
-**Awards on the final screen**
+**Awards on the final screen (deferred)**
 
 - **Mover of the Year:** most value banked.
 - **Butterfingers:** most value lost while carrying.
@@ -241,8 +254,8 @@ Each round has a clear team result: the movers either hit the quota or they don'
 
 | Knob | Start value | If movers win too easily | If the ghost wins too easily |
 | --- | --- | --- | --- |
-| Ghost energy regen | 12 /s | Raise to 15 | Lower to 9 |
-| Quota | 55% | Raise to 65% | Lower to 45% |
+| Ghost energy regen | 8/10/12 per second by mover count | Increase after playtesting | Decrease after playtesting |
+| Delivery target | 70% | Changes need approval | Changes need approval |
 | Round time | 150 s | Lower to 120 s | Raise to 180 s |
 | Damage multiplier | 4% per m/s × fragility | Raise to 5% | Lower to 3% |
 | Possession drain | 8 /s | Lower to 6 | Raise to 10 |
@@ -253,11 +266,11 @@ The game is judged on a projector from across a room. Everything must read insta
 
 **Dollhouse camera**
 
-- A `Camera3D` angled about 55° down, looking into roofless rooms.
+- A `Camera3D` angled 55° down and 20° sideways, looking into roofless rooms. Smooth follow/framing is part of Phase 5.
 - It follows the centre point of all movers. Its distance scales with how spread out they are (12 m to 26 m) and eases smoothly, so it never snaps.
 - It is clamped to the arena bounds, so it never shows the void.
-- **Shake** uses a trauma value (shake = trauma² × noise), raised by tumbles, drops, shattering and hauntings.
-- **Punch-in** when an item worth ₹10,000+ shatters: a 0.3 s zoom plus 0.4 s at half speed (`Engine.time_scale`). This is the clip people will remember.
+- **Shake** uses trauma (shake = trauma² × noise) for abilities such as House Shake only. Ordinary impacts, tumbles and shattering never shake the camera.
+- **Cinematic punch-in and slow motion are deferred.** Keep normal camera motion smooth.
 
 **Walls never hide players**
 
@@ -381,7 +394,7 @@ Phones talk directly to the Godot game over WebSocket, sending short JSON messag
 | `ready` | phone → host | `{}` | Ready button |
 | `role` | host → phone | `{role: "mover" or "ghost", arena}` | Round start |
 | `in` | phone → host | `{x, y}` joystick, −1 to 1 | 30 per second while the screen is active; also acts as the heartbeat |
-| `btn` | phone → host | `{b, down}`; b = grab, throw, brace, possess, action, haunt1, haunt2 | On press and on release |
+| `btn` | phone → host | `{b, down}`; b = grab, throw, brace, possess, action, haunt1, haunt2, haunt3 | On press and on release |
 | `hud` | host → phone | Mover: `{held, value}`; Ghost: `{energy, action, costs, cd, ok}`; both: `{t}` | 8 per second |
 | `buzz` | host → phone | `{ms}` | Damage, tumble, role reveal |
 | `result` | host → all | `{moversWon, points}` | Round end |
@@ -391,9 +404,11 @@ Phones talk directly to the Godot game over WebSocket, sending short JSON messag
 
 - `energy`: whole energy points.
 - `action`: the possessed prop's ACTION label, or empty while the ghost is a free wisp.
-- `costs`: `{action, haunt1, haunt2}` energy costs, for the button labels.
-- `cd`: `{possess, haunt1, haunt2}`, the fraction of each cooldown still left (0–1), for the rings. `possess` is the 5 s lock after an exorcism.
-- `ok`: `{possess, action, haunt1, haunt2}`, whether the host would accept that button right now.
+- `costs`: `{action, haunt1, haunt2, haunt3}` energy costs, for the button labels.
+- `cd`: `{possess, haunt1, haunt2, haunt3}`, the fraction of each cooldown still left (0–1), for the rings. `possess` is the 5 s lock after an exorcism.
+- `ok`: `{possess, action, haunt1, haunt2, haunt3}`, whether the host would accept that button right now.
+
+**Phase 5 protocol additions.** `match` messages send phase, countdown/time, round counts, delivery target, banked/lost value, result/standings and pause reason. Ghost `hud` adds `reasons` per button, remaining `seconds`, `simple` (demo controls), and `target` for Curse. Mover `hud` adds `cursed` seconds. New identities are refused mid-match. Only the host changes match state.
 
 **Rules that prevent bugs**
 
@@ -417,17 +432,20 @@ ghosted-movers/
 │   ├── Balance.gd        # every tunable number, nothing else
 │   └── Sfx.gd            # one-line sound calls: Sfx.play("bank", pitch)
 ├── core/
-│   └── InputRouter.gd    # phone / keyboard / gamepad → one PlayerInput per slot
-├── screens/
-│   ├── Lobby.tscn        # QR code, joined players
-│   ├── RoleReveal.tscn
-│   ├── RoundEnd.tscn
-│   ├── Results.tscn      # leaderboard + awards
-│   └── HUD.tscn
+│   ├── InputRouter.gd    # phone / keyboard / gamepad → one PlayerInput per slot
+│   ├── qr_code.gd        # QR encoder for the lobby's join link (byte mode, level M, versions 1–6)
+│   └── *_check.gd        # headless checks: plumbing, carrying, team carry, ghost, match
+├── screens/              # each shows itself in its Game phase and keeps running while the world is paused
+│   ├── screen_style.gd   # shared panel, label and button look for the host screens
+│   ├── Lobby.tscn        # QR code, joined players, START (Enter)
+│   ├── RoleReveal.tscn   # round, ghost and movers, 3 s countdown
+│   ├── RoundEnd.tscn     # winner and reason, points; Enter next, R restart, L lobby
+│   ├── Results.tscn      # final leaderboard (awards deferred)
+│   └── HUD.tscn          # timer, delivered vs 70% target, lost vs 30% limit, ghost energy, pause overlay
 ├── actors/
 │   ├── Mover.tscn        # CharacterBody3D, hold point, carry spring, tumble
 │   ├── GhostWisp.tscn    # wisp, energy, possession and the host's checks on every ghost button
-│   └── PartyCamera.tscn  # framing, shake, punch-in, wall fade (Phase 4: fixed view and shake only)
+│   └── PartyCamera.tscn  # three-quarter view, smooth follow and framing, ability-only shake; wall fade later
 ├── props/
 │   ├── carryable.gd      # shared spring carry, throws and impacts for loot and the flashlight
 │   ├── Loot.tscn         # base RigidBody3D: value, weight, fragility, handles, price tag
@@ -495,15 +513,17 @@ The riskiest thing, physics carrying, gets built first. A complete playable matc
    - Fallback if it isn't fun by H9: centrepieces become heavy single-person items at 40% speed.
 4. **H9–12 · Ghost.** Wisp movement, the `Possessable` component with all 5 prop types, energy, exorcism, House Shake and Ecto Slime.
    - Check: a 1v1 round in greybox is tense and fair.
-5. **H12–14 · Match flow.** Lobby with QR code, role reveal, ghost rotation, timer and quota, round end with restart, results with awards, HUD.
+5. **H12–14 · Match flow and demo scope.** Lobby with QR code, role reveal, ghost rotation, timer and quota, round end with restart, results leaderboard, HUD, seeded setup, Curse, phone lock explanations and smooth three-quarter camera; awards deferred.
    - Check: a 4-player match runs from lobby to results with no restart. **This is the minimum viable game.**
-6. **H14–18 · Arenas and look.** Build Mansion, Ship and Museum with the asset packs. Add Gust of Wind and Lights Out, finish the party camera and wall fade, set up lighting per arena.
+6. **H14–18 · Arenas and look.** Build Mansion, Ship and Museum with the asset packs. Add Gust of Wind and Lights Out, finish wall fade, set up lighting per arena.
    - Check: every PS02 requirement is met. **This is the safe submission; commit and tag it.**
-7. **H18–21 · Juice and playtest.** Sounds, music, particles, the shatter punch-in, phone buzz. Play full matches with 2, 3 and 4 players and tune `Balance.gd`.
+7. **H18–21 · Juice and playtest.** Sounds, music, particles and phone buzz; cinematic punch-in deferred. Play full matches with 2, 3 and 4 players and tune `Balance.gd`.
 8. **H21–22.5 · Feature freeze.** Bug fixes only. Export a build for the demo laptop's OS, test on the venue network, confirm the keyboard and gamepad fallback.
 9. **H22.5–24 · Demo prep.** Rehearse the pitch below, record a backup gameplay video, leave the lobby screen running as an attract loop.
 
-**If behind, cut in this order:**
+**Current priority:** finish the match first. Defer extra ghost abilities, expanded loot, cosmetic effects and awards; use supplied art only after the core works.
+
+**Later submission cut list:**
 
 1. Lights Out haunting (three environmental elements still remain)
 2. Rug and Hopper prop types

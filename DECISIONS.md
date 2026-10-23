@@ -6,6 +6,16 @@ Every approved design or technical decision, newest first. Only the user approve
 
 | # | Date | Decision | Reason |
 | --- | --- | --- | --- |
+| 48 | 2026-10-23 | Implement the approved Phase 5 scope before further art/polish. Keep three arenas as a later submission requirement; the current demo repeats the Mansion greybox. Preserve tested carrying physics. Phase 4 human/visual acceptance remains pending alongside the new demo playtest. | Revised Phase 5 plan approved with “go” |
+| 47 | 2026-10-23 | Disconnect during a round pauses simulation and timers until reconnection; host may cancel to lobby without points. Build complete lobby/QR, role reveal, role rotation, round result/restart and final leaderboard now in the greybox. User layout and character assets, art trial, room rings, awards, expanded loot and extra ghost abilities wait. | Revised Phase 5 plan approved with “go” |
+| 46 | 2026-10-23 | Round result: deliver at least 70% of original spawned value; exactly 30% loss is allowed. End on 150 s timeout or when all loot is banked/destroyed/lost. More than 30% irreversible loss ends immediately for the ghost. Reaching 70% banked alone does not end play. Only banked value counts at the end; results freeze once and restart replaces the attempt score. | Revised Phase 5 plan approved with “go” |
+| 45 | 2026-10-23 | Seeded loot: 6/9/12 items for 2/3/4 players, exactly one centrepiece. Restart preserves roles, seed and layout, restoring original item values. Existing loot types and lone-mover 40% drag remain. One flashlight, two for four players. | Revised Phase 5 plan approved with “go” |
+| 44 | 2026-10-23 | Hauntings have a shared 4 s lock and 8 s opening grace measured from live round start. Individual cooldowns begin on cast. House Shake can be cast while possessing; Curse cannot. | Revised Phase 5 plan approved with “go” |
+| 43 | 2026-10-23 | Free-wisp energy regeneration: 8/10/12 per second against 1/2/3 movers, zero while possessing. Maximum 100 and possession drain 8/s stay unchanged. | Revised Phase 5 plan approved with “go” |
+| 42 | 2026-10-23 | Phone protocol adds haunt3 and match state messages. Host sends explicit action refusal reasons and seconds for cooldowns, shared lock and opening protection; mover HUD includes cursed-item seconds. Phone controls stop outside live play. | Revised Phase 5 plan approved with “go” |
+| 41 | 2026-10-23 | Curse: nearby loot, including held items, glows for 6 s and slows carrying/dragging by 30%, including both holders. The curse stays on the item through drops/transfers and cannot stack. Lift height and spring tuning stay unchanged. Wisp-only, 30 energy, 15 s cooldown, keyboard C / haunt3; target highlight uses the existing 0.6 m footprint reach. | Revised Phase 5 plan approved with “go” |
+| 40 | 2026-10-23 | First demo ghost: possession/SHOVE, House Shake and Curse. Door, chandelier, hopper, rug and slime code remains available to regression tests but their ghost abilities are disabled in the demo. | Revised Phase 5 plan approved with “go” |
+| 39 | 2026-10-23 | Camera: 55° pitch, 20° yaw, smooth mover following and framing in Phase 5. Shake only for abilities such as House Shake; no impact, tumble or shatter shake. Cinematic zoom/slow motion deferred. | Revised Phase 5 plan approved with “go” |
 | 38 | 2026-10-23 | Only releasing GRAB inside the truck zone banks. Loot that is thrown, pushed or slid in by the ghost stays in play until a mover picks it up and releases it there. | User confirmed the build's existing behaviour with the Phase 4 “go” |
 | 37 | 2026-10-23 | A two-person item banks when its last holder lets go inside the truck zone; a holder who lets go first leaves the other dragging it. | User confirmed the build's existing behaviour with the Phase 4 “go” |
 | 36 | 2026-10-23 | A possessed prop tumbles a mover it hits above 4 m/s, counting the prop's own speed toward them, so walking into a slow possessed prop never trips anyone. A prop launched by a ghost action (SHOVE, DROP) keeps counting after the ghost leaves, until it slows below 4 m/s. Completes decision 21. | Phase 4 plan approved with “go” |
@@ -49,7 +59,6 @@ Every approved design or technical decision, newest first. Only the user approve
 
 These are how the Phase 4 build behaves where the spec is silent; none is confirmed as a decision yet.
 
-- **Haunting cooldowns start when the haunting is triggered**, not when it ends. House Shake is usable again 20 s after it was cast (16.5 s after it stops).
-- **The ghost can cast hauntings while possessing a prop.** Ecto Slime then trails from the possessed prop.
+- Archived Ecto Slime trails from a possessed prop; confirm before re-enabling it in the demo.
 - **A reopening door waits while loot stands in its swing**, so it never shoves loot; movers in its swing are nudged aside instead.
 - **House Shake shows an on-screen banner** ("RUMBLE… STAND STILL OR BRACE!", then "HOUSE SHAKE!") as a stand-in for the rumble sound until Phase 7.
