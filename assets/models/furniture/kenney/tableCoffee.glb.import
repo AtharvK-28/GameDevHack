@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://coi0dwxvwpil"
-path="res://.godot/imported/bookcaseClosedWide.glb-d62c1934c97531699e7303b23ced633d.scn"
+uid="uid://yj46gx6gv5fn"
+path="res://.godot/imported/tableCoffee.glb-56489ba61eaf769c39466522a2e93fd7.scn"
 
 [deps]
 
-source_file="res://assets/models/decor/furniture/bookcaseClosedWide.glb"
-dest_files=["res://.godot/imported/bookcaseClosedWide.glb-d62c1934c97531699e7303b23ced633d.scn"]
+source_file="res://assets/models/furniture/kenney/tableCoffee.glb"
+dest_files=["res://.godot/imported/tableCoffee.glb-56489ba61eaf769c39466522a2e93fd7.scn"]
 
 [params]
 
@@ -35,11 +35,11 @@ animation/fps=30
 animation/trimming=false
 animation/remove_immutable_tracks=true
 animation/import_rest_as_RESET=false
-import_script/path=""
+import_script/path="res://tools/furniture_post_import.gd"
 materials/extract=0
 materials/extract_format=0
 materials/extract_path=""
 _subresources={}
 gltf/naming_version=2
 gltf/embedded_image_handling=1
-gltf/texture_map_mode=1
+gltf/texture_map_mode=0

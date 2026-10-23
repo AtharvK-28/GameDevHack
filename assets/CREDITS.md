@@ -48,7 +48,7 @@ License: CC0 1.0. Road, street lamp and street sign (`assets/models/decor/roads/
 ### Kenney Furniture Kit
 Author: Kenney  
 Source: [kenney.nl: Furniture Kit](https://kenney.nl/assets/furniture-kit)  
-License: CC0 1.0. Bookcases, sofas, armchair, kitchen units (`assets/models/decor/furniture/`).  
+License: CC0 1.0. The only furniture source: loot (TV, armchairs, bookcase, coat stand, radio, side table, lamp, teddy bear), the sofa and rug props, and decor (bookcases, beds, kitchen, tables, chairs, benches, planters) in `assets/models/furniture/kenney/`, scaled and bottom-centred at import by `tools/furniture_post_import.gd`. The grand piano, grandfather clock, oil painting, vase, chandelier, suit of armour and door are built from simple shapes in its style (`props/catalog/built/`).  
 
 ### Kenney Nature Kit
 Author: Kenney  

@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://4qn111b1lk8w"
-path="res://.godot/imported/kitchenCabinetUpper.glb-466f64ea835f4ed03fc2ea0a07ae39ee.scn"
+uid="uid://bchxjjipo2bgg"
+path="res://.godot/imported/bench.glb-76d276ccf69cbc25caea131eafcf7205.scn"
 
 [deps]
 
-source_file="res://assets/models/decor/furniture/kitchenCabinetUpper.glb"
-dest_files=["res://.godot/imported/kitchenCabinetUpper.glb-466f64ea835f4ed03fc2ea0a07ae39ee.scn"]
+source_file="res://assets/models/furniture/kenney/bench.glb"
+dest_files=["res://.godot/imported/bench.glb-76d276ccf69cbc25caea131eafcf7205.scn"]
 
 [params]
 
@@ -35,11 +35,11 @@ animation/fps=30
 animation/trimming=false
 animation/remove_immutable_tracks=true
 animation/import_rest_as_RESET=false
-import_script/path=""
+import_script/path="res://tools/furniture_post_import.gd"
 materials/extract=0
 materials/extract_format=0
 materials/extract_path=""
 _subresources={}
 gltf/naming_version=2
 gltf/embedded_image_handling=1
-gltf/texture_map_mode=1
+gltf/texture_map_mode=0

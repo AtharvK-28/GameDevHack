@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://caqedmbqf0e1e"
-path="res://.godot/imported/kitchenCabinet.glb-c80bcc7be86c4eefb688f90fb632f469.scn"
+uid="uid://culf24iffh77b"
+path="res://.godot/imported/loungeChair.glb-117f06bff83bd794e0c687aab77bb2b7.scn"
 
 [deps]
 
-source_file="res://assets/models/decor/furniture/kitchenCabinet.glb"
-dest_files=["res://.godot/imported/kitchenCabinet.glb-c80bcc7be86c4eefb688f90fb632f469.scn"]
+source_file="res://assets/models/furniture/kenney/loungeChair.glb"
+dest_files=["res://.godot/imported/loungeChair.glb-117f06bff83bd794e0c687aab77bb2b7.scn"]
 
 [params]
 
@@ -35,11 +35,11 @@ animation/fps=30
 animation/trimming=false
 animation/remove_immutable_tracks=true
 animation/import_rest_as_RESET=false
-import_script/path=""
+import_script/path="res://tools/furniture_post_import.gd"
 materials/extract=0
 materials/extract_format=0
 materials/extract_path=""
 _subresources={}
 gltf/naming_version=2
 gltf/embedded_image_handling=1
-gltf/texture_map_mode=1
+gltf/texture_map_mode=0
