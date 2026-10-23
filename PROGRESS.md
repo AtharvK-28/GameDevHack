@@ -2,7 +2,7 @@
 
 The phases follow the spec's 24-hour build plan. A phase is done only when its check passes. AI agents update this file after every task.
 
-**Status:** Phases 0–3 complete. Next: Phase 4 (ghost). Its plan is still to be posted for the user's go; its open questions are in DECISIONS.md.
+**Status:** Phases 0–3 complete. Phase 4 (ghost) is built and pushed at the user's request before its new check ran: `core/ghost_check.gd` compiles but has not run yet (the port was busy with a play session), and the two-phone 1v1 check is still to do. Four unconfirmed behaviours are listed under Open in DECISIONS.md.
 
 ## Phase 0 · Setup
 
@@ -37,12 +37,13 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 
 ## Phase 4 · H9–12 · Ghost
 
-- [ ] Wisp movement
-- [ ] `Possessable` component with all 5 prop types
-- [ ] Exorcism wired to the flashlight's beam timer
-- [ ] Energy
-- [ ] House Shake and Ecto Slime
-- [ ] **Check:** a 1v1 greybox round is tense and fair
+- [x] Wisp movement
+- [x] `Possessable` component with all 5 prop types
+- [x] Exorcism wired to the flashlight's beam timer
+- [x] Energy
+- [x] House Shake and Ecto Slime
+- [x] Ghost phone screen: energy, ACTION label, haunting costs, greyed buttons, cooldown rings
+- [ ] **Check:** a 1v1 greybox round is tense and fair — waiting for the user's two-phone test
 
 ## Phase 5 · H12–14 · Match flow (minimum viable game)
 
@@ -109,3 +110,6 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
   `carrying_check.gd` (75) and `plumbing_check.gd` still pass; the smoke run is clean.
 - Phase 3 fixes found by the checks: hits on a mover counted only about half the item's speed, because the physics engine reported the mover's shove-out-of-the-way motion as its velocity. Hits now use the mover's own walking velocity: a vase arriving at 5.39 m/s registers 5.39 m/s, not 2.62. The parlour partition is knee-high (0.7 m), so the camera can see into the parlour; it still blocks movers and a carried piano. Rendered frames inspected.
 - Deferred to Phase 5: the second flashlight for 4-player matches (spawned at round setup); the lone-mover flag is set by match flow.
+- Phase 4 handover (2026-10-23, new machine): Godot 4.7.2 (`ed1daf0bf`) verified; import plus `plumbing_check.gd` (35), `carrying_check.gd` (75) and `team_carry_check.gd` (49) all passed before any change. A headless import re-saved `project.godot` without the explicit 60 Hz line (60 is Godot's default); the line was restored. Watch for this after imports.
+- Phase 4 build (2026-10-23): `GhostWisp` (energy, possession, the exorcism freeze and lock, and the host's check on every ghost button), the `Possessable` component (slider and hopper driven in the component; door, chandelier and rug act through their own scripts), `Haunting` with House Shake and Ecto Slime, `PartyCamera` with trauma shake, the ghost's phone screen, and one valueless prop of each type in the greybox. The host key G passes the ghost; the lone-mover rule counts movers only.
+- Phase 4 verification so far: every new script compiles and loads, Main runs headless with a ghost (13 possessables: 8 loot items and 5 furniture), and the three earlier checks still pass (35, 75, 49; they now remove the furniture first). The ghost phone screen was rendered in headless Firefox at 844×390 and 568×320 for the free, possessing and exorcised states, plus the unchanged mover screen, with no script errors. **Not yet run:** `core/ghost_check.gd` and a Mobile-renderer look at the new visuals.

@@ -47,4 +47,9 @@ Every approved design or technical decision, newest first. Only the user approve
 
 ## Open — needs the user's confirmation
 
-Nothing is open.
+These are how the Phase 4 build behaves where the spec is silent; none is confirmed as a decision yet.
+
+- **Haunting cooldowns start when the haunting is triggered**, not when it ends. House Shake is usable again 20 s after it was cast (16.5 s after it stops).
+- **The ghost can cast hauntings while possessing a prop.** Ecto Slime then trails from the possessed prop.
+- **A reopening door waits while loot stands in its swing**, so it never shoves loot; movers in its swing are nudged aside instead.
+- **House Shake shows an on-screen banner** ("RUMBLE… STAND STILL OR BRACE!", then "HOUSE SHAKE!") as a stand-in for the rumble sound until Phase 7.
