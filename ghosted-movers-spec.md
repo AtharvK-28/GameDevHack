@@ -279,8 +279,8 @@ The game is judged on a projector from across a room. Everything must read insta
 
 **Art direction**
 
-- One consistent low-poly style from CC0 packs: Kenney Furniture Kit and KayKit for props, Quaternius for characters. Don't mix styles.
-- Movers: chunky characters in team colours, with a name tag overhead.
+- One consistent low-poly style. Movers use the team's own character model (`assets/models/mover/`); props and arenas should match it, using CC0 packs such as Kenney Furniture Kit and KayKit where they fit. Don't mix styles.
+- Movers: chunky characters with overalls and cap in their slot's colour and a contrasting shirt, with a name tag overhead. The model is scaled to the 1.6 m capsule; it only shows the mover's state and never changes gameplay.
 - Every item shows a price tag above it that ticks down and turns red as value drops.
 - Ghost: a translucent bedsheet wisp with trailing particles. Possessed props get a green glow, an outline shader and dripping ectoplasm.
 - `WorldEnvironment`: glow (bloom), filmic tonemapping, depth fog in the museum. The Mobile renderer has no SSAO or volumetric fog, so fake contact shadows with darker texture bases or blob shadows under items.
@@ -444,6 +444,7 @@ ghosted-movers/
 │   └── HUD.tscn          # timer, delivered vs 70% target, lost vs 30% limit, ghost energy, pause overlay
 ├── actors/
 │   ├── Mover.tscn        # CharacterBody3D, hold point, carry spring, tumble
+│   ├── mover_model.gd    # the character model: clip choice from the mover's state, playback speed, team colours
 │   ├── GhostWisp.tscn    # wisp, energy, possession and the host's checks on every ghost button
 │   └── PartyCamera.tscn  # three-quarter view, smooth follow and framing, ability-only shake; wall fade later
 ├── props/
@@ -465,7 +466,7 @@ ghosted-movers/
 │   ├── Mansion.tscn
 │   ├── Ship.tscn
 │   └── Museum.tscn
-├── assets/               # models/, audio/, fonts/
+├── assets/               # models/ (mover/: the character .glb files), audio/, fonts/; source/ holds art sources Godot skips
 └── controller/           # the phone web page; contains a .gdignore so Godot skips it
     ├── index.html
     ├── controller.js
