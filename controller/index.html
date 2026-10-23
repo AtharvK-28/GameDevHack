@@ -42,6 +42,9 @@
       <div class="player-strip">
         <strong id="player-label">MOVER</strong>
         <span id="held-label">Carry it to the truck. Don't break it.</span>
+        <span id="curse-note" class="curse-note" hidden></span>
+        <span id="ghost-status" class="ghost-status" hidden></span>
+        <strong id="timer" class="timer" hidden>2:30</strong>
         <span id="energy" class="energy" hidden>
           <span class="energy-word">ENERGY</span>
           <span class="energy-track" aria-hidden="true"><span id="energy-fill"></span></span>
@@ -61,10 +64,37 @@
           <button class="action" type="button" data-button="possess"><strong id="possess-label">POSSESS</strong><small id="possess-note">fly into a prop</small></button>
           <button class="action" type="button" data-button="action"><strong id="action-label">ACTION</strong><small id="action-cost">possess first</small></button>
           <button class="action" type="button" data-button="haunt1"><strong id="haunt-label">SHAKE</strong><small id="haunt1-cost"></small></button>
-          <button class="action" type="button" data-button="haunt2"><strong>SLIME</strong><small id="haunt2-cost"></small></button>
+          <button id="haunt2-button" class="action" type="button" data-button="haunt2"><strong>SLIME</strong><small id="haunt2-cost"></small></button>
+          <button id="haunt3-button" class="action curse" type="button" data-button="haunt3" hidden><strong>CURSE</strong><small id="haunt3-cost"></small></button>
         </div>
       </div>
       <footer><span id="control-note">Eyes on the big screen.</span><button id="fullscreen-button" type="button">FULLSCREEN</button></footer>
+      <div id="pause-notice" class="notice" role="status" hidden>
+        <strong>PAUSED</strong>
+        <p id="pause-reason"></p>
+      </div>
+    </section>
+
+    <section id="reveal" class="stage" aria-live="polite" hidden>
+      <p id="reveal-round" class="eyebrow"></p>
+      <h1 id="reveal-role"></h1>
+      <p id="reveal-line"></p>
+      <strong id="reveal-countdown" class="countdown"></strong>
+    </section>
+
+    <section id="result" class="stage" aria-live="polite" hidden>
+      <p id="result-round" class="eyebrow"></p>
+      <h1 id="result-title"></h1>
+      <p id="result-reason"></p>
+      <p id="result-points" class="points"></p>
+      <p class="small-note">Eyes on the big screen. The host starts the next round.</p>
+    </section>
+
+    <section id="final" class="stage" aria-live="polite" hidden>
+      <p class="eyebrow">FINAL STANDINGS</p>
+      <h1 id="final-title"></h1>
+      <ol id="final-standings"></ol>
+      <p class="small-note">The host takes everyone back to the lobby.</p>
     </section>
 
     <div id="rotate-overlay" role="status">

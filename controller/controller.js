@@ -21,7 +21,11 @@ let movement = { x: 0, y: 0 };
 let playerSlot = 0;
 let playerName = "";
 let playerId = readStorage(STORAGE_PID);
+let matchPhase = null; // Null outside a match: the greybox harness shows controls as soon as a role arrives.
+let matchState = {};
 const heldPointers = new Map();
+const SCREENS = ["lobby", "controls", "reveal", "result", "final"];
+const LIVE_PHASES = ["live", "paused"];
 
 // --- Setup ---
 initialize().catch(error => {
@@ -124,16 +128,23 @@ function handleMessage(message) {
       elements["ready-button"].disabled = false;
       elements["ready-button"].textContent = "READY TO MOVE";
       sendMovement();
+      render();
       break;
     case "lobby":
       renderRoster(message.players);
       break;
     case "role":
       showRole(message);
+      render();
+      break;
+    case "match":
+      matchState = message;
+      matchPhase = message.phase;
+      render();
       break;
     case "hud":
       if (activeRole === "mover") {
-        elements["held-label"].textContent = !message.held ? "Hands free" : Number.isFinite(message.value) ? `${message.held} · ₹${message.value.toLocaleString("en-IN")}` : message.held;
+        renderMoverHud(message);
       } else if (activeRole === "ghost") {
         renderGhostHud(message);
       }
@@ -149,8 +160,6 @@ function showRole(message) {
   activeRole = message.role;
   const isGhost = activeRole === "ghost";
   document.body.classList.toggle("ghost", isGhost);
-  elements.lobby.hidden = true;
-  elements.controls.hidden = false;
   elements["mover-buttons"].hidden = isGhost;
   elements["ghost-buttons"].hidden = !isGhost;
   elements["player-label"].textContent = `${playerName} · ${isGhost ? "GHOST" : `PLAYER ${playerSlot + 1}`}`;
@@ -158,11 +167,86 @@ function showRole(message) {
   elements["held-label"].hidden = isGhost;
   elements.energy.hidden = !isGhost;
   elements["haunt-label"].textContent = message.arena === "Ghost Ship" ? "WIND" : message.arena === "Abandoned Museum" ? "LIGHTS OUT" : "SHAKE";
+  elements["curse-note"].hidden = true;
   for (const button of ghostButtons) {
     button.classList.remove("unavailable");
     button.style.setProperty("--cooldown", 0);
   }
-  setControlsEnabled(true);
+}
+
+// --- Match screens: the host's phase decides what the phone shows ---
+function render() {
+  const inMatch = matchPhase !== null;
+  let screen = "lobby";
+  if (joined && !inMatch) screen = activeRole ? "controls" : "lobby";
+  else if (joined && ["setup", "reveal"].includes(matchPhase)) screen = "reveal";
+  else if (joined && LIVE_PHASES.includes(matchPhase)) screen = activeRole ? "controls" : "lobby";
+  else if (joined && matchPhase === "result") screen = "result";
+  else if (joined && matchPhase === "final") screen = "final";
+  for (const name of SCREENS) elements[name].hidden = name !== screen;
+
+  // Controls work only in live play; anything held is let go the moment play stops.
+  const playable = canPlay();
+  if (!playable && heldPointers.size > 0) releaseInputs();
+  setControlsEnabled(playable);
+  elements["pause-notice"].hidden = matchPhase !== "paused";
+  elements["pause-reason"].textContent = matchState.pauseReason || "";
+  elements.timer.hidden = !LIVE_PHASES.includes(matchPhase);
+  elements.timer.textContent = clock(matchState.t);
+  if (screen === "lobby" && inMatch) renderReady();
+  if (screen === "reveal") renderReveal();
+  if (screen === "result") renderResult();
+  if (screen === "final") renderFinal();
+}
+
+function renderReady() {
+  const me = (matchState.players || []).find(player => player.slot === playerSlot);
+  const ready = Boolean(me?.ready);
+  elements["ready-button"].disabled = ready;
+  elements["ready-button"].textContent = ready ? "READY — WAITING FOR HOST" : "READY TO MOVE";
+}
+
+function renderReveal() {
+  const isGhost = activeRole === "ghost";
+  elements["reveal-round"].textContent = `ROUND ${matchState.round} OF ${matchState.rounds}`;
+  elements["reveal-role"].textContent = isGhost ? "YOU ARE THE GHOST" : "YOU'RE A MOVER";
+  elements["reveal-line"].textContent = isGhost ? "Break everything." : "Carry it to the truck. Don't break it.";
+  elements["reveal-countdown"].textContent = matchState.countdown > 0 ? matchState.countdown : "";
+  document.body.classList.toggle("ghost", isGhost);
+}
+
+function renderResult() {
+  const result = matchState.result || {};
+  const won = activeRole === "ghost" ? !result.moversWon : Boolean(result.moversWon);
+  const me = (matchState.standings || []).find(row => row.slot === playerSlot);
+  elements["result-round"].textContent = `ROUND ${matchState.round} OF ${matchState.rounds} · ${result.moversWon ? "MOVERS WIN" : "THE GHOST WINS"}`;
+  elements["result-title"].textContent = won ? "YOU WIN" : "YOU LOSE";
+  elements["result-reason"].textContent = result.reason || "";
+  elements["result-points"].textContent = me ? `+${Math.round(me.roundPoints)} this round · ${Math.round(me.points)} total` : "";
+}
+
+function renderFinal() {
+  const rows = matchState.standings || [];
+  elements["final-title"].textContent = rows.length ? `${rows[0].name} wins` : "";
+  elements["final-standings"].replaceChildren(...rows.map(row => {
+    const item = document.createElement("li");
+    item.textContent = `${row.name} · ${Math.round(row.points)} points`;
+    if (row.slot === playerSlot) item.classList.add("me");
+    return item;
+  }));
+}
+
+function clock(seconds) {
+  const whole = Math.max(0, Math.ceil(Number(seconds) || 0));
+  return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, "0")}`;
+}
+
+function renderMoverHud(message) {
+  elements["held-label"].textContent = !message.held ? "Hands free" : Number.isFinite(message.value) ? `${message.held} · ₹${message.value.toLocaleString("en-IN")}` : message.held;
+  // A cursed item stays heavy for its remaining seconds, even after being dropped and picked up again.
+  const cursed = Number(message.cursed) || 0;
+  elements["curse-note"].hidden = cursed <= 0;
+  elements["curse-note"].textContent = `CURSED · HEAVY ${cursed}s`;
 }
 
 function renderGhostHud(message) {
@@ -173,17 +257,37 @@ function renderGhostHud(message) {
   const locked = Number(message.cd?.possess) > 0;
   elements["energy-value"].textContent = Math.floor(energy);
   elements["energy-fill"].style.width = `${Math.max(0, Math.min(1, energy / settings.ghostEnergyMax)) * 100}%`;
+  const reasons = message.reasons ?? {};
+  const simple = Boolean(message.simple);
   elements["possess-label"].textContent = possessing ? "LEAVE" : "POSSESS";
-  elements["possess-note"].textContent = possessing ? "free" : locked ? "exorcised · wait" : "fly into a prop";
+  elements["possess-note"].textContent = reasons.possess ?? (possessing ? "free" : locked ? "exorcised · wait" : "fly into a prop");
   elements["action-label"].textContent = possessing ? message.action : "ACTION";
-  elements["action-cost"].textContent = possessing ? costLabel(costs.action) : "possess first";
-  elements["haunt1-cost"].textContent = costLabel(costs.haunt1);
+  elements["action-cost"].textContent = noteFor("action", message, possessing ? costLabel(costs.action) : "possess first");
+  elements["haunt1-cost"].textContent = noteFor("haunt1", message, costLabel(costs.haunt1));
   elements["haunt2-cost"].textContent = costLabel(costs.haunt2);
+  elements["haunt3-cost"].textContent = noteFor("haunt3", message, costLabel(costs.haunt3));
+  // The demo ghost has Curse instead of Slime.
+  elements["haunt2-button"].hidden = simple;
+  elements["haunt3-button"].hidden = !simple;
+  elements["ghost-status"].hidden = !simple;
+  elements["ghost-status"].textContent = statusLine(message);
   for (const button of ghostButtons) {
     const name = button.dataset.button;
     button.classList.toggle("unavailable", message.ok?.[name] === false);
     button.style.setProperty("--cooldown", Math.max(0, Math.min(1, Number(message.cd?.[name]) || 0)));
   }
+}
+
+function noteFor(name, message, readyText) {
+  // Unavailable: the host's reason with its seconds, e.g. "Haunting lock: 2s". Available: the cost.
+  return message.ok?.[name] === false && message.reasons?.[name] ? message.reasons[name] : readyText;
+}
+
+function statusLine(message) {
+  const seconds = message.seconds ?? {};
+  if (seconds.opening > 0) return `Hauntings unlock in ${seconds.opening}s`;
+  if (seconds.shared > 0) return `Next haunting in ${seconds.shared}s`;
+  return message.target ? `Curse target: ${message.target}` : "Fly near loot to curse it";
 }
 
 function costLabel(cost) {
@@ -281,7 +385,8 @@ function sendMovement() {
 }
 
 function canPlay() {
-  return joined && Boolean(activeRole) && !document.hidden;
+  const live = matchPhase === null || matchPhase === "live";
+  return joined && Boolean(activeRole) && live && !document.hidden;
 }
 
 function setControlsEnabled(enabled) {
