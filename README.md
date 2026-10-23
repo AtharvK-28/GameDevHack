@@ -59,6 +59,6 @@ godot --headless --path . --script res://core/export_controller_settings.gd
 
 The browser consumes `controller/settings.json`; do not tune it independently. nipplejs is vendored at **0.10.2**, with its MIT license in `controller/nipplejs_license.txt`.
 
-## Phase 2 acceptance still needed
+## Tuning the carry feel
 
-With phones on the target network: carry a vase to the truck and bank it, and bump a carried vase into a wall to see its price visibly drop. Also judge the carry feel (swing, turn speed, lag behind the mover); the spring and turn values are in `Balance.gd` under "Carrying settings".
+The spring, turn speed and upright values are in `Balance.gd` under "Carrying settings". Change one at a time and re-run `carrying_check.gd`.

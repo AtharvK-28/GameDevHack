@@ -2,7 +2,7 @@
 
 The phases follow the spec's 24-hour build plan. A phase is done only when its check passes. AI agents update this file after every task.
 
-**Status:** Phases 0–1 complete. Phase 2 carrying core is built and passes automated physics checks; awaiting the user's phone playtest.
+**Status:** Phases 0–2 complete. Phase 3 is being planned; nothing built yet.
 
 ## Phase 0 · Setup
 
@@ -26,7 +26,7 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - [x] Impact damage and price tags
 - [x] Truck banking
 - [x] Greybox room built from CSG shapes
-- [ ] **Check:** carry a vase to the truck; bumping a wall visibly drops its value (awaiting the user's phone playtest)
+- [x] **Check:** carry a vase to the truck; bumping a wall visibly drops its value — user confirmed on phones on 2026-10-23
 
 ## Phase 3 · H6–9 · Two-person carry, tumbling, flashlight
 
