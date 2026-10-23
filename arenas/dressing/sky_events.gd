@@ -48,7 +48,8 @@ func _process(delta: float) -> void:
 
 
 func strike(thunder_delay: float) -> void:
-	# Two quick flashes of the moonlight and ambient light, then thunder after the delay.
+	# Two flashes of the moonlight and ambient light, each fading out (so a slow frame can't swallow it), then
+	# thunder after the delay.
 	var moon: DirectionalLight3D = arena.get_node_or_null("Moonlight")
 	var world: WorldEnvironment = arena.get_node_or_null("WorldEnvironment")
 	if moon == null or world == null:
@@ -59,12 +60,8 @@ func strike(thunder_delay: float) -> void:
 			moon.light_energy = Balance.LIGHTNING_FLASH_ENERGY
 			world.environment.ambient_light_energy = Balance.MOOD_AMBIENT_ENERGY * Balance.LIGHTNING_AMBIENT_BOOST
 		)
-		flash.tween_interval(Balance.LIGHTNING_FLASH_TIME)
-		flash.tween_callback(func() -> void:
-			moon.light_energy = Balance.MOON_ENERGY
-			world.environment.ambient_light_energy = Balance.MOOD_AMBIENT_ENERGY
-		)
-		flash.tween_interval(Balance.LIGHTNING_FLASH_TIME)
+		flash.tween_property(moon, "light_energy", Balance.MOON_ENERGY, Balance.LIGHTNING_FLASH_TIME).set_ease(Tween.EASE_IN)
+		flash.parallel().tween_property(world.environment, "ambient_light_energy", Balance.MOOD_AMBIENT_ENERGY, Balance.LIGHTNING_FLASH_TIME).set_ease(Tween.EASE_IN)
 	flash.tween_interval(thunder_delay)
 	flash.tween_callback(func() -> void: Sfx.play("thunder", random.randf_range(0.85, 1.05), Balance.THUNDER_VOLUME_DB))
 
