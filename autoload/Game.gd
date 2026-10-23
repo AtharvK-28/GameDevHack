@@ -40,6 +40,7 @@ func ready_slots() -> Array[int]:
 	for player: Dictionary in Net.players:
 		if player.socket != null and player.ready:
 			slots.append(player.slot)
+	slots.sort()
 	return slots
 
 

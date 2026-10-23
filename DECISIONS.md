@@ -6,6 +6,7 @@ Every approved design or technical decision, newest first. Only the user approve
 
 | # | Date | Decision | Reason |
 | --- | --- | --- | --- |
+| 56 | 2026-10-23 | In the lobby, an offline phone no longer holds a slot: a new phone takes the slot of an offline one. During a match, slots stay reserved so dropped phones can rejoin. | Stale identities (a QR scanner's in-app browser, then Chrome) filled all four slots and left room for only two real phones |
 | 55 | 2026-10-23 | The match starts fullscreen; F11 switches between fullscreen and a window. The live HUD's top panel is compact so more of the house shows. | User asked for a fullscreen view and a smaller timer panel |
 | 54 | 2026-10-23 | The camera's three-quarter view is mirrored: 55° down and 20° to the other side (yaw −20°). Supersedes the yaw in decision 39. | User asked to flip the camera view |
 | 53 | 2026-10-23 | Mover team colours: overalls and cap in the slot's colour; shirts for contrast are green, orange, green and red for slots 1–4. | Art plan approved with “go” |

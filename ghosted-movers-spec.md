@@ -416,7 +416,7 @@ Phones talk directly to the Godot game over WebSocket, sending short JSON messag
 - **Buttons send both edges.** GRAB is held from `down` until `up`.
 - **Dead-man switch.** If no `in` arrives from a phone for 500 ms, the host zeroes its joystick and releases its buttons. A dropped connection never leaves someone stuck carrying or walking.
 - **Reconnect.** The phone stores `pid` in localStorage. Rejoining with it restores the slot, role and points.
-- Slots remain reserved for the host session so disconnected phones can rejoin. An unknown `pid` is treated as a new join if space remains; a fifth identity is declined. Restart the host to clear the Phase 1 test roster.
+- During a match, slots stay reserved so disconnected phones can rejoin with their `pid`, and new identities are refused. In the lobby, a new phone takes the slot of an offline one; a fifth phone is declined only when all four are connected.
 - The host validates every ghost action against energy and cooldowns, and ignores unknown messages.
 
 ## Godot project structure

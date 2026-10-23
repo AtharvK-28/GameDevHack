@@ -135,8 +135,10 @@ func _join(connection: Dictionary, message: Dictionary) -> void:
 			connection.socket.close(1008, "Match in progress. Rejoin with your original browser or wait for the lobby.")
 			return
 		if players.size() >= Balance.MAX_PLAYERS:
+			_free_offline_slot() # In the lobby, a new phone may take an offline phone's slot.
+		if players.size() >= Balance.MAX_PLAYERS:
 			var rejected: WebSocketPeer = connection.socket
-			rejected.close(1008, "All four slots are reserved. Rejoin with your original browser.")
+			rejected.close(1008, "All four players are connected. Wait for a free slot.")
 			return
 		player = _new_player(player_name)
 		players.append(player)
@@ -202,8 +204,22 @@ func _reset_input(player: Dictionary) -> void:
 
 
 # --- Registry helpers ---
+func _free_offline_slot() -> void:
+	# Outside a match, slots are only kept for phones that are still connected.
+	if not accept_new_players:
+		return
+	for player: Dictionary in players:
+		if player.socket == null:
+			print("Slot %d freed: %s is offline" % [player.slot + 1, player.name])
+			players.erase(player)
+			return
+
+
 func _new_player(player_name: String) -> Dictionary:
-	var slot: int = players.size()
+	# The lowest free slot, so slots stay stable when an offline phone's place is reused.
+	var slot: int = 0
+	while not player_for_slot(slot).is_empty():
+		slot += 1
 	return {
 		"pid": Crypto.new().generate_random_bytes(16).hex_encode(),
 		"slot": slot, "name": player_name, "colour": Balance.PLAYER_COLOURS[slot],
