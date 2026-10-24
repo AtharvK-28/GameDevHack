@@ -15,11 +15,28 @@ func _ready() -> void:
 		var base_size := Vector2i(ProjectSettings.get_setting("display/window/size/viewport_width"), ProjectSettings.get_setting("display/window/size/viewport_height"))
 		get_window().min_size = base_size
 		get_window().size = get_window().size.max(base_size)
-	$Logo.modulate = Balance.UI_GHOST
+	_comic_title()
 	# A sub menu (map select, options, credits) gets the screen to itself.
 	sub_menu_opened.connect(_show_title.bind(false))
 	sub_menu_closed.connect(_show_title.bind(true))
 	%GuideButton.pressed.connect(func() -> void: _open_sub_menu(GUIDE_SCENE))
+
+
+func _comic_title() -> void:
+	# The title in the intro's comic lettering, gold with a thick ink outline, under Seth-ji's face from the intro.
+	var title: Label = $MenuContainer/TitleMargin/TitleContainer/TitleLabel
+	title.add_theme_font_override("font", load(Balance.COMIC_FONT_PATH))
+	title.add_theme_font_size_override("font_size", Balance.MENU_TITLE_SIZE)
+	title.add_theme_color_override("font_color", Balance.UI_MONEY)
+	title.add_theme_constant_override("outline_size", Balance.COMIC_OUTLINE_SIZE + 4)
+	title.add_theme_color_override("font_outline_color", Balance.COMIC_INK)
+	var face := AtlasTexture.new()
+	face.atlas = load(Balance.REVEAL_GHOST_ART)
+	face.region = Balance.MENU_LOGO_CROP
+	$Logo.texture = face
+	$Logo.offset_left = -Balance.MENU_LOGO_SIZE / 2.0
+	$Logo.offset_right = Balance.MENU_LOGO_SIZE / 2.0
+	$Logo.offset_bottom = $Logo.offset_top + Balance.MENU_LOGO_SIZE
 
 
 # --- Menu actions ---

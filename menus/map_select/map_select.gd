@@ -5,13 +5,15 @@ extends Control
 
 signal map_chosen(arena_path: String)
 
+const Style := preload("res://screens/screen_style.gd")
+
 # --- Maps (an empty arena path means locked) ---
-const MAPS: Array[Dictionary] = [
-	{"name": "Old Mansion", "note": "Gallery, stairs and a grand piano", "arena": "res://arenas/Mansion.tscn", "preview": "res://assets/ui/maps/mansion.png"},
-	{"name": "Ghost Ship", "note": "Coming soon", "arena": "", "preview": ""},
-	{"name": "Abandoned Museum", "note": "Coming soon", "arena": "", "preview": ""},
-]
-const LOCK_ICON := preload("res://assets/ui/icons/locked.png")
+static func maps() -> Array[Dictionary]:
+	return [
+		{"name": "Old Mansion", "note": "Gallery, stairs and a grand piano", "arena": "res://arenas/Mansion.tscn", "preview": Balance.MAP_PREVIEW_ART, "crop": Balance.MAP_PREVIEW_CROP},
+		{"name": "Ghost Ship", "note": "Coming soon", "arena": "", "preview": ""},
+		{"name": "Abandoned Museum", "note": "Coming soon", "arena": "", "preview": ""},
+	]
 
 var first_tile: Button
 
@@ -24,17 +26,14 @@ func _ready() -> void:
 	column.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(column)
 
-	var heading := Label.new()
-	heading.text = "Choose a house"
-	heading.theme_type_variation = &"TitleLabel"
-	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var heading := Style.lettering("CHOOSE A HOUSE", Balance.MENU_TITLE_SIZE, Balance.UI_MONEY)
 	column.add_child(heading)
 
 	var tiles := HBoxContainer.new()
 	tiles.alignment = BoxContainer.ALIGNMENT_CENTER
 	tiles.add_theme_constant_override("separation", Balance.UI_PANEL_MARGIN * 2)
 	column.add_child(tiles)
-	for map: Dictionary in MAPS:
+	for map: Dictionary in maps():
 		tiles.add_child(_tile(map))
 
 	var back := Button.new()
@@ -69,17 +68,42 @@ func _tile(map: Dictionary) -> Button:
 	inside.alignment = BoxContainer.ALIGNMENT_CENTER
 	inside.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tile.add_child(inside)
-	var picture := TextureRect.new()
-	picture.texture = LOCK_ICON if locked else load(map.preview)
-	picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	picture.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	picture.modulate = Balance.UI_MUTED if locked else Color.WHITE
-	picture.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	inside.add_child(picture)
+	inside.add_child(_locked_art() if locked else _preview(map))
 	inside.add_child(_label(map.name, &"HeadingLabel"))
 	inside.add_child(_label(map.note, &"MutedLabel"))
 	return tile
+
+
+func _preview(map: Dictionary) -> Control:
+	# The house's comic art from the intro, framed in ink.
+	var frame := Style.ink_panel(0.0, Balance.COMIC_BORDER)
+	frame.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	var picture := TextureRect.new()
+	var crop := AtlasTexture.new()
+	crop.atlas = load(map.preview)
+	crop.region = map.crop
+	picture.texture = crop
+	picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	picture.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	frame.add_child(picture)
+	return frame
+
+
+func _locked_art() -> Control:
+	# A mystery house: a big question mark with COMING SOON stamped across it.
+	var art := CenterContainer.new()
+	art.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var stack := VBoxContainer.new()
+	stack.alignment = BoxContainer.ALIGNMENT_CENTER
+	stack.add_theme_constant_override("separation", -Balance.UI_PANEL_MARGIN * 2) # The stamp overlaps the "?".
+	art.add_child(stack)
+	stack.add_child(Style.lettering("?", Balance.COMIC_TITLE_SIZE * 2, Balance.UI_MUTED))
+	var stamp := Style.stamp("COMING SOON", Balance.UI_DANGER, Balance.COMIC_LABEL_SIZE)
+	stamp.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	stack.add_child(stamp)
+	return art
 
 
 func _label(text: String, variation: StringName) -> Label:

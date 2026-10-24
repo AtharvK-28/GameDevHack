@@ -3,7 +3,7 @@
 extends CanvasLayer
 
 # --- Wipe state ---
-var wipe := ColorRect.new()
+var wipe := Control.new() # A comic page: night with a slanted ink edge and a folded corner; see _draw_page().
 var covered_scene: Node # The scene that was showing when the wipe covered the screen.
 
 # --- Setup ---
@@ -13,7 +13,7 @@ func _ready() -> void:
 	get_tree().root.theme = load("res://assets/ui/ghosted_theme.tres")
 	layer = 100 # Above every screen.
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	wipe.color = Balance.UI_NIGHT
+	wipe.draw.connect(_draw_page)
 	wipe.mouse_filter = Control.MOUSE_FILTER_STOP
 	wipe.visible = false
 	add_child(wipe)
@@ -59,10 +59,11 @@ func _pop(control: Control) -> void:
 
 # --- Wipe ---
 func cover(then: Callable) -> void:
-	# Slides the night colour in from the left, then runs "then" (usually a scene change).
+	# Turns the night page in from the left, then runs "then" (usually a scene change).
 	var width: float = get_viewport().get_visible_rect().size.x
 	wipe.size = get_viewport().get_visible_rect().size
-	wipe.position.x = -width
+	wipe.queue_redraw()
+	wipe.position.x = -width - wipe.size.y * Balance.UI_PAGE_SLANT # Starts with its slanted edge off screen too.
 	wipe.visible = true
 	covered_scene = get_tree().current_scene
 	var tween: Tween = create_tween()
@@ -76,6 +77,22 @@ func uncover() -> void:
 	var tween: Tween = create_tween()
 	tween.tween_property(wipe, "position:x", width, Balance.UI_WIPE_TIME).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tween.tween_callback(func() -> void: wipe.visible = false)
+
+
+func _draw_page() -> void:
+	# The page's leading (right) edge slants and juts past the wipe's width, with a paper fold at its top corner.
+	var page: Vector2 = wipe.size
+	var slant: float = page.y * Balance.UI_PAGE_SLANT
+	var edge_top := Vector2(page.x + slant, 0.0)
+	var edge_bottom := Vector2(page.x, page.y)
+	wipe.draw_colored_polygon(PackedVector2Array([Vector2.ZERO, edge_top, edge_bottom, Vector2(0.0, page.y)]), Balance.UI_NIGHT)
+	var fold: float = Balance.UI_PAGE_FOLD
+	var along: Vector2 = (edge_bottom - edge_top).normalized() * fold
+	var fold_points := PackedVector2Array([edge_top - Vector2(fold, 0.0), edge_top, edge_top + along])
+	wipe.draw_colored_polygon(fold_points, Balance.COMIC_PAPER)
+	wipe.draw_line(edge_top, edge_bottom, Balance.COMIC_INK, Balance.UI_PAGE_EDGE)
+	fold_points.append(fold_points[0])
+	wipe.draw_polyline(fold_points, Balance.COMIC_INK, Balance.UI_PAGE_EDGE * 0.6)
 
 
 func flash() -> void:
