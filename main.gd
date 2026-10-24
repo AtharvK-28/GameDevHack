@@ -253,12 +253,14 @@ func _spawn_point(slot: int) -> Vector3:
 func _arena_scene() -> PackedScene:
 	if arena_scene != null:
 		return arena_scene
-	return MANSION_SCENE if match_mode else GREYBOX_SCENE
+	return load(Game.selected_arena) if match_mode else GREYBOX_SCENE
 
 
 func _apply_arena_bounds() -> void:
 	# The camera, movers and ghost stay within the current arena's limits.
 	camera.bounds = arena.camera_bounds()
+	camera.arena_yaw = Balance.SHIP_CAMERA_YAW if arena.ARENA_NAME == "Ghost Ship" else Balance.CAMERA_YAW
+	camera.limit_overview = arena.ARENA_NAME == "Ghost Ship"
 	for mover: CharacterBody3D in movers:
 		mover.bounds = arena.mover_bounds()
 	if is_instance_valid(ghost):
@@ -269,7 +271,7 @@ func _build_camera() -> void:
 	camera = CAMERA_SCENE.instantiate()
 	camera.follow_movers = match_mode
 	add_child(camera)
-	if arena.has_node("WorldEnvironment"):
+	if arena.has_node("WorldEnvironment") or arena.find_child("WorldEnvironment", true, false) != null:
 		return # The arena brings its own lighting and mood.
 	var light := DirectionalLight3D.new()
 	light.rotation_degrees = Balance.LIGHT_ROTATION

@@ -1,0 +1,51 @@
+[gd_scene load_steps=7 format=3]
+
+[sub_resource type="StandardMaterial3D" id="mat0"]
+albedo_color = Color(0.8745098039215686, 0.7137254901960784, 0.37254901960784315, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="mesh0"]
+size = Vector3(0.06, 0.4, 0.08)
+material = SubResource("mat0")
+
+[sub_resource type="BoxMesh" id="mesh1"]
+size = Vector3(0.45, 0.055, 0.08)
+material = SubResource("mat0")
+
+[sub_resource type="StandardMaterial3D" id="mat1"]
+albedo_color = Color(0.22745098039215686, 0.27450980392156865, 0.37254901960784315, 1)
+roughness = 0.85
+
+[sub_resource type="CylinderMesh" id="mesh2"]
+top_radius = 0.05
+bottom_radius = 0.05
+height = 0.2
+radial_segments = 10
+rings = 1
+material = SubResource("mat1")
+
+[sub_resource type="BoxMesh" id="mesh3"]
+size = Vector3(0.025, 0.27, 0.05)
+material = SubResource("mat1")
+
+[node name="sextant" type="Node3D"]
+
+[node name="mesh0" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh0")
+position = Vector3(-0.1, 0.24, 0)
+rotation = Vector3(0, 0, -0.5)
+
+[node name="mesh1" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh1")
+position = Vector3(0.06, 0.08, 0)
+rotation = Vector3(0, 0, 0)
+
+[node name="mesh2" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh2")
+position = Vector3(-0.16, 0.42, 0)
+rotation = Vector3(0, 0, 1.5708)
+
+[node name="mesh3" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh3")
+position = Vector3(0.08, 0.24, 0)
+rotation = Vector3(0, 0, 0.6)

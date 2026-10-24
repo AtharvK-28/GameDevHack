@@ -1,0 +1,86 @@
+[gd_scene load_steps=10 format=3]
+
+[sub_resource type="StandardMaterial3D" id="mat0"]
+albedo_color = Color(0.7254901960784313, 0.8666666666666667, 1.0, 1)
+roughness = 0.85
+
+[sub_resource type="CylinderMesh" id="mesh0"]
+top_radius = 0.35
+bottom_radius = 0.32
+height = 0.35
+radial_segments = 10
+rings = 1
+material = SubResource("mat0")
+
+[sub_resource type="StandardMaterial3D" id="mat1"]
+albedo_color = Color(0.22745098039215686, 0.27450980392156865, 0.37254901960784315, 1)
+roughness = 0.85
+
+[sub_resource type="CylinderMesh" id="mesh1"]
+top_radius = 0.48
+bottom_radius = 0.38
+height = 0.1
+radial_segments = 10
+rings = 1
+material = SubResource("mat1")
+
+[sub_resource type="CylinderMesh" id="mesh2"]
+top_radius = 0.08
+bottom_radius = 0.48
+height = 0.1
+radial_segments = 10
+rings = 1
+material = SubResource("mat1")
+
+[sub_resource type="BoxMesh" id="mesh3"]
+size = Vector3(0.045, 0.45, 0.045)
+material = SubResource("mat1")
+
+[sub_resource type="BoxMesh" id="mesh4"]
+size = Vector3(0.045, 0.45, 0.045)
+material = SubResource("mat1")
+
+[sub_resource type="BoxMesh" id="mesh5"]
+size = Vector3(0.045, 0.45, 0.045)
+material = SubResource("mat1")
+
+[sub_resource type="BoxMesh" id="mesh6"]
+size = Vector3(0.045, 0.45, 0.045)
+material = SubResource("mat1")
+
+[node name="lantern" type="Node3D"]
+
+[node name="mesh0" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh0")
+position = Vector3(0, 0.25, 0)
+rotation = Vector3(0, 0, 0)
+
+[node name="mesh1" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh1")
+position = Vector3(0, 0.05, 0)
+rotation = Vector3(0, 0, 0)
+
+[node name="mesh2" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh2")
+position = Vector3(0, 0.47, 0)
+rotation = Vector3(0, 0, 0)
+
+[node name="mesh3" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh3")
+position = Vector3(-0.28, 0.25, -0.28)
+rotation = Vector3(0, 0, 0)
+
+[node name="mesh4" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh4")
+position = Vector3(-0.28, 0.25, 0.28)
+rotation = Vector3(0, 0, 0)
+
+[node name="mesh5" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh5")
+position = Vector3(0.28, 0.25, -0.28)
+rotation = Vector3(0, 0, 0)
+
+[node name="mesh6" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh6")
+position = Vector3(0.28, 0.25, 0.28)
+rotation = Vector3(0, 0, 0)

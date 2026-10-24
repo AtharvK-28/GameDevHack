@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CatalogItem" load_steps=3 format=3]
+[ext_resource type="Script" path="res://props/catalog/catalog_item.gd" id="1"]
+[ext_resource type="PackedScene" path="res://props/catalog/built/ship_sextant.tscn" id="2"]
+[resource]
+script = ExtResource("1")
+id = &"ship_sextant"
+display_name = "Sextant"
+model = ExtResource("2")
+value = 2500
+weight_class = 0
+fragility = 2
+count = 1
+two_person_handles = false
+throwable = true
+footprint = Vector3(0.5, 0.5, 0.2)
+spot_roles = Array[StringName]([&"sextant"])
+pools = Array[StringName]([&"ship"])
+rolls = false

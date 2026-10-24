@@ -39,11 +39,17 @@ func new_game() -> void:
 	map_select.map_chosen.connect(_on_map_chosen)
 
 
-func _on_map_chosen(_arena_path: String) -> void:
-	UiMotion.cover(load_game_scene) # The wipe slides away once the match scene is showing.
+func _on_map_chosen(arena_path: String) -> void:
+	Game.selected_arena = arena_path
+	UiMotion.cover(_open_match) # Load while covered; Main creates its paused lobby synchronously.
 
 
 func _show_title(shown: bool) -> void:
 	%MenuContainer.visible = shown
 	if shown:
 		%NewGameButton.grab_focus.call_deferred()
+
+
+func _open_match() -> void:
+	# Main preloads its screens; loading on the main thread avoids a nested threaded-resource stall.
+	get_tree().change_scene_to_file("res://Main.tscn")

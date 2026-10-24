@@ -209,7 +209,7 @@ func _update_target() -> void:
 		var best_score: float = INF
 		for node: Node in get_tree().get_nodes_in_group("possessables"):
 			if node is Possessable and node.can_be_possessed():
-				if demo_rules and node.kind != Possessable.Kind.SLIDER:
+				if demo_rules and node.kind != Possessable.Kind.SLIDER and not (is_instance_valid(arena) and arena.ARENA_NAME == "Ghost Ship"):
 					continue
 				var score: float = _reach_score(node)
 				if score < best_score:

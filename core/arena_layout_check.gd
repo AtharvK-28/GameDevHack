@@ -63,6 +63,11 @@ func _run() -> void:
 	await _check_wall_fade()
 	_check_ghost_spawn()
 	await _check_ghost_height()
+	playground.queue_free()
+	await _frames(3)
+	var ship_checks: Node = load("res://core/ship_checks.gd").new()
+	root.add_child(ship_checks)
+	failures += await ship_checks.run()
 	print("ARENA LAYOUT CHECK: %s" % ("PASS" if failures == 0 else "%d failures" % failures))
 	quit(0 if failures == 0 else 1)
 

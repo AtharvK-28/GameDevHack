@@ -27,7 +27,10 @@ static func load_layout(path: String) -> Dictionary:
 
 static func build(arena: Node3D, layout: Dictionary) -> Area3D:
 	# Builds everything into the arena node and returns its truck zone.
-	_build_ground(arena, layout.ground)
+	if layout.has("ground"):
+		_build_ground(arena, layout.ground)
+	if layout.has("floors"):
+		return _build_deck_layout(arena, layout)
 	for room: Dictionary in layout.rooms:
 		_build_room(arena, room)
 	for wall: Dictionary in layout.walls:
@@ -543,3 +546,71 @@ static func _add_mesh(body: Node3D, box: AABB, material: Material, fades: bool) 
 static func _set_world_layers(body: StaticBody3D) -> void:
 	body.collision_layer = Balance.WORLD_LAYER
 	body.collision_mask = Balance.MOVER_LAYER | Balance.LOOT_LAYER
+
+
+# --- Open deck layouts ---
+static func _build_deck_layout(arena: Node3D, layout: Dictionary) -> Area3D:
+	# Separate slabs leave the lower hold and ramp openings empty; there is no ocean collider.
+	for floor_data: Dictionary in layout.floors:
+		var floor_rect: Rect2 = rect_of(floor_data.rect)
+		_solid_box(arena, floor_data.id, _box_from_rect(floor_rect, floor_data.floor - Balance.SHIP_DECK_THICKNESS, Balance.SHIP_DECK_THICKNESS), _surface(floor_data.surface))
+	for ramp_data: Dictionary in layout.ramps:
+		_build_deck_ramp(arena, ramp_data)
+	for barrier: Dictionary in layout.barriers:
+		_solid_box(arena, barrier.id, _segment_box(barrier.from, barrier.to, barrier.floor, barrier.floor + Balance.SHIP_BULWARK_HEIGHT, Balance.SHIP_BULWARK_WIDTH), _surface("wood_planks"))
+	for room: Dictionary in layout.rooms:
+		var zone := Area3D.new()
+		zone.name = room.id
+		zone.add_to_group("room_zones")
+		zone.collision_layer = 0
+		zone.collision_mask = Balance.MOVER_LAYER | Balance.LOOT_LAYER
+		zone.monitorable = false
+		var rect: Rect2 = rect_of(room.rect)
+		var shape := CollisionShape3D.new()
+		var box := BoxShape3D.new()
+		box.size = Vector3(rect.size.x, room.zone_height, rect.size.y)
+		shape.shape = box
+		zone.add_child(shape)
+		zone.position = Vector3(rect.get_center().x, room.floor + room.zone_height / 2.0, rect.get_center().y)
+		arena.add_child(zone)
+	var delivery: Dictionary = layout.delivery
+	var delivery_rect: Rect2 = rect_of(delivery.rect)
+	var zone: Area3D = TRUCK_SCENE.instantiate()
+	zone.zone_size = Vector3(delivery_rect.size.x, Balance.TRUCK_SIZE.y, delivery_rect.size.y)
+	zone.zone_colour = Balance.SHIP_TUG_COLOUR
+	zone.zone_label = "SALVAGE!"
+	zone.label_yaw = Balance.SHIP_CAMERA_YAW
+	zone.position = Vector3(delivery_rect.get_center().x, delivery.floor, delivery_rect.get_center().y)
+	arena.add_child(zone)
+	return zone
+
+
+static func _build_deck_ramp(arena: Node3D, ramp: Dictionary) -> void:
+	var rect: Rect2 = rect_of(ramp.rect)
+	var vertices := PackedVector3Array()
+	for along: float in [0.0, 1.0]:
+		var y: float = ramp.floor + ramp.rise * (along if ramp.direction > 0 else 1.0 - along)
+		for z: float in [rect.position.y, rect.end.y]:
+			vertices.append(Vector3(lerpf(rect.position.x, rect.end.x, along), y, z))
+	var body := StaticBody3D.new()
+	body.name = ramp.id
+	_set_world_layers(body)
+	arena.add_child(body)
+	var shape := ConvexPolygonShape3D.new()
+	var points: PackedVector3Array = vertices.duplicate()
+	for point: Vector3 in vertices:
+		points.append(point - Vector3.UP * Balance.SHIP_DECK_THICKNESS)
+	shape.points = points
+	var collision := CollisionShape3D.new()
+	collision.shape = shape
+	body.add_child(collision)
+	var surface := SurfaceTool.new()
+	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for index: int in [0, 2, 1, 1, 2, 3]:
+		surface.set_uv(Vector2(vertices[index].x, vertices[index].z))
+		surface.add_vertex(vertices[index])
+	surface.generate_normals()
+	var mesh := MeshInstance3D.new()
+	mesh.mesh = surface.commit()
+	mesh.material_override = _surface(ramp.surface)
+	body.add_child(mesh)

@@ -811,3 +811,93 @@ const LOADING_TIPS: Array[String] = [
 	"Power the generator with 3 batteries to weaken the ghost.",
 	"A thrown vase can knock a mover flat.",
 ]
+
+# --- Ghost Ship settings (metres, seconds and rendering limits) ---
+const SHIP_CAMERA_YAW: float = -20.0
+const SHIP_WATER_Y: float = -2.4
+const SHIP_RESCUE_SECONDS: float = 2.0
+const SHIP_RESCUE_CLEARANCE: float = 0.9
+const SHIP_DECK_THICKNESS: float = 0.22
+const SHIP_BULWARK_HEIGHT: float = 0.7
+const SHIP_BULWARK_WIDTH: float = 0.18
+const SHIP_GUST_COST: int = 40
+const SHIP_GUST_COOLDOWN: float = 18.0
+const SHIP_GUST_WARNING: float = 1.0
+const SHIP_GUST_DURATION: float = 3.0
+const SHIP_GUST_PUSH_SPEED: float = 1.0 # Stationary, unbraced movers drift in metres/second.
+const SHIP_GUST_WITH_DOT: float = 0.35 # Stick projection along wind that causes a tumble.
+const SHIP_OCEAN_SIZE: float = 300.0
+const SHIP_NEAR_WATER_SIZE: float = 60.0
+const SHIP_WATER_SUBDIVISIONS: int = 59
+const SHIP_WAVE_HEIGHT: float = 0.12
+const SHIP_WAVE_SPEED: float = 0.65
+const SHIP_FOG_BEGIN: float = 32.0
+const SHIP_FOG_END: float = 115.0
+const SHIP_AMBIENT_ENERGY: float = 0.65
+const SHIP_MOON_ENERGY: float = 1.25
+const SHIP_LAMP_ENERGY: float = 1.0
+const SHIP_LAMP_RANGE: float = 6.0
+const SHIP_SAIL_SWAY: float = 0.025 # Radians; visual only.
+const SHIP_LIGHTNING_INTERVAL := Vector2(40.0, 60.0)
+const SHIP_LIGHTNING_DURATION: float = 0.16
+const SHIP_LIGHTNING_ENERGY: float = 2.6
+const SHIP_BACKGROUND := Color("17253f")
+const SHIP_WATER_COLOUR := Color("203f61")
+const SHIP_WOOD_COLOUR := Color("69535f")
+const SHIP_HULL_COLOUR := Color("383646")
+const SHIP_SAIL_COLOUR := Color("b0a9ba")
+const SHIP_METAL_COLOUR := Color("3a465f")
+const SHIP_GOLD_COLOUR := Color("dfb65f")
+const SHIP_LANTERN_COLOUR := Color("b9ddff")
+const SHIP_TUG_COLOUR := Color("ff9a3c")
+const SHIP_TRIANGLE_BUDGET: int = 400000
+const SHIP_DRAW_CALL_BUDGET: int = 350
+
+const SHIP_DOOR_HEIGHT: float = 1.8
+const SHIP_DROPPER_HEIGHT: float = 3.0
+const SHIP_WIND_MARKER_SIZE: float = 0.025
+const SHIP_WIND_MARKERS: Array[Vector3] = [Vector3(6, 0.08, 6), Vector3(11, 0.08, 6), Vector3(16, 0.08, 6), Vector3(20, 0.08, 6), Vector3(14, 0.08, 11.7), Vector3(14, 0.08, 14.2)]
+
+const SHIP_HULL_TAPER: float = 0.82
+const SHIP_HULL_DEPTH: float = 2.2
+const SHIP_TUG_DEPTH: float = 1.5
+const SHIP_HULL_OUTLINE: Array[Vector2] = [Vector2(-0.3, -0.3), Vector2(26.3, -0.3), Vector2(28.2, 5), Vector2(26.3, 10.3), Vector2(-0.3, 10.3), Vector2(-0.8, 5)]
+const SHIP_TUG_OUTLINE: Array[Vector2] = [Vector2(9.8, 13.5), Vector2(18.2, 13.5), Vector2(18.5, 16), Vector2(17.8, 18.9), Vector2(10.2, 18.9), Vector2(9.5, 16)]
+const SHIP_MAST_SPOTS: Array[Vector3] = [Vector3(7, 0, -0.5), Vector3(19, 0, -0.5)]
+const SHIP_MAST_SCALE: float = 0.72
+const SHIP_CANNON_SCALE: float = 0.5
+const SHIP_LAMP_SPOTS: Array[Vector3] = [Vector3(0.2, 1.2, 2.8), Vector3(4.8, 1.2, 2.8), Vector3(8.2, 0, 0.2), Vector3(18, 0, 0.2), Vector3(25.8, 0.8, 2.8), Vector3(25.8, 0.8, 7.5), Vector3(10.2, 0, 18.3), Vector3(17.8, 0, 18.3)]
+const SHIP_SIGN_SIZE: float = 0.012
+const SHIP_FLOOR_SIGN_SIZE: float = 0.012
+const SHIP_PLANK_MARKS: int = 20
+const SHIP_PLANK_SPACING: float = 0.5
+const SHIP_LIGHTHOUSE_SPOT := Vector3(53, -2.4, -39)
+const SHIP_LIGHTHOUSE_SCALE: float = 2.0
+const SHIP_LIGHTHOUSE_HEIGHT: float = 7.0
+const SHIP_LIGHTHOUSE_ENERGY: float = 0.7
+const SHIP_LIGHTHOUSE_RANGE: float = 30.0
+const SHIP_LIGHTHOUSE_ANGLE: float = 12.0
+const SHIP_LIGHTHOUSE_TURN_SPEED: float = 0.2
+const SHIP_TENTACLE_SPOT := Vector3(-13, -3.0, -13)
+const SHIP_TENTACLE_SEGMENTS: int = 8
+const SHIP_TENTACLE_STEP: float = 0.5
+const SHIP_TENTACLE_COLOUR := Color("51466c")
+const SHIP_CREATURE_SPEED: float = 0.35
+const SHIP_CREATURE_BOB: float = 0.3
+const SHIP_AMBIENT_DB: float = -30.0
+const SHIP_AMBIENT_CALL_INTERVAL: float = 24.0
+
+
+const SHIP_SAIL_HEM: Array[Vector2] = [Vector2(-2.7, 2.6), Vector2(-1.8, 2.9), Vector2(-0.9, 2.55), Vector2(0, 3.15), Vector2(0.9, 2.6), Vector2(1.8, 2.95), Vector2(2.7, 2.6)]
+const SHIP_SAIL_TOP: float = 4.7
+const SHIP_SAIL_OFFSET: float = 0.15
+const SHIP_SAIL_FADE_ALPHA: float = 0.18
+const SHIP_SAIL_OCCLUSION_MARGIN: float = 0.1
+
+const SHIP_MIST_SIZE := Vector2(10, 2)
+const SHIP_MIST_POSITION := Vector3(13, -1, 5)
+const SHIP_MIST_EXTENTS := Vector3(35, 0, 25)
+const SHIP_MIST_AMOUNT: int = 8
+const SHIP_MIST_ALPHA: float = 0.12
+const SHIP_MIST_LIFETIME: float = 30.0
+const SHIP_MIST_SPEED := Vector2(0.1, 0.25)

@@ -50,7 +50,7 @@ func _run() -> void:
 	await _wait()
 	menu.new_game()
 	await _review("maps")
-	menu.sub_menu.map_chosen.emit("res://arenas/Mansion.tscn")
+	menu.sub_menu.map_chosen.emit("res://arenas/Ship.tscn" if "--ship" in OS.get_cmdline_user_args() else "res://arenas/Mansion.tscn")
 	await _wait_for_scene(MAIN_PATH)
 	if current_scene == null or current_scene.scene_file_path != MAIN_PATH:
 		quit(1)

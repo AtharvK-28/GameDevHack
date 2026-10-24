@@ -74,7 +74,9 @@ func _process(delta: float) -> void:
 		# A catalog model keeps its own colours; a curse glows over it.
 		var cursed: bool = curse_left > 0.0 or curse_targeted
 		for mesh: MeshInstance3D in model_meshes:
-			mesh.material_overlay = curse_overlay if cursed else null
+			var wanted: Material = curse_overlay if cursed else null
+			if mesh.material_overlay != wanted:
+				mesh.material_overlay = wanted
 
 
 func _physics_process(delta: float) -> void:
@@ -218,6 +220,17 @@ func release(throw_velocity: Vector3 = Vector3.ZERO, by: CharacterBody3D = null)
 		_on_released()
 
 
+func release_for_rescue(by: CharacterBody3D) -> void:
+	if weight_class != Balance.TWO_PERSON:
+		super(by)
+		return
+	for index: int in range(handle_holders.size()):
+		if handle_holders[index] == by:
+			remove_collision_exception_with(by)
+			handle_holders[index] = null
+	can_sleep = holder_count() == 0
+
+
 func handle_position(index: int) -> Vector3:
 	return global_transform * _handle_local(index)
 
@@ -353,9 +366,16 @@ static func rupees(amount: int) -> String:
 
 func _build_shape() -> void:
 	var collision := CollisionShape3D.new()
-	var shape := BoxShape3D.new()
-	shape.size = item_size
-	collision.shape = shape
+	if catalog_item != null and catalog_item.rolls:
+		var barrel := CylinderShape3D.new()
+		barrel.radius = item_size.y / 2.0
+		barrel.height = item_size.z
+		collision.shape = barrel
+		collision.rotation.x = PI / 2.0
+	else:
+		var shape := BoxShape3D.new()
+		shape.size = item_size
+		collision.shape = shape
 	add_child(collision)
 	if catalog_item != null:
 		model = catalog_item.model.instantiate()

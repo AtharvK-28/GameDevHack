@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CatalogItem" load_steps=3 format=3]
+[ext_resource type="Script" path="res://props/catalog/catalog_item.gd" id="1"]
+[ext_resource type="PackedScene" path="res://props/catalog/built/ship_chest.tscn" id="2"]
+[resource]
+script = ExtResource("1")
+id = &"ship_chest"
+display_name = "Treasure chest"
+model = ExtResource("2")
+value = 18000
+weight_class = 3
+fragility = 1
+count = 1
+two_person_handles = true
+throwable = false
+footprint = Vector3(2, 0.9, 1.2)
+spot_roles = Array[StringName]([&"chest"])
+pools = Array[StringName]([&"ship"])
+rolls = false

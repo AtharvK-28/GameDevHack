@@ -1,0 +1,46 @@
+[gd_scene load_steps=5 format=3]
+
+[sub_resource type="StandardMaterial3D" id="mat0"]
+albedo_color = Color(0.8745098039215686, 0.7137254901960784, 0.37254901960784315, 1)
+roughness = 0.85
+
+[sub_resource type="CylinderMesh" id="mesh0"]
+top_radius = 0.16
+bottom_radius = 0.09
+height = 0.22
+radial_segments = 10
+rings = 1
+material = SubResource("mat0")
+
+[sub_resource type="CylinderMesh" id="mesh1"]
+top_radius = 0.045
+bottom_radius = 0.045
+height = 0.22
+radial_segments = 10
+rings = 1
+material = SubResource("mat0")
+
+[sub_resource type="CylinderMesh" id="mesh2"]
+top_radius = 0.16
+bottom_radius = 0.16
+height = 0.04
+radial_segments = 10
+rings = 1
+material = SubResource("mat0")
+
+[node name="chalice" type="Node3D"]
+
+[node name="mesh0" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh0")
+position = Vector3(0, 0.37, 0)
+rotation = Vector3(0, 0, 0)
+
+[node name="mesh1" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh1")
+position = Vector3(0, 0.17, 0)
+rotation = Vector3(0, 0, 0)
+
+[node name="mesh2" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh2")
+position = Vector3(0, 0.02, 0)
+rotation = Vector3(0, 0, 0)

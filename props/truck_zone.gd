@@ -9,6 +9,9 @@ signal delivered(value: int, carrier_slots: Array[int])
 
 # --- Shape, set by the arena before the zone enters the tree ---
 var zone_size: Vector3
+var zone_colour: Color = Balance.BANK_COLOUR
+var zone_label: String = "LOAD THE\nTRUCK!"
+var label_yaw: float = Balance.CAMERA_YAW
 var radius: float = 0.0 # Above zero: a half-circle of this radius instead of a box.
 
 # --- Bank state ---
@@ -28,7 +31,7 @@ func _ready() -> void:
 		_build_box()
 	# Painted on the ground like a loading-bay marking, in comic lettering, turned to read from the camera.
 	var sign_label := Label3D.new()
-	sign_label.text = "LOAD THE\nTRUCK!"
+	sign_label.text = zone_label
 	sign_label.font = load(Balance.COMIC_FONT_PATH)
 	sign_label.font_size = Balance.PRICE_FONT_SIZE
 	sign_label.pixel_size = Balance.FLOOR_LABEL_PIXEL_SIZE
@@ -36,7 +39,7 @@ func _ready() -> void:
 	sign_label.outline_modulate = Balance.COMIC_INK
 	sign_label.modulate = Color(Color.WHITE, Balance.FLOOR_LABEL_ALPHA)
 	add_child(sign_label)
-	sign_label.set_deferred("global_rotation_degrees", Vector3(-90.0, Balance.CAMERA_YAW, 0.0)) # After the arena places the zone.
+	sign_label.set_deferred("global_rotation_degrees", Vector3(-90.0, label_yaw, 0.0)) # After the arena places the zone.
 	sign_label.position = Vector3(-radius / 2.0, Balance.FLOOR_LABEL_HEIGHT, 0.0) if radius > 0.0 else Vector3(0.0, Balance.FLOOR_LABEL_HEIGHT, 0.0)
 
 
@@ -83,7 +86,7 @@ func _build_box() -> void:
 	box.size = Vector3(zone_size.x, Balance.FLOOR_THICKNESS, zone_size.z)
 	floor_mesh.mesh = box
 	var material := StandardMaterial3D.new()
-	material.albedo_color = Balance.BANK_COLOUR
+	material.albedo_color = zone_colour
 	floor_mesh.material_override = material
 	add_child(floor_mesh)
 

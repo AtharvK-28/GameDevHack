@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CatalogItem" load_steps=3 format=3]
+[ext_resource type="Script" path="res://props/catalog/catalog_item.gd" id="1"]
+[ext_resource type="PackedScene" path="res://props/catalog/built/ship_crate.tscn" id="2"]
+[resource]
+script = ExtResource("1")
+id = &"ship_crate"
+display_name = "Crate"
+category = 1
+model = ExtResource("2")
+weight_class = 2
+possessable_kind = 0
+footprint = Vector3(0.9, 0.9, 0.9)
+pools = Array[StringName]([&"ship"])

@@ -1,0 +1,63 @@
+[gd_scene load_steps=9 format=3]
+
+[sub_resource type="StandardMaterial3D" id="mat0"]
+albedo_color = Color(0.8745098039215686, 0.7137254901960784, 0.37254901960784315, 1)
+roughness = 0.85
+
+[sub_resource type="CylinderMesh" id="mesh0"]
+top_radius = 0.22
+bottom_radius = 0.22
+height = 0.1
+radial_segments = 10
+rings = 1
+material = SubResource("mat0")
+
+[sub_resource type="StandardMaterial3D" id="mat1"]
+albedo_color = Color(0.9647058823529412, 0.9058823529411765, 0.7411764705882353, 1)
+roughness = 0.85
+
+[sub_resource type="CylinderMesh" id="mesh1"]
+top_radius = 0.19
+bottom_radius = 0.19
+height = 0.015
+radial_segments = 10
+rings = 1
+material = SubResource("mat1")
+
+[sub_resource type="StandardMaterial3D" id="mat2"]
+albedo_color = Color(0.7372549019607844, 0.34509803921568627, 0.403921568627451, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="mesh2"]
+size = Vector3(0.035, 0.015, 0.28)
+material = SubResource("mat2")
+
+[sub_resource type="StandardMaterial3D" id="mat3"]
+albedo_color = Color(0.22745098039215686, 0.27450980392156865, 0.37254901960784315, 1)
+roughness = 0.85
+
+[sub_resource type="BoxMesh" id="mesh3"]
+size = Vector3(0.28, 0.015, 0.035)
+material = SubResource("mat3")
+
+[node name="compass" type="Node3D"]
+
+[node name="mesh0" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh0")
+position = Vector3(0, 0.05, 0)
+rotation = Vector3(0, 0, 0)
+
+[node name="mesh1" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh1")
+position = Vector3(0, 0.108, 0)
+rotation = Vector3(0, 0, 0)
+
+[node name="mesh2" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh2")
+position = Vector3(0, 0.125, 0)
+rotation = Vector3(0, 0.55, 0)
+
+[node name="mesh3" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh3")
+position = Vector3(0, 0.124, 0)
+rotation = Vector3(0, 0, 0)

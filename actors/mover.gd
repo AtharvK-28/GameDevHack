@@ -80,6 +80,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		_turn_toward_stick(delta)
 		_walk(delta)
+	_apply_arena_wind()
 	_update_hold_point()
 	if not is_on_floor():
 		velocity.y -= Balance.GRAVITY * delta
@@ -385,3 +386,18 @@ func _build_model() -> void:
 	model.scale = Vector3.ONE * Balance.MOVER_MODEL_SCALE
 	var scene: PackedScene = load(Balance.MOVER_MODEL_PATH % Balance.MOVER_SHIRTS[slot])
 	model.setup(scene, Color(Balance.PLAYER_COLOURS[slot]))
+
+
+# --- Ship wind ---
+func _apply_arena_wind() -> void:
+	var world: Node = get_parent()
+	var arena: Node = world.get("arena")
+	if arena == null or arena.get("wind_active") != true or bracing:
+		return
+	var direction: Vector3 = arena.wind_direction
+	var walking := Vector3(stick.x, 0.0, stick.y)
+	if walking.dot(direction) > Balance.SHIP_GUST_WITH_DOT:
+		tumble(direction)
+	elif walking.is_zero_approx():
+		velocity.x = direction.x * Balance.SHIP_GUST_PUSH_SPEED
+		velocity.z = direction.z * Balance.SHIP_GUST_PUSH_SPEED

@@ -153,3 +153,14 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - Goofier physics (2026-10-24, decision 97): GOOFINESS 1.8 with bouncier springs and more bounce on light loot; all eight physics and match checks pass. The way back to the mild settings is in the comment above GOOFINESS.
 - Rim light and window light pools (2026-10-24, decision 98): rendered and inspected; arena, battery, catalog, match, carrying and rendered UI checks pass.
 - Loading screen (2026-10-24, decision 99): built from the user's design; rendered at 78% and inspected; the rendered UI check (real launch path) passes.
+
+
+## Ghost Ship build (decision 100, 2026-10-24)
+
+- [x] Approved deck-plan SVG and data-driven split-floor layout, ramps, open hold, tug delivery and map selection.
+- [x] Ship catalog: 18 items, 74500 rupees; seeded match picks, chest and rolling barrels.
+- [x] All five possessable types, Gust warning/counters, two-second overboard rescue and water-plane loot loss.
+- [x] Initial real-physics Ship check passes: all room routes, held ramp travel, continuous two-player chest route and delivery, wind counters, rescue/pause and loot removal.
+- [x] Initial Mobile performance with four movers/full pool passes: wide 149758 triangles / 287 draws; close 158834 / 282 on Intel Iris Xe. Final visual capture/measurement still pending.
+- [ ] Finish visual review, reference-water comparison, full regression suite and final captures.
+- [ ] Human 2/3/4-phone Ship playtest.

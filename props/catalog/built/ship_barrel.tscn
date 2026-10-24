@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/pirate/kenney/barrel.glb" id="kit0"]
+
+[node name="barrel" type="Node3D"]
+
+[node name="kit0" parent="." instance=ExtResource("kit0")]
+scale = Vector3(0.5988, 0.77299, 0.5988)
+position = Vector3(0, 0.4, -0.475)
+rotation = Vector3(1.5708, 0, 0)

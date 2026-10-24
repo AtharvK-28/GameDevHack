@@ -28,29 +28,16 @@ UiMotion="*res://autoload/UiMotion.gd"
 
 [display]
 
-window/size/viewport_width=1152
-window/size/viewport_height=648
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
-
-[filesystem]
-
-import/blender/enabled=false
-
-[physics]
-
-common/physics_ticks_per_second=60
-3d/physics_engine="Jolt Physics"
-
-[rendering]
-
-rendering_device/driver.windows="d3d12"
-renderer/rendering_method="mobile"
-lights_and_shadows/directional_shadow/size=2048
 
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/maaacks_game_template/plugin.cfg", "res://addons/maaacks_scene_loader/plugin.cfg", "res://addons/maaacks_ui_sound_controller/plugin.cfg")
+
+[filesystem]
+
+import/blender/enabled=false
 
 [maaacks_game_template]
 
@@ -68,3 +55,13 @@ loading_scene_path="res://menus/loading_screens/loading_screen.tscn"
 [maaacks_ui_sound_controller]
 
 disable_install_audio_busses=true
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
+
+[rendering]
+
+rendering_device/driver.windows="d3d12"
+renderer/rendering_method="mobile"
+lights_and_shadows/directional_shadow/size=2048

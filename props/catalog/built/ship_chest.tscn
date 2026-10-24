@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/pirate/kenney/chest.glb" id="kit0"]
+
+[node name="chest" type="Node3D"]
+
+[node name="kit0" parent="." instance=ExtResource("kit0")]
+scale = Vector3(1.56863, 0.78431, 0.94118)
+position = Vector3(0, 0, 0)
+rotation = Vector3(0, 0, 0)

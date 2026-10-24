@@ -10,6 +10,7 @@ var bubble_text: RichTextLabel
 var line_up := HBoxContainer.new()
 var countdown: Control # A stamp; its text changes and it slams again each second.
 var shown_count: String = ""
+var mover_hint: Label
 
 # --- Setup ---
 func _ready() -> void:
@@ -43,6 +44,7 @@ func _refresh() -> void:
 	visible = showing
 	if not visible:
 		return
+	mover_hint.text = "Movers: salvage to the tug. WIND: brace or walk across/against it." if Game.arena_name() == "Ghost Ship" else "Movers: carry it to the truck. Don't break it."
 	round_label.text = "ROUND %d OF %d  ·  %s" % [Game.round_index + 1, Game.round_count, Game.arena_name().to_upper()]
 	var ghost_name: String = Style.player_name(Game.ghost_slot).to_upper()
 	var colour: String = Style.player_colour(Game.ghost_slot).to_html(false) if Game.ghost_slot >= 0 else "ffffff"
@@ -113,6 +115,7 @@ func _build() -> void:
 	line_up.add_theme_constant_override("separation", Balance.UI_PANEL_MARGIN * 2)
 	speech.add_child(line_up)
 	var movers := Style.label("Movers: carry it to the truck. Don't break it.", Balance.UI_BODY_SIZE, Balance.UI_TEXT)
+	mover_hint = movers
 	speech.add_child(movers)
 
 	countdown = Style.stamp("3", Balance.UI_MONEY, roundi(Balance.COMIC_TITLE_SIZE * 1.4))

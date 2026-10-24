@@ -5,6 +5,7 @@ signal changed
 signal delivery_notice(value: int, item_name: String, slots: Array[int])
 
 # --- Match state ---
+var selected_arena: String = "res://arenas/Mansion.tscn"
 var room_items: Dictionary = {}
 var host: Node3D
 var phase: String = "lobby"
@@ -61,7 +62,10 @@ func start_match() -> void:
 	for slot: int in participants:
 		scores[slot] = 0.0
 	Net.accept_new_players = false
-	_set_phase("intro") # The story cutscene; it calls finish_intro() when it ends or is skipped.
+	if selected_arena == "res://arenas/Ship.tscn":
+		_begin_round(false)
+	else:
+		_set_phase("intro") # The Mansion story plays once per match.
 
 
 func finish_intro() -> void:
@@ -312,6 +316,8 @@ func _delivery_notice(value: int, item_name: String, slots: Array[int], item_id:
 func room_at(point: Vector3) -> String:
 	if not is_instance_valid(host) or host.arena.get("layout") == null:
 		return "Main room"
+	if host.arena.has_method("room_at"):
+		return host.arena.room_at(point)
 	for room: Dictionary in host.arena.layout.rooms:
 		var area: Array = room.rect
 		if Rect2(area[0], area[1], area[2], area[3]).has_point(Vector2(point.x, point.z)):

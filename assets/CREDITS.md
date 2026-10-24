@@ -117,3 +117,23 @@ Source: [godotengine.org](https://godotengine.org)
 License: MIT  
 
 Battery Run battery and generator: original simple-shape models built by the project in `props/tasks/`.
+
+
+## Ghost Ship
+
+- Kenney Pirate Kit 2.1, https://opengameart.org/content/pirate-kit — CC0; original licence in `models/pirate/kenney/license.txt`. Selected GLBs and their required `Textures/colormap.png`; all under 5000 triangles each. Runtime-used models: chest (232 triangles), barrel (148), crate (76), cannon-mobile (472), mast (302), mast-ropes (350), boat-row-large (174), tower-complete-small (650).
+- Original hull, tug, small valuables, anchor, lantern, tarp, and stylised fallback water: project-created native geometry/code.
+- Quaternius supplied `pirate_kit_70_models.glb`: inspected only, NOT distributed/imported. Embedded metadata says Sketchfab Standard (source https://sketchfab.com/3d-models/pirate-kit-70-models-52af2bc5ac5846ff84a0d671b897c0a2); 1040540 triangles in 39 meshes. The original https://quaternius.com/packs/piratekit.html lists CC0 while the current general licence page lists QAL; the supplied file has not been relabelled CC0.
+- Water reference evaluated: MinhCreatorVN, incorporating kmitt91 and StayAtHomeDev, https://godotshaders.com/shader/stylized-water-for-godot-4-x/ — MIT code, not the page's images or textures. Local evaluation uses the author's Godot 4.3 bugfix branch; the production fallback is original code.
+
+### Sea ambience (all CC0, pages verified 2026-10-24)
+
+Compact mono Vorbis excerpts converted from the publicly supplied MP3 previews; faded at the ends and mixed quietly. Original titles/creators:
+
+| File | Source | Licence |
+| --- | --- | --- |
+| `audio/ship/waves.ogg` | qubodup, Ocean Wave, https://freesound.org/people/qubodup/sounds/442944/ | CC0 |
+| `audio/ship/creaks.ogg` | PimFeijen, LargeWoodenShip.mp3, https://freesound.org/people/PimFeijen/sounds/195193/ | CC0 |
+| `audio/ship/rope.ogg` | jergonda, Hang Man's Rope, https://freesound.org/people/jergonda/sounds/254735/ | CC0 |
+| `audio/ship/gulls.ogg` | AlienXXX, Seagull, https://freesound.org/people/AlienXXX/sounds/798340/ | CC0 |
+| `audio/ship/foghorn.ogg` | bruno.auzet, foghorn.wav, https://freesound.org/people/bruno.auzet/sounds/570906/ | CC0 |

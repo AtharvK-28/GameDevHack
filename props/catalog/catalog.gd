@@ -13,7 +13,7 @@ static func items(pool: StringName, category: CatalogItem.Category) -> Array[Cat
 		var item := load(path) as CatalogItem
 		if item != null and item.category == category and pool in item.pools:
 			found.append(item)
-	found.sort_custom(func(a: CatalogItem, b: CatalogItem) -> bool: return a.id < b.id)
+	found.sort_custom(func(a: CatalogItem, b: CatalogItem) -> bool: return String(a.id) < String(b.id))
 	return found
 
 
@@ -35,7 +35,15 @@ static func pick_loot(pool: StringName, spots: Array, total: int, heavy_limit: i
 		for copy: int in range(item.count):
 			copies.append(item)
 	_shuffle(copies, random)
-	copies.sort_custom(func(a: CatalogItem, b: CatalogItem) -> bool: return a.weight_class == Balance.TWO_PERSON and b.weight_class != Balance.TWO_PERSON)
+	# Keep the shuffled order stable while placing centrepieces first. sort_custom is not stable for ties.
+	var ordered: Array[CatalogItem] = []
+	for item: CatalogItem in copies:
+		if item.weight_class == Balance.TWO_PERSON:
+			ordered.append(item)
+	for item: CatalogItem in copies:
+		if item.weight_class != Balance.TWO_PERSON:
+			ordered.append(item)
+	copies = ordered
 
 	var free: Array = spots.duplicate()
 	_shuffle(free, random)

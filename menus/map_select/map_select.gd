@@ -11,7 +11,7 @@ const Style := preload("res://screens/screen_style.gd")
 static func maps() -> Array[Dictionary]:
 	return [
 		{"name": "Old Mansion", "note": "Gallery, stairs and a grand piano", "arena": "res://arenas/Mansion.tscn", "preview": Balance.MAP_PREVIEW_ART, "crop": Balance.MAP_PREVIEW_CROP},
-		{"name": "Ghost Ship", "note": "Coming soon", "arena": "", "preview": ""},
+		{"name": "Ghost Ship", "note": "Salvage, wind and a risky crossing", "arena": "res://arenas/Ship.tscn", "preview": "res://assets/ui/ship_preview.svg", "crop": Rect2(0, 0, 640, 360)},
 		{"name": "Abandoned Museum", "note": "Coming soon", "arena": "", "preview": ""},
 	]
 
@@ -26,7 +26,7 @@ func _ready() -> void:
 	column.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(column)
 
-	var heading := Style.lettering("CHOOSE A HOUSE", Balance.MENU_TITLE_SIZE, Balance.UI_MONEY)
+	var heading := Style.lettering("CHOOSE A JOB", Balance.MENU_TITLE_SIZE, Balance.UI_MONEY)
 	column.add_child(heading)
 
 	var tiles := HBoxContainer.new()

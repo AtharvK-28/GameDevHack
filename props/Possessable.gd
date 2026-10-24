@@ -40,9 +40,9 @@ func _ready() -> void:
 func _attach() -> void:
 	# Outline the prop's own meshes, and sit at their centre so the flashlight aims at the middle of the prop.
 	var bounds := AABB()
-	for child: Node in prop.get_children():
-		if child is MeshInstance3D and not child.top_level:
-			var mesh_bounds: AABB = child.transform * child.get_aabb()
+	for child: MeshInstance3D in prop.find_children("*", "MeshInstance3D", true, false):
+		if not child.top_level and child.mesh != null:
+			var mesh_bounds: AABB = prop.global_transform.affine_inverse() * child.global_transform * child.get_aabb()
 			bounds = mesh_bounds if meshes.is_empty() else bounds.merge(mesh_bounds)
 			meshes.append(child)
 	position = bounds.get_center()
@@ -331,7 +331,9 @@ func _show_shockwave() -> void:
 	ring.material_override = material
 	ring.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	prop.get_parent().add_child(ring)
-	ring.global_position = Vector3(prop.global_position.x, Balance.DECAL_HEIGHT, prop.global_position.z)
+	var arena: Node = prop.get_parent()
+	var floor_height: float = arena.floor_height_at(prop.global_position) if arena.has_method("floor_height_at") else 0.0
+	ring.global_position = Vector3(prop.global_position.x, floor_height + Balance.DECAL_HEIGHT, prop.global_position.z)
 	var bounds: AABB = footprint()
 	var start: float = maxf(bounds.size.x, bounds.size.z) / 2.0 # The ring starts at the prop's edge.
 	ring.scale = Vector3(start, 1.0, start)

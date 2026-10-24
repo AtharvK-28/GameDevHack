@@ -173,6 +173,11 @@ func release(throw_velocity: Vector3 = Vector3.ZERO, _by: CharacterBody3D = null
 	print("Released %s" % item_name)
 
 
+func release_for_rescue(_by: CharacterBody3D) -> void:
+	# An involuntary water drop must never count as a delivery.
+	_detach()
+
+
 func _on_released() -> bool:
 	return false # Loot banks here; returns true when the item has left play.
 
