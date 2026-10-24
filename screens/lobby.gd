@@ -90,7 +90,7 @@ func _time_card(slot: int, player: Dictionary, online: bool, slam: bool) -> Cont
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", Balance.HOST_ROW_GAP)
 	card.add_child(row)
-	row.add_child(_figure(colour if joined else Balance.UI_MUTED))
+	row.add_child(Style.mover_figure(colour if joined else Balance.UI_MUTED, Balance.TIME_CARD_FIGURE))
 	var lines := VBoxContainer.new()
 	lines.alignment = BoxContainer.ALIGNMENT_CENTER
 	lines.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -115,42 +115,6 @@ func _time_card(slot: int, player: Dictionary, online: bool, slam: bool) -> Cont
 		if slam:
 			Style.slam(stamp)
 	return card
-
-
-func _figure(colour: Color) -> Control:
-	# A mover's head-and-shoulders silhouette in a cap, in the player's colour.
-	var figure := Control.new()
-	figure.custom_minimum_size = Vector2.ONE * Balance.TIME_CARD_FIGURE
-	figure.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	figure.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	figure.draw.connect(func() -> void:
-		var s: float = Balance.TIME_CARD_FIGURE
-		var ink: Color = Balance.COMIC_INK
-		var head := Vector2(s * 0.5, s * 0.44)
-		var radius: float = s * 0.2
-		# Shoulders in overalls: a rounded block in the player's colour with two darker straps.
-		var body := StyleBoxFlat.new()
-		body.bg_color = colour
-		body.border_color = ink
-		body.set_border_width_all(2)
-		body.corner_radius_top_left = int(s * 0.18)
-		body.corner_radius_top_right = int(s * 0.18)
-		figure.draw_style_box(body, Rect2(s * 0.14, s * 0.66, s * 0.72, s * 0.34))
-		for strap: float in [0.34, 0.62]:
-			figure.draw_rect(Rect2(s * strap, s * 0.68, s * 0.06, s * 0.3), colour.darkened(0.35))
-		figure.draw_circle(head, radius, Balance.MOVER_SKIN) # Face.
-		figure.draw_arc(head, radius, 0.0, TAU, 24, ink, 2.0)
-		# Cap: a dome over the top of the head and a brim to the right.
-		var dome := PackedVector2Array()
-		for step: int in 13:
-			dome.append(head + Vector2.from_angle(PI + PI * step / 12.0) * (radius + 2.0))
-		figure.draw_colored_polygon(dome, colour)
-		figure.draw_polyline(dome, ink, 2.0, true)
-		var brim := Rect2(head.x, head.y - s * 0.04, radius * 1.5, s * 0.07)
-		figure.draw_rect(brim, colour.darkened(0.2))
-		figure.draw_rect(brim, ink, false, 2.0)
-	)
-	return figure
 
 
 func _draw_dashes(card: Control, colour: Color) -> void:

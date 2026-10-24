@@ -146,13 +146,25 @@ static func slam(holder: Control) -> void:
 	tween.tween_property(frame, "modulate:a", 1.0, Balance.COMIC_STAMP_TIME * 0.5)
 
 
-static func bubble(text: String, size: int = Balance.UI_BODY_SIZE) -> VBoxContainer:
-	# A white speech bubble with its tail at the lower left, pointing down at whoever is speaking about.
+static func bubble(bbcode: String, size: int = Balance.UI_BODY_SIZE) -> VBoxContainer:
+	# A white speech bubble with its tail at the lower left. The text is BBCode: [b]…[/b] is comic lettering and
+	# [color=…] colours a name. The text node is the bubble's first child's child: get_child(0).get_child(0).
 	var holder := VBoxContainer.new()
 	holder.add_theme_constant_override("separation", 0)
 	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var body := _boxed(comic_box(Color.WHITE, Balance.UI_PANEL_MARGIN, Balance.COMIC_BUBBLE_CORNER), 0.0)
-	body.add_child(ink_label(text, size))
+	var words := RichTextLabel.new()
+	words.bbcode_enabled = true
+	words.fit_content = true
+	words.autowrap_mode = TextServer.AUTOWRAP_OFF
+	words.scroll_active = false
+	words.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	words.add_theme_color_override("default_color", Balance.COMIC_INK)
+	words.add_theme_font_size_override("normal_font_size", size)
+	words.add_theme_font_size_override("bold_font_size", roundi(size * 1.4))
+	words.add_theme_font_override("bold_font", load(Balance.COMIC_FONT_PATH))
+	words.text = bbcode
+	body.add_child(words)
 	holder.add_child(body)
 	var tail := Control.new()
 	tail.custom_minimum_size.y = Balance.COMIC_TAIL_SIZE.y
@@ -186,6 +198,49 @@ static func chip(slot: int, text: String, size: int = Balance.UI_BODY_SIZE) -> P
 	line.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(line)
 	return pill
+
+
+static func mover_figure(colour: Color, size: float, possessed: bool = false) -> Control:
+	# A mover's head-and-shoulders silhouette in a cap, in the player's colour. A possessed mover (the ghost this
+	# round) glows ghost green and has glowing eyes.
+	var figure := Control.new()
+	figure.custom_minimum_size = Vector2.ONE * size
+	figure.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	figure.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	figure.draw.connect(func() -> void:
+		var s: float = size
+		var ink: Color = Balance.COMIC_INK
+		var head := Vector2(s * 0.5, s * 0.44)
+		var radius: float = s * 0.2
+		if possessed:
+			figure.draw_circle(head + Vector2(0.0, s * 0.1), s * 0.5, Color(Balance.UI_GHOST, 0.22))
+			figure.draw_circle(head + Vector2(0.0, s * 0.1), s * 0.38, Color(Balance.UI_GHOST, 0.25))
+		# Shoulders in overalls: a rounded block in the player's colour with two darker straps.
+		var body := StyleBoxFlat.new()
+		body.bg_color = colour
+		body.border_color = ink
+		body.set_border_width_all(2)
+		body.corner_radius_top_left = int(s * 0.18)
+		body.corner_radius_top_right = int(s * 0.18)
+		figure.draw_style_box(body, Rect2(s * 0.14, s * 0.66, s * 0.72, s * 0.34))
+		for strap: float in [0.34, 0.62]:
+			figure.draw_rect(Rect2(s * strap, s * 0.68, s * 0.06, s * 0.3), colour.darkened(0.35))
+		figure.draw_circle(head, radius, Balance.MOVER_SKIN) # Face.
+		figure.draw_arc(head, radius, 0.0, TAU, 24, ink, 2.0)
+		# Cap: a dome over the top of the head and a brim to the right.
+		var dome := PackedVector2Array()
+		for step: int in 13:
+			dome.append(head + Vector2.from_angle(PI + PI * step / 12.0) * (radius + 2.0))
+		figure.draw_colored_polygon(dome, colour)
+		figure.draw_polyline(dome, ink, 2.0, true)
+		var brim := Rect2(head.x, head.y - s * 0.04, radius * 1.5, s * 0.07)
+		figure.draw_rect(brim, colour.darkened(0.2))
+		figure.draw_rect(brim, ink, false, 2.0)
+		if possessed:
+			for side: float in [-1.0, 1.0]:
+				figure.draw_circle(head + Vector2(side * radius * 0.4, radius * 0.25), radius * 0.16, Balance.UI_GHOST)
+	)
+	return figure
 
 
 static func keycap(key: String) -> PanelContainer:

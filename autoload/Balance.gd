@@ -313,6 +313,11 @@ const TIME_CARD_SIZE := Vector2(250.0, 118.0) # Lobby time cards, one per player
 const TIME_CARD_FIGURE: float = 58.0 # The mover silhouette on a time card.
 const LOBBY_QR_SIZE: float = 190.0 # The QR code on the job sheet.
 const MOVER_SKIN := Color("e8b98a") # Faces on drawn mover figures.
+const REVEAL_GHOST_ART: String = "res://assets/cutscenes/intro/08_seth_ji.jpeg" # Seth-ji, cropped for the reveal.
+const REVEAL_GHOST_CROP := Rect2(448.0, 104.0, 290.0, 330.0) # Pixels of that panel.
+const REVEAL_PORTRAIT_SIZE := Vector2(190.0, 212.0)
+const REVEAL_FIGURE: float = 78.0 # Line-up figures.
+const REVEAL_MOVE_SECONDS: float = 0.45 # The countdown shows MOVE! for its last this many seconds.
 
 # --- Possession settings ---
 const ACTION_LABELS: Array[String] = ["SHOVE", "SLAM", "DROP", "STOMP", "YANK"] # By possessable kind: slider, door, dropper, hopper, rug.
