@@ -772,3 +772,16 @@ const SFX_JINGLE_DB: float = -4.0 # Round and match end jingles.
 const MUSIC_LOBBY_DB: float = -14.0
 const MUSIC_ROUND_DB: float = -12.0
 const MUSIC_RUSH_PITCH: float = 1.12 # The round music speeds up for the last 30 s.
+
+# --- Light grade and focal light (STYLE.md) ---
+const GRADE_VIGNETTE: float = 0.45 # 0 to 1: how far the screen corners sink into the night colour.
+const GRADE_VIGNETTE_INNER: float = 0.32 # Share of the screen from the centre that stays clear.
+const GRADE_WARM := Color("ffb46b") # The warm wash at the centre of the action.
+const GRADE_WARM_STRENGTH: float = 0.07
+const GRADE_CENTRE := Vector2(0.5, 0.55) # The camera keeps the action a little below the middle.
+const YARD_LIGHT_COLOUR := Color("ffcf94") # A warm light pool over the front yard and driveway.
+const YARD_LIGHT_ENERGY: float = 1.6
+const YARD_LIGHT_RANGE: float = 11.0 # Metres.
+const YARD_LIGHT_HEIGHT: float = 5.0 # Metres above the yard.
+const TRUCK_POSTER_LEVELS: float = 4.0 # Shading bands on the repainted truck.
+const TRUCK_PAINT := Color("ff9a3c") # Sasta Shifters orange, as in the intro's comic panels.

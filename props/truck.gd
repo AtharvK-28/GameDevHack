@@ -35,6 +35,13 @@ func _build_model() -> void:
 	var model := MeshInstance3D.new()
 	model.mesh = load(Balance.TRUCK_MODEL_PATH)
 	model.transform = Transform3D(basis, origin)
+	# Repainted Sasta Shifters orange, like the intro's comic truck; the scan's photo only adds shading (STYLE.md).
+	var paint := ShaderMaterial.new()
+	paint.shader = preload("res://assets/shaders/posterize.gdshader")
+	paint.set_shader_parameter("albedo_texture", load("res://assets/models/truck/truck.jpg"))
+	paint.set_shader_parameter("levels", Balance.TRUCK_POSTER_LEVELS)
+	paint.set_shader_parameter("paint", Balance.TRUCK_PAINT)
+	model.material_override = paint
 	add_child(model)
 
 

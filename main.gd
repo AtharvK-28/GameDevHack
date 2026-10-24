@@ -285,6 +285,7 @@ func _build_camera() -> void:
 
 
 func _build_match_screens() -> void:
+	_build_light_grade()
 	# The screens keep running while the world is paused between rounds.
 	var canvas := CanvasLayer.new()
 	canvas.process_mode = Node.PROCESS_MODE_ALWAYS
@@ -292,6 +293,27 @@ func _build_match_screens() -> void:
 	for scene: PackedScene in SCREEN_SCENES:
 		canvas.add_child(scene.instantiate())
 	Game.changed.connect(_wipe_on_new_screen)
+
+
+func _build_light_grade() -> void:
+	# STYLE.md's code light grade: a vignette into the night colour and a warm wash at the centre, over the 3D
+	# world but under every screen (the screens' layer is 1).
+	var grade := CanvasLayer.new()
+	grade.layer = 0
+	add_child(grade)
+	for warm: bool in [false, true]:
+		var cover := ColorRect.new()
+		cover.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		cover.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var shade := ShaderMaterial.new()
+		shade.shader = preload("res://assets/shaders/light_grade.gdshader")
+		shade.set_shader_parameter("warm", warm)
+		shade.set_shader_parameter("colour", Balance.GRADE_WARM if warm else Balance.UI_NIGHT)
+		shade.set_shader_parameter("strength", Balance.GRADE_WARM_STRENGTH if warm else Balance.GRADE_VIGNETTE)
+		shade.set_shader_parameter("inner", Balance.GRADE_VIGNETTE_INNER)
+		shade.set_shader_parameter("centre", Balance.GRADE_CENTRE)
+		cover.material = shade
+		grade.add_child(cover)
 
 
 func _wipe_on_new_screen() -> void:

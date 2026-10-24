@@ -122,6 +122,18 @@ func _build_mood() -> void:
 	moon.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS # Half the shadow passes of the default.
 	add_child(moon)
 
+	# A warm pool of light over the front yard and driveway, where most of the carrying happens, so the playfield
+	# reads brighter than the dark grounds around it (STYLE.md). No shadows: the moon casts those.
+	var yard := OmniLight3D.new()
+	yard.name = "YardLight"
+	var path: Rect2 = ArenaBuilder.rect_of(layout.paths[0].rect)
+	yard.position = Vector3(path.get_center().x, Balance.YARD_LIGHT_HEIGHT, path.get_center().y)
+	yard.light_color = Balance.YARD_LIGHT_COLOUR
+	yard.light_energy = Balance.YARD_LIGHT_ENERGY
+	yard.omni_range = Balance.YARD_LIGHT_RANGE
+	yard.shadow_enabled = false
+	add_child(yard)
+
 
 # --- Spawning ---
 func battery_spots() -> Array:
