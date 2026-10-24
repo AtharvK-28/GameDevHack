@@ -122,6 +122,11 @@ func _build_mood() -> void:
 	moon.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS # Half the shadow passes of the default.
 	add_child(moon)
 
+	# The wood floors are tinted a little darker and cooler so loot stands out on them (STYLE.md focal hierarchy).
+	# Set here rather than in the .tres, which tools/make_surface_textures.gd regenerates.
+	var wood: StandardMaterial3D = load("res://assets/materials/surfaces/wood_planks.tres")
+	wood.albedo_color = Balance.FLOOR_TINT
+
 	# A warm pool of light over the front yard and driveway, where most of the carrying happens, so the playfield
 	# reads brighter than the dark grounds around it (STYLE.md). No shadows: the moon casts those.
 	var yard := OmniLight3D.new()

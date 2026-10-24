@@ -19,7 +19,7 @@ const NEAR_TREE_SCALES: Array[Vector2] = [Vector2(4.0, 6.0), Vector2(4.0, 6.0), 
 # --- Shapes and colours (look only) ---
 const GROUND_DROP: float = 0.01 # Metres below the plot's ground, out of sight under it.
 const FAR_TREE_COLOUR := Color("1f2a2a")
-const DIRT_COLOUR := Color("4a4334")
+const DIRT_COLOUR := Color("443f33") # Close to the dead grass, so the patches read as texture, not blots.
 const BARK_COLOUR := Color("2e2622")
 const ROAD_COLOUR := Color("2c2a33")
 const CRACK_COLOUR := Color("141218")
@@ -295,7 +295,7 @@ func _add_grassland() -> void:
 	patch.radial_segments = 10
 	patch.material = _flat(DIRT_COLOUR)
 	var patches: Array[Transform3D] = []
-	for index: int in range(25):
+	for index: int in range(Balance.DIRT_PATCHES):
 		var point: Vector2 = _free_point(clear)
 		var size: float = random.randf_range(0.6, 1.6)
 		patches.append(Transform3D(Basis().scaled(Vector3(size, 1.0, size * random.randf_range(0.6, 1.0))), Vector3(point.x, 0.004, point.y)))
