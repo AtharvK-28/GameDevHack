@@ -285,6 +285,35 @@ const TITLE_CAMERA_PITCH: float = 38.0 # Degrees down.
 const TITLE_CAMERA_DISTANCE: float = 30.0 # Metres from the Mansion's centre.
 const MAP_TILE_SIZE := Vector2(300.0, 300.0) # Map select tiles.
 
+# --- Comic style (match screens) ---
+# The intro's comic look carried into the UI: parchment caption boxes and dark panels with thick ink borders and a
+# hard drop shadow, speech bubbles, slam-in stamps and comic lettering (Bangers) for headlines and events.
+const COMIC_FONT_PATH: String = "res://assets/fonts/bangers_regular.ttf"
+const COMIC_PAPER := Color("f6e7bd") # Caption boxes, like the intro's narration boxes.
+const COMIC_INK := Color("120b1d") # Borders, shadows and text on paper.
+const COMIC_BORDER: int = 3 # Ink border width.
+const COMIC_SHADOW := Vector2(5.0, 5.0) # Hard drop shadow offset.
+const COMIC_SHADOW_ALPHA: float = 0.75
+const COMIC_CORNER: int = 6 # Panel corner radius; bubbles use COMIC_BUBBLE_CORNER.
+const COMIC_BUBBLE_CORNER: int = 22
+const COMIC_TAIL_SIZE := Vector2(26.0, 22.0) # A speech bubble's tail: width at the bubble, length.
+const COMIC_TITLE_SIZE: int = 56 # Comic lettering sizes.
+const COMIC_HEADING_SIZE: int = 34
+const COMIC_LABEL_SIZE: int = 24
+const COMIC_OUTLINE_SIZE: int = 10 # Ink outline on comic lettering over the game.
+const COMIC_STAMP_ANGLE: float = -7.0 # Degrees a stamp is tilted.
+const COMIC_STAMP_START: float = 2.4 # Scale a stamp slams down from.
+const COMIC_STAMP_TIME: float = 0.22 # Seconds the slam takes.
+const COMIC_BACKDROP_ALPHA: float = 0.72 # 0 to 1: the night colour over the game behind full screens.
+const COMIC_DOT_ALPHA: float = 0.12 # 0 to 1: halftone dots on the backdrop.
+const COMIC_DOT_SPACING: float = 14.0 # Pixels between halftone dots.
+const NAME_MAX_CHARS: int = 12 # Host screens shorten longer names with an ellipsis.
+const KEYCAP_SIZE: int = 16 # Key hint text beside buttons.
+const TIME_CARD_SIZE := Vector2(250.0, 118.0) # Lobby time cards, one per player slot, in a 2 × 2 grid.
+const TIME_CARD_FIGURE: float = 58.0 # The mover silhouette on a time card.
+const LOBBY_QR_SIZE: float = 190.0 # The QR code on the job sheet.
+const MOVER_SKIN := Color("e8b98a") # Faces on drawn mover figures.
+
 # --- Possession settings ---
 const ACTION_LABELS: Array[String] = ["SHOVE", "SLAM", "DROP", "STOMP", "YANK"] # By possessable kind: slider, door, dropper, hopper, rug.
 const ACTION_COSTS: Array[int] = [15, 20, 30, 25, 25] # Energy, by possessable kind.

@@ -1,23 +1,26 @@
-# Lobby: a QR code and link for phones to join, the crew with their ready state, and START for the host.
+# Lobby, styled as the moving company's clock-in board: the job sheet with the QR code and link on the left, a
+# time card per player slot on the right (CLOCKED IN is stamped on when a phone readies up), and START for the host.
 # Shown while Game is in the "lobby" phase; Enter starts once at least two phones are ready.
 extends Control
 
 const Style := preload("res://screens/screen_style.gd")
 
 # --- Display state ---
-var crew_list := VBoxContainer.new()
+var card_grid := GridContainer.new()
 var status_label: Label
 var start_button: Button
 var qr_texture: TextureRect
 var join_label: Label
 var join_address: String = ""
 var roster_signature: String = ""
+var ready_slots: Array[int] = [] # Slots shown as clocked in, so only new ones get the stamp slam.
 
 # --- Setup ---
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	Style.use_theme(self)
 	_build()
 	Game.changed.connect(_refresh)
 	Net.session_changed.connect(_refresh_join)
@@ -34,6 +37,8 @@ func _unhandled_input(event: InputEvent) -> void:
 func _refresh() -> void:
 	visible = Game.phase == "lobby"
 	if not visible:
+		ready_slots.clear() # Everyone is stamped in afresh next time the lobby shows.
+		roster_signature = ""
 		return
 	var roster: Array = []
 	for player: Dictionary in Net.players:
@@ -42,53 +47,171 @@ func _refresh() -> void:
 	if signature == roster_signature:
 		return
 	roster_signature = signature
-	for row: Node in crew_list.get_children():
-		row.queue_free()
-	var ready_count: int = 0
+	for card: Node in card_grid.get_children():
+		card.queue_free()
+	var now_ready: Array[int] = []
 	for slot: int in Balance.MAX_PLAYERS:
 		var player: Dictionary = Net.player_for_slot(slot)
 		var online: bool = not player.is_empty() and player.socket != null
-		var ready: bool = online and player.ready
-		ready_count += int(ready)
-		var card := Style.panel(Balance.HOST_CREW_WIDTH, Balance.HUD_PANEL_PADDING)
-		var title: String = "%d  |  %s    %s" % [slot + 1, player.name if online else "Join with your phone", "READY" if ready else "PHONE" if online else "+"]
-		card.add_child(Style.label(title, Balance.UI_BODY_SIZE, Style.player_colour(slot)))
-		crew_list.add_child(card)
-		if not online:
-			var pulse := card.create_tween().set_loops()
-			pulse.tween_property(card, "modulate:a", Balance.LOBBY_PULSE_ALPHA, Balance.LOBBY_PULSE_SECONDS)
-			pulse.tween_property(card, "modulate:a", 1.0, Balance.LOBBY_PULSE_SECONDS)
+		if online and player.ready:
+			now_ready.append(slot)
+		card_grid.add_child(_time_card(slot, player, online, slot in now_ready and slot not in ready_slots))
+	ready_slots = now_ready
 
 	start_button.disabled = not Game.can_start()
 	if Net.listen_error != OK:
 		status_label.text = "Port %d is busy. Close the other game window, then restart." % Balance.SOCKET_PORT
-	elif ready_count < 2:
-		status_label.text = "2–4 players: each phone taps Ready (%d ready)" % ready_count
+	elif now_ready.size() < 2:
+		status_label.text = "2–4 movers: each phone taps Ready (%d clocked in)" % now_ready.size()
 	else:
-		status_label.text = "%d players · %d rounds · Press Enter to start" % [ready_count, Balance.MATCH_ROUNDS[ready_count - 2]]
-	status_label.text += "\nF11: fullscreen or window"
+		status_label.text = "%d movers · %d rounds · the job starts on Enter" % [now_ready.size(), Balance.MATCH_ROUNDS[now_ready.size() - 2]]
+
+
+# --- Time cards ---
+func _time_card(slot: int, player: Dictionary, online: bool, slam: bool) -> Control:
+	var colour: Color = Style.player_colour(slot)
+	var joined: bool = not player.is_empty()
+	var card: PanelContainer
+	if joined:
+		card = Style.ink_panel(0.0, Balance.UI_PANEL_MARGIN / 2)
+		if not online:
+			card.modulate.a = Balance.LOBBY_PULSE_ALPHA # Offline: kept dim until the phone returns.
+	else:
+		card = PanelContainer.new() # An empty slot: a dashed outline, gently pulsing.
+		var empty := StyleBoxEmpty.new()
+		empty.set_content_margin_all(Balance.UI_PANEL_MARGIN / 2)
+		card.add_theme_stylebox_override("panel", empty)
+		card.draw.connect(_draw_dashes.bind(card, colour))
+		var pulse := card.create_tween().set_loops()
+		pulse.tween_property(card, "modulate:a", Balance.LOBBY_PULSE_ALPHA, Balance.LOBBY_PULSE_SECONDS)
+		pulse.tween_property(card, "modulate:a", 1.0, Balance.LOBBY_PULSE_SECONDS)
+	card.custom_minimum_size = Balance.TIME_CARD_SIZE
+
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", Balance.HOST_ROW_GAP)
+	card.add_child(row)
+	row.add_child(_figure(colour if joined else Balance.UI_MUTED))
+	var lines := VBoxContainer.new()
+	lines.alignment = BoxContainer.ALIGNMENT_CENTER
+	lines.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	lines.add_theme_constant_override("separation", 0)
+	row.add_child(lines)
+	var tag := Style.lettering("MOVER #%d" % (slot + 1), Balance.UI_SMALL_SIZE, colour)
+	tag.add_theme_constant_override("outline_size", Balance.HOST_OUTLINE_SIZE)
+	tag.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	lines.add_child(tag)
+	var name_line := Style.label(Style.short_name(player.name) if joined else "Waiting for a mover…", Balance.UI_BODY_SIZE if joined else Balance.UI_SMALL_SIZE, Balance.UI_TEXT if joined else Balance.UI_MUTED)
+	name_line.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	name_line.autowrap_mode = TextServer.AUTOWRAP_OFF
+	lines.add_child(name_line)
+	if joined and not (online and player.ready):
+		var state := Style.label("Phone offline" if not online else "Tap Ready on your phone", Balance.UI_SMALL_SIZE, Balance.UI_MUTED)
+		state.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		state.autowrap_mode = TextServer.AUTOWRAP_OFF
+		lines.add_child(state)
+	if online and player.ready:
+		var stamp := Style.stamp("CLOCKED IN", Balance.UI_GHOST, Balance.COMIC_LABEL_SIZE)
+		lines.add_child(stamp)
+		if slam:
+			Style.slam(stamp)
+	return card
+
+
+func _figure(colour: Color) -> Control:
+	# A mover's head-and-shoulders silhouette in a cap, in the player's colour.
+	var figure := Control.new()
+	figure.custom_minimum_size = Vector2.ONE * Balance.TIME_CARD_FIGURE
+	figure.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	figure.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	figure.draw.connect(func() -> void:
+		var s: float = Balance.TIME_CARD_FIGURE
+		var ink: Color = Balance.COMIC_INK
+		var head := Vector2(s * 0.5, s * 0.44)
+		var radius: float = s * 0.2
+		# Shoulders in overalls: a rounded block in the player's colour with two darker straps.
+		var body := StyleBoxFlat.new()
+		body.bg_color = colour
+		body.border_color = ink
+		body.set_border_width_all(2)
+		body.corner_radius_top_left = int(s * 0.18)
+		body.corner_radius_top_right = int(s * 0.18)
+		figure.draw_style_box(body, Rect2(s * 0.14, s * 0.66, s * 0.72, s * 0.34))
+		for strap: float in [0.34, 0.62]:
+			figure.draw_rect(Rect2(s * strap, s * 0.68, s * 0.06, s * 0.3), colour.darkened(0.35))
+		figure.draw_circle(head, radius, Balance.MOVER_SKIN) # Face.
+		figure.draw_arc(head, radius, 0.0, TAU, 24, ink, 2.0)
+		# Cap: a dome over the top of the head and a brim to the right.
+		var dome := PackedVector2Array()
+		for step: int in 13:
+			dome.append(head + Vector2.from_angle(PI + PI * step / 12.0) * (radius + 2.0))
+		figure.draw_colored_polygon(dome, colour)
+		figure.draw_polyline(dome, ink, 2.0, true)
+		var brim := Rect2(head.x, head.y - s * 0.04, radius * 1.5, s * 0.07)
+		figure.draw_rect(brim, colour.darkened(0.2))
+		figure.draw_rect(brim, ink, false, 2.0)
+	)
+	return figure
+
+
+func _draw_dashes(card: Control, colour: Color) -> void:
+	var rect := Rect2(Vector2.ONE * 2.0, card.size - Vector2.ONE * 4.0)
+	var corners: Array[Vector2] = [rect.position, Vector2(rect.end.x, rect.position.y), rect.end, Vector2(rect.position.x, rect.end.y)]
+	for side: int in 4:
+		card.draw_dashed_line(corners[side], corners[(side + 1) % 4], Color(colour, 0.8), Balance.COMIC_BORDER, 10.0)
 
 
 # --- Layout ---
 func _build() -> void:
-	var box := Style.panel(Balance.HOST_PANEL_WIDTH)
+	add_child(Style.backdrop())
 	var rows := Style.column()
-	box.add_child(rows)
-	rows.add_child(Style.label("GHOSTED MOVERS", Balance.HOST_TITLE_SIZE, Balance.HOST_ACCENT_COLOUR))
-	rows.add_child(Style.label("Carry it to the truck. Don't break it.", Balance.HOST_FONT_SIZE))
+	rows.add_theme_constant_override("separation", Balance.UI_PANEL_MARGIN)
+	var title := Style.lettering("GHOSTED MOVERS", Balance.COMIC_TITLE_SIZE, Balance.UI_MONEY)
+	rows.add_child(title)
 
 	var halves := HBoxContainer.new()
-	halves.add_theme_constant_override("separation", Balance.HOST_PANEL_PADDING * 2)
+	halves.add_theme_constant_override("separation", Balance.UI_PANEL_MARGIN * 2)
 	halves.alignment = BoxContainer.ALIGNMENT_CENTER
 	rows.add_child(halves)
+	halves.add_child(_build_job_sheet())
 
-	# Left: scan to join.
+	# Right: the time cards, the status line and START.
+	var crew := Style.column()
+	halves.add_child(crew)
+	var heading := Style.lettering("TIME CARDS", Balance.COMIC_LABEL_SIZE, Balance.UI_TEXT)
+	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	crew.add_child(heading)
+	card_grid.columns = 2
+	card_grid.add_theme_constant_override("h_separation", Balance.UI_PANEL_MARGIN)
+	card_grid.add_theme_constant_override("v_separation", Balance.UI_PANEL_MARGIN)
+	crew.add_child(card_grid)
+	status_label = Style.label("", Balance.UI_SMALL_SIZE, Balance.UI_MUTED)
+	crew.add_child(status_label)
+	var start := Style.action("START THE JOB", "Enter", Game.start_match)
+	start_button = start.get_child(1)
+	crew.add_child(start)
+
+	var hint := Style.label("F11: fullscreen or window", Balance.UI_SMALL_SIZE, Balance.UI_MUTED)
+	hint.autowrap_mode = TextServer.AUTOWRAP_OFF
+	hint.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	hint.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	hint.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT, Control.PRESET_MODE_MINSIZE, int(Balance.UI_SCREEN_MARGIN))
+	add_child(Style.centre(rows))
+	add_child(hint)
+
+
+func _build_job_sheet() -> Control:
+	# Left: the job sheet, a parchment clipboard with the QR code, the link and the join code.
+	var sheet := Style.caption(0.0, Balance.UI_PANEL_MARGIN)
 	var join := Style.column()
-	halves.add_child(join)
+	sheet.add_child(join)
+	var heading := Style.lettering("JOB SHEET", Balance.COMIC_LABEL_SIZE, Balance.COMIC_INK)
+	heading.add_theme_constant_override("outline_size", 0)
+	join.add_child(heading)
+	join.add_child(Style.ink_label("Scan to clock in", Balance.UI_SMALL_SIZE))
 	var urls: PackedStringArray = _join_urls()
 	var code := TextureRect.new()
 	qr_texture = code
-	code.custom_minimum_size = Vector2.ONE * Balance.QR_DISPLAY_SIZE
+	code.custom_minimum_size = Vector2.ONE * Balance.LOBBY_QR_SIZE
 	code.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	code.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	code.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -97,31 +220,19 @@ func _build() -> void:
 		var matrix: Array[PackedByteArray] = QrCode.encode(Net.join_url(join_address))
 		code.texture = ImageTexture.create_from_image(QrCode.to_image(matrix, Balance.QR_MODULE_PIXELS, Balance.QR_QUIET_MODULES))
 	join.add_child(code)
-	join.add_child(Style.label("Scan, or open:", Balance.HOST_SMALL_SIZE, Balance.HOST_MUTED_COLOUR))
-	var link := Style.label(urls[0] if not urls.is_empty() else "No network found", Balance.HOST_FONT_SIZE, Balance.HOST_ACCENT_COLOUR)
+	var link := Style.ink_label(urls[0] if not urls.is_empty() else "No network found", Balance.UI_SMALL_SIZE)
 	link.autowrap_mode = TextServer.AUTOWRAP_OFF # The link must read as one line.
 	join.add_child(link)
-	join_label = Style.label("CODE  " + Net.join_code, Balance.HOST_FONT_SIZE, Balance.UI_GHOST)
+	join_label = Style.lettering("CODE  " + Net.join_code, Balance.COMIC_LABEL_SIZE, Balance.UI_GHOST)
+	join_label.add_theme_constant_override("outline_size", Balance.HOST_OUTLINE_SIZE)
 	join.add_child(join_label)
 	var rotate := Style.button("New join code")
 	rotate.tooltip_text = "Disconnect everyone and invalidate the old QR code"
 	rotate.pressed.connect(Net.rotate_session)
 	join.add_child(rotate)
 	if urls.size() > 1:
-		join.add_child(Style.label("Also: " + " · ".join(urls.slice(1)), Balance.HOST_SMALL_SIZE, Balance.HOST_MUTED_COLOUR))
-
-	# Right: the crew and the start control.
-	var crew := Style.column()
-	crew.custom_minimum_size.x = Balance.HOST_CREW_WIDTH
-	halves.add_child(crew)
-	crew.add_child(Style.label("CREW", Balance.HOST_FONT_SIZE, Balance.HOST_MUTED_COLOUR))
-	crew.add_child(crew_list)
-	status_label = Style.label("", Balance.HOST_SMALL_SIZE)
-	crew.add_child(status_label)
-	start_button = Style.button("START MATCH  (Enter)")
-	start_button.pressed.connect(Game.start_match)
-	crew.add_child(start_button)
-	add_child(Style.centre(box))
+		join.add_child(Style.ink_label("Also: " + " · ".join(urls.slice(1)), Balance.UI_SMALL_SIZE))
+	return sheet
 
 
 func _join_urls() -> PackedStringArray:

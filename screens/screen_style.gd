@@ -1,6 +1,9 @@
 # Shared look for the host's match screens: big, high-contrast text and panels that read on a projector.
 extends RefCounted
 
+const THEME_PATH: String = "res://assets/ui/ghosted_theme.tres"
+const HALFTONE := preload("res://assets/shaders/halftone.gdshader")
+
 # --- Building blocks ---
 static func panel(min_width: float, padding: int = Balance.HOST_PANEL_PADDING) -> PanelContainer:
 	var box := PanelContainer.new()
@@ -50,9 +53,180 @@ static func centre(child: Control) -> CenterContainer:
 	return holder
 
 
+# --- Comic style ---
+static func use_theme(screen: Control) -> void:
+	# The match screens sit under a CanvasLayer, so they get the game's theme (Baloo 2, Kenney buttons) directly.
+	screen.theme = load(THEME_PATH)
+
+
+static func backdrop() -> ColorRect:
+	# Night tint with halftone dots, behind full screens so the game world doesn't fight the panels.
+	var cover := ColorRect.new()
+	cover.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	cover.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var material := ShaderMaterial.new()
+	material.shader = HALFTONE
+	material.set_shader_parameter("tint", Color(Balance.UI_NIGHT, Balance.COMIC_BACKDROP_ALPHA))
+	material.set_shader_parameter("dot_colour", Color(Balance.UI_MUTED, Balance.COMIC_DOT_ALPHA))
+	material.set_shader_parameter("spacing", Balance.COMIC_DOT_SPACING)
+	cover.material = material
+	return cover
+
+
+static func comic_box(colour: Color, padding: int = Balance.UI_PANEL_MARGIN, corner: int = Balance.COMIC_CORNER) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = colour
+	style.border_color = Balance.COMIC_INK
+	style.set_border_width_all(Balance.COMIC_BORDER)
+	style.set_corner_radius_all(corner)
+	style.shadow_color = Color(Balance.COMIC_INK, Balance.COMIC_SHADOW_ALPHA)
+	style.shadow_offset = Balance.COMIC_SHADOW
+	style.set_content_margin_all(padding)
+	return style
+
+
+static func caption(min_width: float = 0.0, padding: int = Balance.UI_PANEL_MARGIN) -> PanelContainer:
+	# A parchment narration box, like the intro's captions. Put ink_label() text on it.
+	return _boxed(comic_box(Balance.COMIC_PAPER, padding), min_width)
+
+
+static func ink_panel(min_width: float = 0.0, padding: int = Balance.UI_PANEL_MARGIN, colour: Color = Balance.UI_PANEL) -> PanelContainer:
+	return _boxed(comic_box(colour, padding), min_width)
+
+
+static func lettering(text: String, size: int, colour: Color = Balance.UI_TEXT) -> Label:
+	# Comic lettering (Bangers) with a thick ink outline: headlines, stamps and event pop-ups.
+	var line := label(text, size, colour)
+	line.add_theme_font_override("font", load(Balance.COMIC_FONT_PATH))
+	line.add_theme_constant_override("outline_size", Balance.COMIC_OUTLINE_SIZE)
+	line.add_theme_color_override("font_outline_color", Balance.COMIC_INK)
+	return line
+
+
+static func ink_label(text: String, size: int) -> Label:
+	# Dark text with no outline, for paper and bubbles.
+	var line := label(text, size, Balance.COMIC_INK)
+	line.add_theme_constant_override("outline_size", 0)
+	return line
+
+
+static func stamp(text: String, colour: Color, size: int = Balance.COMIC_HEADING_SIZE) -> Control:
+	# A tilted rubber stamp: coloured lettering in a coloured frame. Containers reset rotation, so the stamp
+	# turns inside a plain holder that takes its size. Animate it with slam().
+	var frame := PanelContainer.new()
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(Balance.COMIC_INK, 0.55)
+	style.border_color = colour
+	style.set_border_width_all(Balance.COMIC_BORDER + 2)
+	style.set_corner_radius_all(Balance.COMIC_CORNER)
+	style.set_content_margin_all(Balance.UI_PANEL_MARGIN / 2)
+	frame.add_theme_stylebox_override("panel", style)
+	var line := lettering(text, size, colour)
+	line.autowrap_mode = TextServer.AUTOWRAP_OFF # The holder starts with no width; wrapping would stack letters.
+	line.add_theme_constant_override("outline_size", Balance.HOST_OUTLINE_SIZE)
+	frame.add_child(line)
+	frame.rotation_degrees = Balance.COMIC_STAMP_ANGLE
+	var holder := Control.new()
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(frame)
+	frame.resized.connect(func() -> void:
+		holder.custom_minimum_size = frame.size
+		frame.pivot_offset = frame.size / 2.0
+	)
+	return holder
+
+
+static func slam(holder: Control) -> void:
+	# A stamp() slams down: big and clear, then hard onto the page with a small bounce.
+	var frame: Control = holder.get_child(0)
+	frame.scale = Vector2.ONE * Balance.COMIC_STAMP_START
+	frame.modulate.a = 0.0
+	var tween: Tween = frame.create_tween().set_parallel()
+	tween.tween_property(frame, "scale", Vector2.ONE, Balance.COMIC_STAMP_TIME).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(frame, "modulate:a", 1.0, Balance.COMIC_STAMP_TIME * 0.5)
+
+
+static func bubble(text: String, size: int = Balance.UI_BODY_SIZE) -> VBoxContainer:
+	# A white speech bubble with its tail at the lower left, pointing down at whoever is speaking about.
+	var holder := VBoxContainer.new()
+	holder.add_theme_constant_override("separation", 0)
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var body := _boxed(comic_box(Color.WHITE, Balance.UI_PANEL_MARGIN, Balance.COMIC_BUBBLE_CORNER), 0.0)
+	body.add_child(ink_label(text, size))
+	holder.add_child(body)
+	var tail := Control.new()
+	tail.custom_minimum_size.y = Balance.COMIC_TAIL_SIZE.y
+	tail.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tail.draw.connect(func() -> void:
+		var left: float = Balance.COMIC_BUBBLE_CORNER + 8.0
+		var top: float = -Balance.COMIC_BORDER - 1.0 # Covers the bubble's bottom border.
+		var points := PackedVector2Array([Vector2(left, top), Vector2(left + Balance.COMIC_TAIL_SIZE.x, top), Vector2(left - 6.0, Balance.COMIC_TAIL_SIZE.y)])
+		tail.draw_colored_polygon(points, Color.WHITE)
+		tail.draw_polyline(PackedVector2Array([points[1], points[2], points[0]]), Balance.COMIC_INK, Balance.COMIC_BORDER, true)
+	)
+	holder.add_child(tail)
+	return holder
+
+
+static func chip(slot: int, text: String, size: int = Balance.UI_BODY_SIZE) -> PanelContainer:
+	# A player's pill: a thick stripe of their colour on the left, then their text. Extra children can be added
+	# to the pill's row (get_child(0)).
+	var pill := ink_panel(0.0, Balance.UI_PANEL_MARGIN / 3)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", Balance.HOST_ROW_GAP)
+	pill.add_child(row)
+	var stripe := ColorRect.new()
+	stripe.color = player_colour(slot)
+	stripe.custom_minimum_size.x = Balance.COMIC_BORDER * 3
+	stripe.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(stripe)
+	var line := label(text, size, player_colour(slot))
+	line.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	line.autowrap_mode = TextServer.AUTOWRAP_OFF
+	line.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(line)
+	return pill
+
+
+static func keycap(key: String) -> PanelContainer:
+	var cap := _boxed(comic_box(Balance.COMIC_PAPER, 4, 4), 0.0)
+	cap.get_theme_stylebox("panel").shadow_offset = Vector2(2.0, 3.0)
+	var line := ink_label(key, Balance.KEYCAP_SIZE)
+	line.autowrap_mode = TextServer.AUTOWRAP_OFF
+	cap.add_child(line)
+	return cap
+
+
+static func action(text: String, key: String, pressed: Callable) -> HBoxContainer:
+	# A button with its keyboard key shown beside it as a keycap.
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", Balance.HOST_ROW_GAP)
+	var cap := keycap(key)
+	cap.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(cap)
+	var press := button(text)
+	press.pressed.connect(pressed)
+	row.add_child(press)
+	return row
+
+
+static func _boxed(style: StyleBox, min_width: float) -> PanelContainer:
+	var box := PanelContainer.new()
+	box.add_theme_stylebox_override("panel", style)
+	box.custom_minimum_size.x = min_width
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return box
+
+
+# --- Players ---
+static func short_name(full: String) -> String:
+	return full if full.length() <= Balance.NAME_MAX_CHARS else full.left(Balance.NAME_MAX_CHARS - 1) + "…"
+
+
 static func player_name(slot: int) -> String:
 	var player: Dictionary = Net.player_for_slot(slot)
-	return player.get("name", "Player %d" % (slot + 1))
+	return short_name(player.get("name", "Player %d" % (slot + 1)))
 
 
 static func player_colour(slot: int) -> Color:
