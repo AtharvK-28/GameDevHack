@@ -9,6 +9,7 @@ extends RefCounted
 
 const TRUCK_SCENE := preload("res://props/TruckZone.tscn")
 const TRUCK_MODEL_SCENE := preload("res://props/Truck.tscn")
+static var pool_material: StandardMaterial3D # Shared by every window light pool.
 const SURFACE_PATH: String = "res://assets/materials/surfaces/%s.tres"
 
 # Muted copies of model materials and textures, shared by every arena build.
@@ -176,6 +177,7 @@ static func _build_wall(arena: Node3D, wall: Dictionary, layout: Dictionary) -> 
 			_add_trim(body, wall, side, float(room.floor), layout.trim, fades)
 	for along: float in wall.get("windows", []):
 		_add_window(body, wall, along, _surface(layout.trim.rail), fades)
+		_add_window_pools(arena, layout, wall, along)
 		for side: float in outside_sides:
 			_add_shutters(body, wall, along, side, _surface(layout.trim.wainscot), fades)
 
@@ -214,6 +216,56 @@ static func _add_window(body: StaticBody3D, wall: Dictionary, along: float, fram
 		_add_mesh(body, _box_around(centre + Vector3.UP * side * (size.y + frame) / 2.0, direction, size.x, frame, depth + 0.04), frame_material, fades)
 	_add_mesh(body, _box_around(centre, direction, frame / 2.0, size.y, depth + 0.04), frame_material, fades)
 	_add_mesh(body, _box_around(centre, direction, size.x, frame / 2.0, depth + 0.04), frame_material, fades)
+
+
+static func _add_window_pools(arena: Node3D, layout: Dictionary, wall: Dictionary, along: float) -> void:
+	# A soft warm patch of lamplight on the floor or ground each side of a lit window (STYLE.md: warm undertone),
+	# only where there is a floor below it: indoors on the room's floor, outdoors on the ground under ground-floor
+	# windows. Unshaded and additive, so it costs no real light.
+	var start := Vector3(wall.from[0], 0.0, wall.from[1])
+	var direction: Vector3 = (Vector3(wall.to[0], 0.0, wall.to[1]) - start).normalized()
+	var wall_floor: float = float(wall.get("floor", 0.0))
+	for side: float in [-1.0, 1.0]:
+		var spot: Vector3 = start + direction * along + _wall_normal(wall) * side * Balance.WINDOW_POOL_REACH
+		var room: Dictionary = _indoor_room_at(layout, spot)
+		var height: float
+		if not room.is_empty():
+			height = float(room.get("floor", 0.0)) + Balance.ARENA_FLOOR_SLAB
+		elif wall_floor <= 0.0:
+			height = 0.0
+		else:
+			continue # An upper window over the yard: its light would float in the air.
+		var pool := MeshInstance3D.new()
+		var quad := QuadMesh.new()
+		quad.size = Vector2(Balance.ARENA_WINDOW_SIZE.x * Balance.WINDOW_POOL_WIDTH, Balance.WINDOW_POOL_REACH * 2.0)
+		quad.orientation = PlaneMesh.FACE_Y
+		pool.mesh = quad
+		pool.material_override = _pool_material()
+		pool.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		pool.position = spot + Vector3.UP * (height + Balance.WINDOW_POOL_LIFT)
+		pool.rotation.y = atan2(direction.x, direction.z) + PI / 2.0
+		arena.add_child(pool)
+
+
+static func _pool_material() -> StandardMaterial3D:
+	if pool_material != null:
+		return pool_material
+	var dot := GradientTexture2D.new()
+	dot.fill = GradientTexture2D.FILL_RADIAL
+	dot.fill_from = Vector2(0.5, 0.5)
+	dot.fill_to = Vector2(1.0, 0.5)
+	var falloff := Gradient.new()
+	falloff.set_color(0, Color.WHITE)
+	falloff.set_color(1, Color(1.0, 1.0, 1.0, 0.0))
+	dot.gradient = falloff
+	pool_material = StandardMaterial3D.new()
+	pool_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	pool_material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	pool_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	pool_material.albedo_texture = dot
+	pool_material.albedo_color = Color(Balance.WINDOW_GLOW_COLOUR, Balance.WINDOW_POOL_STRENGTH)
+	pool_material.disable_receive_shadows = true
+	return pool_material
 
 
 static func _add_shutters(body: StaticBody3D, wall: Dictionary, along: float, side: float, material: Material, fades: bool) -> void:

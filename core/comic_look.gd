@@ -1,5 +1,5 @@
-# Makes a model look like the intro's comic art (STYLE.md): banded toon light on its materials and, optionally, an
-# ink outline drawn as a second pass. Visual only. Used on the playfield (movers, loot, possessable furniture), not
+# Makes a model look like the intro's comic art (STYLE.md): banded toon light and a rim light on its materials and,
+# optionally, an ink outline drawn as a second pass. Visual only. Used on the playfield (movers, loot, possessable furniture), not
 # on background decor, so the background stays calmer than the action.
 class_name ComicLook
 extends RefCounted
@@ -27,6 +27,9 @@ static func _comic(source: Material, outline: bool) -> Material:
 	var material: BaseMaterial3D = source.duplicate()
 	material.diffuse_mode = BaseMaterial3D.DIFFUSE_TOON
 	material.specular_mode = BaseMaterial3D.SPECULAR_TOON
+	material.rim_enabled = true # A thin edge of light that lifts the playfield off the dark background.
+	material.rim = Balance.RIM_STRENGTH
+	material.rim_tint = Balance.RIM_TINT
 	if outline and material.transparency == BaseMaterial3D.TRANSPARENCY_DISABLED:
 		material.next_pass = _outline()
 	return material

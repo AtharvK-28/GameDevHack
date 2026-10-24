@@ -34,7 +34,8 @@ no horror: it is a comedy.
 ## Light
 
 1. **One key light:** the moon, high and to the camera's left (`MOON_ROTATION`); it alone casts shadows.
-2. **Shared warm undertone:** lamplight windows, the yard light and a soft warm wash at the centre of the screen.
+2. **Shared warm undertone:** lamplight windows that throw soft warm patches on the floor and ground, the yard
+   light, a soft warm wash at the centre of the screen, and a thin rim light on the playfield objects.
 3. **Real value range:** dark violet surroundings, bright playfield. Shading is in bands (the truck's repaint, the
    UI's flat fills), not smooth gradients.
 4. **Aerial perspective:** the depth fog fades distant trees and fences into the night colour, so far things are
