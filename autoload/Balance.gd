@@ -611,3 +611,44 @@ const THUNDER_DELAY := Vector2(0.6, 1.8) # Seconds from flash to thunder.
 const AMBIENT_VOLUME_DB: float = -14.0 # The wind, crickets and night loop.
 const CREATURE_VOLUME_DB: float = -10.0 # Owl, howl, crows.
 const THUNDER_VOLUME_DB: float = -4.0
+
+# --- Intro cutscene ---
+# Plays once per match, between START and the first role reveal. Each panel holds for "hold" seconds; "music" picks
+# the bed ("cozy", "spooky" or "" for none), "beds" sets the looping rain and engine levels in dB (missing = silent),
+# "flash" marks a change between the 3D and comic art, "shake" shakes the panel, and each cue is
+# [seconds into the panel, sound, volume dB]. Sounds are files in res://assets/audio/cutscene/ or Sfx's own.
+const INTRO_FOLDER: String = "res://assets/cutscenes/intro/"
+const INTRO_PANELS: Array[Dictionary] = [
+	{"image": "01_godown.jpeg", "hold": 6.0, "music": "cozy", "beds": {"rain": -22.0},
+		"cues": [[1.0, "glass_clink_1", -8.0], [2.4, "glass_clink_2", -8.0], [3.9, "glass_clink_1", -10.0]]},
+	{"image": "02_truck_road.jpeg", "hold": 4.0, "music": "cozy", "beds": {"rain": -10.0, "engine": -14.0}, "flash": true,
+		"cues": []},
+	{"image": "03_sasta_shifters.jpeg", "hold": 7.0, "music": "cozy", "beds": {"rain": -12.0, "engine": -12.0},
+		"cues": [[0.8, "rattle", -6.0], [2.6, "horn", -6.0], [3.0, "horn", -6.0], [3.8, "goat", -8.0]]},
+	{"image": "04_arrival.jpeg", "hold": 6.0, "music": "", "beds": {"rain": -10.0, "engine": -24.0},
+		"cues": [[2.2, "gate_latch", -4.0], [2.5, "gate_creak", -2.0]]},
+	{"image": "05_mansion_owner.jpeg", "hold": 6.0, "music": "spooky", "beds": {"rain": -12.0},
+		"cues": [[0.2, "thunder", -2.0]]},
+	{"image": "06_windshield.jpeg", "hold": 4.0, "music": "spooky", "beds": {"rain": -10.0},
+		"cues": [[0.5, "whoosh", -6.0], [1.3, "splat", -2.0]]},
+	{"image": "07_job_sheet.jpeg", "hold": 7.0, "music": "spooky", "beds": {"rain": -18.0},
+		"cues": [[0.3, "paper_1", -4.0], [1.1, "paper_2", -4.0]]},
+	{"image": "08_seth_ji.jpeg", "hold": 7.0, "music": "spooky", "beds": {"rain": -24.0},
+		"cues": [[0.3, "organ", -6.0]]},
+	{"image": "09_house_shake.jpeg", "hold": 4.0, "music": "spooky", "beds": {"rain": -24.0}, "shake": true,
+		"cues": [[0.0, "rumble", -2.0], [0.7, "crash_wood", -2.0], [1.5, "crash_glass", -4.0]]},
+	{"image": "10_briefing.jpeg", "hold": 10.0, "music": "spooky", "beds": {"rain": -14.0},
+		"cues": [[0.3, "crackle", -8.0], [4.8, "crackle", -8.0], [7.6, "crackle", -8.0]]},
+	{"image": "11_title.jpeg", "hold": 4.0, "music": "", "beds": {"rain": -16.0}, "flash": true,
+		"cues": [[0.0, "title_hit", -2.0], [0.0, "thunder", -6.0], [0.5, "title_pizzicato", -4.0]]},
+]
+const INTRO_FADE_TIME: float = 0.5 # Seconds each panel takes to fade in over the last.
+const INTRO_ZOOM: float = 1.06 # Each panel slowly grows to this scale while it shows.
+const INTRO_DRIFT: float = 0.015 # Share of the screen width each panel drifts sideways, alternating direction.
+const INTRO_FLASH_TIME: float = 0.3 # Seconds the white flash takes to fade on a change of art style.
+const INTRO_SHAKE_PIXELS: float = 14.0 # Largest shake offset on a "shake" panel.
+const INTRO_SHAKE_TIME: float = 2.0 # Seconds the shake lasts, easing out.
+const INTRO_MUSIC_DB: float = -10.0
+const INTRO_MUSIC_FADE: float = 1.5 # Seconds to crossfade between music beds, and to fade beds in or out.
+const INTRO_END_FADE: float = 0.6 # Seconds the sound fades out after the last panel or a skip.
+const INTRO_SILENT_DB: float = -60.0 # A faded-out bed.

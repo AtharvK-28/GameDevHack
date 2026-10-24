@@ -61,7 +61,14 @@ func start_match() -> void:
 	for slot: int in participants:
 		scores[slot] = 0.0
 	Net.accept_new_players = false
+	_set_phase("intro") # The story cutscene; it calls finish_intro() when it ends or is skipped.
+
+
+func finish_intro() -> void:
+	if phase != "intro":
+		return
 	_begin_round(false)
+	Sfx.start_ambient()
 
 
 func _begin_round(restarting: bool) -> void:

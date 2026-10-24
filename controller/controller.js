@@ -30,7 +30,7 @@ let identity = readIdentity(); // { key, pid, secret } from the last welcome in 
 let matchPhase = null; // Null outside a match: the greybox harness shows controls as soon as a role arrives.
 let matchState = {};
 const heldPointers = new Map();
-const SCREENS = ["lobby", "controls", "reveal", "result", "final"];
+const SCREENS = ["lobby", "story", "controls", "reveal", "result", "final"];
 const LIVE_PHASES = ["live", "paused"];
 
 // --- Setup ---
@@ -202,6 +202,7 @@ function render() {
   const inMatch = matchPhase !== null;
   let screen = "lobby";
   if (joined && !inMatch) screen = activeRole ? "controls" : "lobby";
+  else if (joined && matchPhase === "intro") screen = "story";
   else if (joined && ["setup", "reveal"].includes(matchPhase)) screen = "reveal";
   else if (joined && LIVE_PHASES.includes(matchPhase)) screen = activeRole ? "controls" : "lobby";
   else if (joined && matchPhase === "result") screen = "result";

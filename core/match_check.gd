@@ -90,7 +90,11 @@ func _check_lobby() -> void:
 			me = player
 	_check(me.get("ready") == true, "The match message tells each phone its own ready state")
 	await _key(KEY_ENTER)
-	_check(game.phase == "reveal" and game.participants == [0, 1] and game.round_count == 4, "Enter starts a 2-player match of 4 rounds")
+	_check(game.phase == "intro" and game.participants == [0, 1] and game.round_count == 4, "Enter starts a 2-player match of 4 rounds with the intro cutscene")
+	await _wait(SETTLE_SECONDS)
+	_check(_last(1, "match").get("phase") == "intro" and paused and not router.input_enabled, "During the intro the world is paused, phone input is off and phones are told")
+	await _key(KEY_ESCAPE)
+	_check(game.phase == "reveal", "Esc skips the intro to the round 1 reveal")
 
 
 func _check_reveal() -> void:
@@ -297,6 +301,7 @@ func _check_full_match() -> void:
 		_send(index, {"type": "ready"})
 	await _wait(SETTLE_SECONDS)
 	await _key(KEY_ENTER)
+	await _key(KEY_ESCAPE) # Skip the intro cutscene.
 	for round_number: int in range(4):
 		await _wait_for_phase("live")
 		_check(game.ghost_slot == game.participants[round_number % 2], "Round %d: the ghost is phone %d" % [round_number + 1, game.ghost_slot + 1])
