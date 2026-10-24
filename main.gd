@@ -12,10 +12,11 @@ const CAMERA_SCENE := preload("res://actors/PartyCamera.tscn")
 const MANSION_SCENE := preload("res://arenas/Mansion.tscn")
 const GREYBOX_SCENE := preload("res://arenas/Greybox.tscn")
 const WINDOW_KEYS := preload("res://core/window_keys.gd")
-const WIPE_PHASES: Array[String] = ["lobby", "reveal", "result", "final"]
+const WIPE_PHASES: Array[String] = ["lobby", "intro", "reveal", "result", "final"]
 const SCREEN_SCENES: Array[PackedScene] = [
 	preload("res://screens/HUD.tscn"), preload("res://screens/Lobby.tscn"), preload("res://screens/RoleReveal.tscn"),
 	preload("res://screens/RoundEnd.tscn"), preload("res://screens/Results.tscn"),
+	preload("res://screens/Cutscene.tscn"),
 ]
 var camera: Camera3D
 var status_label: Label # Harness overlay only; the match uses the screens instead.

@@ -1,5 +1,6 @@
 # Small procedural sounds, all on the SFX bus: the banking chime, and the Mansion's night (a looping bed of wind
-# and crickets, plus thunder, an owl, a distant howl and crows). Everything is synthesized here at start-up, so
+# and crickets, plus thunder, an owl, a distant howl and crows), and the intro cutscene's goat, whoosh, rumble,
+# walkie crackle and organ chord. Everything is synthesized here at start-up, so
 # there are no sound files to license; full sound design belongs to the polish phase.
 extends Node
 
@@ -23,6 +24,7 @@ func _ready() -> void:
 	bank_sound = _bank_chime()
 	sounds = {
 		"thunder": _thunder(), "owl": _owl(), "howl": _howl(), "caw": _caw(),
+		"goat": _goat(), "whoosh": _whoosh(), "rumble": _rumble(), "crackle": _crackle(), "organ": _organ(),
 	}
 	ambient.stream = _night_bed()
 	ambient.bus = &"SFX"
@@ -138,6 +140,86 @@ func _caw() -> AudioStreamWAV:
 		var envelope: float = exp(-note_time * 9.0) if note_time < 0.25 else 0.0
 		var buzz: float = signf(sin(TAU * (620.0 - note_time * 500.0) * time))
 		samples[index] = (buzz * 0.6 + noise.randf_range(-1.0, 1.0) * 0.4) * envelope * 0.3
+	return _stream(samples, RATE, false)
+
+
+# --- Intro cutscene sounds ---
+func _goat() -> AudioStreamWAV:
+	# A cartoon "meh-eh-eh": a nasal buzz that falls in pitch, pulsing three times.
+	var count: int = int(RATE * 0.9)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	var phase: float = 0.0
+	var smooth: float = 0.0
+	for index: int in range(count):
+		var time: float = float(index) / RATE
+		phase += TAU * (560.0 - 120.0 * time + 18.0 * sin(TAU * 7.0 * time)) / RATE
+		var pulse: float = 0.55 + 0.45 * sin(TAU * 3.3 * time)
+		var envelope: float = minf(1.0, time * 30.0) * minf(1.0, (0.9 - time) * 6.0)
+		smooth = smooth * 0.6 + (fmod(phase / TAU, 1.0) * 2.0 - 1.0) * 0.4 # Softened sawtooth.
+		samples[index] = smooth * pulse * envelope * 0.4
+	return _stream(samples, RATE, false)
+
+
+func _whoosh() -> AudioStreamWAV:
+	# Wind rushing past: noise that brightens then darkens as it swells and fades.
+	var count: int = int(RATE * 0.7)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	var air: float = 0.0
+	for index: int in range(count):
+		var time: float = float(index) / RATE
+		var shape: float = sin(PI * time / 0.7)
+		var smoothing: float = 0.97 - 0.25 * shape
+		air = air * smoothing + noise.randf_range(-1.0, 1.0) * (1.0 - smoothing)
+		samples[index] = air * shape * 2.5
+	return _stream(samples, RATE, false)
+
+
+func _rumble() -> AudioStreamWAV:
+	# The House Shake: a deep, uneven rumble that swells and dies away.
+	var count: int = int(RATE * 2.2)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	var low: float = 0.0
+	for index: int in range(count):
+		var time: float = float(index) / RATE
+		low = low * 0.996 + noise.randf_range(-1.0, 1.0) * 0.004
+		var shake: float = 0.6 + 0.4 * sin(TAU * 5.0 * time) * sin(TAU * 1.3 * time)
+		samples[index] = low * 22.0 * shake * minf(1.0, time * 4.0) * exp(-time * 0.9)
+	return _stream(samples, RATE, false)
+
+
+func _crackle() -> AudioStreamWAV:
+	# A walkie-talkie squelch: a burst of thin hiss with clicks in it.
+	var count: int = int(RATE * 0.45)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	var low: float = 0.0
+	for index: int in range(count):
+		var time: float = float(index) / RATE
+		var hiss: float = noise.randf_range(-1.0, 1.0)
+		low = low * 0.8 + hiss * 0.2
+		var click: float = noise.randf_range(-1.0, 1.0) if noise.randf() < 0.004 else 0.0
+		var envelope: float = minf(1.0, time * 60.0) * (0.7 + 0.3 * sin(TAU * 23.0 * time)) * exp(-time * 3.0)
+		samples[index] = ((hiss - low) * 0.5 + click) * envelope * 0.5 # Hiss minus its lows sounds thin, like a radio.
+	return _stream(samples, RATE, false)
+
+
+func _organ() -> AudioStreamWAV:
+	# A spooky D minor organ chord that swells in, wobbles and fades.
+	var count: int = int(RATE * 3.0)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	var notes: Array[float] = [146.8, 174.6, 220.0, 293.7]
+	for index: int in range(count):
+		var time: float = float(index) / RATE
+		var value: float = 0.0
+		for note: float in notes:
+			for harmonic: int in [1, 2, 4]: # Organ stops at the note, an octave and two octaves up.
+				value += sin(TAU * note * harmonic * time) / harmonic
+		var envelope: float = minf(1.0, time * 3.0) * exp(-maxf(0.0, time - 1.2) * 1.8)
+		samples[index] = value * envelope * (0.85 + 0.15 * sin(TAU * 5.5 * time)) * 0.07
 	return _stream(samples, RATE, false)
 
 
