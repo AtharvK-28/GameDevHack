@@ -132,7 +132,7 @@ func _animate_panel(picture: TextureRect, hold: float) -> void:
 	var cleanup: Tween = create_tween()
 	cleanup.tween_interval(Balance.INTRO_FADE_TIME)
 	cleanup.tween_callback(func() -> void:
-		for old: Node in previous:
+		for old: Variant in previous: # Untyped: a new match may already have freed it.
 			if is_instance_valid(old):
 				old.queue_free())
 

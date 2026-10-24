@@ -54,7 +54,7 @@ The current demo uses the supplied Old Mansion layout and mover character assets
 - **Haunting limits:** 8 s opening protection from live start; 4 s shared lock after a cast; individual cooldowns start at cast. House Shake works while possessing; Curse is wisp-only. Phone UI explains all refusals and displays remaining seconds, including exorcism, cooldown, opening protection, shared lock, insufficient energy and missing targets. A mover holding cursed loot sees its remaining duration.
 - **Seeded setup:** 6/9/12 loot items for 2/3/4 players, exactly one centrepiece, using existing types. Original total is calculated from that spawn. Restart restores the same seed, layout, roles and values. Keep the lone-mover 40% drag rule. New rounds receive a new seed.
 - **Disconnect:** pause the round simulation and timers until all participants reconnect; the host may cancel to the lobby without scoring the unfinished round. Reject new identities during a match; existing participants may rejoin.
-- **Host flow:** lobby/QR → 3 s role reveal/countdown → 150 s round → round result/restart → next role → final leaderboard. 2 players play 4 rounds, 3 play 3, 4 play 4. The demo uses Mansion for all rounds; additional arenas remain later work.
+- **Host flow:** lobby/QR → intro cutscene (once per match, about 65 s; Enter next panel, Esc skip) → 3 s role reveal/countdown → 150 s round → round result/restart → next role → final leaderboard. 2 players play 4 rounds, 3 play 3, 4 play 4. The demo uses Mansion for all rounds; additional arenas remain later work.
 - **Results:** frozen once per attempt; restarting replaces rather than adds that attempt's score. Host controls start, next, restart and return to lobby. Phones display the same current phase and their own role/points after reconnect.
 
 ## Match flow
@@ -423,7 +423,7 @@ Phones talk directly to the Godot game over WebSocket, sending short JSON messag
 - `cd`: `{possess, haunt1, haunt2, haunt3}`, the fraction of each cooldown still left (0–1), for the rings. `possess` is the 5 s lock after an exorcism.
 - `ok`: `{possess, action, haunt1, haunt2, haunt3}`, whether the host would accept that button right now.
 
-**Phase 5 protocol additions.** `match` messages send phase, countdown/time, round counts, delivery target, banked/lost value, result/standings and pause reason. Ghost `hud` adds `reasons` per button, remaining `seconds`, `simple` (demo controls), and `target` for Curse. Mover `hud` adds `cursed` seconds. New identities are refused mid-match. Only the host changes match state.
+**Phase 5 protocol additions.** `match` messages send phase (including `intro` while the cutscene plays, when phones show a "Story time" screen), countdown/time, round counts, delivery target, banked/lost value, result/standings and pause reason. Ghost `hud` adds `reasons` per button, remaining `seconds`, `simple` (demo controls), and `target` for Curse. Mover `hud` adds `cursed` seconds. New identities are refused mid-match. Only the host changes match state.
 
 **Rules that prevent bugs**
 
@@ -456,6 +456,7 @@ ghosted-movers/
 │   ├── RoleReveal.tscn   # round, ghost and movers, 3 s countdown
 │   ├── RoundEnd.tscn     # winner and reason, points; Enter next, R restart, L lobby
 │   ├── Results.tscn      # final leaderboard (awards deferred)
+│   ├── Cutscene.tscn     # intro story panels with music and sound cues; Enter next, Esc skip
 │   └── HUD.tscn          # timer, delivered vs 70% target, lost vs 30% limit, ghost energy, pause overlay
 ├── actors/
 │   ├── Mover.tscn        # CharacterBody3D, hold point, carry spring, tumble
@@ -486,7 +487,7 @@ ghosted-movers/
 │   ├── Mansion.tscn      # built from layouts/mansion_layout.json
 │   ├── Ship.tscn
 │   └── Museum.tscn
-├── assets/               # models/ (mover/, ghost/, truck/, decor/), textures/, materials/, audio/, fonts/; source/ holds art sources Godot skips; _incoming/ holds raw downloads (ignored); CREDITS.md lists every source
+├── assets/               # models/ (mover/, ghost/, truck/, decor/), cutscenes/ (intro story panels), textures/, materials/, audio/, fonts/; source/ holds art sources Godot skips; _incoming/ holds raw downloads (ignored); CREDITS.md lists every source
 ├── tools/                # one-off generators, e.g. make_surface_textures.gd
 └── controller/           # the phone web page; contains a .gdignore so Godot skips it
     ├── index.html
