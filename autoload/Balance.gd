@@ -796,3 +796,18 @@ const WINDOW_POOL_REACH: float = 1.1 # Metres a window's light patch reaches out
 const WINDOW_POOL_WIDTH: float = 2.0 # The patch's width, as a multiple of the window's.
 const WINDOW_POOL_STRENGTH: float = 0.22 # 0 to 1: how bright the additive patch is.
 const WINDOW_POOL_LIFT: float = 0.035 # Metres above the floor, clear of the path slab and zone pads.
+
+# --- Loading screen (menus/loading_screens/) ---
+const LOADING_BAR_HEIGHT: float = 34.0
+const LOADING_BAR_COLOUR := Color("4aa8e0") # The blue of the designed mock-up bar.
+const LOADING_LABEL_SIZE: int = 24
+const LOADING_TIP_SECONDS: float = 3.5
+const LOADING_TIPS: Array[String] = [
+	"The piano needs two movers. Turn it to fit through doors.",
+	"House shaking? Stand still or hold BRACE.",
+	"Fragile things lose value with every bump.",
+	"Deliver 70% of the haul to the truck to win.",
+	"Ghost: possess furniture and SHOVE it at the movers.",
+	"Power the generator with 3 batteries to weaken the ghost.",
+	"A thrown vase can knock a mover flat.",
+]
