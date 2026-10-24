@@ -746,9 +746,9 @@ const FX_DRAG_INTERVAL: float = 0.12 # Seconds between dust puffs while an item 
 const FX_LAND_SPEED: float = 2.5 # Fall speed (m/s) at which a landing kicks up dust.
 
 # --- Contrast (Supercell-style punch) ---
-const MOOD_CONTRAST: float = 1.18 # Colour adjustment over the AgX tonemap: >1 deepens darks and lifts lights.
-const MOOD_SATURATION: float = 1.3
-const MOOD_BRIGHTNESS: float = 1.04
+const MOOD_CONTRAST: float = 1.04 # Colour adjustment over the AgX tonemap; kept gentle (1.18 crushed the dusk into mud).
+const MOOD_SATURATION: float = 1.08
+const MOOD_BRIGHTNESS: float = 1.0
 const OUTLINE_INK := Color("120b1d") # Movers' comic outline.
 const OUTLINE_WIDTH: float = 0.022 # Metres.
 
@@ -775,16 +775,16 @@ const MUSIC_ROUND_DB: float = -12.0
 const MUSIC_RUSH_PITCH: float = 1.12 # The round music speeds up for the last 30 s.
 
 # --- Light grade and focal light (STYLE.md) ---
-const GRADE_VIGNETTE: float = 0.45 # 0 to 1: how far the screen corners sink into the night colour.
+const GRADE_VIGNETTE: float = 0.18 # 0 to 1: how far the screen corners sink into the night colour; a light touch.
 const GRADE_VIGNETTE_INNER: float = 0.32 # Share of the screen from the centre that stays clear.
 const GRADE_WARM := Color("ffb46b") # The warm wash at the centre of the action.
-const GRADE_WARM_STRENGTH: float = 0.07
+const GRADE_WARM_STRENGTH: float = 0.04
 const GRADE_CENTRE := Vector2(0.5, 0.55) # The camera keeps the action a little below the middle.
 const YARD_LIGHT_COLOUR := Color("ffcf94") # A warm light pool over the front yard and driveway.
-const YARD_LIGHT_ENERGY: float = 1.6
+const YARD_LIGHT_ENERGY: float = 0.8
 const YARD_LIGHT_RANGE: float = 11.0 # Metres.
 const YARD_LIGHT_HEIGHT: float = 5.0 # Metres above the yard.
 const TRUCK_POSTER_LEVELS: float = 4.0 # Shading bands on the repainted truck.
 const TRUCK_PAINT := Color("ff9a3c") # Sasta Shifters orange, as in the intro's comic panels.
-const FLOOR_TINT := Color(0.8, 0.76, 0.78) # Multiplies the wood floors: darker and cooler, so loot stands out.
+const FLOOR_TINT := Color(1.0, 1.0, 1.0) # Multiplies the wood floors; white keeps the original warm wood (a darker tint read muddy).
 const PROP_OUTLINE_WIDTH: float = 0.03 # Metres: ink outline on loot and possessable furniture.
