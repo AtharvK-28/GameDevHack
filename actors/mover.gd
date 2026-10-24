@@ -214,6 +214,7 @@ func _handle_carry_input(input: InputRouter.PlayerInput) -> void:
 			held_item = null
 			model.play_throw()
 			model.squish(Balance.SQUASH_THROW)
+			Sfx.varied("whoosh", Balance.SFX_WHOOSH_DB)
 			grab_released = false # Holding GRAB must not catch the item just thrown.
 		return
 	if not is_instance_valid(held_item) and grab_released:
@@ -221,6 +222,7 @@ func _handle_carry_input(input: InputRouter.PlayerInput) -> void:
 		if candidate != null and candidate.try_grab(self, hold_point, slot):
 			held_item = candidate
 			model.play_grab()
+			Sfx.varied("grab", Balance.SFX_GRAB_DB)
 			model.squish(Balance.SQUASH_GRAB)
 
 
@@ -278,6 +280,7 @@ func tumble(_push: Vector3 = Vector3.ZERO) -> void:
 	shove = Vector3.ZERO
 	model.play_tumble(Balance.TUMBLE_DURATION)
 	Fx.burst(_feet(), Fx.Kind.DUST, get_parent(), 1.8)
+	Sfx.varied("boing", Balance.SFX_BOING_DB)
 	tumbled.emit(slot)
 	var player := Net.player_for_slot(slot)
 	if not player.is_empty():

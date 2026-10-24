@@ -32,6 +32,7 @@ func _process(_delta: float) -> void:
 		text.text = count
 		text.add_theme_color_override("font_color", Balance.UI_GHOST if count == "MOVE!" else Balance.UI_MONEY)
 		Style.slam(countdown)
+		Sfx.play("go" if count == "MOVE!" else "count")
 
 
 # --- Refresh ---

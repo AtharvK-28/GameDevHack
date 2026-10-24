@@ -26,6 +26,7 @@ func _ready() -> void:
 func warn() -> void:
 	dust.emitting = true
 	_show_banner("RUMBLE… STAND STILL OR BRACE!")
+	Sfx.play("rumble", 1.0, Balance.SFX_RUMBLE_DB)
 
 
 func warning(_delta: float) -> void:

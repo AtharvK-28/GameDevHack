@@ -156,6 +156,8 @@ func possess(prop: Possessable) -> void:
 	prop.possess(self)
 	body_mesh.hide()
 	Fx.burst(prop.global_position + Vector3.UP * 0.5, Fx.Kind.GHOST_PUFF, get_parent())
+	Sfx.varied("creak", Balance.SFX_CREAK_DB)
+	Sfx.play("theremin", 1.0, Balance.SFX_THEREMIN_DB)
 
 
 func leave() -> void:

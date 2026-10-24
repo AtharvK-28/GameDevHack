@@ -1,6 +1,7 @@
 # Small procedural sounds, all on the SFX bus: the banking chime, and the Mansion's night (a looping bed of wind
 # and crickets, plus thunder, an owl, a distant howl and crows), and the intro cutscene's goat, whoosh, rumble,
-# walkie crackle and organ chord. Everything is synthesized here at start-up, so
+# walkie crackle and organ chord, the boing, theremin and sad trombone, plus Kenney CC0 sound files (thuds, glass,
+# coins, creaks, ticks, jingles) and the round music. The synthesized ones are made here at start-up, so
 # there are no sound files to license; full sound design belongs to the polish phase.
 extends Node
 
@@ -11,11 +12,26 @@ const WIND_SMOOTHING: float = 0.985 # 0 to 1: higher is a deeper, softer wind.
 const CRICKET_PITCH: float = 4300.0 # Hz.
 const CRICKET_CHIRPS_PER_SECOND: float = 2.6
 
+# --- Sound files (res://assets/audio/sfx/, Kenney CC0): name → variant count; "name_1.ogg" … when more than one ---
+const SFX_FOLDER: String = "res://assets/audio/sfx/"
+const FILE_SOUNDS: Dictionary = {
+	"thud": 3, "glass": 3, "coins": 2, "creak": 2, "grab": 2, "smash_glass": 1, "smash_wood": 1,
+	"tick": 1, "count": 1, "go": 1, "win": 1, "lose": 1, "final": 1,
+}
+const MUSIC_TRACKS: Dictionary = {
+	"lobby": "res://assets/audio/cutscene/music_cozy.ogg", "round": "res://assets/audio/cutscene/music_spooky.ogg",
+}
+
 # --- Audio state ---
 var bank_sound: AudioStreamWAV
 var sounds: Dictionary = {} # Night sounds by name.
 var ambient := AudioStreamPlayer.new()
 var noise := RandomNumberGenerator.new()
+var files: Dictionary = {} # Name → Array of AudioStream variants.
+var music := AudioStreamPlayer.new()
+var music_name: String = ""
+var shown_phase: String = "" # The match phase the music last reacted to.
+var last_tick: int = -1 # The whole second the last-seconds tick last played for.
 
 # --- Setup ---
 func _ready() -> void:
@@ -25,7 +41,16 @@ func _ready() -> void:
 	sounds = {
 		"thunder": _thunder(), "owl": _owl(), "howl": _howl(), "caw": _caw(),
 		"goat": _goat(), "whoosh": _whoosh(), "rumble": _rumble(), "crackle": _crackle(), "organ": _organ(),
+		"boing": _boing(), "theremin": _theremin(), "trombone": _trombone(),
 	}
+	for sound: String in FILE_SOUNDS:
+		var variants: Array[AudioStream] = []
+		var count: int = FILE_SOUNDS[sound]
+		for index: int in count:
+			variants.append(load(SFX_FOLDER + (sound + ".ogg" if count == 1 else "%s_%d.ogg" % [sound, index + 1])))
+		files[sound] = variants
+	music.bus = &"Music"
+	add_child(music)
 	ambient.stream = _night_bed()
 	ambient.bus = &"SFX"
 	ambient.volume_db = Balance.AMBIENT_VOLUME_DB
@@ -34,7 +59,10 @@ func _ready() -> void:
 
 # --- Playback ---
 func play(sound: String, pitch: float = 1.0, volume_db: float = 0.0) -> void:
+	# A synthesized sound, or a random variant of a sound file.
 	var stream: AudioStream = bank_sound if sound == "bank" else sounds.get(sound)
+	if stream == null and files.has(sound):
+		stream = files[sound].pick_random()
 	if stream == null:
 		return
 	var player := AudioStreamPlayer.new()
@@ -45,6 +73,73 @@ func play(sound: String, pitch: float = 1.0, volume_db: float = 0.0) -> void:
 	add_child(player)
 	player.finished.connect(player.queue_free)
 	player.play()
+
+
+func varied(sound: String, volume_db: float = 0.0) -> void:
+	# The same sound at a slightly different pitch each time, so repeats don't drone.
+	play(sound, noise.randf_range(1.0 - Balance.SFX_PITCH_JITTER, 1.0 + Balance.SFX_PITCH_JITTER), volume_db)
+
+
+func damage(loss: int, value_before: int, fragility: int) -> void:
+	# Glass for fragile items, a thud for sturdy ones; louder the bigger the share of value lost.
+	var share: float = clampf(float(loss) / maxi(1, value_before), 0.0, 1.0)
+	varied("glass" if fragility >= Balance.SFX_FRAGILE else "thud", lerpf(Balance.SFX_DAMAGE_QUIET_DB, 0.0, sqrt(share)))
+
+
+func shatter(initial_value: int, fragility: int) -> void:
+	varied("smash_glass" if fragility >= Balance.SFX_FRAGILE else "smash_wood")
+	if initial_value >= Balance.SFX_TROMBONE_VALUE:
+		play("trombone", 1.0, Balance.SFX_TROMBONE_DB) # Wah-wah-wah-waaah for a big loss.
+
+
+func banked(amount: int) -> void:
+	var pitch: float = Balance.BANK_LARGE_PITCH if amount >= Balance.BANK_LARGE_VALUE else 1.0
+	play("bank", pitch)
+	play("coins", pitch, Balance.SFX_COINS_DB)
+
+
+# --- Music: the cozy loop in the lobby, the spooky waltz in rounds (faster in the last 30 s), jingles after ---
+func _process(_delta: float) -> void:
+	if not is_instance_valid(Game.host):
+		return
+	if Game.phase != shown_phase:
+		shown_phase = Game.phase
+		_on_phase(Game.phase)
+	var late: bool = Game.phase == "live" and Game.seconds_left <= Balance.HUD_WARNING_SECONDS
+	music.pitch_scale = Balance.MUSIC_RUSH_PITCH if late else 1.0
+	var whole: int = ceili(Game.seconds_left)
+	if Game.phase == "live" and whole <= Balance.SFX_TICK_SECONDS and whole != last_tick and whole > 0:
+		last_tick = whole
+		play("tick", 1.0, Balance.SFX_TICK_DB)
+
+
+func _on_phase(phase: String) -> void:
+	match phase:
+		"lobby":
+			_set_music("lobby", Balance.MUSIC_LOBBY_DB)
+		"intro":
+			_set_music("", 0.0) # The cutscene plays its own music.
+		"reveal", "live", "paused":
+			_set_music("round", Balance.MUSIC_ROUND_DB)
+		"result":
+			_set_music("", 0.0)
+			play("win" if Game.result.get("moversWon", false) else "lose", 1.0, Balance.SFX_JINGLE_DB)
+		"final":
+			play("final", 1.0, Balance.SFX_JINGLE_DB)
+
+
+func _set_music(track: String, volume_db: float) -> void:
+	if track == music_name:
+		return
+	music_name = track
+	if track.is_empty():
+		music.stop()
+		return
+	var stream: AudioStreamOggVorbis = load(MUSIC_TRACKS[track])
+	stream.loop = true
+	music.stream = stream
+	music.volume_db = volume_db
+	music.play()
 
 
 func start_ambient() -> void:
@@ -220,6 +315,52 @@ func _organ() -> AudioStreamWAV:
 				value += sin(TAU * note * harmonic * time) / harmonic
 		var envelope: float = minf(1.0, time * 3.0) * exp(-maxf(0.0, time - 1.2) * 1.8)
 		samples[index] = value * envelope * (0.85 + 0.15 * sin(TAU * 5.5 * time)) * 0.07
+	return _stream(samples, RATE, false)
+
+
+func _boing() -> AudioStreamWAV:
+	# A cartoon spring: a wobbling tone that drops in pitch.
+	var count: int = int(RATE * 0.6)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	var phase: float = 0.0
+	for index: int in range(count):
+		var time: float = float(index) / RATE
+		phase += TAU * (520.0 * exp(-time * 2.2) + 90.0) * (1.0 + 0.08 * sin(TAU * 18.0 * time)) / RATE
+		samples[index] = sin(phase) * exp(-time * 4.0) * 0.45
+	return _stream(samples, RATE, false)
+
+
+func _theremin() -> AudioStreamWAV:
+	# A spooky theremin swell: a pure tone gliding up with a wide vibrato.
+	var count: int = int(RATE * 1.4)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	var phase: float = 0.0
+	for index: int in range(count):
+		var time: float = float(index) / RATE
+		phase += TAU * (330.0 + 260.0 * minf(1.0, time / 0.9) + 14.0 * sin(TAU * 6.5 * time)) / RATE
+		samples[index] = sin(phase) * sin(PI * time / 1.4) * 0.3
+	return _stream(samples, RATE, false)
+
+
+func _trombone() -> AudioStreamWAV:
+	# The sad trombone: three falling notes, then a long drooping one.
+	var count: int = int(RATE * 2.2)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	var notes: Array[float] = [233.1, 220.0, 207.7, 196.0]
+	var phase: float = 0.0
+	var smooth: float = 0.0
+	for index: int in range(count):
+		var time: float = float(index) / RATE
+		var note: int = mini(int(time / 0.4), 3)
+		var note_time: float = time - note * 0.4
+		var pitch: float = notes[note] * (1.0 - (0.06 * note_time if note == 3 else 0.0)) * (1.0 + (0.012 * sin(TAU * 5.0 * note_time) if note == 3 else 0.0))
+		phase += TAU * pitch / RATE
+		smooth = smooth * 0.7 + (fmod(phase / TAU, 1.0) * 2.0 - 1.0) * 0.3 # A soft brassy sawtooth.
+		var envelope: float = minf(1.0, note_time * 25.0) * (exp(-maxf(0.0, note_time - 0.3) * 18.0) if note < 3 else exp(-note_time * 0.9))
+		samples[index] = smooth * envelope * 0.5
 	return _stream(samples, RATE, false)
 
 

@@ -148,6 +148,7 @@ func carry_speed_ratio() -> float:
 
 func curse() -> void:
 	curse_left = Balance.CURSE_DURATION
+	Sfx.play("theremin", Balance.SFX_CURSE_PITCH, Balance.SFX_CURSE_DB)
 	print("Cursed %s for %.0f seconds" % [item_name, curse_left])
 
 
@@ -273,6 +274,7 @@ func apply_impact(speed: float) -> void:
 		return
 	var loss: int = mini(value, ceili(speed * fragility * Balance.DAMAGE_MULTIPLIER * value))
 	show_popup("CRASH!\n−" + rupees(loss), Balance.DAMAGE_COLOUR)
+	Sfx.damage(loss, value, fragility)
 	Fx.burst(global_position, Fx.Kind.SPARKS, get_parent())
 	print("%s impact %.2f m/s: -₹%d, remaining ₹%d" % [item_name, speed, loss, value - loss])
 	_lose_value(loss)
@@ -299,6 +301,7 @@ func _lose_value(loss: int) -> void:
 	if value == 0:
 		shattered.emit(last_carrier_slot)
 		Fx.burst(global_position, Fx.Kind.SHARDS, get_parent())
+		Sfx.shatter(initial_value, fragility)
 		retire("SMASH!", Balance.DAMAGE_COLOUR)
 
 

@@ -750,3 +750,25 @@ const MOOD_SATURATION: float = 1.3
 const MOOD_BRIGHTNESS: float = 1.04
 const OUTLINE_INK := Color("120b1d") # Movers' comic outline.
 const OUTLINE_WIDTH: float = 0.022 # Metres.
+
+# --- Sound effects and music (autoload/Sfx.gd) ---
+const SFX_PITCH_JITTER: float = 0.08 # Repeated sounds vary their pitch by up to this share.
+const SFX_FRAGILE: int = 3 # Fragility at or above this sounds like glass; below, a thud.
+const SFX_DAMAGE_QUIET_DB: float = -14.0 # A tiny scratch; losing an item's whole value plays at 0 dB.
+const SFX_TROMBONE_VALUE: int = 10000 # Smashing an item worth this much (₹) plays the sad trombone.
+const SFX_TROMBONE_DB: float = -4.0
+const SFX_COINS_DB: float = -6.0 # The coin jingle under the banking chime.
+const SFX_CREAK_DB: float = -6.0 # Possession: a creak and a theremin swell.
+const SFX_THEREMIN_DB: float = -8.0
+const SFX_CURSE_PITCH: float = 0.6 # The Curse is a low theremin.
+const SFX_CURSE_DB: float = -6.0
+const SFX_BOING_DB: float = -4.0 # A tumble.
+const SFX_WHOOSH_DB: float = -8.0 # A throw.
+const SFX_GRAB_DB: float = -10.0 # A grab.
+const SFX_RUMBLE_DB: float = -2.0 # House Shake's warning.
+const SFX_TICK_SECONDS: int = 10 # The clock ticks each second for the last this many seconds.
+const SFX_TICK_DB: float = -8.0
+const SFX_JINGLE_DB: float = -4.0 # Round and match end jingles.
+const MUSIC_LOBBY_DB: float = -14.0
+const MUSIC_ROUND_DB: float = -12.0
+const MUSIC_RUSH_PITCH: float = 1.12 # The round music speeds up for the last 30 s.

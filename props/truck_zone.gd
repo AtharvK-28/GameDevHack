@@ -56,7 +56,7 @@ func try_bank(item: Loot) -> bool:
 	banked_items += 1
 	banked.emit(amount, carrier_slot)
 	delivered.emit(amount, slots)
-	Sfx.play("bank", Balance.BANK_LARGE_PITCH if amount >= Balance.BANK_LARGE_VALUE else 1.0)
+	Sfx.banked(amount)
 	print("Banked ₹%d. Truck total: ₹%d" % [amount, banked_value])
 	return true
 
