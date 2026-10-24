@@ -13,7 +13,7 @@ const ARRIVE_DISTANCE: float = 0.4 # Metres from a waypoint that counts as reach
 const ROUTE_TIMEOUT: float = 25.0 # Seconds allowed for a route.
 const PIANO_SHORT_SIDE: float = 1.4 # The piano's footprint is 2.2 × 1.4 m; turned, it needs 1.4 m.
 const DOOR_RAY_HEIGHT: float = 0.5 # Above the floor, where rays cross a doorway (under the 0.9 m fence).
-const DELIVERY_POINT := Vector3(5.5, 0, 24.5) # Inside the half-circle behind the tailgate at (7, 24.5).
+const DELIVERY_POINT := Vector3(7.75, 0, 22.5) # On the driveway just before the tailgate at (7.75, 23); a mover here facing the house holds loot inside the half-circle.
 const VASE_KIND: int = 0
 const TV_KIND: int = 1
 const CLOCK_KIND: int = 2
@@ -285,8 +285,8 @@ func _check_containment() -> void:
 func _check_truck() -> void:
 	# Loot released anywhere in the half-circle banks; beside the truck or past the radius it doesn't.
 	var truck: Area3D = arena.truck
-	_check(truck.contains_point(Vector3(5.2, 0.5, 24.5)) and truck.contains_point(Vector3(6.8, 0.5, 26.3)), "The half-circle behind the tailgate counts as the truck")
-	_check(not truck.contains_point(Vector3(4.8, 0.5, 24.5)) and not truck.contains_point(Vector3(8.0, 0.5, 22.0)), "Past the radius or beside the truck doesn't count")
+	_check(truck.contains_point(Vector3(7.75, 0.5, 21.2)) and truck.contains_point(Vector3(6.4, 0.5, 22.0)), "The half-circle on the driveway in front of the tailgate counts as the truck")
+	_check(not truck.contains_point(Vector3(7.75, 0.5, 20.8)) and not truck.contains_point(Vector3(9.5, 0.5, 24.0)), "Past the radius or beside the truck doesn't count")
 	await _start(0, DELIVERY_POINT, 0.0)
 	await _pick_up(0, VASE_KIND)
 	var banked_before: int = truck.banked_items

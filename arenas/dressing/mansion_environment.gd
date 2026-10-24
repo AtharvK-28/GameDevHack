@@ -159,10 +159,10 @@ func _add_perimeter() -> void:
 
 # --- Front: drive, road, lamps and street furniture ---
 func _drive_rect() -> Rect2:
-	# Gravel from the front gate posts on the path out to the road, beside the delivery zone.
+	# Gravel from the front gate posts on the path out to the road, under the parked truck.
 	var front_gate: Dictionary = arena.layout.gates.filter(func(gate: Dictionary) -> bool: return gate.id == "gate-front")[0]
 	var start_z: float = front_gate.from[1]
-	return Rect2(arena.layout.truck.tailgate[0], start_z, arena.layout.paths[0].rect[2], limits.end.y + Balance.ROAD_GAP - start_z)
+	return Rect2(arena.layout.paths[0].rect[0], start_z, arena.layout.paths[0].rect[2], limits.end.y + Balance.ROAD_GAP - start_z)
 
 
 func _add_front() -> void:
@@ -314,8 +314,15 @@ func _clear_rects() -> Array[Rect2]:
 		var size := Vector2(Balance.GENERATOR_ZONE_SIZE.x, Balance.GENERATOR_ZONE_SIZE.z + Balance.GENERATOR_BODY_SIZE.z)
 		var origin := centre - Vector2(size.x / 2.0, Balance.GENERATOR_ZONE_SIZE.z / 2.0 + Balance.GENERATOR_BODY_SIZE.z)
 		rects.append(Rect2(origin, size).grow(CLEARANCE))
+	# The truck and its delivery half-circle, whichever way the truck faces: the zone reaches DELIVERY_RADIUS out
+	# from the tailgate, the body TRUCK_LENGTH back from it.
 	var tailgate := Vector2(arena.layout.truck.tailgate[0], arena.layout.truck.tailgate[1])
-	rects.append(Rect2(tailgate - Vector2(Balance.DELIVERY_RADIUS + CLEARANCE, Balance.DELIVERY_RADIUS + CLEARANCE), Vector2(Balance.TRUCK_LENGTH + Balance.DELIVERY_RADIUS + CLEARANCE * 2.0, (Balance.DELIVERY_RADIUS + CLEARANCE) * 2.0)))
+	var faces := Vector2(arena.layout.truck.faces[0], arena.layout.truck.faces[1]).normalized()
+	var side := Vector2(-faces.y, faces.x) * Balance.DELIVERY_RADIUS
+	var truck_area := Rect2(tailgate, Vector2.ZERO)
+	for end: Vector2 in [tailgate + faces * Balance.DELIVERY_RADIUS, tailgate - faces * Balance.TRUCK_LENGTH]:
+		truck_area = truck_area.expand(end + side).expand(end - side)
+	rects.append(truck_area.grow(CLEARANCE))
 	return rects
 
 

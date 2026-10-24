@@ -76,7 +76,7 @@ const LABEL_OUTLINE: int = 14 # Ink outline on name tags.
 const LABEL_SPREAD_DISTANCE: float = 2.6 # Metres: movers this close stack their name tags (long names are wide).
 const LABEL_STACK_STEP: float = 0.7 # Metres each stacked tag rises.
 const FLOOR_LABEL_PIXEL_SIZE: float = 0.011 # Zone markings painted on the ground (truck, generator).
-const FLOOR_LABEL_HEIGHT: float = 0.04 # Metres above the floor, clear of the zone's own mesh.
+const FLOOR_LABEL_HEIGHT: float = 0.06 # Metres above the floor, clear of the zone pads (up to 0.045 m).
 const FLOOR_LABEL_ALPHA: float = 0.9
 const LIGHT_ROTATION := Vector3(-55.0, -25.0, 0.0) # Degrees.
 const OVERLAY_MARGIN: float = 16.0 # Pixels.
@@ -475,7 +475,7 @@ const TRUCK_CAB_HEIGHT: float = 1.67 # Roof height; the cab's solid collider.
 const DELIVERY_RADIUS: float = 2.0 # Metres: the half-circle behind the tailgate where released loot banks.
 const DELIVERY_COLOUR := Color(0.43, 0.85, 0.35, 0.45)
 const DELIVERY_SEGMENTS: int = 32 # Half-circle smoothness.
-const DELIVERY_LIFT: float = 0.01 # Metres above the ground: flush, but clear of the ground's surface.
+const DELIVERY_LIFT: float = 0.03 # Metres above the ground: just above the 0.02 m path and floor slabs, so the truck zone shows on the driveway.
 
 # --- Arena build settings (arenas/arena_builder.gd; geometry lives in arenas/layouts/) ---
 const ARENA_WALL_HEIGHT: float = 3.0 # Metres above each room's floor: a 3.3 m mansion ceiling scaled to 1.6 m movers.

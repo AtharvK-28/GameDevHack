@@ -49,8 +49,8 @@
 		{"id": "path-driveway", "rect": [6.5, 15, 2.5, 7.5], "surface": "gravel"}
 	],
 	"truck": {
-		"tailgate": [7.0, 24.5],
-		"faces": [-1, 0]
+		"tailgate": [7.75, 23.0],
+		"faces": [0, -1]
 	},
 	"spawns": {
 		"movers": [[7.0, 21.0], [8.5, 21.0], [7.0, 19.8], [8.5, 19.8]],
