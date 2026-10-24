@@ -23,20 +23,14 @@ func _ready() -> void:
 
 
 func _comic_title() -> void:
-	# The title in the intro's comic lettering, gold with a thick ink outline, under Seth-ji's face from the intro.
+	# The title in the intro's comic lettering, gold with a thick ink outline. It stands alone: no logo above it.
 	var title: Label = $MenuContainer/TitleMargin/TitleContainer/TitleLabel
 	title.add_theme_font_override("font", load(Balance.COMIC_FONT_PATH))
 	title.add_theme_font_size_override("font_size", Balance.MENU_TITLE_SIZE)
 	title.add_theme_color_override("font_color", Balance.UI_MONEY)
 	title.add_theme_constant_override("outline_size", Balance.COMIC_OUTLINE_SIZE + 4)
 	title.add_theme_color_override("font_outline_color", Balance.COMIC_INK)
-	var face := AtlasTexture.new()
-	face.atlas = load(Balance.REVEAL_GHOST_ART)
-	face.region = Balance.MENU_LOGO_CROP
-	$Logo.texture = face
-	$Logo.offset_left = -Balance.MENU_LOGO_SIZE / 2.0
-	$Logo.offset_right = Balance.MENU_LOGO_SIZE / 2.0
-	$Logo.offset_bottom = $Logo.offset_top + Balance.MENU_LOGO_SIZE
+	$Logo.hide()
 
 
 # --- Menu actions ---
@@ -51,6 +45,5 @@ func _on_map_chosen(_arena_path: String) -> void:
 
 func _show_title(shown: bool) -> void:
 	%MenuContainer.visible = shown
-	$Logo.visible = shown
 	if shown:
 		%NewGameButton.grab_focus.call_deferred()

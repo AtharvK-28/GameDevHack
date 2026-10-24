@@ -300,11 +300,13 @@ The game is judged on a projector from across a room. Everything must read insta
 
 **On-screen HUD**
 
-- Top centre: compact round timer, amber during the final 30 seconds.
+- Comic style throughout (decision 89): ink-bordered panels, comic lettering, player colours for players and a ghost glow or icon for the role that round.
+- Top centre: round timer with a punch-clock dial; red and rocking during the final 30 seconds.
 - Top left: majority-mover room progress ring and individual item marks.
-- Top right: truck-value bar, 70% quota tick and red loss/30% limit.
-- Bottom left: up to three delivery notices, each lasting three live seconds.
-- Bottom right: coloured names/live points and the ghost's energy. Hold Tab for totals.
+- Top right: the truck meter (cargo filling toward the 70% flag) and a vase that cracks toward the 30% loss limit; the screen edges pulse red from 70% of that limit.
+- Bottom left: up to three DELIVERED! notices, each lasting three live seconds.
+- Bottom right: player chips with live points; the ghost's chip carries its energy ring. Hold Tab for totals.
+- In the world: comic popups for damage, scraping, smashing and banking; name tags in player colours that stack when movers bunch; truck and generator markings painted on the ground.
 - Holding information remains explicit on each mover's phone.
 
 **Audio**
@@ -452,11 +454,11 @@ ghosted-movers/
 │   ├── qr_code.gd        # QR encoder for the lobby's join link (byte mode, level M, versions 1–6)
 │   └── *_check.gd        # headless checks: plumbing, carrying, team carry, ghost, match
 ├── screens/              # each shows itself in its Game phase and keeps running while the world is paused
-│   ├── screen_style.gd   # shared panel, label and button look for the host screens
-│   ├── Lobby.tscn        # QR code, joined players, START (Enter)
-│   ├── RoleReveal.tscn   # round, ghost and movers, 3 s countdown
-│   ├── RoundEnd.tscn     # winner and reason, points; Enter next, R restart, L lobby
-│   ├── Results.tscn      # final leaderboard (awards deferred)
+│   ├── screen_style.gd   # the comic look for the host screens: panels, captions, bubbles, stamps, chips, keycaps, figures
+│   ├── Lobby.tscn        # clock-in board: job sheet with the QR code, a time card per slot, START (Enter)
+│   ├── RoleReveal.tscn   # splash page: Seth-ji names the ghost player, crew line-up, stamped 3 s countdown
+│   ├── RoundEnd.tscn     # DELIVERED!/GHOSTED! stamp, reason, stat tiles, counting points; Enter next, R restart, L lobby
+│   ├── Results.tscn      # podium for the top three with a crown (awards deferred)
 │   ├── Cutscene.tscn     # intro story panels with music and sound cues; Enter next, Esc skip
 │   └── HUD.tscn          # timer, delivered vs 70% target, lost vs 30% limit, ghost energy, pause overlay
 ├── actors/
