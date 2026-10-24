@@ -787,3 +787,4 @@ const YARD_LIGHT_HEIGHT: float = 5.0 # Metres above the yard.
 const TRUCK_POSTER_LEVELS: float = 4.0 # Shading bands on the repainted truck.
 const TRUCK_PAINT := Color("ff9a3c") # Sasta Shifters orange, as in the intro's comic panels.
 const FLOOR_TINT := Color(0.8, 0.76, 0.78) # Multiplies the wood floors: darker and cooler, so loot stands out.
+const PROP_OUTLINE_WIDTH: float = 0.03 # Metres: ink outline on loot and possessable furniture.

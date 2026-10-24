@@ -38,6 +38,7 @@ func _build_shape() -> void:
 		var model: Node3D = catalog_item.model.instantiate()
 		model.position.y = -item_size.y / 2.0 # Models are bottom-centred; the body's origin is its centre.
 		model.scale = Vector3.ONE * catalog_item.model_scale
+		ComicLook.apply(model, true)
 		add_child(model)
 		return
 	var mesh := MeshInstance3D.new()

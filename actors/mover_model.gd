@@ -43,6 +43,7 @@ func setup(scene: PackedScene, overalls: Color) -> void:
 	carry_reach.mover = get_parent()
 	skeleton.add_child(carry_reach)
 	_tint(overalls)
+	ComicLook.apply(mesh, false) # Banded toon light; the outline is the overlay below.
 	_add_outline()
 	reset()
 

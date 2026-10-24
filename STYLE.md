@@ -50,7 +50,8 @@ eyes at a screenshot and the movers and the driveway should still stand out.
 
 ## Characters and props
 
-- Movers: chunky low-poly, overalls in their player's colour, a thin ink outline (`ink_outline.gdshader`).
+- Movers, loot and possessable furniture (the playfield): banded toon light and a thin ink outline (`core/comic_look.gd`, `ink_outline.gdshader`). Background decor gets neither, so it stays calmer.
+- Movers: chunky low-poly, overalls in their player's colour.
 - Props: Kenney's low-poly kits, muted toward grey (`DECOR_DESATURATION`) so they sit behind the movers. Loot keeps
   its colours.
 - Any scanned or photo-textured model is repainted in flat colour with banded shading (`posterize.gdshader`).

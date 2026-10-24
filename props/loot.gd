@@ -363,6 +363,7 @@ func _build_shape() -> void:
 		model.scale = Vector3.ONE * catalog_item.model_scale
 		add_child(model)
 		set_visual(model)
+		ComicLook.apply(model, true)
 		for mesh: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
 			model_meshes.append(mesh)
 		curse_overlay = StandardMaterial3D.new()
