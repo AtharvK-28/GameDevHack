@@ -321,6 +321,7 @@ func _update_hold_point() -> void:
 
 # --- Model ---
 func _update_model(delta: float) -> void:
+	model.carry_reach.item = held_item if is_instance_valid(held_item) else null
 	model.face(facing)
 	var flat := Vector3(velocity.x, 0.0, velocity.z)
 	model.update_wobble((flat - last_velocity) / delta, delta)

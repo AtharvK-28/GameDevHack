@@ -10,6 +10,7 @@ enum Carry { NONE, LIGHT, MEDIUM, HEAVY, TEAM, DRAG }
 # --- Clip names ---
 const CLIP_PREFIX: String = "mover_"
 const TINTED_MATERIALS: Array[String] = ["Mover_Team", "Mover_TeamTrim", "Mover_TeamDark"] # Overalls, cuffs, seams.
+const CARRY_REACH := preload("res://actors/carry_reach.gd")
 
 # --- Animation state ---
 var player: AnimationPlayer
@@ -18,6 +19,7 @@ var clips: Dictionary = {} # Base name ("run") -> imported clip name ("mover_run
 var one_shot: String = "" # The one-shot playing now, which locomotion waits for.
 var queue: Array[String] = []
 var queue_speed: float = 1.0
+var carry_reach: SkeletonModifier3D
 
 # --- Goofy state ---
 var body: Node3D # The instanced character; leaning and squashing move it about the feet.
@@ -36,6 +38,10 @@ func setup(scene: PackedScene, overalls: Color) -> void:
 	for clip: StringName in player.get_animation_list():
 		clips[String(clip).trim_prefix(CLIP_PREFIX)] = clip
 	player.animation_finished.connect(_on_animation_finished)
+	var skeleton: Skeleton3D = body.find_children("*", "Skeleton3D", true, false)[0]
+	carry_reach = CARRY_REACH.new()
+	carry_reach.mover = get_parent()
+	skeleton.add_child(carry_reach)
 	_tint(overalls)
 	reset()
 
@@ -48,6 +54,8 @@ func reset() -> void:
 	lean_velocity = Vector2.ZERO
 	squash = 0.0
 	squash_velocity = 0.0
+	if carry_reach != null:
+		carry_reach.item = null
 	if player != null:
 		player.speed_scale = 1.0
 		player.play(clips["idle"])

@@ -25,7 +25,7 @@ Ghosted Movers is a 2–4 player physics party game for PS02. A cheap moving com
 
 ## PS02 compliance and beyond
 
-Every compulsory requirement is met by the core game. The extra features are where the score is won.
+The core design covers every compulsory requirement; the three-arena submission is still unfinished. The extra features are where the score is won.
 
 | PS02 requirement | How Ghosted Movers meets it |
 | --- | --- |
@@ -145,7 +145,7 @@ The ghost wins by smashing value and wasting time, never by cheap surprise. Ever
 **Moving as a wisp**
 
 - When not possessing anything, the ghost is a faint, shimmering wisp on the shared screen. It moves at 7 m/s and passes through walls.
-- It's hard to see, but not invisible: sharp movers can track it. It flies 1.2 m up, its opacity shimmers between 25% and 45%, and it stays inside the house and truck area so it never leaves the screen.
+- It's hard to see, but not invisible: sharp movers can track it. It flies 1.2 m above the arena floor (following the Mansion gallery and stair slope), its opacity shimmers between 25% and 45%, and it stays inside the house and truck area so it never leaves the screen.
 - While possessing, the wisp hides inside the prop; leaving puts it back where the prop is.
 
 **Possession**
@@ -292,7 +292,7 @@ The game is judged on a projector from across a room. Everything must read insta
 **Art direction**
 
 - One consistent low-poly style. Movers use the team's own character model (`assets/models/mover/`); props and arenas should match it, using CC0 packs such as Kenney Furniture Kit and KayKit where they fit. Don't mix styles. The Old Mansion uses Kenney kits only, with decor colours muted so they never look like loot; surface textures are the project's own (`tools/make_surface_textures.gd`); every source is listed in `assets/CREDITS.md`.
-- Movers: chunky characters with overalls and cap in their slot's colour and a contrasting shirt, with a name tag overhead. The model is scaled to the 1.6 m capsule; it only shows the mover's state and never changes gameplay.
+- Movers: chunky characters with overalls and cap in their slot's colour and a contrasting shirt, with a name tag overhead. The model is scaled to the 1.6 m capsule; it only shows the mover's state and never changes gameplay. A visual arm-reach modifier brings the hands toward held loot without moving the item, spring target or collider.
 - Every item has a small price tag above it that shows only while a mover or the ghost is within 3 m, fading in and out over 0.2 s, and always while it is carried. It ticks down and turns red as value drops. Damage and banking popups always show, a little bigger than the tags.
 - Ghost: a translucent bedsheet wisp with trailing particles. Possessed props get a green glow, an outline shader and dripping ectoplasm.
 - `WorldEnvironment`: glow (bloom), filmic tonemapping, depth fog in the museum. The Mobile renderer has no SSAO or volumetric fog, so fake contact shadows with darker texture bases or blob shadows under items.
@@ -591,7 +591,7 @@ Let the judges play within 15 seconds. A teammate plays the first ghost so the h
    - two judges wrestling the piano through a door,
    - the House Shake warning, and the counter ("freeze!"),
    - the ghost possessing the sofa and ramming a carrier off their feet.
-4. **1:25–1:45 · Results.** Round result, then the awards screen. Read out Butterfingers.
+4. **1:25–1:45 · Results.** Round result, then the current leaderboard. Awards are deferred.
 5. **1:45–2:00 · How it's built.** Godot 4, phones over a local WebSocket bridge, 3 arenas, ghost rotation, and fair hauntings with a warning and a counter.
 
 **Have answers ready for**
@@ -605,7 +605,7 @@ Let the judges play within 15 seconds. A teammate plays the first ghost so the h
 
 Use Maaack's MIT template scenes for opening, main menu, options, pause, credits and loading. Restyle with the Kenney CC0 UI Pack v2 theme and locally bundled Baloo 2 OFL font; the azagaya theme is not used. `menus/` holds the adapted scenes, `assets/ui/` the theme/icons/map previews, `assets/fonts/` the font, and `controller/fonts/` its browser copy. Preserve license notices in `assets/CREDITS.md` and the respective asset/addon directories.
 
-The approved launch flow is title (dimmed, idling Mansion) -> map selection -> join lobby -> role reveal -> round -> round end -> final standings -> lobby. Only Mansion is playable; Ship and Museum explicitly say coming soon. Title has Play, Options, Credits and Quit. Lobby displays the keyed QR, manual code, four slot cards with ready state, and Start enabled with at least two ready phones. New join code disconnects all phones and replaces both credentials. The game starts at `menus/opening/opening.tscn` and wipes between full screens (lobby, reveal, round end, results).
+The approved launch flow is title (dimmed, idling Mansion) -> map selection -> join lobby -> role reveal -> round -> round end -> final standings -> lobby. Only Mansion is playable; Ship and Museum explicitly say coming soon. Title has Play, Guide, Options, Credits and Quit. Guide briefly explains joining, mover controls, the demo ghost abilities and winning; Back or Escape returns home. Lobby displays the keyed QR, manual code, four slot cards with ready state, and Start enabled with at least two ready phones. New join code disconnects all phones and replaces both credentials. The game starts at `menus/opening/opening.tscn` and wipes between full screens (lobby, reveal, round end, results).
 
 Options persist Master, Music and SFX volumes, fullscreen, and Demo mode (60-second rounds; full rounds remain 150). Escape opens the template pause menu. Game owns pause state: the host resume action does not bypass a missing phone, and a reconnect does not bypass host pause. Back to lobby cancels without scoring the incomplete attempt.
 

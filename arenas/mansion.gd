@@ -50,6 +50,19 @@ func mover_bounds() -> Rect2:
 	return ArenaBuilder.rect_of(layout.mover_bounds)
 
 
+func floor_height_at(point: Vector3) -> float:
+	# Query layout floors, never furniture tops; interpolate the stair ramp to avoid a jump at the gallery.
+	var location := Vector2(point.x, point.z)
+	for stairs: Dictionary in layout.stairs:
+		var rect: Rect2 = ArenaBuilder.rect_of(stairs.rect)
+		if rect.has_point(location):
+			return stairs.rise * (1.0 - (point.z - rect.position.y) / rect.size.y)
+	for room: Dictionary in layout.rooms:
+		if ArenaBuilder.rect_of(room.rect).has_point(location):
+			return room.floor
+	return 0.0
+
+
 # --- Mood ---
 func _build_mood() -> void:
 	# Dusk: a dark violet world fading into fog, low ambient light and one shadow-casting moon.

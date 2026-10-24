@@ -62,8 +62,28 @@ func _run() -> void:
 	await _check_truck()
 	await _check_wall_fade()
 	_check_ghost_spawn()
+	await _check_ghost_height()
 	print("ARENA LAYOUT CHECK: %s" % ("PASS" if failures == 0 else "%d failures" % failures))
 	quit(0 if failures == 0 else 1)
+
+
+func _check_ghost_height() -> void:
+	playground.set_ghost_slot(0)
+	var ghost: Node3D = playground.ghost
+	for point: Vector3 in [Vector3(10, 0, 3), Vector3(1.5, 0, 8), Vector3(8, 0, 12), Vector3(16, 0, 24.5)]:
+		ghost.global_position = point
+		await _frames(2)
+		var expected: float = arena.floor_height_at(point) + SETTINGS.WISP_HEIGHT
+		_check(is_equal_approx(ghost.global_position.y, expected), "Ghost flies above gallery, stairs or ground at %s" % point)
+	# A gallery item proves leaving possession restores flight above the raised floor.
+	var loot: Node3D = loot_scene.instantiate()
+	loot.position = Vector3(10, 2, 3)
+	arena.add_child(loot)
+	ghost.possess(loot.get_node("Possessable"))
+	ghost.leave()
+	_check(is_equal_approx(ghost.global_position.y, 1.2 + SETTINGS.WISP_HEIGHT), "Leaving gallery loot restores the elevated wisp")
+	loot.queue_free()
+	playground.set_ghost_slot(-1)
 
 
 # --- Static layout ---
