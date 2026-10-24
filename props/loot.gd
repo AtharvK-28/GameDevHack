@@ -56,6 +56,7 @@ func _ready() -> void:
 
 # --- Feedback ---
 func _process(delta: float) -> void:
+	update_jiggle(delta)
 	price_label.global_position = global_position + Vector3.UP * (item_size.y / 2.0 + Balance.PRICE_LABEL_HEIGHT)
 	price_label.text = rupees(value)
 	var shown: float = 1.0 if is_held() or _someone_near() else 0.0
@@ -345,6 +346,7 @@ func _build_shape() -> void:
 		model.position.y = -item_size.y / 2.0 # Models are bottom-centred; the body's origin is its centre.
 		model.scale = Vector3.ONE * catalog_item.model_scale
 		add_child(model)
+		set_visual(model)
 		for mesh: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
 			model_meshes.append(mesh)
 		curse_overlay = StandardMaterial3D.new()
@@ -369,6 +371,7 @@ func _build_shape() -> void:
 	body_material = material
 	mesh.material_override = material
 	add_child(mesh)
+	set_visual(mesh)
 
 
 func _build_price_label() -> void:

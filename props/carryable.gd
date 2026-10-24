@@ -1,5 +1,7 @@
 # Base for anything a mover can pick up: the spring carry, upright wobble, throws and contact impacts.
-# Subclasses set item_name, item_size and weight_class before calling super() in _ready().
+# Goofy physics: the item's look (never its collider) jiggles on impacts, grabs and throws, and light items bounce.
+# Subclasses set item_name, item_size and weight_class before calling super() in _ready(), set visual to the node
+# that jiggles, and call update_jiggle() every frame.
 class_name Carryable
 extends RigidBody3D
 
@@ -17,6 +19,12 @@ var previous_velocity := Vector3.ZERO
 var previous_spin := Vector3.ZERO
 var previous_contacts: Dictionary = {}
 
+# --- Jiggle state ---
+var visual: Node3D
+var visual_scale := Vector3.ONE
+var jiggle_amount: float = 0.0 # Fraction of size; positive is shorter and wider.
+var jiggle_velocity: float = 0.0
+
 # --- Setup ---
 func _ready() -> void:
 	add_to_group("carryables")
@@ -29,7 +37,7 @@ func _ready() -> void:
 	angular_damp = Balance.LOOT_ANGULAR_DAMP
 	physics_material_override = PhysicsMaterial.new()
 	physics_material_override.friction = Balance.LOOT_FRICTION
-	physics_material_override.bounce = Balance.LOOT_BOUNCE
+	physics_material_override.bounce = Balance.LIGHT_LOOT_BOUNCE if weight_class == Balance.LIGHT else Balance.LOOT_BOUNCE
 
 
 # --- Physics ---
@@ -100,6 +108,8 @@ func _check_contacts(state: PhysicsDirectBodyState3D) -> void:
 		var collider: Object = colliders[collider_id]
 		if thrown and speed > Balance.TUMBLE_HIT_SPEED and collider is Node and collider.is_in_group("movers"):
 			collider.tumble.call_deferred(previous_velocity)
+		if speed > Balance.JIGGLE_MIN_SPEED:
+			jiggle.call_deferred(Balance.JIGGLE_MAX * minf(speed / Balance.JIGGLE_FULL_SPEED, 1.0))
 		_on_impact.call_deferred(speed)
 	previous_contacts = contacts
 
@@ -144,6 +154,7 @@ func try_grab(mover: CharacterBody3D, target: Node3D, slot: int) -> bool:
 	add_collision_exception_with(mover)
 	can_sleep = false
 	sleeping = false
+	jiggle(Balance.JIGGLE_GRAB)
 	print("Player %d grabbed %s" % [slot + 1, item_name])
 	return true
 
@@ -157,6 +168,7 @@ func release(throw_velocity: Vector3 = Vector3.ZERO, _by: CharacterBody3D = null
 	if not throw_velocity.is_zero_approx():
 		thrown = true
 		apply_central_impulse(throw_velocity * mass)
+		jiggle(Balance.JIGGLE_THROW)
 	print("Released %s" % item_name)
 
 
@@ -170,3 +182,23 @@ func _detach() -> void:
 	holder = null
 	hold_target = null
 	can_sleep = true
+
+
+# --- Jiggle (goofy physics) ---
+func set_visual(node: Node3D) -> void:
+	visual = node
+	visual_scale = node.scale
+
+
+func jiggle(amount: float) -> void:
+	# Kick the look into a squash (positive) or stretch (negative); update_jiggle springs it back.
+	jiggle_amount = amount * Balance.GOOFINESS
+	jiggle_velocity = 0.0
+
+
+func update_jiggle(delta: float) -> void:
+	if visual == null:
+		return
+	jiggle_velocity += (-jiggle_amount * Balance.JIGGLE_STIFFNESS - jiggle_velocity * Balance.JIGGLE_DAMPING) * delta
+	jiggle_amount += jiggle_velocity * delta
+	visual.scale = visual_scale * Vector3(1.0 + jiggle_amount / 2.0, 1.0 - jiggle_amount, 1.0 + jiggle_amount / 2.0)

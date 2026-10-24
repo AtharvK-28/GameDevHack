@@ -3,6 +3,8 @@
 # A tumble drops whatever is held and lies the mover down for TUMBLE_DURATION seconds. On slime the mover keeps
 # its momentum. While its player is the ghost, the mover is out of play. The character model (MoverModel) only
 # shows this state: every frame it is told the speed, what is held and whether the mover braces or slides.
+# Walking eases in and out (MOVER_ACCELERATION / MOVER_DECELERATION) and the stick has a response curve, so small
+# tilts walk gently. Goofy physics: movers that walk into each other are shoved apart a little, without falling.
 extends CharacterBody3D
 
 signal tumbled(slot: int)
@@ -19,6 +21,9 @@ var tumble_time_left: float = 0.0
 var name_label := Label3D.new()
 var hold_point: Marker3D
 var model: MoverModel
+var shove := Vector3.ZERO # Fading push from bumping into another mover.
+var bump_cooldown: float = 0.0
+var last_velocity := Vector3.ZERO
 var bounds := Rect2(-Balance.FLOOR_SIZE / 2.0, -Balance.FLOOR_SIZE / 2.0, Balance.FLOOR_SIZE, Balance.FLOOR_SIZE) # Set from the arena.
 
 # --- Setup ---
@@ -49,6 +54,8 @@ func _physics_process(delta: float) -> void:
 		stick = Vector2.ZERO
 	if is_tumbling():
 		tumble_time_left -= delta
+		if not is_tumbling():
+			model.squish(Balance.SQUASH_GET_UP)
 		if not player_input.buttons.get("grab", false):
 			grab_released = true # Letting go while down allows a fresh grab after standing.
 	else:
@@ -62,13 +69,19 @@ func _physics_process(delta: float) -> void:
 	_update_hold_point()
 	if not is_on_floor():
 		velocity.y -= Balance.GRAVITY * delta
+	var was_airborne: bool = not is_on_floor()
+	var fall_speed: float = -velocity.y
+	var before_slide: Vector3 = velocity
 	move_and_slide()
+	if was_airborne and is_on_floor():
+		model.squish(Balance.SQUASH_LAND * clampf(fall_speed / Balance.LAND_SQUASH_SPEED, 0.0, 1.0))
+	_check_bumps(before_slide, delta)
 
 	position.x = clampf(position.x, bounds.position.x + Balance.CAPSULE_RADIUS, bounds.end.x - Balance.CAPSULE_RADIUS)
 	position.z = clampf(position.z, bounds.position.y + Balance.CAPSULE_RADIUS, bounds.end.y - Balance.CAPSULE_RADIUS)
 	var player := Net.player_for_slot(slot)
 	name_label.text = "%d · %s" % [slot + 1, player.get("name", "Unclaimed")]
-	_update_model()
+	_update_model(delta)
 
 
 func movement_speed() -> float:
@@ -83,15 +96,32 @@ func carry_stick() -> Vector3:
 
 
 func _walk(delta: float) -> void:
-	var target: Vector3 = carry_stick() * movement_speed()
+	var target: Vector3 = _shaped_stick() * movement_speed()
 	if on_slime():
 		# Slime keeps the mover's momentum: the stick only nudges the slide.
 		var grip: float = 1.0 - exp(-Balance.SLIME_GRIP * delta)
 		velocity.x = lerpf(velocity.x, target.x, grip)
 		velocity.z = lerpf(velocity.z, target.z, grip)
 	else:
-		velocity.x = target.x
-		velocity.z = target.z
+		# Ease toward the target speed; stopping and reversing are quicker than speeding up.
+		var current := Vector2(velocity.x, velocity.z) - Vector2(shove.x, shove.z)
+		var wanted := Vector2(target.x, target.z)
+		var speeding_up: bool = wanted.length() > current.length() and wanted.dot(current) >= 0.0
+		var rate: float = Balance.MOVER_ACCELERATION if speeding_up else Balance.MOVER_DECELERATION
+		current = current.move_toward(wanted, rate * delta)
+		if bracing:
+			current = Vector2.ZERO # Bracing plants the feet at once.
+		velocity.x = current.x + shove.x
+		velocity.z = current.y + shove.z
+
+
+func _shaped_stick() -> Vector3:
+	# The response curve: direction unchanged, magnitude raised to STICK_RESPONSE_EXPONENT.
+	var tilt: float = minf(stick.length(), 1.0)
+	if tilt < 0.001:
+		return Vector3.ZERO
+	var direction: Vector3 = carry_stick() / stick.length()
+	return direction * pow(tilt, Balance.STICK_RESPONSE_EXPONENT)
 
 
 func on_slime() -> bool:
@@ -125,6 +155,7 @@ func set_in_play(active: bool) -> void:
 	in_play = active
 	visible = active
 	velocity = Vector3.ZERO
+	shove = Vector3.ZERO
 	stick = Vector2.ZERO
 	bracing = false
 	collision_layer = Balance.MOVER_LAYER if active else 0
@@ -164,6 +195,7 @@ func _handle_carry_input(input: InputRouter.PlayerInput) -> void:
 			held_item.release(facing * Balance.THROW_SPEED + Vector3.UP * Balance.THROW_LIFT, self)
 			held_item = null
 			model.play_throw()
+			model.squish(Balance.SQUASH_THROW)
 			grab_released = false # Holding GRAB must not catch the item just thrown.
 		return
 	if not is_instance_valid(held_item) and grab_released:
@@ -171,6 +203,7 @@ func _handle_carry_input(input: InputRouter.PlayerInput) -> void:
 		if candidate != null and candidate.try_grab(self, hold_point, slot):
 			held_item = candidate
 			model.play_grab()
+			model.squish(Balance.SQUASH_GRAB)
 
 
 func _let_go() -> void:
@@ -220,12 +253,43 @@ func tumble(_push: Vector3 = Vector3.ZERO) -> void:
 	grab_released = false # Getting up must not instantly re-grab.
 	tumble_time_left = Balance.TUMBLE_DURATION
 	velocity = Vector3.ZERO
+	shove = Vector3.ZERO
 	model.play_tumble(Balance.TUMBLE_DURATION)
 	tumbled.emit(slot)
 	var player := Net.player_for_slot(slot)
 	if not player.is_empty():
 		Net.send_to_player(player, {"type": "buzz", "ms": Balance.TUMBLE_BUZZ_MS})
 	print("Player %d tumbled" % (slot + 1))
+
+
+# --- Bumping (goofy physics) ---
+func _check_bumps(before_slide: Vector3, delta: float) -> void:
+	# Walking into another mover shoves both apart a little and squashes them; nobody falls over.
+	bump_cooldown = maxf(0.0, bump_cooldown - delta)
+	shove *= exp(-Balance.BUMP_SHOVE_DECAY * delta)
+	if bump_cooldown > 0.0 or is_tumbling() or _on_team_handle():
+		return
+	for index: int in range(get_slide_collision_count()):
+		var other: Object = get_slide_collision(index).get_collider()
+		if not (other is CharacterBody3D and other.is_in_group("movers")) or other.is_tumbling() or other.bump_cooldown > 0.0:
+			continue
+		var apart: Vector3 = global_position - other.global_position
+		apart.y = 0.0
+		if apart.length() < 0.01:
+			continue
+		apart = apart.normalized()
+		var closing: float = (other.velocity - before_slide).dot(apart)
+		if closing < Balance.BUMP_MIN_SPEED:
+			continue
+		receive_bump(apart)
+		other.receive_bump(-apart)
+		return
+
+
+func receive_bump(direction: Vector3) -> void:
+	shove = direction * Balance.BUMP_SHOVE * Balance.GOOFINESS
+	bump_cooldown = Balance.BUMP_COOLDOWN
+	model.squish(Balance.SQUASH_BUMP)
 
 
 # --- Grab selection ---
@@ -256,8 +320,11 @@ func _update_hold_point() -> void:
 
 
 # --- Model ---
-func _update_model() -> void:
+func _update_model(delta: float) -> void:
 	model.face(facing)
+	var flat := Vector3(velocity.x, 0.0, velocity.z)
+	model.update_wobble((flat - last_velocity) / delta, delta)
+	last_velocity = flat
 	model.update_locomotion(Vector2(velocity.x, velocity.z).length(), _carry_pose(), bracing, on_slime() and is_moving())
 
 

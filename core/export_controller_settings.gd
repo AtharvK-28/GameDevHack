@@ -9,6 +9,7 @@ func _initialize() -> void:
 		"inputRate": SETTINGS.INPUT_RATE,
 		"reconnectDelayMs": SETTINGS.RECONNECT_DELAY_MS,
 		"maxNameLength": SETTINGS.MAX_NAME_LENGTH,
+		"joinCodeLength": SETTINGS.JOIN_CODE_LENGTH,
 		"joystickSize": SETTINGS.JOYSTICK_SIZE,
 		"joystickDeadzone": SETTINGS.JOYSTICK_DEADZONE,
 		"ghostEnergyMax": SETTINGS.ENERGY_MAX,

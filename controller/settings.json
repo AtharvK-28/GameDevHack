@@ -2,7 +2,7 @@
 	"ghostEnergyMax": 100.0,
 	"inputRate": 30,
 	"joinCodeLength": 6,
-	"joystickDeadzone": 0.12,
+	"joystickDeadzone": 0.15,
 	"joystickSize": 120,
 	"maxNameLength": 20,
 	"reconnectDelayMs": 1000,

@@ -335,8 +335,9 @@ function setupJoystick() {
       movement = { x: 0, y: 0 };
       return;
     }
-    const divisor = Math.max(1, magnitude);
-    movement = { x: data.vector.x / divisor, y: -data.vector.y / divisor };
+    // Rescale past the dead zone so speed starts from zero instead of jumping; the host adds the response curve.
+    const scaled = Math.min(1, (magnitude - settings.joystickDeadzone) / (1 - settings.joystickDeadzone));
+    movement = { x: (data.vector.x / magnitude) * scaled, y: (-data.vector.y / magnitude) * scaled };
   });
   joystick.on("end", () => {
     elements["joystick-zone"].classList.remove("active");

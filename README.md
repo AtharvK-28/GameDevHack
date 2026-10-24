@@ -86,7 +86,7 @@ godot --headless --path . --script res://core/arena_layout_check.gd
 Close a running host before any integration check; they all open port 9080.
 
 - `plumbing_check.gd` tests four clients, independent mover movement, malformed messages, joystick clamping, button edges, timeout, reconnect, capacity and keyboard fallback. Success ends with `PLUMBING CHECK: PASS` and exit code 0.
-- `carrying_check.gd` runs real Jolt physics: pickup and spring settling, walking and 180° turns without launching, plain drops, grab selection, throwing, damage maths, wall hits, resting contact, banking exactly once, phone grab and HUD, heartbeat and disconnect drops, and two movers grabbing the same item in one tick, and price tags that show only while a mover is near. Success ends with `CARRYING CHECK: PASS` and exit code 0.
+- `carrying_check.gd` runs real Jolt physics: pickup and spring settling, walking and 180° turns without launching, plain drops, grab selection, throwing, damage maths, wall hits, resting contact, banking exactly once, phone grab and HUD, heartbeat and disconnect drops, and two movers grabbing the same item in one tick, price tags that show only while a mover is near, the stick response and walking ramp, movers bumping apart and items jiggling. Success ends with `CARRYING CHECK: PASS` and exit code 0.
 - `team_carry_check.gd` drives two simulated phones: two-person lift, 70% carry, average steering, turning, 25% drag with scraping, the lone-mover 40% drag, losing grip, the piano through the parlour doorway, and tumbling from thrown items. Success ends with `TEAM CARRY CHECK: PASS` and exit code 0. The carrying checks remove the ghost's furniture first, so they test carrying alone.
 - `ghost_check.gd` drives a mover phone and a ghost phone: the piano route past the open door, the G key and the movers-only lone-mover rule, wisp speed, walls, bounds and shimmer, energy gain and drain, every possession rule, all five prop actions and their costs, exorcism with the freeze and lock, House Shake, Ecto Slime, the ghost's `hud` (labels, costs, cooldowns, greying) and the Q/F/Z/X keys. Success ends with `GHOST CHECK: PASS` and exit code 0.
 - `catalog_check.gd` checks the furniture catalog: entries, loot values and colliders, the piano's route, decor never priced or possessable, the whole pool resting where it spawns, and every match-sized pick. Success ends with `CATALOG CHECK: PASS`.
@@ -105,8 +105,17 @@ The browser consumes `controller/settings.json`; do not tune it independently. n
 
 The spring, turn speed and upright values are in `Balance.gd` under "Carrying settings"; the two-person values are under "Two-person carry settings". Change one at a time and re-run the checks.
 
+Walking feel (acceleration, stopping, the stick curve) is under "Movement and test-scene settings"; the joystick dead zone goes to the phone through `core/export_controller_settings.gd`. Goofy physics (lean, squash, bumps, jiggle, bounce) is under "Goofy physics settings"; `GOOFINESS` scales all of it at once.
+
 ## Menus and HUD
 
 The game starts at the template's opening (`menus/opening/opening.tscn`), then the title, map select and the match (`Main.tscn`). The menus are customised copies of Maaack's Game Template scenes in `menus/`, themed by `assets/ui/ghosted_theme.tres` (made by `tools/make_ui_theme.gd`). Options include a saved 60-second Demo mode. In a round, Escape opens the pause menu and holding Tab shows the totals. The HTTP page server command is unchanged; reload the phone page to load the new local font, colours and authenticated joining.
 
 The QR includes a session key; manual joining needs the six-character lobby code. Reconnect uses a private per-player secret saved in that browser. New join code disconnects everyone and requires the new QR/code. Five bad credentials from one address temporarily lock it out; oversized messages and floods disconnect. `core/plumbing_check.gd` covers these cases in addition to four simultaneous controllers.
+
+## Folder layout
+
+- `actors/`, `props/`, `arenas/`, `hauntings/`, `screens/`, `menus/`: the game's scenes and scripts. `autoload/` holds the shared singletons; every tunable number is in `autoload/Balance.gd`.
+- `controller/`: the phone page. `core/`: the headless checks. `tools/`: one-off generators (textures, UI theme, map previews, furniture import).
+- `assets/`: models, textures, UI and fonts actually used by the game; `assets/source/` keeps the Blender files and raw scans they came from. Every source is credited in `assets/CREDITS.md`.
+- Not in git (local only): `assets/_incoming/` holds unpacked asset downloads that pieces are copied from; `.verification/` holds local probe scripts, logs and screenshots; `.godot/` is Godot's import cache.

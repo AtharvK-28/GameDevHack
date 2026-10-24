@@ -29,6 +29,9 @@ const PLAYER_COLOURS: Array[String] = ["#ffb84d", "#64d9ee", "#ed8bb6", "#b6de70
 
 # --- Movement and test-scene settings ---
 const MOVER_SPEED: float = 4.5 # Metres per second; unchanged from the spec.
+const MOVER_ACCELERATION: float = 15.0 # Metres per second squared; about 0.3 s from standing to full speed.
+const MOVER_DECELERATION: float = 30.0 # Metres per second squared when stopping or reversing; about 0.15 s.
+const STICK_RESPONSE_EXPONENT: float = 1.6 # Speed = tilt ^ this, so small tilts walk gently; 1 is linear.
 const GRAVITY: float = 9.8 # Metres per second squared.
 const CAPSULE_RADIUS: float = 0.4
 const CAPSULE_HEIGHT: float = 1.6
@@ -51,7 +54,33 @@ const LABEL_PIXEL_SIZE: float = 0.01 # World metres per label pixel.
 const LIGHT_ROTATION := Vector3(-55.0, -25.0, 0.0) # Degrees.
 const OVERLAY_MARGIN: float = 16.0 # Pixels.
 const JOYSTICK_SIZE: int = 120 # CSS pixels.
-const JOYSTICK_DEADZONE: float = 0.12 # Normalised stick magnitude, 0 to 1.
+const JOYSTICK_DEADZONE: float = 0.15 # Normalised stick magnitude, 0 to 1; the phone rescales past it, so there is no jump.
+
+# --- Goofy physics settings (mild; mostly visual) ---
+const GOOFINESS: float = 1.0 # Scales every effect below: 0 turns them off, 2 doubles them.
+const LEAN_MAX: float = 8.0 # Degrees a mover's body tilts into speeding up, stopping and turning.
+const LEAN_FULL_ACCELERATION: float = 15.0 # Metres per second squared that gives the full lean.
+const LEAN_STIFFNESS: float = 120.0 # Spring pulling the lean to its target, per degree.
+const LEAN_DAMPING: float = 12.0 # Below 2 * sqrt(stiffness), so the lean overshoots a little and settles.
+const SQUASH_STIFFNESS: float = 300.0 # Spring returning a squash or stretch to normal.
+const SQUASH_DAMPING: float = 14.0
+const SQUASH_GRAB: float = 0.06 # Fraction of height; positive squashes, negative stretches.
+const SQUASH_THROW: float = -0.06
+const SQUASH_LAND: float = 0.08 # At LAND_SQUASH_SPEED or faster.
+const LAND_SQUASH_SPEED: float = 4.0 # Metres per second of fall for the full landing squash.
+const SQUASH_GET_UP: float = -0.07
+const SQUASH_BUMP: float = 0.05
+const BUMP_MIN_SPEED: float = 1.0 # Metres per second two movers must close at to bump.
+const BUMP_SHOVE: float = 1.5 # Metres per second each bumped mover is pushed apart.
+const BUMP_SHOVE_DECAY: float = 6.0 # Per second; the shove fades over about half a second.
+const BUMP_COOLDOWN: float = 0.4 # Seconds before the same mover can bump again.
+const JIGGLE_MAX: float = 0.1 # Fraction of size an item wobbles at most.
+const JIGGLE_FULL_SPEED: float = 6.0 # Metres per second of impact for the full jiggle.
+const JIGGLE_MIN_SPEED: float = 1.0 # Softer touches don't jiggle.
+const JIGGLE_GRAB: float = 0.04
+const JIGGLE_THROW: float = -0.06
+const JIGGLE_STIFFNESS: float = 260.0 # Settles in about 0.4 s.
+const JIGGLE_DAMPING: float = 10.0
 
 # --- Carrying settings ---
 const WORLD_LAYER: int = 1
@@ -81,6 +110,7 @@ const LOOT_LINEAR_DAMP: float = 0.15
 const LOOT_ANGULAR_DAMP: float = 1.0
 const LOOT_FRICTION: float = 0.6
 const LOOT_BOUNCE: float = 0.1
+const LIGHT_LOOT_BOUNCE: float = 0.2 # Light items skitter when dropped (goofy physics).
 const THROW_SPEED: float = 7.0 # Metres per second added in the facing direction.
 const THROW_LIFT: float = 2.0 # Metres per second upwards.
 

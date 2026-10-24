@@ -88,7 +88,7 @@ Movers have one job: get value onto the truck. Every control is about carrying w
 
 | Input | Action |
 | --- | --- |
-| Joystick | Move. Base speed 4.5 m/s, reduced by what you carry. |
+| Joystick | Move. Base speed 4.5 m/s, reduced by what you carry. Speed follows tilt^1.6 (half tilt is about a third of full speed); walking eases in over about 0.3 s and stops in about 0.15 s; bracing stops at once. |
 | GRAB (hold) | Pick up the nearest item in front of you. Let go to drop it. |
 | THROW (tap while holding) | Throw a light item. Fast, but it lands hard and takes damage. Medium and heavy loot cannot be thrown. |
 | BRACE (hold) | Plant your feet. You can't move, but shake and wind can't knock you over. |
@@ -130,6 +130,13 @@ Movers have one job: get value onto the truck. Every control is about carrying w
   - A possessed prop counts by its own speed toward you, so walking into a slow possessed prop never trips you. A prop launched by a ghost action (SHOVE, DROP) keeps counting after the ghost leaves, until it slows below 4 m/s.
 
 You drop whatever you hold and are down for 1.5 s, then stand up automatically. This uses a simple fall animation, not ragdoll physics.
+
+**Goofy physics (mild)**
+
+- Movers lean up to 8° into speeding up, stopping and turning, and squash or stretch a little (5–8%) on grabs, throws, landings, getting up and bumps, each with a springy settle. This is visual only.
+- Two movers who walk into each other faster than 1 m/s are shoved apart at 1.5 m/s, fading over about half a second. Nobody tumbles or drops anything.
+- Items jiggle (up to 10% of their size, settling in about 0.4 s) on impacts, grabs and throws; the collider never changes. Light items bounce a little (0.2) when dropped.
+- One `GOOFINESS` value in `Balance.gd` scales all of it: 0 turns it off, 2 doubles it.
 
 ## The Ghost
 
@@ -353,7 +360,7 @@ One web page with three screens (lobby, Mover, Ghost). The host decides which sc
 
 **Technical requirements**
 
-- Pointer events with multi-touch, so the joystick and a button work at the same time. Use nipplejs in dynamic mode for the joystick.
+- Pointer events with multi-touch, so the joystick and a button work at the same time. Use nipplejs in dynamic mode for the joystick. The dead zone is 0.15 of the stick's radius; the phone rescales past it, so the sent vector starts at 0 instead of jumping.
 - `touch-action: none` and no pinch-zoom. The page never scrolls.
 - Fullscreen on first tap. Lock to landscape where supported (Android Chrome). On iOS, show a "rotate your phone" overlay instead.
 - Request the Wake Lock API when available. Plain LAN HTTP is not a secure context, so otherwise show guidance to increase the phone's screen timeout for the demo.

@@ -1,4 +1,5 @@
-# Runs real Jolt physics and input paths for pickup, impacts, throwing, banking, grab conflicts and price tags.
+# Runs real Jolt physics and input paths for pickup, impacts, throwing, banking, grab conflicts, price tags,
+# the stick response and walking ramp, and the goofy physics (mover bumps and item jiggle).
 # This script compiles before the autoloads exist, so loot is loaded at runtime and never named by class.
 extends SceneTree
 
@@ -66,6 +67,8 @@ func _run() -> void:
 	await _check_phone_release_and_hud()
 	await _check_double_grab()
 	await _check_price_tags()
+	await _check_movement_feel()
+	await _check_goofy_physics()
 	await _clear_loot()
 	for client: WebSocketPeer in clients:
 		client.close()
@@ -390,7 +393,67 @@ func _check_price_tags() -> void:
 	_check(not item.price_label.visible, "The tag fades away again once the mover leaves")
 
 
+# --- Movement feel ---
+func _check_movement_feel() -> void:
+	# Half tilt walks at about a third of full speed; full tilt is full speed.
+	mover.stick = Vector2(0.5, 0.0)
+	var half: float = mover._shaped_stick().length()
+	mover.stick = Vector2(0.0, 1.0)
+	var full: float = mover._shaped_stick().length()
+	mover.stick = Vector2.ZERO
+	_check(absf(half - pow(0.5, SETTINGS.STICK_RESPONSE_EXPONENT)) < 0.01 and absf(full - 1.0) < 0.01, "Half tilt gives %.0f%% speed and full tilt 100%%" % (half * 100.0))
+
+	# Walking ramps up over a fraction of a second instead of jumping to full speed, and stops quickly.
+	await _clear_loot()
+	_reset_mover(Vector3(-4.0, MOVER_HEIGHT, 3.0), Vector3.RIGHT)
+	await _wait(SETTLE_SECONDS)
+	_key(KEY_D, true)
+	await _wait(0.1)
+	var early: float = _flat_speed(mover)
+	await _wait(0.5)
+	var cruising: float = _flat_speed(mover)
+	_key(KEY_D, false)
+	await _wait(0.25)
+	var stopped: float = _flat_speed(mover)
+	_check(early < SETTINGS.MOVER_SPEED * 0.6 and absf(cruising - SETTINGS.MOVER_SPEED) < 0.2, "Walking eases in (%.1f m/s after 0.1 s) to full speed (%.1f m/s)" % [early, cruising])
+	_check(stopped < 0.1, "Letting go of the stick stops the mover within 0.25 s")
+
+
+# --- Goofy physics ---
+func _check_goofy_physics() -> void:
+	# A mover walking into a standing one shoves both apart a little; nobody falls.
+	await _clear_loot()
+	var other: CharacterBody3D = playground.movers[1]
+	_reset_mover(Vector3(-4.0, MOVER_HEIGHT, 3.0), Vector3.RIGHT)
+	_place(other, Vector3(-1.5, MOVER_HEIGHT, 3.0), Vector3.LEFT)
+	await _wait(SETTLE_SECONDS)
+	_key(KEY_D, true)
+	var bumped: bool = false
+	var fell: bool = false
+	for frame: int in range(60):
+		await physics_frame
+		bumped = bumped or other.shove.length() > 0.3
+		fell = fell or mover.is_tumbling() or other.is_tumbling()
+	_key(KEY_D, false)
+	_check(bumped and not fell, "Walking into another mover shoves them aside without a tumble")
+	_park_other_movers()
+
+	# A dropped vase's look jiggles, then settles back to its normal size.
+	await _wait(SETTLE_SECONDS)
+	var vase := _spawn(0, Vector3(3.0, 1.2, -3.0))
+	var peak: float = 0.0
+	for frame: int in range(90):
+		await physics_frame
+		peak = maxf(peak, absf(vase.jiggle_amount))
+	await _wait(1.0)
+	_check(peak > 0.02 and absf(vase.jiggle_amount) < 0.005, "A dropped item jiggles (%.0f%%) and settles" % (peak * 100.0))
+
+
 # --- Test helpers ---
+func _flat_speed(body: CharacterBody3D) -> float:
+	return Vector2(body.velocity.x, body.velocity.z).length()
+
+
 func _spawn(kind: int, location: Vector3) -> RigidBody3D:
 	var item: RigidBody3D = loot_scene.instantiate()
 	item.loot_kind = kind

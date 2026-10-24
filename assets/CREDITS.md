@@ -28,7 +28,7 @@ License: CC0 1.0. Buttons, panels, sliders, check boxes and click sounds (`asset
 ### Kenney Game Icons
 Author: Kenney  
 Source: [kenney.nl: Game Icons](https://kenney.nl/assets/game-icons)  
-License: CC0 1.0. Lock, phone, checkmark, trophy, star and pause icons (`assets/ui/icons/`).  
+License: CC0 1.0. The lock icon on locked maps (`assets/ui/icons/locked.png`).  
 
 ### Kenney Graveyard Kit 5.0
 Author: Kenney  
