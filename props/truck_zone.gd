@@ -50,6 +50,7 @@ func try_bank(item: Loot) -> bool:
 	if slots.is_empty():
 		slots.append(carrier_slot)
 	delivery_notice.emit(amount, item.item_name, slots, item.get_instance_id())
+	Fx.burst(item.global_position, Fx.Kind.SPARKLE, item.get_parent())
 	item.retire("KA-CHING!\n+" + Loot.rupees(amount), Balance.BANK_COLOUR)
 	banked_value += amount
 	banked_items += 1

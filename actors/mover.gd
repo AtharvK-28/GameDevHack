@@ -89,6 +89,8 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	if was_airborne and is_on_floor():
 		model.squish(Balance.SQUASH_LAND * clampf(fall_speed / Balance.LAND_SQUASH_SPEED, 0.0, 1.0))
+		if fall_speed > Balance.FX_LAND_SPEED:
+			Fx.burst(_feet(), Fx.Kind.DUST, get_parent())
 	_check_bumps(before_slide, delta)
 
 	position.x = clampf(position.x, bounds.position.x + Balance.CAPSULE_RADIUS, bounds.end.x - Balance.CAPSULE_RADIUS)
@@ -261,6 +263,10 @@ func is_tumbling() -> bool:
 	return tumble_time_left > 0.0
 
 
+func _feet() -> Vector3:
+	return global_position + Vector3.DOWN * Balance.CAPSULE_HEIGHT / 2.0
+
+
 func tumble(_push: Vector3 = Vector3.ZERO) -> void:
 	# Drop whatever we hold and lie still for TUMBLE_DURATION; the model falls and gets up in that time.
 	if is_tumbling():
@@ -271,6 +277,7 @@ func tumble(_push: Vector3 = Vector3.ZERO) -> void:
 	velocity = Vector3.ZERO
 	shove = Vector3.ZERO
 	model.play_tumble(Balance.TUMBLE_DURATION)
+	Fx.burst(_feet(), Fx.Kind.DUST, get_parent(), 1.8)
 	tumbled.emit(slot)
 	var player := Net.player_for_slot(slot)
 	if not player.is_empty():

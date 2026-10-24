@@ -43,6 +43,7 @@ func setup(scene: PackedScene, overalls: Color) -> void:
 	carry_reach.mover = get_parent()
 	skeleton.add_child(carry_reach)
 	_tint(overalls)
+	_add_outline()
 	reset()
 
 
@@ -186,3 +187,12 @@ func _tint(overalls: Color) -> void:
 		var material: BaseMaterial3D = source.duplicate()
 		material.albedo_color = tints[source.resource_name]
 		mesh.set_surface_override_material(index, material)
+
+
+func _add_outline() -> void:
+	# A dark comic rim around the whole mover, so characters pop against the world.
+	var outline := ShaderMaterial.new()
+	outline.shader = preload("res://assets/shaders/ink_outline.gdshader")
+	outline.set_shader_parameter("ink", Balance.OUTLINE_INK)
+	outline.set_shader_parameter("width", Balance.OUTLINE_WIDTH)
+	mesh.material_overlay = outline

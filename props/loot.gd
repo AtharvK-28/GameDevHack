@@ -20,6 +20,7 @@ var fragility: int
 var handle_holders: Array[CharacterBody3D] = [null, null]
 var touching_floor: bool = false
 var scrape_distance: float = 0.0
+var drag_fx_left: float = 0.0 # Seconds to the next dust puff while scraping along the floor.
 var scrape_remainder: float = 0.0
 var scrape_unshown: int = 0
 var scrape_popup_time: float = 0.0
@@ -78,7 +79,11 @@ func _process(delta: float) -> void:
 
 func _physics_process(delta: float) -> void:
 	curse_left = maxf(0.0, curse_left - delta)
+	drag_fx_left -= delta
 	if scrape_distance > 0.0:
+		if drag_fx_left <= 0.0:
+			drag_fx_left = Balance.FX_DRAG_INTERVAL
+			Fx.burst(global_position + Vector3.DOWN * item_size.y / 2.0, Fx.Kind.DUST, get_parent(), 0.5)
 		_apply_scrape()
 	scrape_popup_time += delta
 	if scrape_unshown > 0 and scrape_popup_time >= Balance.SCRAPE_POPUP_INTERVAL:
@@ -268,6 +273,7 @@ func apply_impact(speed: float) -> void:
 		return
 	var loss: int = mini(value, ceili(speed * fragility * Balance.DAMAGE_MULTIPLIER * value))
 	show_popup("CRASH!\n−" + rupees(loss), Balance.DAMAGE_COLOUR)
+	Fx.burst(global_position, Fx.Kind.SPARKS, get_parent())
 	print("%s impact %.2f m/s: -₹%d, remaining ₹%d" % [item_name, speed, loss, value - loss])
 	_lose_value(loss)
 
@@ -292,6 +298,7 @@ func _lose_value(loss: int) -> void:
 			Net.send_to_player(player, {"type": "buzz", "ms": Balance.DAMAGE_BUZZ_MS})
 	if value == 0:
 		shattered.emit(last_carrier_slot)
+		Fx.burst(global_position, Fx.Kind.SHARDS, get_parent())
 		retire("SMASH!", Balance.DAMAGE_COLOUR)
 
 

@@ -204,7 +204,9 @@ const CURSE_COOLDOWN: float = 15.0
 const CURSE_CARRY_RATIO: float = 0.7 # Multiplies carry and drag speed, not the spring.
 const CURSE_COLOUR := Color("cf80ff")
 const POSSESS_DRAIN: float = 8.0 # Per second while possessing.
-const POSSESS_RANGE: float = 0.6 # Metres from a prop's footprint.
+const POSSESS_RANGE: float = 1.2 # Metres from a prop's footprint (was 0.6: too fiddly to hit on the big screen).
+const POSSESS_AIM_BONUS: float = 0.5 # Metres of reach credited to a prop straight ahead of the ghost's last movement.
+const POSSESS_AIM_DEADZONE: float = 0.3 # Stick tilt needed to update the ghost's aim.
 const POSSESS_LOCKOUT: float = 5.0 # Seconds after an exorcism before the ghost can possess again.
 const EXORCISE_FREEZE: float = 1.0 # Seconds the ejected wisp cannot move or press anything.
 
@@ -720,3 +722,31 @@ const INTRO_MUSIC_DB: float = -10.0
 const INTRO_MUSIC_FADE: float = 1.5 # Seconds to crossfade between music beds, and to fade beds in or out.
 const INTRO_END_FADE: float = 0.6 # Seconds the sound fades out after the last panel or a skip.
 const INTRO_SILENT_DB: float = -60.0 # A faded-out bed.
+
+# --- Effects (core/fx.gd) ---
+# One-shot bursts, in the order of Fx.Kind: dust, sparks, shards, sparkle, ghost puff. Size and radius in metres,
+# speed in metres per second, gravity in metres per second squared, spread in degrees around straight up.
+const FX_BURSTS: Array[Dictionary] = [
+	{"colour": Color("cbbfa8"), "amount": 10, "size": 0.5, "lifetime": 0.6, "speed": 1.6, "gravity": 1.5, "spread": 75.0, "radius": 0.15},
+	{"colour": Color("ffd04a"), "amount": 14, "size": 0.2, "lifetime": 0.4, "speed": 4.5, "gravity": 9.0, "spread": 80.0, "radius": 0.05, "glow": true},
+	{"colour": Color("ff8f8f"), "amount": 16, "size": 0.26, "lifetime": 0.7, "speed": 4.0, "gravity": 12.0, "spread": 85.0, "radius": 0.1},
+	{"colour": Color("ffe27a"), "amount": 22, "size": 0.28, "lifetime": 0.9, "speed": 3.0, "gravity": -1.0, "spread": 50.0, "radius": 0.3, "glow": true},
+	{"colour": Color("6dff8a"), "amount": 18, "size": 0.45, "lifetime": 0.7, "speed": 2.2, "gravity": -1.5, "spread": 180.0, "radius": 0.25, "glow": true},
+]
+const FX_GLOW_ENERGY: float = 2.0 # Emission on glowing effects, so they bloom.
+const FX_TRAIL_SIZE: float = 0.34 # The ghost trail's puffs.
+const FX_TRAIL_LIFETIME: float = 0.7
+const FX_TRAIL_AMOUNT: int = 40
+const FX_TRAIL_RISE: float = 0.6 # Puffs float upward as they fade.
+const FX_TRAIL_DRIFT: float = 0.15
+const FX_TRAIL_RADIUS: float = 0.12
+const FX_TRAIL_MIN_SPEED: float = 0.4 # Metres per second the ghost must move to leave a trail.
+const FX_DRAG_INTERVAL: float = 0.12 # Seconds between dust puffs while an item scrapes along the floor.
+const FX_LAND_SPEED: float = 2.5 # Fall speed (m/s) at which a landing kicks up dust.
+
+# --- Contrast (Supercell-style punch) ---
+const MOOD_CONTRAST: float = 1.18 # Colour adjustment over the AgX tonemap: >1 deepens darks and lifts lights.
+const MOOD_SATURATION: float = 1.3
+const MOOD_BRIGHTNESS: float = 1.04
+const OUTLINE_INK := Color("120b1d") # Movers' comic outline.
+const OUTLINE_WIDTH: float = 0.022 # Metres.

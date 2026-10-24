@@ -93,6 +93,10 @@ func _build_mood() -> void:
 	environment.ambient_light_energy = Balance.MOOD_AMBIENT_ENERGY
 	environment.tonemap_mode = Environment.TONE_MAPPER_AGX
 	environment.tonemap_exposure = Balance.MOOD_EXPOSURE
+	environment.adjustment_enabled = true # A punchier, Supercell-style grade over the dusk mood.
+	environment.adjustment_contrast = Balance.MOOD_CONTRAST
+	environment.adjustment_saturation = Balance.MOOD_SATURATION
+	environment.adjustment_brightness = Balance.MOOD_BRIGHTNESS
 	environment.glow_enabled = true
 	environment.glow_intensity = Balance.MOOD_GLOW_INTENSITY
 	environment.glow_hdr_threshold = Balance.MOOD_GLOW_THRESHOLD

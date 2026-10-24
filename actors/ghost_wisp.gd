@@ -9,6 +9,7 @@ var slot: int = 0
 var signature_haunting: Script = HouseShake # The arena's own haunting, on haunt1; Ecto Slime is always haunt2.
 var energy: float = Balance.ENERGY_MAX
 var stick := Vector2.ZERO # This frame's input; zero while frozen.
+var aim := Vector2.ZERO # The last direction the stick pointed; props that way win close calls for POSSESS and Curse.
 var possessing: Possessable
 var target: Possessable # The prop POSSESS would take, shown with a bright outline.
 var freeze_left: float = 0.0
@@ -17,6 +18,8 @@ var hauntings: Array[Haunting] = []
 var shimmer_time: float = 0.0
 var body_mesh := MeshInstance3D.new() # Holds the ghost model; hidden while possessing.
 var model: GhostModel
+var trail: CPUParticles3D # Ghost-green puffs left behind while moving, also while driving a possessed prop.
+var last_position := Vector3.ZERO
 var material := StandardMaterial3D.new()
 var bounds: Rect2 = Balance.GHOST_BOUNDS # The x/z area the wisp may roam; set from the arena.
 var demo_rules: bool = false # Archived harnesses retain all five furniture actions and slime.
@@ -67,6 +70,8 @@ func _physics_process(delta: float) -> void:
 		possessing = null # The prop left play without telling us.
 		body_mesh.show()
 	stick = Vector2.ZERO if is_frozen() else input.direction
+	if stick.length() > Balance.POSSESS_AIM_DEADZONE:
+		aim = stick.normalized()
 	if not is_frozen():
 		if input.pressed.get("possess", false):
 			_toggle_possession()
@@ -88,6 +93,7 @@ func _physics_process(delta: float) -> void:
 	_update_height()
 	_update_target()
 	_update_curse_target()
+	_update_trail(delta)
 
 
 func is_frozen() -> bool:
@@ -149,6 +155,7 @@ func possess(prop: Possessable) -> void:
 	possessing = prop
 	prop.possess(self)
 	body_mesh.hide()
+	Fx.burst(prop.global_position + Vector3.UP * 0.5, Fx.Kind.GHOST_PUFF, get_parent())
 
 
 func leave() -> void:
@@ -163,6 +170,18 @@ func leave() -> void:
 	_update_height()
 	body_mesh.show()
 	model.play_emerge()
+	Fx.burst(global_position, Fx.Kind.GHOST_PUFF, get_parent())
+
+
+func _update_trail(delta: float) -> void:
+	# The trail streams while the wisp (or the prop it drives) is moving.
+	if trail == null:
+		trail = Fx.trail(Balance.UI_GHOST)
+		add_child(trail)
+		last_position = global_position
+	var speed: float = global_position.distance_to(last_position) / maxf(delta, 0.0001)
+	last_position = global_position
+	trail.emitting = speed > Balance.FX_TRAIL_MIN_SPEED
 
 
 func _update_height() -> void:
@@ -185,15 +204,15 @@ func _update_target() -> void:
 	# The nearest prop in reach that the rules allow; none while possessing, frozen or locked out.
 	var best: Possessable = null
 	if not is_instance_valid(possessing) and not is_frozen() and lockout_left <= 0.0:
-		var best_distance: float = Balance.POSSESS_RANGE
+		var best_score: float = INF
 		for node: Node in get_tree().get_nodes_in_group("possessables"):
 			if node is Possessable and node.can_be_possessed():
 				if demo_rules and node.kind != Possessable.Kind.SLIDER:
 					continue
-				var distance: float = node.reach_distance(global_position)
-				if distance <= best_distance:
+				var score: float = _reach_score(node)
+				if score < best_score:
 					best = node
-					best_distance = distance
+					best_score = score
 	if best == target:
 		return
 	if is_instance_valid(target):
@@ -201,6 +220,18 @@ func _update_target() -> void:
 	target = best
 	if best != null:
 		best.set_highlighted(true)
+
+
+func _reach_score(node: Possessable) -> float:
+	# Lower is better; INF when out of reach. Distance to the prop's footprint, less a bonus when the prop lies in
+	# the direction the ghost last moved, so the prop it is heading for wins over one just behind it.
+	var distance: float = node.reach_distance(global_position)
+	if distance > Balance.POSSESS_RANGE:
+		return INF
+	var toward := Vector2(node.global_position.x - global_position.x, node.global_position.z - global_position.z)
+	if aim.is_zero_approx() or toward.is_zero_approx():
+		return distance
+	return distance - Balance.POSSESS_AIM_BONUS * maxf(0.0, aim.dot(toward.normalized()))
 
 
 # --- ACTION and hauntings ---
@@ -235,7 +266,7 @@ func _try_haunting(index: int) -> void:
 # --- Temporary heavy-item Curse ---
 func _update_curse_target() -> void:
 	var best: Loot = null
-	var nearest: float = Balance.POSSESS_RANGE
+	var best_score: float = INF
 	if demo_rules and not is_instance_valid(possessing) and not is_frozen():
 		for node: Node in get_tree().get_nodes_in_group("possessables"):
 			if not node is Possessable or not node.prop is Loot:
@@ -243,9 +274,9 @@ func _update_curse_target() -> void:
 			var item: Loot = node.prop
 			if item.finished or item.curse_left > 0.0 or node._in_truck():
 				continue
-			var distance: float = node.reach_distance(global_position)
-			if distance <= nearest:
-				nearest = distance
+			var score: float = _reach_score(node)
+			if score < best_score:
+				best_score = score
 				best = item
 	if is_instance_valid(curse_target):
 		curse_target.curse_targeted = false

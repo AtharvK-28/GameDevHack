@@ -50,7 +50,7 @@ The core design covers every compulsory requirement; the three-arena submission 
 
 The current demo uses the supplied Old Mansion layout and mover character assets; the greybox remains the regression harness. Build a complete match before art or extra abilities. The arena/ability catalog below includes later work; only possession/SHOVE, House Shake and Curse are enabled in the demo. Existing door, chandelier, hopper, rug and slime code is retained for regression tests. Awards, expanded loot, cinematic zoom and slow motion are deferred. Room progress is included in the approved UI pass.
 
-- **Curse:** the free wisp targets nearby unbanked loot, including held loot, using the existing 0.6 m footprint reach and a visible target highlight. C / haunt3 costs 30 energy, cooldown 15 s. The object glows for 6 s and carrying/dragging speed is multiplied by 0.7, including both holders. Dropping or transferring does not remove the curse; the mover is free of the slowdown when no longer carrying it. No stacking, no spring or lift-height changes.
+- **Curse:** the free wisp targets nearby unbanked loot, including held loot, using the same 1.2 m aim-assisted footprint reach as POSSESS and a visible target highlight. C / haunt3 costs 30 energy, cooldown 15 s. The object glows for 6 s and carrying/dragging speed is multiplied by 0.7, including both holders. Dropping or transferring does not remove the curse; the mover is free of the slowdown when no longer carrying it. No stacking, no spring or lift-height changes.
 - **Haunting limits:** 8 s opening protection from live start; 4 s shared lock after a cast; individual cooldowns start at cast. House Shake works while possessing; Curse is wisp-only. Phone UI explains all refusals and displays remaining seconds, including exorcism, cooldown, opening protection, shared lock, insufficient energy and missing targets. A mover holding cursed loot sees its remaining duration.
 - **Seeded setup:** 6/9/12 loot items for 2/3/4 players, exactly one centrepiece, using existing types. Original total is calculated from that spawn. Restart restores the same seed, layout, roles and values. Keep the lone-mover 40% drag rule. New rounds receive a new seed.
 - **Disconnect:** pause the round simulation and timers until all participants reconnect; the host may cancel to the lobby without scoring the unfinished round. Reject new identities during a match; existing participants may rejoin.
@@ -151,7 +151,7 @@ The ghost wins by smashing value and wasting time, never by cheap surprise. Ever
 
 **Possession**
 
-- Move the wisp into any prop with a possessable outline and tap POSSESS. The wisp must be within 0.6 m of the prop's footprint; the prop it would take shows a bright outline.
+- Move the wisp into any prop with a possessable outline and tap POSSESS. The wisp must be within 1.2 m of the prop's footprint; among props in reach, one in the direction the wisp last moved is preferred (0.5 m credit). The prop it would take shows a bright outline.
 - The prop glows green and drips particles. The joystick now moves the prop, and the action button does that prop's special move.
 - Possession drains 8 energy per second. Leaving a prop is free. When energy runs out, the ghost is pushed out.
 - Every loose loot item, the piano included, can be possessed as a slider; heavier items move slower.
@@ -296,6 +296,7 @@ The game is judged on a projector from across a room. Everything must read insta
 - Movers: chunky characters with overalls and cap in their slot's colour and a contrasting shirt, with a name tag overhead. The model is scaled to the 1.6 m capsule; it only shows the mover's state and never changes gameplay. A visual arm-reach modifier brings the hands toward held loot without moving the item, spring target or collider.
 - Every item has a small price tag above it that shows only while a mover or the ghost is within 3 m, fading in and out over 0.2 s, and always while it is carried. It ticks down and turns red as value drops. Damage and banking popups always show, a little bigger than the tags.
 - Ghost: a translucent bedsheet wisp with trailing particles. Possessed props get a green glow, an outline shader and dripping ectoplasm.
+- Comic punch (decision 91): movers wear a dark ink outline; the dusk grade adds contrast and saturation; quick particle bursts mark landings, tumbles, one-handle dragging, CRASH (sparks), SMASH (shards), KA-CHING (sparkles) and possession (green puffs), and the wisp leaves a ghost-green trail.
 - `WorldEnvironment`: glow (bloom), filmic tonemapping, depth fog in the museum. The Mobile renderer has no SSAO or volumetric fog, so fake contact shadows with darker texture bases or blob shadows under items.
 
 **On-screen HUD**
