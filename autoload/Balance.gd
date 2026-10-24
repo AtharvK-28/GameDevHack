@@ -83,14 +83,16 @@ const OVERLAY_MARGIN: float = 16.0 # Pixels.
 const JOYSTICK_SIZE: int = 120 # CSS pixels.
 const JOYSTICK_DEADZONE: float = 0.15 # Normalised stick magnitude, 0 to 1; the phone rescales past it, so there is no jump.
 
-# --- Goofy physics settings (mild; mostly visual) ---
-const GOOFINESS: float = 1.0 # Scales every effect below: 0 turns them off, 2 doubles them.
+# --- Goofy physics settings (turned up; mostly visual) ---
+# To tone it back down: set GOOFINESS to 1.0 and the three *_DAMPING values to 12, 14 and 10 (decision 84's mild
+# settings), and LIGHT_LOOT_BOUNCE to 0.2. GOOFINESS 0 turns every effect below off.
+const GOOFINESS: float = 1.8 # Scales every effect below: 0 turns them off, 1 is mild, 2 doubles them.
 const LEAN_MAX: float = 8.0 # Degrees a mover's body tilts into speeding up, stopping and turning.
 const LEAN_FULL_ACCELERATION: float = 15.0 # Metres per second squared that gives the full lean.
 const LEAN_STIFFNESS: float = 120.0 # Spring pulling the lean to its target, per degree.
-const LEAN_DAMPING: float = 12.0 # Below 2 * sqrt(stiffness), so the lean overshoots a little and settles.
+const LEAN_DAMPING: float = 8.0 # Lower is bouncier: well below 2 * sqrt(stiffness), so the lean overshoots and rocks back.
 const SQUASH_STIFFNESS: float = 300.0 # Spring returning a squash or stretch to normal.
-const SQUASH_DAMPING: float = 14.0
+const SQUASH_DAMPING: float = 9.0 # Lower is bouncier.
 const SQUASH_GRAB: float = 0.06 # Fraction of height; positive squashes, negative stretches.
 const SQUASH_THROW: float = -0.06
 const SQUASH_LAND: float = 0.08 # At LAND_SQUASH_SPEED or faster.
@@ -107,7 +109,7 @@ const JIGGLE_MIN_SPEED: float = 1.0 # Softer touches don't jiggle.
 const JIGGLE_GRAB: float = 0.04
 const JIGGLE_THROW: float = -0.06
 const JIGGLE_STIFFNESS: float = 260.0 # Settles in about 0.4 s.
-const JIGGLE_DAMPING: float = 10.0
+const JIGGLE_DAMPING: float = 6.0 # Lower is bouncier: items wobble for longer after a knock.
 
 # --- Carrying settings ---
 const WORLD_LAYER: int = 1
@@ -137,7 +139,7 @@ const LOOT_LINEAR_DAMP: float = 0.15
 const LOOT_ANGULAR_DAMP: float = 1.0
 const LOOT_FRICTION: float = 0.6
 const LOOT_BOUNCE: float = 0.1
-const LIGHT_LOOT_BOUNCE: float = 0.2 # Light items skitter when dropped (goofy physics).
+const LIGHT_LOOT_BOUNCE: float = 0.3 # Light items skitter when dropped (goofy physics).
 const THROW_SPEED: float = 7.0 # Metres per second added in the facing direction.
 const THROW_LIFT: float = 2.0 # Metres per second upwards.
 

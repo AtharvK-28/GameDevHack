@@ -150,3 +150,4 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - Calmer yard and clearer loot (2026-10-24, decision 94): yard scatter thinned and toned toward the ground; wood floors darkened so loot reads; rendered and inspected.
 - Comic look on the playfield (2026-10-24, decision 95): toon light on movers, loot and possessable furniture; ink outlines on loot and furniture. All nine checks pass; close-ups of a mover and the piano inspected.
 - Lighting softened (2026-10-24, decision 96): compared renders before and after the grade changes; the strong contrast, saturation, vignette and floor tint were rolled back to light touches. Battery, arena and match checks pass.
+- Goofier physics (2026-10-24, decision 97): GOOFINESS 1.8 with bouncier springs and more bounce on light loot; all eight physics and match checks pass. The way back to the mild settings is in the comment above GOOFINESS.
