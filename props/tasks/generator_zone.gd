@@ -45,13 +45,16 @@ func _ready() -> void:
 		indicator.material_override = _material(Balance.BATTERY_METAL)
 		add_child(indicator)
 		indicators.append(indicator)
-	label = Label3D.new()
+	label = Label3D.new() # Painted on the ground in comic lettering, turned to read from the camera.
+	label.font = load(Balance.COMIC_FONT_PATH)
 	label.font_size = Balance.PRICE_FONT_SIZE
-	label.pixel_size = Balance.TASK_LABEL_PIXEL_SIZE
-	label.position.y = Balance.TASK_LABEL_HEIGHT
-	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	label.modulate = Balance.GENERATOR_COLOUR
+	label.pixel_size = Balance.FLOOR_LABEL_PIXEL_SIZE
+	label.outline_size = Balance.LABEL_OUTLINE
+	label.outline_modulate = Balance.COMIC_INK
+	label.modulate = Color(Balance.GENERATOR_COLOUR.lightened(0.4), Balance.FLOOR_LABEL_ALPHA)
+	label.position.y = Balance.FLOOR_LABEL_HEIGHT
 	add_child(label)
+	label.set_deferred("global_rotation_degrees", Vector3(-90.0, Balance.CAMERA_YAW, 0.0)) # After the arena places the zone.
 	_refresh()
 
 
@@ -82,7 +85,7 @@ func try_deliver(battery: Carryable) -> bool:
 
 # --- Feedback ---
 func _refresh() -> void:
-	label.text = "GENERATOR POWERED\nGhost weakened" if powered else "GENERATOR %d/%d\nRelease batteries here" % [delivered, Balance.BATTERY_COUNT]
+	label.text = "GENERATOR ON!\nGhost weakened" if powered else "GENERATOR %d/%d\nDrop batteries here" % [delivered, Balance.BATTERY_COUNT]
 	for index: int in indicators.size():
 		indicators[index].material_override = _material(Balance.GENERATOR_COLOUR if index < delivered else Balance.BATTERY_METAL)
 

@@ -38,8 +38,22 @@ func _ready() -> void:
 	name_label.font_size = Balance.LABEL_FONT_SIZE
 	name_label.pixel_size = Balance.LABEL_PIXEL_SIZE
 	name_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	name_label.modulate = Color(Balance.PLAYER_COLOURS[slot]) # The player's colour with an ink outline.
+	name_label.outline_size = Balance.LABEL_OUTLINE
+	name_label.outline_modulate = Balance.COMIC_INK
 	add_child(name_label)
 	_update_hold_point()
+
+
+func _label_stack() -> int:
+	# Movers standing close together stack their name tags upward in slot order, so the tags never overlap.
+	var below: int = 0
+	for other: Node3D in get_tree().get_nodes_in_group("movers"):
+		if other != self and other.visible and other.slot < slot:
+			var gap := Vector2(other.global_position.x - global_position.x, other.global_position.z - global_position.z)
+			if gap.length() < Balance.LABEL_SPREAD_DISTANCE:
+				below += 1
+	return below
 
 
 # --- Movement and controls ---
@@ -80,7 +94,9 @@ func _physics_process(delta: float) -> void:
 	position.x = clampf(position.x, bounds.position.x + Balance.CAPSULE_RADIUS, bounds.end.x - Balance.CAPSULE_RADIUS)
 	position.z = clampf(position.z, bounds.position.y + Balance.CAPSULE_RADIUS, bounds.end.y - Balance.CAPSULE_RADIUS)
 	var player := Net.player_for_slot(slot)
-	name_label.text = "%d · %s" % [slot + 1, player.get("name", "Unclaimed")]
+	var full_name: String = player.get("name", "Unclaimed")
+	name_label.text = full_name if full_name.length() <= Balance.NAME_MAX_CHARS else full_name.left(Balance.NAME_MAX_CHARS - 1) + "…"
+	name_label.position.y = Balance.LABEL_HEIGHT + _label_stack() * Balance.LABEL_STACK_STEP
 	_update_model(delta)
 
 

@@ -26,13 +26,18 @@ func _ready() -> void:
 		_build_half_circle()
 	else:
 		_build_box()
+	# Painted on the ground like a loading-bay marking, in comic lettering, turned to read from the camera.
 	var sign_label := Label3D.new()
-	sign_label.text = "TRUCK\nRelease GRAB here"
+	sign_label.text = "LOAD THE\nTRUCK!"
+	sign_label.font = load(Balance.COMIC_FONT_PATH)
 	sign_label.font_size = Balance.PRICE_FONT_SIZE
-	sign_label.pixel_size = Balance.PRICE_PIXEL_SIZE
-	sign_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	sign_label.position = Vector3(-radius / 2.0, Balance.PRICE_LABEL_HEIGHT, 0.0) if radius > 0.0 else Vector3(0.0, Balance.PRICE_LABEL_HEIGHT, zone_size.z / 2.0)
+	sign_label.pixel_size = Balance.FLOOR_LABEL_PIXEL_SIZE
+	sign_label.outline_size = Balance.LABEL_OUTLINE
+	sign_label.outline_modulate = Balance.COMIC_INK
+	sign_label.modulate = Color(Color.WHITE, Balance.FLOOR_LABEL_ALPHA)
 	add_child(sign_label)
+	sign_label.set_deferred("global_rotation_degrees", Vector3(-90.0, Balance.CAMERA_YAW, 0.0)) # After the arena places the zone.
+	sign_label.position = Vector3(-radius / 2.0, Balance.FLOOR_LABEL_HEIGHT, 0.0) if radius > 0.0 else Vector3(0.0, Balance.FLOOR_LABEL_HEIGHT, 0.0)
 
 
 # --- Banking ---
@@ -45,7 +50,7 @@ func try_bank(item: Loot) -> bool:
 	if slots.is_empty():
 		slots.append(carrier_slot)
 	delivery_notice.emit(amount, item.item_name, slots, item.get_instance_id())
-	item.retire("+" + Loot.rupees(amount), Balance.BANK_COLOUR)
+	item.retire("KA-CHING!\n+" + Loot.rupees(amount), Balance.BANK_COLOUR)
 	banked_value += amount
 	banked_items += 1
 	banked.emit(amount, carrier_slot)

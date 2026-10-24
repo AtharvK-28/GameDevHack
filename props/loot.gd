@@ -82,7 +82,7 @@ func _physics_process(delta: float) -> void:
 		_apply_scrape()
 	scrape_popup_time += delta
 	if scrape_unshown > 0 and scrape_popup_time >= Balance.SCRAPE_POPUP_INTERVAL:
-		show_popup("−" + rupees(scrape_unshown), Balance.DAMAGE_COLOUR)
+		show_popup("SCRAPE!\n−" + rupees(scrape_unshown), Balance.DAMAGE_COLOUR)
 		scrape_unshown = 0
 		scrape_popup_time = 0.0
 
@@ -267,7 +267,7 @@ func apply_impact(speed: float) -> void:
 	if finished or speed <= Balance.DAMAGE_SPEED_THRESHOLD:
 		return
 	var loss: int = mini(value, ceili(speed * fragility * Balance.DAMAGE_MULTIPLIER * value))
-	show_popup("−" + rupees(loss), Balance.DAMAGE_COLOUR)
+	show_popup("CRASH!\n−" + rupees(loss), Balance.DAMAGE_COLOUR)
 	print("%s impact %.2f m/s: -₹%d, remaining ₹%d" % [item_name, speed, loss, value - loss])
 	_lose_value(loss)
 
@@ -292,7 +292,7 @@ func _lose_value(loss: int) -> void:
 			Net.send_to_player(player, {"type": "buzz", "ms": Balance.DAMAGE_BUZZ_MS})
 	if value == 0:
 		shattered.emit(last_carrier_slot)
-		retire("SHATTERED", Balance.DAMAGE_COLOUR)
+		retire("SMASH!", Balance.DAMAGE_COLOUR)
 
 
 func retire(message: String, colour: Color) -> void:
@@ -312,15 +312,21 @@ func show_popup(message: String, colour: Color) -> void:
 	var popup := Label3D.new()
 	popup.text = message
 	popup.modulate = colour
+	popup.font = load(Balance.COMIC_FONT_PATH) # Comic lettering with a thick ink outline, like the intro's sound effects.
 	popup.font_size = Balance.PRICE_FONT_SIZE
+	popup.outline_size = Balance.VALUE_POPUP_OUTLINE
+	popup.outline_modulate = Balance.COMIC_INK
 	popup.pixel_size = Balance.VALUE_POPUP_PIXEL_SIZE
 	popup.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	popup.no_depth_test = true
 	get_parent().add_child(popup)
 	popup.global_position = price_label.global_position + Vector3.UP * Balance.VALUE_POPUP_START
+	popup.scale = Vector3.ONE * Balance.VALUE_POPUP_PUNCH
+	var punch := popup.create_tween()
+	punch.tween_property(popup, "scale", Vector3.ONE, Balance.VALUE_POPUP_PUNCH_TIME).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	var tween := popup.create_tween().set_parallel()
 	tween.tween_property(popup, "position:y", popup.position.y + Balance.VALUE_POPUP_RISE, Balance.VALUE_POPUP_LIFETIME)
-	tween.tween_property(popup, "modulate:a", 0.0, Balance.VALUE_POPUP_LIFETIME)
+	tween.tween_property(popup, "modulate:a", 0.0, Balance.VALUE_POPUP_LIFETIME).set_delay(Balance.VALUE_POPUP_LIFETIME * 0.4)
 	tween.chain().tween_callback(popup.queue_free)
 
 

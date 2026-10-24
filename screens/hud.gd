@@ -385,7 +385,7 @@ func _draw_energy() -> void:
 
 func _draw_danger() -> void:
 	# Red glow creeping in from all four edges, pulsing, once losses near the limit.
-	var strength: float = (0.55 + 0.45 * sin(clock_time * Balance.HUD_DANGER_RATE)) * 0.6
+	var strength: float = 0.35 + 0.25 * sin(clock_time * Balance.HUD_DANGER_RATE) # Never fades out completely.
 	var red := Color(Balance.UI_DANGER, strength)
 	var clear := Color(Balance.UI_DANGER, 0.0)
 	var reach: float = Balance.HUD_DANGER_WIDTH
