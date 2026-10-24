@@ -34,7 +34,7 @@ The core design covers every compulsory requirement; the three-arena submission 
 | Minimum 3 arenas | Old Mansion, Ghost Ship, Abandoned Museum |
 | At least 3 interactive environmental elements | Possessable props, plus House Shake, Gust of Wind and Lights Out hauntings |
 | Role switching after each round | The Ghost passes to the next player every round |
-| Limited sabotage | Ghost energy bar, haunting cooldowns, map tasks that handicap the ghost (to be designed) |
+| Limited sabotage | Ghost energy bar, haunting cooldowns, Battery Run: optional generator task that weakens the ghost |
 | Timer or points scoring | 150 s round timer; a value quota; individual points |
 | Win/loss, restart, final results | Quota met or not; a restart-round button; a final leaderboard with awards |
 
@@ -118,8 +118,9 @@ Movers have one job: get value onto the truck. Every control is about carrying w
 
 **Countering the ghost**
 
-- There is no flashlight (decision 82). Each map will get repeatable tasks that handicap the ghost for a while; doing them costs time the movers could spend carrying loot. The tasks are still to be designed.
-- Exorcism stays in the game for those tasks to trigger: the ghost is ejected, stunned and cannot possess anything for 5 s. Stunned means the wisp is frozen for 1 s: it cannot move or use any button, hauntings included.
+- There is no flashlight (decision 82). The Mansion uses Battery Run (decision 87): three heavy batteries spawn at three distinct seeded picks from ten locations. Carry and release all three in the separate cyan generator zone to power it for the rest of the round. Batteries are indestructible, non-throwable and cannot be possessed; they have no value, score or quota credit.
+- Powered generator: gently brighten ambient and moon light; haunting cooldowns and their remaining times become 1.5x, free-wisp energy regeneration 0.5x and free-wisp movement 0.75x. Abilities remain available; possessed movement, SHOVE and active hauntings are unchanged. Effects do not stack. Restart restores the same battery locations and original lighting/ghost tuning; a new round uses a new seed. Remaining arenas receive their tasks when designed.
+- Exorcism stays available for future tasks; Battery Run applies the generator handicap instead. Exorcism means: the ghost is ejected, stunned and cannot possess anything for 5 s. Stunned means the wisp is frozen for 1 s: it cannot move or use any button, hauntings included.
 
 **Tumbling.** You fall over if:
 
@@ -614,3 +615,6 @@ UI base is 1152 x 648 with canvas scaling, body text 18 and minimum 17 base pixe
 Every host start or lobby rotation generates a cryptographic 128-bit key and six-character code excluding ambiguous characters. QR URL is `http://<host>:8080/#k=<key>`; fragment is not sent to the HTTP server. Hello requires a key or manual code, plus pid and 128-bit secret for rejoin. Welcome returns the session key and player's secret; phone identities are scoped to that key. Equality checks inspect every byte for equal-length credentials. Authentication expires after 2 seconds; only four unauthenticated sockets are held. Packets over 1024 bytes disconnect; token bucket allows 100 messages per second with burst 150. Five bad credentials from an address within 60 seconds lock that address for 60 seconds. New identities are refused mid-match; valid players rejoin. Lobby rotation disconnects everyone and invalidates old keys and secrets.
 
 Close codes: 4001 auth timeout, 4002 new lobby, 4003 denied credentials, 4008 rate limit, 4009 size limit, 4010 match in progress, 4011 full, 4012 address locked. Phones show the host reason and stop retrying application refusals. Pending-cap overflow may close before WebSocket upgrade. LAN transport remains local HTTP/WebSocket.
+
+
+**Battery Run implementation.** `props/tasks/` holds `battery.tscn`/`battery.gd` and `generator_zone.tscn`/`generator_zone.gd`. The Mansion layout supplies `spawns.batteries` and `generator`; Mansion creates the task only for match rounds. All tuning is in Balance. The battery subclasses Carryable, never Loot. Release invokes generator delivery directly, so sliding or ghost shoves cannot complete it. Batteries that fall below the map or escape the movers' playable bounds return to their spawn. HUD shows battery progress; mover/ghost `hud` messages add `generator: {delivered, total, powered}` (empty when no task); ghost HUD also adds `generatorPowered`. Cooldown rings use the powered duration.

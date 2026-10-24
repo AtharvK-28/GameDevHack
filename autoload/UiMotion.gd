@@ -8,6 +8,9 @@ var covered_scene: Node # The scene that was showing when the wipe covered the s
 
 # --- Setup ---
 func _ready() -> void:
+	# Project-wide themes load before the editor imports assets on a fresh checkout.
+	# Apply it to the root window at runtime, once the imported textures exist.
+	get_tree().root.theme = load("res://assets/ui/ghosted_theme.tres")
 	layer = 100 # Above every screen.
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	wipe.color = Balance.UI_NIGHT

@@ -52,10 +52,6 @@ lights_and_shadows/directional_shadow/size=2048
 
 enabled=PackedStringArray("res://addons/maaacks_game_template/plugin.cfg", "res://addons/maaacks_scene_loader/plugin.cfg", "res://addons/maaacks_ui_sound_controller/plugin.cfg")
 
-[gui]
-
-theme/custom="res://assets/ui/ghosted_theme.tres"
-
 [maaacks_game_template]
 
 copy_path="res://menus/"

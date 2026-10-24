@@ -2,6 +2,19 @@
 
 Godot 4.7.2 stable · Mobile renderer · Jolt · 60 Hz physics.
 
+## First run after cloning or pulling
+
+Open `project.godot` in the Godot editor and wait for the import progress to finish before pressing **F5**. The PNGs, fonts and models are tracked; `.godot/` is a generated cache and must stay out of Git. The UI theme is applied at runtime so a first editor import does not try to load textures before they exist.
+
+For a terminal setup, run this from the project folder before starting the game or checks:
+
+```text
+godot --headless --path . --editor --import
+godot --path .
+```
+
+Use the installed Godot executable if `godot` is not on PATH. In PowerShell, put `&` before a quoted executable path; in a POSIX shell, use the quoted path directly. If an old checkout still reports missing `.ctex` files, close Godot, remove only that project's generated `.godot` folder, then reopen the project and let it finish importing. Keep the source assets and their `.import` settings.
+
 ## Play a match
 
 1. Press **F5 (Run Project)** in Godot. **F6 runs only the open scene**: using it with `Main.tscn` opens the QR lobby directly, bypassing Home. The title screen opens over the Mansion; choose **Play**, then the **Old Mansion**, to reach the lobby with its QR code, join link and six-character code. **F11** switches between fullscreen and a window. (If Godot runs the game inside the editor's Game tab, fullscreen needs the game in its own window: turn off the Game tab's embed option.)
@@ -18,6 +31,12 @@ Movers are the team's character model in their slot's colours; the model only sh
 The home menu includes **Guide**, a short explanation of joining, mover controls, ghost abilities and the round objective. Back or Escape returns home.
 
 Points: movers get 1 per ₹100 they deliver (two-person items split) plus 100 for a win; the ghost gets 1 per ₹100 lost plus 150 for a win. Awards, more arenas and the other ghost abilities come later.
+
+## Optional Battery Run
+
+Each Mansion round places three heavy batteries at three distinct locations chosen from ten spots. Carry them to the **cyan generator zone left of the path near the truck**, and release GRAB to deliver. Batteries have no value, cannot be thrown or possessed, and do not change the loot quota.
+
+All three deliveries power the generator for the rest of the round: brighter ambient/moon light, 50% longer haunting cooldowns, 50% slower energy regeneration and 25% slower free-wisp movement. Possession and SHOVE stay available at their existing strength. Restart restores the same battery locations and clears the task; the next round selects new seeded locations. The HUD and phone report progress.
 
 ## Run the greybox harness
 
@@ -84,14 +103,19 @@ godot --headless --path . --script res://core/ghost_check.gd
 godot --headless --path . --script res://core/match_check.gd
 godot --headless --path . --script res://core/arena_layout_check.gd
 godot --headless --path . --script res://core/catalog_check.gd
+godot --headless --path . --script res://core/battery_check.gd
+godot --path . --script res://core/ui_check.gd
 ```
 
 Close a running host before any integration check; they all open port 9080.
+
+`ui_check.gd` uses the real renderer to exercise Home, Guide, Options, Credits, map selection, lobby, match screens and pause navigation, including maximum-length player names. It saves local review captures under `.verification/`. The other eight checks run headlessly.
 
 - `plumbing_check.gd` tests four clients, independent mover movement, malformed messages, joystick clamping, button edges, timeout, reconnect, capacity and keyboard fallback. Success ends with `PLUMBING CHECK: PASS` and exit code 0.
 - `carrying_check.gd` runs real Jolt physics: pickup and spring settling, walking and 180° turns without launching, plain drops, grab selection, throwing, damage maths, wall hits, resting contact, banking exactly once, phone grab and HUD, heartbeat and disconnect drops, and two movers grabbing the same item in one tick, price tags that show only while a mover is near, the stick response and walking ramp, movers bumping apart and items jiggling. Success ends with `CARRYING CHECK: PASS` and exit code 0.
 - `team_carry_check.gd` drives two simulated phones: two-person lift, 70% carry, average steering, turning, 25% drag with scraping, the lone-mover 40% drag, losing grip, the piano through the parlour doorway, and tumbling from thrown items. Success ends with `TEAM CARRY CHECK: PASS` and exit code 0. The carrying checks remove the ghost's furniture first, so they test carrying alone.
 - `ghost_check.gd` drives a mover phone and a ghost phone: the piano route past the open door, the G key and the movers-only lone-mover rule, wisp speed, walls, bounds and shimmer, energy gain and drain, every possession rule, all five prop actions and their costs, exorcism with the freeze and lock, House Shake, Ecto Slime, the ghost's `hud` (labels, costs, cooldowns, greying) and the Q/F/Z/X keys. Success ends with `GHOST CHECK: PASS` and exit code 0.
+- `battery_check.gd` checks the ten candidate spots with the full loot pool, distinct seeded placement, heavy carry, release-only delivery, duplicate prevention, score isolation, ghost movement/regen/cooldowns, powered lighting after lightning, pause and restart. Success ends with `BATTERY CHECK: PASS`.
 - `catalog_check.gd` checks the furniture catalog: entries, loot values and colliders, the piano's route, decor never priced or possessable, the whole pool resting where it spawns, and every match-sized pick. Success ends with `CATALOG CHECK: PASS`.
 - `arena_layout_check.gd` checks the Old Mansion: room zones, doorway widths, walking from every room to the truck, carrying every weight up and down the stairs, two movers taking the piano down and back up, railings and walls holding movers and loot, walls fading only while they hide a player, the ghost spawning outside, decor keeping clear of every spawn spot, and arches and gates leaving their openings clear. Success ends with `ARENA LAYOUT CHECK: PASS` and exit code 0. The other checks run on the one-room greybox (`arenas/Greybox.tscn`).
 - `match_check.gd` plays whole matches with two phones and the host keys: lobby and ready, Enter to start, a third phone refused mid-match, the seeded 6-item setup with one piano, reveal and live phases, the three-quarter camera following the mover, energy regeneration, opening protection, the shared haunting lock and their phone reasons, Curse (cost, no stacking, 30% slower carry for 6 s), the exact 70%/30% boundaries, an early ghost win, restart with the same layout and replaced points, ghost rotation, timeout, disconnect pause and resume, cancelling to the lobby, and a full 4-round match to the final standings. Success ends with `MATCH CHECK: PASS` and exit code 0.

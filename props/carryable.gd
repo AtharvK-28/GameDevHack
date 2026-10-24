@@ -163,7 +163,8 @@ func release(throw_velocity: Vector3 = Vector3.ZERO, _by: CharacterBody3D = null
 	if finished or not is_held():
 		return
 	_detach()
-	if _on_released():
+	# Only putting an item down can deliver it; THROW must still launch it inside a zone.
+	if throw_velocity.is_zero_approx() and _on_released():
 		return
 	if not throw_velocity.is_zero_approx():
 		thrown = true

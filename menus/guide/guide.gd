@@ -23,7 +23,7 @@ func _ready() -> void:
 	roles.add_child(_role("MOVERS", "Stick to move. Hold GRAB to carry; release in the green truck zone to bank. Bumps lose value. THROW light loot only.\nTwo movers carry the piano; dragging loses value.\nWhen SHAKE warns you, stop or BRACE."))
 	roles.add_child(_role("GHOST", "Fly through walls. POSSESS loose loot or the sofa, steer, then SHOVE. LEAVE to refill energy.\nSHAKE tumbles moving movers. CURSE slows carriers. Buttons show costs and cooldowns.\nDoor, chandelier, armour and rug abilities are disabled in this demo."))
 	column.add_child(_label("Bank 70% before time runs out to win as movers. Lose more than 30% and the ghost wins.", &"BodyLabel"))
-	column.add_child(_label("Scan QR on the same Wi-Fi, enter a name and tap Ready. The host starts with 2+ ready phones.", &"MutedLabel"))
+	column.add_child(_label("Optional: deliver 3 batteries to the cyan generator for brighter lights and a weaker ghost for the round.\nJoin on the same Wi-Fi, scan QR, enter a name and tap Ready (2+ phones).", &"MutedLabel"))
 
 	var back := Button.new()
 	back.text = "Back"

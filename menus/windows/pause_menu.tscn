@@ -54,7 +54,7 @@ text = "Quit"
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
-title = "Confirm Restart"
+title = "Back to lobby?"
 text = "Cancel this round and go back to the lobby? The round scores nothing."
 
 [node name="MainMenuConfirmation" parent="." index="2" unique_id=1770307648 instance=ExtResource("4_6lma4")]

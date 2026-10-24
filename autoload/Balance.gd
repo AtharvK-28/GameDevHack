@@ -5,6 +5,27 @@ extends Node
 const WEB_PORT: int = 8080
 const SOCKET_PORT: int = 9080
 const MAX_PLAYERS: int = 4
+
+# --- Battery Run (optional Mansion task) ---
+const BATTERY_COUNT: int = 3 # Deliver all three; no quota value.
+const BATTERY_SIZE := Vector3(0.65, 0.55, 0.45) # Metres; heavy, single-mover carry.
+const BATTERY_COLOUR := Color("e6af39") # Amber case, distinct from ordinary decor.
+const BATTERY_METAL := Color("283340")
+const GENERATOR_COLOUR := Color("66d9ff") # Cyan delivery zone, distinct from the green truck zone.
+const GENERATOR_ZONE_SIZE := Vector3(2.4, 2.0, 2.4) # Metres; centre must be inside on release.
+const GENERATOR_BODY_SIZE := Vector3(1.2, 1.0, 0.65) # Metres; sits behind the marked delivery zone.
+const GENERATOR_COOLDOWN_RATIO: float = 1.5 # Haunting cooldown duration; abilities remain usable.
+const GENERATOR_REGEN_RATIO: float = 0.5 # Free-wisp energy per second.
+const GENERATOR_SPEED_RATIO: float = 0.75 # Free-wisp movement only.
+const GENERATOR_AMBIENT_RATIO: float = 1.4 # Gentle ambient lift, preserving dusk colours.
+const GENERATOR_MOON_RATIO: float = 1.15
+const GENERATOR_LIGHT_FADE: float = 1.5 # Seconds to brighten after the final battery.
+const TASK_LABEL_PIXEL_SIZE: float = 0.006 # World metres per label pixel.
+const TASK_LABEL_HEIGHT: float = 1.4 # Metres above the generator zone.
+const BATTERY_RECOVERY_DEPTH: float = -3.0 # Metres; return a battery that escapes below the arena.
+const BATTERY_SEED_OFFSET: int = 7919 # Separate battery placement from the seeded loot selection.
+
+# --- Controller cadence ---
 const INPUT_RATE: int = 30 # Messages per second, including idle heartbeats.
 const HUD_RATE: int = 8 # Messages per second in later gameplay phases.
 const INPUT_TIMEOUT_MS: int = 500

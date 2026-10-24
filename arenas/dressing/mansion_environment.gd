@@ -309,6 +309,11 @@ func _clear_rects() -> Array[Rect2]:
 	for path: Dictionary in arena.layout.paths:
 		rects.append(ArenaBuilder.rect_of(path.rect).grow(CLEARANCE))
 	rects.append(_drive_rect().grow(CLEARANCE))
+	if is_instance_valid(arena.generator):
+		var centre := Vector2(arena.generator.position.x, arena.generator.position.z)
+		var size := Vector2(Balance.GENERATOR_ZONE_SIZE.x, Balance.GENERATOR_ZONE_SIZE.z + Balance.GENERATOR_BODY_SIZE.z)
+		var origin := centre - Vector2(size.x / 2.0, Balance.GENERATOR_ZONE_SIZE.z / 2.0 + Balance.GENERATOR_BODY_SIZE.z)
+		rects.append(Rect2(origin, size).grow(CLEARANCE))
 	var tailgate := Vector2(arena.layout.truck.tailgate[0], arena.layout.truck.tailgate[1])
 	rects.append(Rect2(tailgate - Vector2(Balance.DELIVERY_RADIUS + CLEARANCE, Balance.DELIVERY_RADIUS + CLEARANCE), Vector2(Balance.TRUCK_LENGTH + Balance.DELIVERY_RADIUS + CLEARANCE * 2.0, (Balance.DELIVERY_RADIUS + CLEARANCE) * 2.0)))
 	return rects

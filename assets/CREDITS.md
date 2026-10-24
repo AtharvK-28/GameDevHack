@@ -77,3 +77,5 @@ License: MIT (`controller/nipplejs_license.txt`). The phone's joystick.
 ### Godot Engine
 Source: [godotengine.org](https://godotengine.org)  
 License: MIT  
+
+Battery Run battery and generator: original simple-shape models built by the project in `props/tasks/`.

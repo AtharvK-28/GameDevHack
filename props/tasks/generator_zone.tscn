@@ -1,0 +1,7 @@
+; The separate cyan battery delivery zone and its generator.
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://props/tasks/generator_zone.gd" id="1"]
+
+[node name="GeneratorZone" type="Area3D"]
+script = ExtResource("1")

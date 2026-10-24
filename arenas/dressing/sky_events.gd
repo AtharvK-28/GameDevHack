@@ -60,10 +60,27 @@ func strike(thunder_delay: float) -> void:
 			moon.light_energy = Balance.LIGHTNING_FLASH_ENERGY
 			world.environment.ambient_light_energy = Balance.MOOD_AMBIENT_ENERGY * Balance.LIGHTNING_AMBIENT_BOOST
 		)
-		flash.tween_property(moon, "light_energy", Balance.MOON_ENERGY, Balance.LIGHTNING_FLASH_TIME).set_ease(Tween.EASE_IN)
-		flash.parallel().tween_property(world.environment, "ambient_light_energy", Balance.MOOD_AMBIENT_ENERGY, Balance.LIGHTNING_FLASH_TIME).set_ease(Tween.EASE_IN)
+		flash.tween_property(moon, "light_energy", _resting_moon(), Balance.LIGHTNING_FLASH_TIME).set_ease(Tween.EASE_IN)
+		flash.parallel().tween_property(world.environment, "ambient_light_energy", _resting_ambient(), Balance.LIGHTNING_FLASH_TIME).set_ease(Tween.EASE_IN)
+	# A generator completed during a flash must not lose its permanent lighting improvement.
+	flash.tween_callback(_restore_lighting)
 	flash.tween_interval(thunder_delay)
 	flash.tween_callback(func() -> void: Sfx.play("thunder", random.randf_range(0.85, 1.05), Balance.THUNDER_VOLUME_DB))
+
+
+func _resting_ambient() -> float:
+	var powered: bool = is_instance_valid(arena.generator) and arena.generator.powered
+	return Balance.MOOD_AMBIENT_ENERGY * (Balance.GENERATOR_AMBIENT_RATIO if powered else 1.0)
+
+
+func _resting_moon() -> float:
+	var powered: bool = is_instance_valid(arena.generator) and arena.generator.powered
+	return Balance.MOON_ENERGY * (Balance.GENERATOR_MOON_RATIO if powered else 1.0)
+
+
+func _restore_lighting() -> void:
+	arena.get_node("Moonlight").light_energy = _resting_moon()
+	arena.get_node("WorldEnvironment").environment.ambient_light_energy = _resting_ambient()
 
 
 # --- Smashes and round results ---

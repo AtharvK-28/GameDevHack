@@ -26,6 +26,8 @@ var opening_left: float = 0.0
 var shared_lock_left: float = 0.0
 var curse_cooldown_left: float = 0.0
 var curse_target: Loot
+var generator_powered: bool = false
+var curse_cooldown_duration: float = Balance.CURSE_COOLDOWN
 
 # --- Setup ---
 func _ready() -> void:
@@ -37,6 +39,8 @@ func _ready() -> void:
 		hauntings.append(haunting)
 		add_child(haunting)
 	_build_body()
+	if is_instance_valid(arena) and arena.get("generator") != null and arena.generator.powered:
+		apply_generator_power()
 
 
 func _exit_tree() -> void:
@@ -79,7 +83,7 @@ func _physics_process(delta: float) -> void:
 		var at: Vector3 = possessing.global_position
 		global_position = Vector3(at.x, Balance.WISP_HEIGHT, at.z)
 	else:
-		position += Vector3(stick.x, 0.0, stick.y) * Balance.WISP_SPEED * delta
+		position += Vector3(stick.x, 0.0, stick.y) * movement_speed() * delta
 		_clamp_to_bounds()
 	_update_height()
 	_update_target()
@@ -90,6 +94,23 @@ func is_frozen() -> bool:
 	return freeze_left > 0.0
 
 
+func movement_speed() -> float:
+	return Balance.WISP_SPEED * (Balance.GENERATOR_SPEED_RATIO if generator_powered else 1.0)
+
+
+func apply_generator_power() -> void:
+	if generator_powered:
+		return
+	generator_powered = true
+	# Preserve progress on running cooldowns; both their remaining time and total scale once.
+	for haunting: Haunting in hauntings:
+		haunting.cooldown *= Balance.GENERATOR_COOLDOWN_RATIO
+		haunting.cooldown_left *= Balance.GENERATOR_COOLDOWN_RATIO
+	curse_cooldown_duration *= Balance.GENERATOR_COOLDOWN_RATIO
+	curse_cooldown_left *= Balance.GENERATOR_COOLDOWN_RATIO
+	print("Ghost weakened: longer cooldowns, slower regeneration and wisp movement")
+
+
 func _update_energy(delta: float) -> void:
 	if is_instance_valid(possessing):
 		energy = maxf(0.0, energy - Balance.POSSESS_DRAIN * delta)
@@ -98,6 +119,8 @@ func _update_energy(delta: float) -> void:
 			leave()
 	else:
 		var regen: float = Balance.MATCH_ENERGY_REGEN[clampi(mover_count - 1, 0, 2)] if demo_rules else Balance.ENERGY_REGEN
+		if generator_powered:
+			regen *= Balance.GENERATOR_REGEN_RATIO
 		energy = minf(Balance.ENERGY_MAX, energy + regen * delta)
 
 
@@ -241,7 +264,7 @@ func _try_curse() -> void:
 	energy -= Balance.CURSE_COST
 	curse_target.curse()
 	model.play_cast()
-	curse_cooldown_left = Balance.CURSE_COOLDOWN
+	curse_cooldown_left = curse_cooldown_duration
 	shared_lock_left = Balance.HAUNT_SHARED_LOCK
 	_update_curse_target()
 
@@ -266,7 +289,8 @@ func hud() -> Dictionary:
 		"t": 0,
 	}
 	message.costs.haunt3 = Balance.CURSE_COST
-	message.cd.haunt3 = curse_cooldown_left / Balance.CURSE_COOLDOWN
+	message.cd.haunt3 = curse_cooldown_left / curse_cooldown_duration
+	message.generatorPowered = generator_powered
 	message.ok.haunt3 = can_curse()
 	message.simple = demo_rules
 	message.target = curse_target.item_name if is_instance_valid(curse_target) else ""
@@ -318,7 +342,7 @@ func _process(delta: float) -> void:
 	material.albedo_color = Color(colour, lerpf(Balance.WISP_ALPHA_MIN, Balance.WISP_ALPHA_MAX, 0.5 + 0.5 * wave))
 	body_mesh.position.y = wave * Balance.WISP_BOB_HEIGHT
 	if not is_instance_valid(possessing) and not is_frozen():
-		model.update_motion(Vector3(stick.x, 0.0, stick.y) * Balance.WISP_SPEED, delta)
+		model.update_motion(Vector3(stick.x, 0.0, stick.y) * movement_speed(), delta)
 
 
 func _clamp_to_bounds() -> void:

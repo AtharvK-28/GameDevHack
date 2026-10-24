@@ -312,6 +312,18 @@ func _check_banking() -> void:
 	await _wait(WALK_SECONDS)
 	_check(truck.contains_point(loose.global_position) and truck.banked_items == 2, "Loose loot entering the truck is not automatically banked")
 
+	# THROW from inside the zone must launch the held item, without awarding a delivery.
+	await _clear_loot()
+	_reset_mover(Vector3(5.0, MOVER_HEIGHT, 6.5), Vector3.FORWARD)
+	var thrown_item := _spawn(0, Vector3(5.0, _rest_height(0), 6.5 - SETTINGS.HOLD_DISTANCE))
+	_key(KEY_SPACE, true)
+	await _wait(SETTLE_SECONDS)
+	_key(KEY_E, true)
+	await _wait(INPUT_SECONDS)
+	_key(KEY_E, false)
+	_key(KEY_SPACE, false)
+	_check(is_instance_valid(thrown_item) and not thrown_item.finished and truck.banked_items == 2, "Throwing inside the truck does not bank the item")
+
 
 # --- Phone integration ---
 func _check_phone_release_and_hud() -> void:
@@ -388,6 +400,10 @@ func _check_price_tags() -> void:
 	_reset_mover(Vector3(4.0, MOVER_HEIGHT, -2.5), Vector3.FORWARD)
 	await _wait(SETTINGS.PRICE_FADE_TIME + 0.2)
 	_check(item.price_label.visible and item.price_label.modulate.a > SETTINGS.PRICE_OPACITY - 0.05, "A mover walking up to an item reveals its price tag")
+	mover.hide()
+	await _wait(SETTINGS.PRICE_FADE_TIME + 0.2)
+	_check(not item.price_label.visible, "An inactive hidden mover cannot reveal a price tag")
+	mover.show()
 	_reset_mover(Vector3(0.0, MOVER_HEIGHT, 3.0), Vector3.FORWARD)
 	await _wait(SETTINGS.PRICE_FADE_TIME + 0.2)
 	_check(not item.price_label.visible, "The tag fades away again once the mover leaves")

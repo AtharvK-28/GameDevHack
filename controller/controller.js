@@ -108,6 +108,12 @@ function connect() {
   socket.addEventListener("close", event => {
     releaseInputs();
     joined = false;
+    activeRole = "";
+    matchPhase = null;
+    matchState = {};
+    elements["join-form"].hidden = false;
+    elements.joined.hidden = true;
+    render();
     setControlsEnabled(false);
     elements["ready-button"].disabled = true;
     if (event.code >= FIRST_APP_CLOSE_CODE || event.code === 1008 || event.reason === "Rejoined from another connection") {
@@ -260,6 +266,10 @@ function clock(seconds) {
 
 function renderMoverHud(message) {
   elements["held-label"].textContent = !message.held ? "Hands free" : Number.isFinite(message.value) ? `${message.held} · ₹${message.value.toLocaleString("en-IN")}` : message.held;
+  const generator = message.generator;
+  if (generator?.total && (!message.held || message.held === "Generator Battery")) {
+    elements["held-label"].textContent += generator.powered ? " · Generator ON" : ` · Generator ${generator.delivered}/${generator.total}`;
+  }
   // A cursed item stays heavy for its remaining seconds, even after being dropped and picked up again.
   const cursed = Number(message.cursed) || 0;
   elements["curse-note"].hidden = cursed <= 0;
@@ -302,6 +312,7 @@ function noteFor(name, message, readyText) {
 
 function statusLine(message) {
   const seconds = message.seconds ?? {};
+  if (message.generatorPowered) return "Generator ON: slower flight/regen, longer cooldowns";
   if (seconds.opening > 0) return `Hauntings unlock in ${seconds.opening}s`;
   if (seconds.shared > 0) return `Next haunting in ${seconds.shared}s`;
   return message.target ? `Curse target: ${message.target}` : "Fly near loot to curse it";
@@ -438,7 +449,10 @@ async function requestWakeLock() {
 }
 
 function readIdentity() {
-  try { return JSON.parse(readStorage(STORAGE_IDENTITY) || "{}"); }
+  try {
+    const saved = JSON.parse(readStorage(STORAGE_IDENTITY) || "{}");
+    return saved && [saved.key, saved.pid, saved.secret].every(value => typeof value === "string") ? saved : {};
+  }
   catch { return {}; }
 }
 
@@ -447,6 +461,7 @@ function forgetSession() {
   sessionKey = "";
   identity = {};
   writeStorage(STORAGE_IDENTITY, "{}");
+  history.replaceState(null, "", location.pathname + location.search);
   elements["code-field"].hidden = false;
 }
 

@@ -389,6 +389,8 @@ func _someone_near() -> bool:
 	# Movers and the ghost reveal prices around them; the rest of the house stays clean.
 	var tree := get_tree()
 	for player: Node3D in tree.get_nodes_in_group("movers") + tree.get_nodes_in_group("ghosts"):
+		if not player.is_visible_in_tree():
+			continue
 		if player.global_position.distance_to(global_position) <= Balance.PRICE_SHOW_DISTANCE:
 			return true
 	return false

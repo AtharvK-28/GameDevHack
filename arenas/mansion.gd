@@ -7,6 +7,8 @@ extends Node3D
 # --- Scene resources ---
 const LAYOUT_PATH: String = "res://arenas/layouts/mansion_layout.json"
 const LOOT_SCENE := preload("res://props/Loot.tscn")
+const BATTERY_SCENE := preload("res://props/tasks/battery.tscn")
+const GENERATOR_SCENE := preload("res://props/tasks/generator_zone.tscn")
 
 # --- Arena identity ---
 const ARENA_NAME: String = "Old Mansion"
@@ -19,6 +21,7 @@ var spawn_seed: int = 0
 
 var layout: Dictionary
 var truck: Area3D
+var generator: Area3D
 
 # --- Setup ---
 func _ready() -> void:
@@ -26,6 +29,8 @@ func _ready() -> void:
 	truck = ArenaBuilder.build(self, layout)
 	_build_mood()
 	_spawn_loot()
+	if demo_mode:
+		_spawn_battery_run()
 
 
 # --- Arena interface (shared with the greybox) ---
@@ -64,6 +69,20 @@ func floor_height_at(point: Vector3) -> float:
 
 
 # --- Mood ---
+func _power_generator() -> void:
+	# Brighten the existing ambient and moonlight instead of adding expensive shadow-casting lights.
+	var environment: Environment = $WorldEnvironment.environment
+	var tween := create_tween()
+	tween.set_pause_mode(Tween.TWEEN_PAUSE_BOUND)
+	tween.set_parallel(true)
+	tween.tween_property(environment, "ambient_light_energy", Balance.MOOD_AMBIENT_ENERGY * Balance.GENERATOR_AMBIENT_RATIO, Balance.GENERATOR_LIGHT_FADE)
+	tween.tween_property($Moonlight, "light_energy", Balance.MOON_ENERGY * Balance.GENERATOR_MOON_RATIO, Balance.GENERATOR_LIGHT_FADE)
+	for ghost: Node in get_tree().get_nodes_in_group("ghosts"):
+		if ghost.arena == self:
+			ghost.apply_generator_power()
+	print("Generator powered: lights improved and ghost weakened for the round")
+
+
 func _build_mood() -> void:
 	# Dusk: a dark violet world fading into fog, low ambient light and one shadow-casting moon.
 	var environment := Environment.new()
@@ -101,6 +120,32 @@ func _build_mood() -> void:
 
 
 # --- Spawning ---
+func battery_spots() -> Array:
+	# Use a separate seeded stream so task placement never changes the loot selection.
+	var spots: Array = layout.spawns.batteries.duplicate(true)
+	var random := RandomNumberGenerator.new()
+	random.seed = spawn_seed + Balance.BATTERY_SEED_OFFSET
+	for index: int in range(spots.size() - 1, 0, -1):
+		var other: int = random.randi_range(0, index)
+		var spot: Variant = spots[index]
+		spots[index] = spots[other]
+		spots[other] = spot
+	return spots.slice(0, Balance.BATTERY_COUNT)
+
+
+func _spawn_battery_run() -> void:
+	generator = GENERATOR_SCENE.instantiate()
+	generator.position = ArenaBuilder.point_of(layout.generator, 0.0)
+	add_child(generator)
+	generator.powered_on.connect(_power_generator)
+	for spot: Dictionary in battery_spots():
+		var battery: RigidBody3D = BATTERY_SCENE.instantiate()
+		battery.generator = generator
+		battery.arena = self
+		battery.position = ArenaBuilder.point_of(spot, Balance.BATTERY_SIZE.y / 2.0 + Balance.LOOT_SPAWN_CLEARANCE)
+		add_child(battery)
+
+
 func _spawn_loot() -> void:
 	# The round's loot from the catalog's Mansion pool, each on a spawn spot that suits it (a vase on a table, the
 	# TV on its cabinet): 6/9/12 items with exactly one centrepiece in a match; outside one, the whole pool.

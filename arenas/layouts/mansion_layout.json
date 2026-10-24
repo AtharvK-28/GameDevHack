@@ -55,6 +55,18 @@
 	"spawns": {
 		"movers": [[7.0, 21.0], [8.5, 21.0], [7.0, 19.8], [8.5, 19.8]],
 		"ghost": {"at": [16, 24.5], "floor": 0},
+		"batteries": [
+			{"id": "gallery-west", "at": [3.8, 3.5], "floor": 1.2},
+			{"id": "gallery-centre", "at": [8, 4.8], "floor": 1.2},
+			{"id": "gallery-east", "at": [13, 3.4], "floor": 1.2},
+			{"id": "gallery-corner", "at": [18, 5.3], "floor": 1.2},
+			{"id": "main-west", "at": [4.5, 8.8], "floor": 0},
+			{"id": "main-front", "at": [7, 12.2], "floor": 0},
+			{"id": "main-east", "at": [9, 10.5], "floor": 0},
+			{"id": "kitchen-west", "at": [14.2, 8.5], "floor": 0},
+			{"id": "kitchen-east", "at": [18, 10.5], "floor": 0},
+			{"id": "garden", "at": [15, 20.5], "floor": 0}
+		],
 		"loot": [
 			{"id": "gallery-piano", "role": "piano", "at": [10.0, 3.0], "floor": 1.2, "yaw": 0},
 			{"id": "gallery-library", "role": "tall", "at": [6.6, 0.45], "floor": 1.2, "yaw": 0},
@@ -81,6 +93,7 @@
 			{"id": "garden-fountain", "role": "garden", "at": [17.7, 15.9], "floor": 0.0, "yaw": 0}
 		]
 	},
+	"generator": {"at": [4.2, 19.0], "floor": 0},
 	"camera_bounds": [1, 2, 18, 23],
 	"ghost_bounds": [-1, -1, 22, 28],
 	"mover_bounds": [-10, -8, 40, 44]

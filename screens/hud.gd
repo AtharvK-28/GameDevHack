@@ -23,6 +23,7 @@ var pause_box: Control
 var pause_label: Label
 var toast_entries: Array[Dictionary] = []
 var previous_phase: String = ""
+var generator_label: Label
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -48,6 +49,8 @@ func _ready() -> void:
 	tick.offset_right = Balance.HUD_MARKER_WIDTH
 	lost_label = _label(truck, "", Balance.UI_SMALL_SIZE)
 	lost_label.modulate = Balance.UI_DANGER
+	generator_label = _label(truck, "", Balance.UI_SMALL_SIZE)
+	generator_label.modulate = Balance.GENERATOR_COLOUR
 	var room := _card(Control.PRESET_TOP_LEFT, 200.0)
 	room_label = _label(room, "Main room", Balance.UI_BODY_SIZE)
 	discs = Control.new()
@@ -120,6 +123,10 @@ func _process(delta: float) -> void:
 	delivered_label.text = "%s / %s" % [Loot.rupees(Game.banked_value), Loot.rupees(Game.target_value())]
 	delivered_bar.value = 100.0 * Game.banked_value / maxi(1, Game.starting_value)
 	lost_label.text = "Lost %s / %s" % [Loot.rupees(Game.lost_value), Loot.rupees(Game.loss_limit())]
+	var generator: Node = Game.host.arena.get("generator") if is_instance_valid(Game.host) else null
+	generator_label.visible = is_instance_valid(generator)
+	if generator_label.visible:
+		generator_label.text = "Generator ON" if generator.powered else "Generator batteries %d/%d" % [generator.delivered, Balance.BATTERY_COUNT]
 	_refresh_room()
 	if chip_slots != Game.participants or chip_ghost_slot != Game.ghost_slot:
 		_clear(chips)

@@ -85,12 +85,18 @@ func _build_connection_text() -> void:
 
 
 func _send_hud() -> void:
+	var generator: Node = arena.get("generator")
+	var task: Dictionary = {}
+	if is_instance_valid(generator):
+		task = {"delivered": generator.delivered, "total": Balance.BATTERY_COUNT, "powered": generator.powered}
 	for mover: CharacterBody3D in movers:
 		var player := Net.player_for_slot(mover.slot)
 		if player.is_empty():
 			continue
 		if is_ghost_slot(mover.slot):
-			Net.send_to_player(player, ghost.hud())
+			var message: Dictionary = ghost.hud()
+			message.generator = task
+			Net.send_to_player(player, message)
 			continue
 		# A carried item that just shattered is already freed; check before taking a typed reference.
 		var has_item: bool = is_instance_valid(mover.held_item) and not mover.held_item.finished
@@ -99,7 +105,7 @@ func _send_hud() -> void:
 		if has_item and item is Loot:
 			value = item.value
 		var cursed: float = item.curse_left if has_item and item is Loot else 0.0
-		Net.send_to_player(player, {"type": "hud", "held": item.item_name if has_item else "", "value": value, "cursed": ceili(cursed), "t": ceili(Game.seconds_left) if match_mode else 0})
+		Net.send_to_player(player, {"type": "hud", "held": item.item_name if has_item else "", "value": value, "cursed": ceili(cursed), "t": ceili(Game.seconds_left) if match_mode else 0, "generator": task})
 
 
 func _update_ghost_panel() -> void:
