@@ -1,21 +1,24 @@
-# Round end: the winner and why, delivered and lost value, and each player's points.
+# Round end, as a comic page: a stamped DELIVERED! or GHOSTED!, the reason on a caption, stat tiles for delivered,
+# target and lost value, and each player's row with their role and points counting up.
 # Host keys: Enter for the next round (or the final results), R to restart this round, L for the lobby.
 extends Control
 
 const Style := preload("res://screens/screen_style.gd")
 
 # --- Display state ---
-var headline: Label
+var stamp_holder := CenterContainer.new() # Holds this round's stamp, rebuilt each time.
 var reason_label: Label
-var totals_label: Label
+var tiles := HBoxContainer.new()
 var points_list := VBoxContainer.new()
 var next_button: Button
+var shown: bool = false
 
 # --- Setup ---
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	Style.use_theme(self)
 	_build()
 	Game.changed.connect(_refresh)
 	_refresh()
@@ -40,47 +43,113 @@ func _unhandled_input(event: InputEvent) -> void:
 func _refresh() -> void:
 	visible = Game.phase == "result"
 	if not visible or Game.result.is_empty():
+		shown = false
 		return
+	if shown:
+		return # Built once per result, so the stamp and count-up play once.
+	shown = true
 	var movers_won: bool = Game.result.moversWon
-	headline.text = "MOVERS WIN" if movers_won else "THE GHOST WINS"
-	headline.add_theme_color_override("font_color", Balance.BANK_COLOUR if movers_won else Balance.HOST_GHOST_COLOUR)
+	for child: Node in stamp_holder.get_children():
+		child.queue_free()
+	var stamp := Style.stamp("DELIVERED!" if movers_won else "GHOSTED!", Balance.UI_MONEY if movers_won else Balance.UI_GHOST, Balance.COMIC_TITLE_SIZE)
+	stamp_holder.add_child(stamp)
+	Style.slam(stamp)
 	reason_label.text = Game.result.reason
+
 	var starting: int = maxi(1, Game.result.starting)
-	totals_label.text = "Delivered %s of %s (%d%%, target %d%%) · Lost %s" % [Loot.rupees(Game.result.banked), Loot.rupees(Game.result.starting), floori(100.0 * Game.result.banked / starting), Balance.DELIVERY_PERCENT, Loot.rupees(Game.result.lost)]
+	var percent: int = floori(100.0 * Game.result.banked / starting)
+	for tile: Node in tiles.get_children():
+		tile.queue_free()
+	tiles.add_child(_tile("DELIVERED", "%d%%" % percent, Loot.rupees(Game.result.banked), Balance.UI_GHOST if percent >= Balance.DELIVERY_PERCENT else Balance.UI_MONEY))
+	tiles.add_child(_tile("TARGET", "%d%%" % Balance.DELIVERY_PERCENT, Loot.rupees(ceili(starting * Balance.DELIVERY_PERCENT / 100.0)), Balance.UI_TEXT))
+	tiles.add_child(_tile("LOST", Loot.rupees(Game.result.lost), "of %s" % Loot.rupees(starting), Balance.UI_DANGER))
+
 	for row: Node in points_list.get_children():
 		row.queue_free()
 	for slot: int in Game.participants:
-		var role: String = "ghost" if slot == Game.ghost_slot else "mover"
-		var line := Style.label("%s (%s)   +%d   total %d" % [Style.player_name(slot), role, roundi(Game.round_points.get(slot, 0.0)), roundi(Game.scores.get(slot, 0.0))], Balance.HOST_FONT_SIZE, Style.player_colour(slot))
-		points_list.add_child(line)
+		points_list.add_child(_player_row(slot))
 	var last: bool = Game.round_index + 1 >= Game.round_count
-	next_button.text = "FINAL RESULTS  (Enter)" if last else "NEXT ROUND  (Enter)"
+	next_button.text = "FINAL RESULTS" if last else "NEXT ROUND"
+
+
+func _tile(title: String, big: String, small: String, colour: Color) -> Control:
+	var tile := Style.ink_panel(Balance.RESULT_TILE_WIDTH, Balance.UI_PANEL_MARGIN / 2)
+	var rows := VBoxContainer.new()
+	rows.add_theme_constant_override("separation", 0)
+	tile.add_child(rows)
+	rows.add_child(Style.label(title, Balance.UI_SMALL_SIZE, Balance.UI_MUTED))
+	var value := Style.lettering(big, Balance.COMIC_HEADING_SIZE, colour)
+	value.autowrap_mode = TextServer.AUTOWRAP_OFF
+	rows.add_child(value)
+	rows.add_child(Style.label(small, Balance.UI_SMALL_SIZE, Balance.UI_TEXT))
+	return tile
+
+
+func _player_row(slot: int) -> Control:
+	# A row per player: their figure (glowing if they were the ghost), name and role, round points counting up,
+	# and their match total.
+	var ghost: bool = slot == Game.ghost_slot
+	var pill := Style.ink_panel(Balance.RESULT_ROW_WIDTH, Balance.UI_PANEL_MARGIN / 3)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", Balance.UI_PANEL_MARGIN)
+	pill.add_child(row)
+	row.add_child(Style.mover_figure(Style.player_colour(slot), Balance.RESULT_FIGURE, ghost))
+	var who := VBoxContainer.new()
+	who.add_theme_constant_override("separation", 0)
+	who.alignment = BoxContainer.ALIGNMENT_CENTER
+	who.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(who)
+	var name_line := Style.label(Style.player_name(slot), Balance.UI_BODY_SIZE, Style.player_colour(slot))
+	name_line.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	name_line.autowrap_mode = TextServer.AUTOWRAP_OFF
+	who.add_child(name_line)
+	var role := Style.label("Ghost" if ghost else "Mover", Balance.UI_SMALL_SIZE, Balance.UI_GHOST if ghost else Balance.UI_MUTED)
+	role.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	who.add_child(role)
+	var gained: int = roundi(Game.round_points.get(slot, 0.0))
+	var points := Style.lettering("+0", Balance.COMIC_HEADING_SIZE, Balance.UI_MONEY)
+	points.autowrap_mode = TextServer.AUTOWRAP_OFF
+	points.custom_minimum_size.x = Balance.RESULT_FIGURE * 2.5
+	points.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	row.add_child(points)
+	points.create_tween().tween_method(func(shown_points: int) -> void: points.text = "+%d" % shown_points, 0, gained, Balance.COUNT_UP_TIME)
+	var total := Style.label("total %d" % roundi(Game.scores.get(slot, 0.0)), Balance.UI_SMALL_SIZE, Balance.UI_MUTED)
+	total.autowrap_mode = TextServer.AUTOWRAP_OFF
+	total.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(total)
+	return pill
 
 
 # --- Layout ---
 func _build() -> void:
-	var box := Style.panel(Balance.HOST_PANEL_WIDTH)
+	add_child(Style.backdrop())
 	var rows := Style.column()
-	box.add_child(rows)
-	headline = Style.label("", Balance.HOST_TITLE_SIZE)
-	rows.add_child(headline)
-	reason_label = Style.label("", Balance.HOST_FONT_SIZE)
-	rows.add_child(reason_label)
-	totals_label = Style.label("", Balance.HOST_SMALL_SIZE, Balance.HOST_MUTED_COLOUR)
-	rows.add_child(totals_label)
+	rows.add_theme_constant_override("separation", Balance.UI_PANEL_MARGIN)
+	rows.add_child(stamp_holder)
+	var caption := Style.caption(0.0, Balance.UI_PANEL_MARGIN / 2)
+	caption.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	reason_label = Style.ink_label("", Balance.UI_BODY_SIZE)
+	reason_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	caption.add_child(reason_label)
+	rows.add_child(caption)
+	tiles.alignment = BoxContainer.ALIGNMENT_CENTER
+	tiles.add_theme_constant_override("separation", Balance.UI_PANEL_MARGIN)
+	rows.add_child(tiles)
+	points_list.add_theme_constant_override("separation", Balance.HOST_ROW_GAP)
+	points_list.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	rows.add_child(points_list)
 
 	var controls := HBoxContainer.new()
 	controls.alignment = BoxContainer.ALIGNMENT_CENTER
-	controls.add_theme_constant_override("separation", Balance.HOST_ROW_GAP)
+	controls.add_theme_constant_override("separation", Balance.UI_PANEL_MARGIN)
 	rows.add_child(controls)
-	next_button = Style.button("NEXT ROUND  (Enter)")
-	next_button.pressed.connect(Game.next_round)
-	controls.add_child(next_button)
-	var restart := Style.button("RESTART ROUND  (R)")
-	restart.pressed.connect(Game.restart_round)
-	controls.add_child(restart)
-	var lobby := Style.button("LOBBY  (L)")
-	lobby.pressed.connect(Game.return_to_lobby)
-	controls.add_child(lobby)
-	add_child(Style.centre(box))
+	var next := Style.action("NEXT ROUND", "Enter", Game.next_round)
+	next_button = next.get_child(1)
+	controls.add_child(next)
+	controls.add_child(Style.action("RESTART", "R", Game.restart_round))
+	controls.add_child(Style.action("LOBBY", "L", Game.return_to_lobby))
+	var holder := CenterContainer.new() # Not Style.centre: the stamp and count-up animate on their own.
+	holder.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(rows)
+	add_child(holder)

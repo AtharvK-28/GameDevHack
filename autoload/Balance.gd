@@ -324,6 +324,15 @@ const REVEAL_GHOST_CROP := Rect2(448.0, 104.0, 290.0, 330.0) # Pixels of that pa
 const REVEAL_PORTRAIT_SIZE := Vector2(190.0, 212.0)
 const REVEAL_FIGURE: float = 78.0 # Line-up figures.
 const REVEAL_MOVE_SECONDS: float = 0.45 # The countdown shows MOVE! for its last this many seconds.
+const RESULT_TILE_WIDTH: float = 170.0 # Round end stat tiles.
+const RESULT_FIGURE: float = 40.0 # Role figures on round end rows.
+const RESULT_ROW_WIDTH: float = 520.0
+const COUNT_UP_TIME: float = 0.9 # Seconds round points take to count up.
+const PODIUM_HEIGHTS: Array[float] = [150.0, 105.0, 72.0] # First, second and third place blocks.
+const PODIUM_WIDTH: float = 160.0
+const PODIUM_FIGURE: float = 72.0
+const PODIUM_RISE_TIME: float = 0.45 # Seconds each block takes to rise; third rises first.
+const PODIUM_STAGGER: float = 0.3 # Seconds between blocks.
 
 # --- Possession settings ---
 const ACTION_LABELS: Array[String] = ["SHOVE", "SLAM", "DROP", "STOMP", "YANK"] # By possessable kind: slider, door, dropper, hopper, rug.
