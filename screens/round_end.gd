@@ -9,7 +9,7 @@ const Style := preload("res://screens/screen_style.gd")
 var stamp_holder := CenterContainer.new() # Holds this round's stamp, rebuilt each time.
 var reason_label: Label
 var tiles := HBoxContainer.new()
-var points_list := VBoxContainer.new()
+var points_list := GridContainer.new() # Two columns for three or more players, so four rows fit the screen.
 var next_button: Button
 var shown: bool = false
 
@@ -66,6 +66,7 @@ func _refresh() -> void:
 
 	for row: Node in points_list.get_children():
 		row.queue_free()
+	points_list.columns = 1 if Game.participants.size() <= 2 else 2
 	for slot: int in Game.participants:
 		points_list.add_child(_player_row(slot))
 	var last: bool = Game.round_index + 1 >= Game.round_count
@@ -135,7 +136,8 @@ func _build() -> void:
 	tiles.alignment = BoxContainer.ALIGNMENT_CENTER
 	tiles.add_theme_constant_override("separation", Balance.UI_PANEL_MARGIN)
 	rows.add_child(tiles)
-	points_list.add_theme_constant_override("separation", Balance.HOST_ROW_GAP)
+	points_list.add_theme_constant_override("h_separation", Balance.UI_PANEL_MARGIN)
+	points_list.add_theme_constant_override("v_separation", Balance.HOST_ROW_GAP)
 	points_list.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	rows.add_child(points_list)
 
