@@ -4,16 +4,18 @@ Godot 4.7.2 stable · Mobile renderer · Jolt · 60 Hz physics.
 
 ## Play a match
 
-1. Press **F5** in Godot. The title screen opens over the Mansion; choose **Play**, then the **Old Mansion**, to reach the lobby with its QR code, join link and six-character code. **F11** switches between fullscreen and a window. (If Godot runs the game inside the editor's Game tab, fullscreen needs the game in its own window: turn off the Game tab's embed option.)
+1. Press **F5 (Run Project)** in Godot. **F6 runs only the open scene**: using it with `Main.tscn` opens the QR lobby directly, bypassing Home. The title screen opens over the Mansion; choose **Play**, then the **Old Mansion**, to reach the lobby with its QR code, join link and six-character code. **F11** switches between fullscreen and a window. (If Godot runs the game inside the editor's Game tab, fullscreen needs the game in its own window: turn off the Game tab's embed option.)
 2. Start the phone page server (see the next section, step 2). Phones on the same Wi-Fi scan the QR code or open the link, enter a name and tap **Ready to move**. If opening the plain link, also enter the six-character code shown on the host.
 3. With 2–4 phones ready, press **Enter** on the host. Each round: a 3 s role reveal, then 150 s of play. 2 players play 4 rounds, 3 play 3 and 4 play 4; the ghost passes to the next player every round.
 4. **Winning a round:** movers must deliver at least **70%** of the round's starting value. Losing more than 30% (damage, shattering, items lost) ends the round for the ghost at once. Otherwise the round ends when time runs out or every item has been delivered or destroyed; only delivered value counts.
 5. **Host keys.** Round end: **Enter** next round, **R** restart the round (same layout and roles; its points are replaced), **L** back to the lobby. Final standings: **Enter** back to the lobby. If a phone drops mid-round the round pauses until it rejoins from the same browser with its saved secret; **L** cancels to the lobby without scoring.
-6. **The demo ghost** has POSSESS (any loose loot or the crate), SHOVE, SHAKE (House Shake, 45) and CURSE (30, 15 s cooldown: nearby loot glows and is 30% slower to carry for 6 s). Hauntings are locked for the first 8 s and for 4 s after each one; the ghost's phone shows why a button is unavailable and for how long. Keyboard ghost: Q possess, F action, Z shake, C curse.
+6. **The demo ghost** has POSSESS (any loose loot or the Mansion sofa), SHOVE, SHAKE (House Shake, 45) and CURSE (30, 15 s cooldown: nearby loot glows and is 30% slower to carry for 6 s). Hauntings are locked for the first 8 s and for 4 s after each one; the ghost's phone shows why a button is unavailable and for how long. Keyboard ghost: Q possess, F action, Z shake, C curse.
 
 Matches play in the **Old Mansion**, built from `arenas/layouts/mansion_layout.json` (the floor plan `mansion-layout.svg`): a raised gallery reached by stairs, the main room, the kitchen, a fenced garden, and the path to the truck. It is lit for dusk, with textured surfaces, glowing windows and decor. Camera-facing walls are solid until they hide a player, then fade; they always block. To change the house, edit the layout file; `arenas/arena_builder.gd` builds any arena from such a file. Decor, lamps and the grounds live in `arenas/dressing/MansionDressing.tscn`. Surface textures come from `tools/make_surface_textures.gd` (`godot --headless --path . --script res://tools/make_surface_textures.gd`, then open the editor to import). Asset sources and licences: `assets/CREDITS.md`.
 
 Movers are the team's character model in their slot's colours; the model only shows what the mover is doing (walk, run, carry, two-person carry, brace, throw, tumble) and never changes how it plays. The source files and the model guide are in `assets/source/mover/`.
+
+The home menu includes **Guide**, a short explanation of joining, mover controls, ghost abilities and the round objective. Back or Escape returns home.
 
 Points: movers get 1 per ₹100 they deliver (two-person items split) plus 100 for a win; the ghost gets 1 per ₹100 lost plus 150 for a win. Awards, more arenas and the other ghost abilities come later.
 
@@ -65,7 +67,7 @@ Allow the game (9080) and Python page server (8080) through the host's firewall 
 ## Reconnect and phone behaviour
 
 - The browser stores its player ID. Rejoin from the same browser to restore the slot and role; another browser is a new identity. Reloading the page requires tapping Join again, while temporary connection loss retries automatically.
-- Slots stay reserved until the host restarts. Restart the game to clear the test roster. A fifth identity is declined without taking another player's slot.
+- During a match, slots stay reserved for reconnecting players and new identities are refused. In the lobby, a new phone may replace an offline phone when the roster is full. A fifth phone is refused when all four are connected. **New join code** clears the roster and invalidates the previous credentials.
 - The host clears movement and held buttons after 500 ms without a valid input heartbeat, or immediately on a detected disconnect. Button press/release edges survive between physics frames.
 - Fullscreen, orientation lock, vibration and Wake Lock depend on browser support. Ordinary LAN HTTP does not support Wake Lock; increase the phone's screen timeout for the demo. A rotate overlay covers portrait touch screens.
 
@@ -81,6 +83,7 @@ godot --headless --path . --script res://core/team_carry_check.gd
 godot --headless --path . --script res://core/ghost_check.gd
 godot --headless --path . --script res://core/match_check.gd
 godot --headless --path . --script res://core/arena_layout_check.gd
+godot --headless --path . --script res://core/catalog_check.gd
 ```
 
 Close a running host before any integration check; they all open port 9080.

@@ -20,6 +20,7 @@ var model: GhostModel
 var material := StandardMaterial3D.new()
 var bounds: Rect2 = Balance.GHOST_BOUNDS # The x/z area the wisp may roam; set from the arena.
 var demo_rules: bool = false # Archived harnesses retain all five furniture actions and slime.
+var arena: Node3D # Optional arena floor query; the greybox keeps its original flat flight height.
 var mover_count: int = 1
 var opening_left: float = 0.0
 var shared_lock_left: float = 0.0
@@ -80,6 +81,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		position += Vector3(stick.x, 0.0, stick.y) * Balance.WISP_SPEED * delta
 		_clamp_to_bounds()
+	_update_height()
 	_update_target()
 	_update_curse_target()
 
@@ -135,8 +137,14 @@ func leave() -> void:
 	possessing = null
 	position = Vector3(at.x, Balance.WISP_HEIGHT, at.z)
 	_clamp_to_bounds()
+	_update_height()
 	body_mesh.show()
 	model.play_emerge()
+
+
+func _update_height() -> void:
+	var floor_height: float = arena.floor_height_at(global_position) if is_instance_valid(arena) and arena.has_method("floor_height_at") else 0.0
+	global_position.y = floor_height + Balance.WISP_HEIGHT
 
 
 func exorcised_from(prop: Possessable) -> void:
