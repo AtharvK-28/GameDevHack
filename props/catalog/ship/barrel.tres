@@ -16,3 +16,4 @@ footprint = Vector3(0.8, 0.8, 0.95)
 spot_roles = Array[StringName]([&"barrel"])
 pools = Array[StringName]([&"ship"])
 rolls = true
+tint = Color(0.62, 0.55, 0.42, 1)

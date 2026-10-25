@@ -7,8 +7,8 @@ var cloths: Array[MeshInstance3D] = []
 
 # --- Setup ---
 func _ready() -> void:
-	ShipVisuals.hull(self, Balance.SHIP_HULL_OUTLINE, 0.0, Balance.SHIP_HULL_DEPTH, Balance.SHIP_HULL_COLOUR)
-	ShipVisuals.hull(self, Balance.SHIP_TUG_OUTLINE, 0.0, Balance.SHIP_TUG_DEPTH, Balance.SHIP_TUG_COLOUR)
+	ShipVisuals.hull(self, Balance.SHIP_HULL_OUTLINE, Balance.SHIP_HULL_TOP, Balance.SHIP_HULL_DEPTH, Balance.SHIP_HULL_COLOUR)
+	ShipVisuals.hull(self, Balance.SHIP_TUG_OUTLINE, Balance.SHIP_TUG_TOP, Balance.SHIP_TUG_DEPTH, Balance.SHIP_TUG_COLOUR)
 	_build_tug()
 	_build_rig()
 	_build_lanterns()
@@ -39,6 +39,7 @@ func _build_rig() -> void:
 		lines.append([Vector3(0.06, 3.0, 0.06), Vector3(x - 1.4, 1.5, -0.3), Vector3(0, 0, -0.5)])
 		lines.append([Vector3(0.06, 3.0, 0.06), Vector3(x + 1.4, 1.5, -0.3), Vector3(0, 0, 0.5)])
 	ShipVisuals.blocks(self, lines, Balance.SHIP_WOOD_COLOUR)
+	ShipVisuals.blocks(self, [[Balance.SHIP_BOWSPRIT_SIZE, Balance.SHIP_BOWSPRIT_AT, Vector3(0, 0, Balance.SHIP_BOWSPRIT_TILT)]], Balance.SHIP_WOOD_COLOUR)
 
 
 func _build_lanterns() -> void:
@@ -83,25 +84,42 @@ func _process(delta: float) -> void:
 
 
 func _build_sail(at: Vector3) -> void:
-	# Jagged lower hems make the silhouette read as an abandoned galleon from the party camera.
+	# Canvas rather than paper: the head is narrower than the hem, the belly bulges away from the mast,
+	# and the hem is torn, so the rig reads as an abandoned galleon from the party camera.
 	var surface := SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
 	for index: int in range(Balance.SHIP_SAIL_HEM.size() - 1):
 		var left: Vector2 = Balance.SHIP_SAIL_HEM[index]
 		var right: Vector2 = Balance.SHIP_SAIL_HEM[index + 1]
-		for vertex: Vector3 in [Vector3(left.x, Balance.SHIP_SAIL_TOP, 0), Vector3(right.x, Balance.SHIP_SAIL_TOP, 0), Vector3(left.x, left.y, 0), Vector3(right.x, Balance.SHIP_SAIL_TOP, 0), Vector3(right.x, right.y, 0), Vector3(left.x, left.y, 0)]:
-			surface.add_vertex(vertex)
+		for row: int in range(Balance.SHIP_SAIL_ROWS):
+			var top: float = float(row) / Balance.SHIP_SAIL_ROWS
+			var bottom: float = float(row + 1) / Balance.SHIP_SAIL_ROWS
+			var top_left := _sail_point(left, top)
+			var top_right := _sail_point(right, top)
+			var low_left := _sail_point(left, bottom)
+			var low_right := _sail_point(right, bottom)
+			for vertex: Vector3 in [top_left, top_right, low_left, top_right, low_right, low_left]:
+				surface.add_vertex(vertex)
 	surface.generate_normals()
+
 	var cloth := MeshInstance3D.new()
 	cloth.mesh = surface.commit()
 	cloth.position = at + Vector3.FORWARD * Balance.SHIP_SAIL_OFFSET
 	cloth.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	var material: StandardMaterial3D = ShipVisuals.material(Balance.SHIP_SAIL_COLOUR).duplicate()
+	var material: StandardMaterial3D = ShipVisuals.material(Balance.SHIP_CANVAS_COLOUR).duplicate()
 	material.cull_mode = BaseMaterial3D.CULL_DISABLED
 	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	cloth.material_override = material
 	add_child(cloth)
 	cloths.append(cloth)
+
+
+func _sail_point(hem: Vector2, drop: float) -> Vector3:
+	# drop runs 0 at the head to 1 at the torn hem.
+	var span: float = Balance.SHIP_SAIL_HEM[Balance.SHIP_SAIL_HEM.size() - 1].x
+	var width: float = lerpf(Balance.SHIP_SAIL_TOP_WIDTH, 1.0, drop)
+	var belly: float = sin(PI * drop) * cos(hem.x / span * PI / 2.0)
+	return Vector3(hem.x * width, lerpf(Balance.SHIP_SAIL_TOP, hem.y, drop), -Balance.SHIP_SAIL_BILLOW * belly)
 
 
 func _fade_sails() -> void:

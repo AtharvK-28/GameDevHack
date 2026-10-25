@@ -384,6 +384,7 @@ func _build_shape() -> void:
 		add_child(model)
 		set_visual(model)
 		ComicLook.apply(model, true)
+		ComicLook.tint(model, catalog_item.tint)
 		for mesh: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
 			model_meshes.append(mesh)
 		curse_overlay = StandardMaterial3D.new()

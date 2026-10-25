@@ -553,7 +553,11 @@ static func _build_deck_layout(arena: Node3D, layout: Dictionary) -> Area3D:
 	# Separate slabs leave the lower hold and ramp openings empty; there is no ocean collider.
 	for floor_data: Dictionary in layout.floors:
 		var floor_rect: Rect2 = rect_of(floor_data.rect)
-		_solid_box(arena, floor_data.id, _box_from_rect(floor_rect, floor_data.floor - Balance.SHIP_DECK_THICKNESS, Balance.SHIP_DECK_THICKNESS), _surface(floor_data.surface))
+		# Hull decks are solid blocks down to a shared base, so a step never shows open sky underneath and
+		# the deck around the hold forms its walls. The gangplank and the tug stay thin slabs over water.
+		var solid: bool = floor_data.get("solid", false)
+		var bottom: float = Balance.SHIP_DECK_BASE if solid else floor_data.floor - Balance.SHIP_DECK_THICKNESS
+		_solid_box(arena, floor_data.id, _box_from_rect(floor_rect, bottom, floor_data.floor - bottom), _surface(floor_data.surface))
 	for ramp_data: Dictionary in layout.ramps:
 		_build_deck_ramp(arena, ramp_data)
 	for barrier: Dictionary in layout.barriers:

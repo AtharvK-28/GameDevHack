@@ -855,6 +855,8 @@ const SHIP_WATER_Y: float = -2.4
 const SHIP_RESCUE_SECONDS: float = 2.0
 const SHIP_RESCUE_CLEARANCE: float = 0.9
 const SHIP_DECK_THICKNESS: float = 0.22
+# Hull decks are solid down to this, so no step shows daylight underneath and the hold gets real walls.
+const SHIP_DECK_BASE: float = -1.6
 const SHIP_BULWARK_HEIGHT: float = 0.7
 const SHIP_BULWARK_WIDTH: float = 0.18
 const SHIP_GUST_COST: int = 40
@@ -896,12 +898,20 @@ const SHIP_WIND_MARKER_SIZE: float = 0.025
 const SHIP_WIND_MARKERS: Array[Vector3] = [Vector3(6, 0.08, 6), Vector3(11, 0.08, 6), Vector3(16, 0.08, 6), Vector3(20, 0.08, 6), Vector3(14, 0.08, 11.7), Vector3(14, 0.08, 14.2)]
 
 const SHIP_HULL_TAPER: float = 0.82
-const SHIP_HULL_DEPTH: float = 2.2
-const SHIP_TUG_DEPTH: float = 1.5
+# The hull wraps the deck blocks from just under the bulwarks down past the waterline, so the ship has a
+# dark hull instead of showing bare deck timber all the way to the sea.
+const SHIP_HULL_TOP: float = 0.75
+const SHIP_HULL_DEPTH: float = 3.55 # Bottom lands below SHIP_WATER_Y.
+const SHIP_TUG_TOP: float = 0.45
+const SHIP_TUG_DEPTH: float = 3.25 # Also reaches below the water.
 const SHIP_HULL_OUTLINE: Array[Vector2] = [Vector2(-0.3, -0.3), Vector2(26.3, -0.3), Vector2(28.2, 5), Vector2(26.3, 10.3), Vector2(-0.3, 10.3), Vector2(-0.8, 5)]
 const SHIP_TUG_OUTLINE: Array[Vector2] = [Vector2(9.8, 13.5), Vector2(18.2, 13.5), Vector2(18.5, 16), Vector2(17.8, 18.9), Vector2(10.2, 18.9), Vector2(9.5, 16)]
 const SHIP_MAST_SPOTS: Array[Vector3] = [Vector3(7, 0, -0.5), Vector3(19, 0, -0.5)]
 const SHIP_MAST_SCALE: float = 0.72
+# The bowsprit: a spar off the bow, which does more for the galleon silhouette than anything else here.
+const SHIP_BOWSPRIT_SIZE := Vector3(4.2, 0.17, 0.17)
+const SHIP_BOWSPRIT_AT := Vector3(28.6, 1.35, 5.0)
+const SHIP_BOWSPRIT_TILT: float = 0.26 # Radians the far end rises.
 const SHIP_CANNON_SCALE: float = 0.5
 const SHIP_LAMP_SPOTS: Array[Vector3] = [Vector3(0.2, 1.2, 2.8), Vector3(4.8, 1.2, 2.8), Vector3(8.2, 0, 0.2), Vector3(18, 0, 0.2), Vector3(25.8, 0.8, 2.8), Vector3(25.8, 0.8, 7.5), Vector3(10.2, 0, 18.3), Vector3(17.8, 0, 18.3)]
 const SHIP_SIGN_SIZE: float = 0.012
@@ -930,6 +940,10 @@ const SHIP_SAIL_TOP: float = 4.7
 const SHIP_SAIL_OFFSET: float = 0.15
 const SHIP_SAIL_FADE_ALPHA: float = 0.18
 const SHIP_SAIL_OCCLUSION_MARGIN: float = 0.1
+const SHIP_CANVAS_COLOUR := Color("6f6758") # Weathered sailcloth; paler than this and it reads as paper.
+const SHIP_SAIL_TOP_WIDTH: float = 0.68 # The head of the sail, as a fraction of the hem's width.
+const SHIP_SAIL_BILLOW: float = 0.55 # Metres the belly of the sail bulges away from the mast.
+const SHIP_SAIL_ROWS: int = 4 # Vertical segments; the billow needs a few to curve rather than crease.
 
 const SHIP_MIST_SIZE := Vector2(10, 2)
 const SHIP_MIST_POSITION := Vector3(13, -1, 5)

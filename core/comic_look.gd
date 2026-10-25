@@ -21,6 +21,20 @@ static func apply(root: Node, outline: bool) -> void:
 				mesh.set_surface_override_material(index, _comic(source, outline))
 
 
+static func tint(root: Node, colour: Color) -> void:
+	# Multiplies every surface's albedo by colour. Called after apply(), whose materials are already copies.
+	if colour == Color.WHITE:
+		return
+	var meshes: Array = root.find_children("*", "MeshInstance3D", true, false)
+	if root is MeshInstance3D:
+		meshes.append(root)
+	for mesh: MeshInstance3D in meshes:
+		for index: int in range(mesh.mesh.get_surface_count()):
+			var material := mesh.get_active_material(index) as BaseMaterial3D
+			if material != null:
+				material.albedo_color *= colour
+
+
 static func _comic(source: Material, outline: bool) -> Material:
 	if not source is BaseMaterial3D:
 		return source

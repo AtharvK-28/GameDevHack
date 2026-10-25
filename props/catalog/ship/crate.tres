@@ -11,3 +11,4 @@ weight_class = 2
 possessable_kind = 0
 footprint = Vector3(0.9, 0.9, 0.9)
 pools = Array[StringName]([&"ship"])
+tint = Color(0.66, 0.6, 0.5, 1)

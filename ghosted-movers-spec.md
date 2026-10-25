@@ -657,3 +657,22 @@ below the wisp's node, and is modelled facing -Z, so his yaw carries a half-circ
 
 The model is a Disney Infinity rip, not CC0. It is committed so both developers can run the arena, and must be
 replaced with an original before any public or judged release; see `assets/CREDITS.md`.
+
+
+## Ghost Ship look (decision 101)
+
+Hull decks carry `"solid": true` in `ship_layout.json` and are built as blocks from their own height down to
+`SHIP_DECK_BASE` (-1.6), so no step shows open sky underneath and the main deck around the hold forms the hold's
+walls. The gangplank and the tug stay thin slabs over open water. The hull skirt runs from `SHIP_HULL_TOP` (0.75,
+just under the bulwarks) down to -2.8, below the -2.4 waterline, so the ship sits in the sea; the tug's does the
+same. A bowsprit off the bow carries the galleon silhouette at the party camera's angle.
+
+Sails are billowed, tapered canvas with a torn hem: the head is 0.68 of the hem's width, the belly bulges 0.55 m
+away from the mast over four vertical segments, in `SHIP_CANVAS_COLOUR`. Flat bright quads read as paper.
+
+`CatalogItem.tint` multiplies a model's own colours. Kit models share one palette texture and cannot be recoloured
+per part, so the three Kenney pirate props (rum barrel, treasure chest, crate) use it to leave the pack's salmon
+and powder-blue palette for wood and treasure tones. White leaves a model alone, which is every other prop.
+
+Water stays on the project's own `ship_water.gdshader`. The MIT reference was rendered side by side and dropped:
+its code is MIT but the textures it needs are not, and with substitute noise it renders as ice floes.

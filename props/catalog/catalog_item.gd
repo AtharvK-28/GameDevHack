@@ -12,6 +12,9 @@ enum Category { LOOT, FURNITURE, DECOR }
 @export var category: Category = Category.LOOT
 @export var model: PackedScene # Bottom-centred, front facing +Z.
 @export var model_scale: float = 1.0 # Extra scale on top of the import's furniture scale.
+# Multiplies the model's own colours. Kit models that share one palette texture cannot be recoloured
+# per part, so this pulls the whole piece toward the arena's palette. White leaves it alone.
+@export var tint := Color.WHITE
 
 # --- Loot ---
 @export var value: int = 0 # Rupees.

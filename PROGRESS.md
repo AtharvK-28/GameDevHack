@@ -167,5 +167,9 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
   textures while making him spectral. Verified: ghost check still passes 128 assertions on the Mansion wisp, and the
   Ship check passes 60 (up from 53) with new coverage of his body, bound textures, facing, shadow and exorcism
   tumble. Close portraits at the game's angle inspected. The model is not CC0 and must be swapped before release.
-- [ ] Finish visual review, reference-water comparison, full regression suite and final captures.
+- [x] Ghost Ship look finished (decision 101, 2026-10-25): solid hull decks (the open undersides and the wall-less
+  hold are gone), a hull that reaches below the waterline, a bowsprit, billowed canvas sails, and wood/treasure tints
+  on the three Kenney pirate props that were rendering salmon and powder blue.
+- [x] Reference-water comparison done: the project's own shader is kept; the MIT reference renders as ice floes
+  without the author's own (non-MIT) textures, so it and its licence file were removed from `assets/`.
 - [ ] Human 2/3/4-phone Ship playtest.

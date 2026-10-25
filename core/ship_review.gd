@@ -35,8 +35,6 @@ func _run() -> void:
 	for slot: int in range(4):
 		world.movers[slot].reset_for_round(Vector3(11.5 + slot, 0.8, 7.5), true)
 		world.movers[slot].name_label.hide()
-	if "--reference-water" in OS.get_cmdline_user_args():
-		_reference_water()
 	await _frames(90)
 	await _view("overview", Vector3(13, 0, 8), 26)
 	await _measure("wide")
@@ -111,6 +109,7 @@ func _lineup() -> void:
 		model.position = Vector3(7 + (index % 5) * 2.5, 3, 3 + (index / 5) * 2.5)
 		world.add_child(model)
 		ComicLook.apply(model, true)
+		ComicLook.tint(model, entry.tint) # Match what the arena actually spawns.
 		var label := Label3D.new()
 		label.text = entry.display_name
 		label.font_size = 32
@@ -119,35 +118,12 @@ func _lineup() -> void:
 		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 		model.add_child(label)
 		index += 1
-	await _view("loot_lineup", Vector3(12, 3, 5), 20)
+	await _view("loot_lineup", Vector3(12, 3.2, 5), 11)
 
 
 func _frames(count: int) -> void:
 	for frame: int in range(count):
 		await process_frame
-
-
-func _reference_water() -> void:
-	var shader := Shader.new()
-	shader.code = FileAccess.get_file_as_string("res://assets/shaders/ship_water_reference.gdshader")
-	var water := ShaderMaterial.new()
-	water.shader = shader
-	water.set_shader_parameter("color", Color(0.15, 0.3, 0.45, 0.8))
-	water.set_shader_parameter("deep_water", Color(0.04, 0.1, 0.25, 1))
-	water.set_shader_parameter("edge_color", Color(0.6, 0.75, 0.85, 1))
-	var noise := NoiseTexture2D.new()
-	noise.noise = FastNoiseLite.new()
-	noise.seamless = true
-	for parameter: String in ["noise1", "noise2", "wave"]:
-		water.set_shader_parameter(parameter, noise)
-	var normals := NoiseTexture2D.new()
-	normals.noise = FastNoiseLite.new()
-	normals.as_normal_map = true
-	normals.seamless = true
-	water.set_shader_parameter("normalmap", normals)
-	for mesh: MeshInstance3D in world.arena.get_node("ShipEnvironment").find_children("*", "MeshInstance3D", true, false):
-		if mesh.mesh is PlaneMesh:
-			mesh.material_override = water
 
 
 func _crossing() -> void:
