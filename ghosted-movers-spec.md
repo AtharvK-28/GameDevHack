@@ -624,7 +624,7 @@ Close codes: 4001 auth timeout, 4002 new lobby, 4003 denied credentials, 4008 ra
 **Battery Run implementation.** `props/tasks/` holds `battery.tscn`/`battery.gd` and `generator_zone.tscn`/`generator_zone.gd`. The Mansion layout supplies `spawns.batteries` and `generator`; Mansion creates the task only for match rounds. All tuning is in Balance. The battery subclasses Carryable, never Loot. Release invokes generator delivery directly, so sliding or ghost shoves cannot complete it. Batteries that fall below the map or escape the movers' playable bounds return to their spawn. HUD shows battery progress; mover/ghost `hud` messages add `generator: {delivered, total, powered}` (empty when no task); ghost HUD also adds `generatorPowered`. Cooldown rings use the powered duration.
 
 
-## Ghost Ship implementation (decision 99)
+## Ghost Ship implementation (decision 100)
 
 `arenas/layouts/ship_layout.json` and `ship_layout.svg` define the approved 26 x 10 m galleon: quarterdeck +1.2 m, forecastle +0.8 m, open 5 x 4 m hold -1.2 m, a 4 m-wide hold ramp, 3 m-wide raised-deck ramps, and a 2.2 x 3.6 m unrailed gangplank. Static floors use separate slabs; water has no ground collider. Five floor-aware zones include the hold and salvage tug. The tug is 8 x 5 m, with a 4 x 3 m amber release-only delivery area. Chest carriers use clear turning areas and cross lengthwise, one ahead and one behind. Ship uses camera yaw -20 degrees, pitch 55 and framing 12-26 m.
 
@@ -637,7 +637,7 @@ At the fixed water plane (-2.4 m), loot is lost once through the normal loss/sco
 ShipDressing and ShipEnvironment remain separate from generated floors. Green environmental glow is prohibited. Kenney Pirate Kit 2.1 CC0 is the main source; the supplied combined Quaternius GLB is excluded because its embedded Standard provenance differs from the original pack's CC0 listing. Sea audio sources are individually credited. Rendering budgets: at most about 400000 displayed triangles, 350 draw calls, 5000 triangles per prop and 60000 for hull/masts/sails; one shadow-casting moon, eight shadowless omnis at most; dense 60 x 60 m near ocean and sparse outer ocean faded into fog. Checks and measured review results are recorded in PROGRESS.md.
 
 
-## The Ghost Ship's ghost: Davy Jones (decision 100)
+## The Ghost Ship's ghost: Davy Jones (decision 101)
 
 The Ghost Ship's ghost wears Davy Jones; the Mansion keeps the bedsheet wisp. Each arena names its body in
 `GHOST_AVATAR`, which `main.gd` hands to the wisp beside `SIGNATURE_HAUNTING`, and both bodies implement the
@@ -659,7 +659,7 @@ The model is a Disney Infinity rip, not CC0. It is committed so both developers 
 replaced with an original before any public or judged release; see `assets/CREDITS.md`.
 
 
-## Ghost Ship look (decision 101)
+## Ghost Ship look (decision 102)
 
 Hull decks carry `"solid": true` in `ship_layout.json` and are built as blocks from their own height down to
 `SHIP_DECK_BASE` (-1.6), so no step shows open sky underneath and the main deck around the hold forms the hold's

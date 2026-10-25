@@ -162,12 +162,12 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - [x] All five possessable types, Gust warning/counters, two-second overboard rescue and water-plane loot loss.
 - [x] Initial real-physics Ship check passes: all room routes, held ramp travel, continuous two-player chest route and delivery, wind counters, rescue/pause and loot removal.
 - [x] Initial Mobile performance with four movers/full pool passes: wide 149758 triangles / 287 draws; close 158834 / 282 on Intel Iris Xe. Final visual capture/measurement still pending.
-- [x] Davy Jones is the Ghost Ship's ghost (decision 100, 2026-10-25): a `GhostAvatar` interface lets each arena name
+- [x] Davy Jones is the Ghost Ship's ghost (decision 101, 2026-10-25): a `GhostAvatar` interface lets each arena name
   its ghost body, `DavyJonesModel` animates the static model in code, and `ghost_apparition.gdshader` keeps his own
   textures while making him spectral. Verified: ghost check still passes 128 assertions on the Mansion wisp, and the
   Ship check passes 60 (up from 53) with new coverage of his body, bound textures, facing, shadow and exorcism
   tumble. Close portraits at the game's angle inspected. The model is not CC0 and must be swapped before release.
-- [x] Ghost Ship look finished (decision 101, 2026-10-25): solid hull decks (the open undersides and the wall-less
+- [x] Ghost Ship look finished (decision 102, 2026-10-25): solid hull decks (the open undersides and the wall-less
   hold are gone), a hull that reaches below the waterline, a bowsprit, billowed canvas sails, and wood/treasure tints
   on the three Kenney pirate props that were rendering salmon and powder blue.
 - [x] Reference-water comparison done: the project's own shader is kept; the MIT reference renders as ice floes
