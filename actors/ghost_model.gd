@@ -1,5 +1,5 @@
 class_name GhostModel
-extends Node3D
+extends GhostAvatar
 ## Drives an instanced ghost.glb: animations, face expressions (blend shapes),
 ## the glowing body and aura shaders, the spec's 25–45% opacity shimmer and a trailing-particle wisp.
 ## Put this on a Node3D inside GhostWisp.tscn and instance ghost.glb as its child.

@@ -4,6 +4,7 @@ extends Node3D
 # --- Identity and resources ---
 const ARENA_NAME: String = "Ghost Ship"
 const SIGNATURE_HAUNTING := preload("res://hauntings/GustOfWind.gd")
+const GHOST_AVATAR := preload("res://actors/davy_jones_model.gd") # Davy Jones himself haunts this wreck.
 const LAYOUT_PATH: String = "res://arenas/layouts/ship_layout.json"
 const LOOT_SCENE := preload("res://props/Loot.tscn")
 const FURNITURE := {"slider": "Crate", "hopper": "Armour", "door": "Door", "dropper": "Chandelier", "rug": "Rug"}

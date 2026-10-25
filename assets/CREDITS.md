@@ -137,3 +137,10 @@ Compact mono Vorbis excerpts converted from the publicly supplied MP3 previews; 
 | `audio/ship/rope.ogg` | jergonda, Hang Man's Rope, https://freesound.org/people/jergonda/sounds/254735/ | CC0 |
 | `audio/ship/gulls.ogg` | AlienXXX, Seagull, https://freesound.org/people/AlienXXX/sounds/798340/ | CC0 |
 | `audio/ship/foghorn.ogg` | bruno.auzet, foghorn.wav, https://freesound.org/people/bruno.auzet/sounds/570906/ | CC0 |
+
+### Ghost Ship ghost — NOT CC0, must be replaced before release
+
+- `models/ghost/davy_jones/davy_jones.glb` plus its two extracted textures: a Disney Infinity rip of Davy Jones,
+  supplied by the user. 9,238 triangles, 4 meshes, no rig, no animations. Disney owns this character and model;
+  it is **not** CC0 and does not meet this project's asset rules. It is committed only so both developers can run
+  the Ghost Ship. Swap it for an original, CC0-compatible captain before any public release, submission or judging.

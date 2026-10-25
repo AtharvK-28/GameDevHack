@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://d07bempjd4fjf"
-path="res://.godot/imported/disney_infinity_davy_jones.glb-e76fd8a7e38cfc5cafd1796d9e258dd7.scn"
+uid="uid://bk2ja41de1gfo"
+path="res://.godot/imported/davy_jones.glb-767d07649f3443444ddc15e1bf30f1c6.scn"
 
 [deps]
 
-source_file="res://disney_infinity_davy_jones.glb"
-dest_files=["res://.godot/imported/disney_infinity_davy_jones.glb-e76fd8a7e38cfc5cafd1796d9e258dd7.scn"]
+source_file="res://assets/models/ghost/davy_jones/davy_jones.glb"
+dest_files=["res://.godot/imported/davy_jones.glb-767d07649f3443444ddc15e1bf30f1c6.scn"]
 
 [params]
 

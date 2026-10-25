@@ -7,6 +7,7 @@ signal exorcised(slot: int)
 # --- Ghost state ---
 var slot: int = 0
 var signature_haunting: Script = HouseShake # The arena's own haunting, on haunt1; Ecto Slime is always haunt2.
+var avatar_script: Script = GhostModel # The arena's ghost body; the Ghost Ship brings its own captain.
 var energy: float = Balance.ENERGY_MAX
 var stick := Vector2.ZERO # This frame's input; zero while frozen.
 var aim := Vector2.ZERO # The last direction the stick pointed; props that way win close calls for POSSESS and Curse.
@@ -17,7 +18,7 @@ var lockout_left: float = 0.0
 var hauntings: Array[Haunting] = []
 var shimmer_time: float = 0.0
 var body_mesh := MeshInstance3D.new() # Holds the ghost model; hidden while possessing.
-var model: GhostModel
+var model: GhostAvatar
 var trail: CPUParticles3D # Ghost-green puffs left behind while moving, also while driving a possessed prop.
 var last_position := Vector3.ZERO
 var material := StandardMaterial3D.new()
@@ -372,7 +373,9 @@ func _process(delta: float) -> void:
 	shimmer_time += delta
 	var wave: float = sin(TAU * Balance.WISP_SHIMMER_RATE * shimmer_time)
 	var colour: Color = Balance.WISP_FROZEN_COLOUR if is_frozen() else Balance.WISP_COLOUR
-	material.albedo_color = Color(colour, lerpf(Balance.WISP_ALPHA_MIN, Balance.WISP_ALPHA_MAX, 0.5 + 0.5 * wave))
+	var alpha: float = lerpf(Balance.WISP_ALPHA_MIN, Balance.WISP_ALPHA_MAX, 0.5 + 0.5 * wave)
+	material.albedo_color = Color(colour, alpha)
+	model.apply_shimmer(colour, alpha) # Bodies that tint themselves follow the same shimmer.
 	body_mesh.position.y = wave * Balance.WISP_BOB_HEIGHT
 	if not is_instance_valid(possessing) and not is_frozen():
 		model.update_motion(Vector3(stick.x, 0.0, stick.y) * movement_speed(), delta)
@@ -384,15 +387,23 @@ func _clamp_to_bounds() -> void:
 
 
 func _build_body() -> void:
+	# The arena chose the body: the Mansion's bedsheet wisp or the Ghost Ship's captain, who builds
+	# and tints himself.
+	model = avatar_script.new()
+	if model is GhostModel:
+		_build_wisp_body()
+
+	body_mesh.add_child(model)
+	body_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF # A shadow would give the wisp away.
+	add_child(body_mesh)
+
+
+func _build_wisp_body() -> void:
 	# The ghost model (assets/source/ghost/GHOST_GUIDE.md) shimmers 25–45% itself; the material below only
 	# tracks that shimmer for the checks.
-	model = GhostModel.new()
 	model.add_child(load(Balance.GHOST_MODEL_PATH).instantiate())
-	body_mesh.add_child(model)
 	for part: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
 		part.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF # A shadow would give the wisp away.
 	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	body_mesh.material_override = material
-	body_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF # A shadow would give the wisp away.
-	add_child(body_mesh)

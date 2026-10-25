@@ -47,6 +47,7 @@ func run() -> int:
 	await _check_barrel()
 	await _check_walks()
 	await _check_chest_route()
+	await _check_captain()
 	await _check_wind()
 	await _check_overboard()
 	world.queue_free()
@@ -151,6 +152,40 @@ func _carry_chest(chest: Loot, target: Vector2) -> bool:
 
 
 # --- Wind and rescue ---
+# --- The Ghost Ship's own ghost ---
+func _check_captain() -> void:
+	# Davy Jones is a static model with no clips, so the things that silently broke while building him
+	# are checked here: his body, his textures, which way he faces and his shadow.
+	world.set_ghost_slot(3)
+	var ghost: Node3D = world.ghost
+	_check(ghost.model is DavyJonesModel, "The Ghost Ship's ghost is Davy Jones, not the bedsheet wisp")
+	_check(ghost.model.materials.size() == 4, "Every one of his surfaces is ghosted")
+
+	var textured: bool = true
+	for material: ShaderMaterial in ghost.model.materials:
+		textured = textured and material.get_shader_parameter(&"albedo_texture") != null
+	_check(textured, "His own texture reaches the shader, so he is not washed out to a plain silhouette")
+
+	var shadowed: bool = false
+	for part: MeshInstance3D in ghost.model.body.find_children("*", "MeshInstance3D", true, false):
+		shadowed = shadowed or part.cast_shadow != GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_check(not shadowed, "He casts no shadow, which would give the ghost away")
+
+	# He is modelled facing -Z, so travelling +Z must turn him right round to face his travel.
+	ghost.model.rotation.y = 0.0
+	for frame: int in range(60):
+		ghost.model.update_motion(Vector3(0, 0, Balance.WISP_SPEED), 1.0 / 60.0)
+	_check(ghost.model.global_basis.z.dot(Vector3.BACK) < -0.9, "He faces the way he flies")
+
+	ghost.model.play_exorcised(1.0)
+	_check(ghost.model.is_busy(), "Being blasted out of a prop starts his tumble")
+	await _frames(60)
+	_check(not ghost.model.is_busy(), "The tumble ends on its own")
+
+	world.set_ghost_slot(-1)
+	await _frames(5)
+
+
 func _check_wind() -> void:
 	_place(0, Vector2(14, 8))
 	_place(1, Vector2(11, 8))

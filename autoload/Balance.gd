@@ -193,6 +193,43 @@ const WISP_ALPHA_MIN: float = 0.25 # Opacity shimmers between these, 0 to 1.
 const WISP_ALPHA_MAX: float = 0.45
 const WISP_SHIMMER_RATE: float = 1.5 # Shimmer cycles per second.
 const WISP_BOB_HEIGHT: float = 0.08 # Metres of gentle bobbing.
+
+# --- Ghost Ship ghost: Davy Jones (decision 100) ---
+# A static posed model, so DavyJonesModel animates him in code instead of playing clips.
+const DAVY_MODEL_PATH: String = "res://assets/models/ghost/davy_jones/davy_jones.glb"
+const DAVY_MODEL_HEIGHT: float = 205.05 # The imported model's own height, in its glTF units.
+const DAVY_TARGET_HEIGHT: float = 2.0 # Metres; he looms over the 1.6 m movers.
+const DAVY_MODEL_SCALE: float = DAVY_TARGET_HEIGHT / DAVY_MODEL_HEIGHT
+const DAVY_DROP: float = -1.0 # Metres below the wisp's node, so his feet hover just off the deck.
+const DAVY_FACING_OFFSET: float = PI # The model faces -Z, so his yaw turns a half circle.
+# He sits over a brightly lit deck, so below about 0.75 the deck bleeds through and washes his
+# own colours out to a pale green.
+const DAVY_ALPHA_MIN: float = 0.80 # Opacity shimmers between these, 0 to 1.
+const DAVY_ALPHA_MAX: float = 0.93
+const DAVY_TINT_COLOUR := Color("6fd9a8") # The sea green his own colours are washed toward.
+const DAVY_TINT_AMOUNT: float = 0.1 # 0 keeps his own colours, 1 makes him fully ghost-green.
+const DAVY_FROZEN_TINT_AMOUNT: float = 0.6 # Washed out much harder while frozen after an exorcism.
+const DAVY_RIM_COLOUR := Color("8cffc4") # The ghost-green fresnel edge.
+const DAVY_RIM_GLOW: float = 0.7 # How hard the edge glows; above about 1.5 it blows out his texture.
+const DAVY_RIM_POWER: float = 4.0 # Higher keeps the glow tight to his outline.
+const DAVY_SELF_GLOW: float = 0.5 # How much his own colours glow, so he reads on a dark deck.
+const DAVY_RIM_OPACITY: float = 0.22 # How much the edge firms him up, 0 to 1.
+const DAVY_TURN_RATE: float = 8.0 # How sharply he swings round to face his travel direction.
+const DAVY_LEAN: float = 0.18 # Radians of forward lean at full speed.
+const DAVY_SWAY_RATE: float = 0.6 # Idle sway cycles per second.
+const DAVY_SWAY_ANGLE: float = 0.05 # Radians of idle sway.
+const DAVY_MOVE_THRESHOLD: float = 0.3 # Metres per second below which he counts as hovering still.
+const DAVY_LEAN_RATE: float = 6.0 # How fast the lean eases in and out.
+# Action lengths in seconds, matching the clips the bedsheet wisp plays so no timing shifts.
+const DAVY_EMERGE_TIME: float = 0.5
+const DAVY_CAST_TIME: float = 0.8
+const DAVY_EJECT_TIME: float = 0.6
+const DAVY_EMERGE_OVERSHOOT: float = 0.35 # Extra scale at the peak of the pop-out, 0 to 1.
+const DAVY_CAST_SHAKE: float = 0.07 # Radians of shake while casting.
+const DAVY_CAST_SHAKE_RATE: float = 11.0 # Shake cycles per second.
+const DAVY_EJECT_SPINS: float = 1.5 # Full turns while being blasted out of a prop.
+const DAVY_DIZZY_ANGLE: float = 0.22 # Radians of wobble while stunned.
+const DAVY_DIZZY_RATE: float = 2.6 # Wobble cycles per second.
 const GHOST_BOUNDS := Rect2(-7.5, -12.0, 15.0, 19.0) # The x/z area the wisp may roam: the house and the truck.
 const GHOST_SPAWN := Vector2(0.0, -10.9) # Far end of the parlour.
 const ENERGY_MAX: float = 100.0

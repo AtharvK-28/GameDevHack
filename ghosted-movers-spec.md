@@ -635,3 +635,25 @@ Ship enables crate/slider, hatch/door, lantern/dropper, anchor/hopper and tarp/r
 At the fixed water plane (-2.4 m), loot is lost once through the normal loss/scoring path. A mover releases their own held item/handle, leaves play for 2 s, then returns empty-handed to a clear tug spawn. Rescue pauses with simulation and resets with the round. Camera, physics and HUD do not follow a hidden rescuing mover. No extra money penalty. Colliders never bob.
 
 ShipDressing and ShipEnvironment remain separate from generated floors. Green environmental glow is prohibited. Kenney Pirate Kit 2.1 CC0 is the main source; the supplied combined Quaternius GLB is excluded because its embedded Standard provenance differs from the original pack's CC0 listing. Sea audio sources are individually credited. Rendering budgets: at most about 400000 displayed triangles, 350 draw calls, 5000 triangles per prop and 60000 for hull/masts/sails; one shadow-casting moon, eight shadowless omnis at most; dense 60 x 60 m near ocean and sparse outer ocean faded into fog. Checks and measured review results are recorded in PROGRESS.md.
+
+
+## The Ghost Ship's ghost: Davy Jones (decision 100)
+
+The Ghost Ship's ghost wears Davy Jones; the Mansion keeps the bedsheet wisp. Each arena names its body in
+`GHOST_AVATAR`, which `main.gd` hands to the wisp beside `SIGNATURE_HAUNTING`, and both bodies implement the
+`GhostAvatar` interface (`update_motion`, `is_busy`, `apply_shimmer` and the action calls). The ghost's rules,
+energy, reach, possession and hauntings are identical on both arenas; only the body differs.
+
+The model is a single static pose with no rig, clips or blend shapes, so `DavyJonesModel` animates him in code:
+hovering, turning to face his travel, leaning into it, a swelling pop as he leaves a prop, a lean and shake while
+casting, and a tumble into a dizzy wobble when exorcised. Action lengths match the clips the wisp plays, so no
+timing shifts.
+
+He keeps his own textures through `ghost_apparition.gdshader`: alpha shimmering 0.80-0.93 in step with the wisp's
+own shimmer, his colours pulled 10% toward sea green, a tight ghost-green fresnel edge and a 0.5 self glow so he
+reads on a dark deck. Below about 0.75 alpha the lit deck bleeds through and washes him out to plain green. The
+wisp's frozen tint takes over at 60% after an exorcism. He stands 2.0 m against the 1.6 m movers, hovers 1.0 m
+below the wisp's node, and is modelled facing -Z, so his yaw carries a half-circle offset. He casts no shadow.
+
+The model is a Disney Infinity rip, not CC0. It is committed so both developers can run the arena, and must be
+replaced with an original before any public or judged release; see `assets/CREDITS.md`.

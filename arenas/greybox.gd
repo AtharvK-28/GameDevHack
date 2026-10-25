@@ -16,6 +16,7 @@ const RUG := preload("res://props/furniture/Rug.tscn")
 # --- Arena identity ---
 const ARENA_NAME: String = "Old Mansion"
 const SIGNATURE_HAUNTING := preload("res://hauntings/HouseShake.gd")
+const GHOST_AVATAR := preload("res://actors/ghost_model.gd")
 
 var truck: Area3D
 var demo_mode: bool = false

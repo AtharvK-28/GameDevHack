@@ -13,6 +13,7 @@ const GENERATOR_SCENE := preload("res://props/tasks/generator_zone.tscn")
 # --- Arena identity ---
 const ARENA_NAME: String = "Old Mansion"
 const SIGNATURE_HAUNTING := preload("res://hauntings/HouseShake.gd")
+const GHOST_AVATAR := preload("res://actors/ghost_model.gd")
 
 # --- Round settings, set by Main before the arena enters the tree ---
 var demo_mode: bool = false

@@ -55,6 +55,7 @@ func _run() -> void:
 	world.arena.get_node("ShipEnvironment").flash_lightning()
 	await _frames(2)
 	await _save("lightning")
+	await _ghost_views()
 	await _crossing()
 	await _lineup()
 	var file := FileAccess.open(output.path_join("performance.json"), FileAccess.WRITE)
@@ -189,3 +190,48 @@ func _prop_triangles() -> Dictionary:
 			result[entry.id] = count
 			model.free()
 	return result
+
+
+func _ghost_views() -> void:
+	# Davy Jones beside a mover for scale, facing all four ways so the captures show which way the
+	# model points, and through each of his actions.
+	world.set_ghost_slot(3)
+	var ghost: Node3D = world.ghost
+	for slot: int in range(3):
+		world.movers[slot].set_in_play(slot == 0)
+	world.movers[0].reset_for_round(Vector3(11.8, 0.8, 6.5), true)
+	ghost.position = Vector3(13.2, 0.8 + SETTINGS.WISP_HEIGHT, 6.5)
+	await _frames(40)
+
+	await _view("ghost_scale", Vector3(12.5, 1.0, 6.5), 8)
+	# Frame out to the widest view so this reading compares with the ghost-free "wide" sample.
+	camera.focus = Vector3(13, 0, 8)
+	camera.distance = 26
+	await _frames(20)
+	await _save("ghost_overview")
+	await _measure("wide_with_ghost")
+	camera.focus = Vector3(12.5, 1.0, 6.5)
+	camera.distance = 8
+	await _frames(15)
+	for index: int in range(4):
+		ghost.model.rotation.y = index * PI / 2.0
+		await _frames(5)
+		await _save("ghost_yaw_%d" % index)
+
+	ghost.model.rotation.y = 0.0
+	ghost.model.play_cast()
+	await _frames(12)
+	await _save("ghost_cast")
+	ghost.model.play_emerge()
+	await _frames(10)
+	await _save("ghost_emerge")
+	ghost.model.play_exorcised(1.5)
+	await _frames(12)
+	await _save("ghost_eject")
+	await _frames(45)
+	await _save("ghost_dizzy")
+
+	world.set_ghost_slot(-1)
+	for slot: int in range(4):
+		world.movers[slot].reset_for_round(Vector3(11.5 + slot, 0.8, 7.5), true)
+	await _frames(20)

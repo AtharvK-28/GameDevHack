@@ -156,6 +156,7 @@ func set_ghost_slot(slot: int) -> void:
 	ghost.mover_count = maxi(1, Game.participants.size() - 1)
 	ghost.slot = slot
 	ghost.signature_haunting = arena.SIGNATURE_HAUNTING
+	ghost.avatar_script = arena.GHOST_AVATAR
 	ghost.arena = arena
 	ghost.position = arena.ghost_spawn()
 	ghost.bounds = arena.ghost_bounds()
@@ -187,6 +188,7 @@ func setup_match_round(round_seed: int, participants: Array[int], ghost_slot: in
 	ghost.mover_count = participants.size() - 1
 	ghost.slot = ghost_slot
 	ghost.signature_haunting = arena.SIGNATURE_HAUNTING
+	ghost.avatar_script = arena.GHOST_AVATAR
 	ghost.arena = arena
 	ghost.position = arena.ghost_spawn()
 	ghost.bounds = arena.ghost_bounds()
