@@ -180,7 +180,9 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 ## Ghost Ship expansion (decision 104, for the 2 Nov presentation)
 
 - [x] 1. Original captain replaces Davy Jones
-- [ ] 2. Light the Lanterns map task
+- [x] 2. Light the Lanterns map task (decision 105): `core/lantern_check.gd` passes (seeded spots, clearances, a real
+  carry over the gangplank, release-only delivery, handicap, lighting through lightning, restart). The battery is now a
+  task base the oil can extends; HUD and phones read the task's own name. Tug render inspected. Human feel pending.
 - [ ] 3. Ship intro comic
 - [ ] 4. Human 2/3/4-phone playtest and tuning
 - [ ] 5. Deck sway

@@ -1,0 +1,7 @@
+; The Ship task zone: three lantern posts, two on the tug and one on the quarterdeck.
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://props/tasks/lantern_posts.gd" id="1"]
+
+[node name="LanternPosts" type="Node3D"]
+script = ExtResource("1")

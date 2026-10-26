@@ -4,6 +4,7 @@ extends Node3D
 # --- Environment state ---
 var environment: Environment
 var moon: DirectionalLight3D
+var moon_ratio: float = 1.0 # Raised once the lanterns are lit, and kept through lightning.
 var elapsed: float = 0.0
 var lightning_left: float = 0.0
 var lightning_time: float = 0.0
@@ -124,7 +125,7 @@ func _process(delta: float) -> void:
 		lightning_time = 0.0
 	elif lightning_left <= 0.0:
 		flash_lightning()
-	moon.light_energy = Balance.SHIP_LIGHTNING_ENERGY if lightning_time > 0.0 else Balance.SHIP_MOON_ENERGY
+	moon.light_energy = Balance.SHIP_LIGHTNING_ENERGY if lightning_time > 0.0 else Balance.SHIP_MOON_ENERGY * moon_ratio
 	next_call -= delta
 	if next_call <= 0.0:
 		next_call = Balance.SHIP_AMBIENT_CALL_INTERVAL

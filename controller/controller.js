@@ -268,8 +268,8 @@ function clock(seconds) {
 function renderMoverHud(message) {
   elements["held-label"].textContent = !message.held ? "Hands free" : Number.isFinite(message.value) ? `${message.held} · ₹${message.value.toLocaleString("en-IN")}` : message.held;
   const generator = message.generator;
-  if (generator?.total && (!message.held || message.held === "Generator Battery")) {
-    elements["held-label"].textContent += generator.powered ? " · Generator ON" : ` · Generator ${generator.delivered}/${generator.total}`;
+  if (generator?.total && (!message.held || message.held === generator.item)) {
+    elements["held-label"].textContent += generator.powered ? ` · ${generator.name} ON` : ` · ${generator.name} ${generator.delivered}/${generator.total}`;
   }
   // A cursed item stays heavy for its remaining seconds, even after being dropped and picked up again.
   const cursed = Number(message.cursed) || 0;
@@ -313,7 +313,7 @@ function noteFor(name, message, readyText) {
 
 function statusLine(message) {
   const seconds = message.seconds ?? {};
-  if (message.generatorPowered) return "Generator ON: slower flight/regen, longer cooldowns";
+  if (message.generatorPowered) return `${message.generator?.name ?? "Generator"} ON: slower flight/regen, longer cooldowns`;
   if (seconds.opening > 0) return `Hauntings unlock in ${seconds.opening}s`;
   if (seconds.shared > 0) return `Next haunting in ${seconds.shared}s`;
   return message.target ? `Curse target: ${message.target}` : "Fly near loot to curse it";

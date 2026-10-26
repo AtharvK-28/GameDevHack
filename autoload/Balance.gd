@@ -20,6 +20,22 @@ const GENERATOR_SPEED_RATIO: float = 0.75 # Free-wisp movement only.
 const GENERATOR_AMBIENT_RATIO: float = 1.4 # Gentle ambient lift, preserving dusk colours.
 const GENERATOR_MOON_RATIO: float = 1.15
 const GENERATOR_LIGHT_FADE: float = 1.5 # Seconds to brighten after the final battery.
+# --- Light the Lanterns (Ghost Ship task, decision 104); the ghost handicap reuses GENERATOR_* ---
+const LANTERN_COUNT: int = 3
+const OIL_CAN_SIZE := Vector3(0.4, 0.55, 0.4) # Metres; a medium, single-mover carry.
+const OIL_CAN_COLOUR := Color("c4473a")
+const OIL_CAN_SPOTS: Array[Vector3] = [ # x, deck height, z; three are picked per round by seed.
+	Vector3(2.4, 1.2, 3.0), Vector3(2.4, 1.2, 7.0), Vector3(13.3, -1.2, 4.3), Vector3(20.5, 0.0, 6.3),
+	Vector3(11.0, 0.0, 8.2), Vector3(16.4, 0.0, 8.8), Vector3(23.4, 0.8, 2.8), Vector3(25.0, 0.8, 3.2),
+	Vector3(6.2, 0.0, 2.9)]
+const LANTERN_POST_SPOTS: Array[Vector3] = [Vector3(10.7, 0.0, 16.0), Vector3(17.3, 0.0, 16.0), Vector3(3.0, 1.2, 9.0)] # x, deck height, z: two on the tug, one on the quarterdeck.
+const LANTERN_ZONE_SIZE := Vector3(1.2, 2.0, 1.2) # Metres; the can's centre must be inside on release.
+const LANTERN_POST_HEIGHT: float = 2.0
+const LANTERN_LIT_COLOUR := Color("ffbf4a") # Warm flame, distinct from the cold blue deck lamps.
+const LANTERN_DARK_COLOUR := Color("2b3240")
+const LANTERN_GLOW: float = 6.0 # Emission strength of a lit lantern; no extra light (Ship omni budget).
+const LANTERN_LAMP_RATIO: float = 1.6 # Ship deck lamps brighten by this once all lanterns are lit.
+const LANTERN_SEED_OFFSET: int = 6151 # Separate can placement from the seeded loot selection.
 const TASK_LABEL_PIXEL_SIZE: float = 0.006 # World metres per label pixel.
 const TASK_LABEL_HEIGHT: float = 1.4 # Metres above the generator zone.
 const BATTERY_RECOVERY_DEPTH: float = -3.0 # Metres; return a battery that escapes below the arena.
@@ -852,6 +868,7 @@ const LOADING_TIPS: Array[String] = [
 	"Deliver 70% of the haul to the truck to win.",
 	"Ghost: possess furniture and SHOVE it at the movers.",
 	"Power the generator with 3 batteries to weaken the ghost.",
+	"On the Ship, carry 3 oil cans to the lantern posts on the tug.",
 	"A thrown vase can knock a mover flat.",
 ]
 

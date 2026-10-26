@@ -1,0 +1,7 @@
+; Ship task item: lamp oil for the lantern posts.
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://props/tasks/oil_can.gd" id="1"]
+
+[node name="OilCan" type="RigidBody3D"]
+script = ExtResource("1")

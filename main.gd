@@ -89,7 +89,7 @@ func _send_hud() -> void:
 	var generator: Node = arena.get("generator")
 	var task: Dictionary = {}
 	if is_instance_valid(generator):
-		task = {"delivered": generator.delivered, "total": Balance.BATTERY_COUNT, "powered": generator.powered}
+		task = {"delivered": generator.delivered, "total": generator.total, "powered": generator.powered, "name": generator.TASK_NAME, "item": generator.TASK_ITEM}
 	for mover: CharacterBody3D in movers:
 		var player := Net.player_for_slot(mover.slot)
 		if player.is_empty():

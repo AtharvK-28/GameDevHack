@@ -174,7 +174,7 @@ func _process(delta: float) -> void:
 	var generator: Node = Game.host.arena.get("generator") if is_instance_valid(Game.host) else null
 	generator_label.visible = is_instance_valid(generator)
 	if generator_label.visible:
-		generator_label.text = "Generator ON" if generator.powered else "Generator batteries %d/%d" % [generator.delivered, Balance.BATTERY_COUNT]
+		generator_label.text = generator.hud_text()
 	_refresh_room()
 	if chip_slots != Game.participants or chip_ghost_slot != Game.ghost_slot:
 		_build_chips()

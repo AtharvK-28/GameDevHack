@@ -7,6 +7,8 @@ const SIGNATURE_HAUNTING := preload("res://hauntings/GustOfWind.gd")
 const GHOST_AVATAR := preload("res://actors/ghost_captain_model.gd") # The wreck's drowned captain haunts it.
 const LAYOUT_PATH: String = "res://arenas/layouts/ship_layout.json"
 const LOOT_SCENE := preload("res://props/Loot.tscn")
+const OIL_CAN_SCENE := preload("res://props/tasks/oil_can.tscn")
+const LANTERN_SCENE := preload("res://props/tasks/lantern_posts.tscn")
 const FURNITURE := {"slider": "Crate", "hopper": "Armour", "door": "Door", "dropper": "Chandelier", "rug": "Rug"}
 
 # --- Round settings and state ---
@@ -15,7 +17,7 @@ var player_count: int = 2
 var spawn_seed: int = 0
 var layout: Dictionary
 var truck: Area3D
-var generator: Area3D # No Battery Run on this arena; shared HUD queries this optional task.
+var generator: Node3D # The Light the Lanterns task in a match; the shared HUD and phones read it.
 var rescues: Dictionary = {}
 var wind_direction := Vector3.ZERO
 var wind_active: bool = false
@@ -26,6 +28,8 @@ func _ready() -> void:
 	truck = ArenaBuilder.build(self, layout)
 	_spawn_loot()
 	_spawn_furniture()
+	if demo_mode:
+		_spawn_lantern_task()
 
 
 # --- Arena interface ---
@@ -165,3 +169,45 @@ func _spawn_furniture() -> void:
 				prop.item_name = "Deck tarp"
 		prop.position = ArenaBuilder.point_of(spot, height)
 		add_child(prop)
+
+
+# --- Light the Lanterns ---
+func oil_can_spots() -> Array[Vector3]:
+	# A separate seeded stream, so the task never changes which loot spawns.
+	var spots: Array[Vector3] = Balance.OIL_CAN_SPOTS.duplicate()
+	var random := RandomNumberGenerator.new()
+	random.seed = spawn_seed + Balance.LANTERN_SEED_OFFSET
+	for index: int in range(spots.size() - 1, 0, -1):
+		var other: int = random.randi_range(0, index)
+		var spot: Vector3 = spots[index]
+		spots[index] = spots[other]
+		spots[other] = spot
+	return spots.slice(0, Balance.LANTERN_COUNT)
+
+
+func _spawn_lantern_task() -> void:
+	generator = LANTERN_SCENE.instantiate()
+	add_child(generator)
+	generator.powered_on.connect(_light_lanterns)
+	for spot: Vector3 in oil_can_spots():
+		var can: RigidBody3D = OIL_CAN_SCENE.instantiate()
+		can.generator = generator
+		can.arena = self
+		can.position = spot + Vector3.UP * (Balance.OIL_CAN_SIZE.y / 2.0 + Balance.LOOT_SPAWN_CLEARANCE)
+		add_child(can)
+
+
+func _light_lanterns() -> void:
+	# Brighten the existing ambient, moon and deck lamps; no new lights (the Ship's omni budget is spent).
+	var environment: Environment = $ShipEnvironment/WorldEnvironment.environment
+	var tween := create_tween()
+	tween.set_pause_mode(Tween.TWEEN_PAUSE_BOUND)
+	tween.set_parallel(true)
+	tween.tween_property(environment, "ambient_light_energy", Balance.SHIP_AMBIENT_ENERGY * Balance.GENERATOR_AMBIENT_RATIO, Balance.GENERATOR_LIGHT_FADE)
+	tween.tween_property($ShipEnvironment, "moon_ratio", Balance.GENERATOR_MOON_RATIO, Balance.GENERATOR_LIGHT_FADE)
+	for lamp: OmniLight3D in $ShipDressing.find_children("*", "OmniLight3D", true, false):
+		tween.tween_property(lamp, "light_energy", Balance.SHIP_LAMP_ENERGY * Balance.LANTERN_LAMP_RATIO, Balance.GENERATOR_LIGHT_FADE)
+	for ghost: Node in get_tree().get_nodes_in_group("ghosts"):
+		if ghost.arena == self:
+			ghost.apply_generator_power()
+	print("Lanterns lit: deck brightened and ghost weakened for the round")

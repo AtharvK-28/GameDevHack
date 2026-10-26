@@ -3,9 +3,13 @@ extends Area3D
 
 signal powered_on
 
+const TASK_NAME: String = "Generator"
+const TASK_ITEM: String = "Generator Battery"
+
 # --- Task state ---
 var delivered: int = 0
 var powered: bool = false
+var total: int = Balance.BATTERY_COUNT
 var label: Label3D
 var indicators: Array[MeshInstance3D] = []
 
@@ -81,6 +85,11 @@ func try_deliver(battery: Carryable) -> bool:
 	if powered:
 		powered_on.emit()
 	return true
+
+
+# --- Shared task wording for the HUD and phones ---
+func hud_text() -> String:
+	return "Generator ON" if powered else "Generator batteries %d/%d" % [delivered, total]
 
 
 # --- Feedback ---
