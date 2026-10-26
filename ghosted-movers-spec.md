@@ -698,7 +698,12 @@ and saved with the other options; `core/dev_tools.gd` (added to the match world 
   client on the same host, so the match, pause rules and phone messages run exactly as with phones. Its player
   carries `stand_in`, and it readies up again whenever the lobby returns. **New join code** removes them.
 - **Keyboard.** `InputRouter` lets the keyboard drive the selected slot when a stand-in holds it (1–4 to switch;
-  Ctrl+number never switches). Stand-ins nobody drives stand still. Real phones keep priority.
+  Ctrl+number never switches). Real phones keep priority.
+- **Bots (decision 121).** `core/bot_crew.gd` plays every other stand-in through its real socket, on the Ghost Ship
+  and the Old Mansion (route maps in `core/bot_routes.gd`). Mover bots fetch the best loot for the walk, carry the
+  two-person item in pairs and brace for hauntings and waves; the ghost bot haunts, curses, steals and shoves.
+  **Ctrl+B** turns them off, and stand-ins nobody drives then stand still. Pairs give up on a stalled item, and a
+  wedged carrier puts its item down, so a round never stalls.
 - **Phone page.** **F9** opens `http://localhost:8080/#k=<session key>` in the laptop's browser (the page server
   must be running); the lobby shows the address.
 - **Overlay.** **F3** toggles a debug panel in the bottom-left corner: FPS and phase, the driven slot and role, the
@@ -706,6 +711,10 @@ and saved with the other options; `core/dev_tools.gd` (added to the match world 
   pitch and rise, banked and lost loot against the target and limit, the round's award stats and the audience vote.
 - **Shortcuts (live play).** Ctrl+1 the arena haunting free (cooldown untouched), Ctrl+2 a wave (Ship), Ctrl+3 a big
   smash on the dearest item, Ctrl+4 a fog bank (Ship), Ctrl+5 an audience vote, Ctrl+W / Ctrl+L end the round as a
-  win or a loss, Ctrl+T +30 s. Each answers with a short note on screen.
+  win or a loss, Ctrl+T +30 s, Ctrl+N end the round as a win and make the next one the last. In any phase: Ctrl+B
+  bots, Ctrl+G ghost cheat (full energy, no cooldowns or locks), F5 / F6 round speed ×0.25 to ×4 (`Game.normal_speed`;
+  big smashes slow from it and return to it; the screens between rounds stay at ×1). Each answers with a short note.
 
-`core/dev_mode_check.gd` covers it on the Ship with no phones. Tunables are `DEV_*` in `Balance.gd`.
+`core/dev_mode_check.gd` covers the keys on the Ship with no phones; `core/bot_crew_check.gd` plays a whole ×3 round
+on each arena with only bots. Tunables are `DEV_*` and `BOT_*` in `Balance.gd`. Who wins a bot round varies: at ×1
+the Mansion bots usually deliver most of the loot, while on the Ship the ghost bot usually wins.

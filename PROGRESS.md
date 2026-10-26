@@ -111,7 +111,12 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
   Ctrl shortcuts. `core/dev_mode_check.gd` passes 22 checks on the Ship with no phones (off by default, stand-ins
   join and re-ready, keyboard drives a mover and the ghost while an undriven stand-in stays put, every shortcut).
   Lobby hint and live overlay rendered at 1080p.
-- [ ] Human try-out on the laptop.
+- [x] Human try-out on the laptop (user checked it, 2026-10-27).
+- [x] Playing stand-ins and extras (decision 121): bots on both arenas, Ctrl+B, F5/F6 speed, Ctrl+G ghost cheat, Ctrl+N
+  last round. `core/dev_mode_check.gd` covers the keys and that bots play every stand-in but the keyboard's;
+  `core/bot_crew_check.gd` plays a ×3 round per arena (bots pick up loot, carry the pair item along its path, the
+  ghost haunts and possesses, the round ends). At ×1 the Mansion bots won with 7 deliveries; on the Ship the ghost
+  bot usually wins, as the pair carry down the forecastle steps and the ghost's shoves cost too much.
 
 ## Blocked / notes
 

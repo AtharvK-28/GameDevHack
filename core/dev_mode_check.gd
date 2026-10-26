@@ -6,6 +6,8 @@ extends "res://core/match_check.gd"
 const DRIVE_SECONDS: float = 0.6
 const MOVED_METRES: float = 0.3
 const STILL_METRES: float = 0.15
+const BOT_SECONDS: float = 2.5
+const BOT_METRES: float = 1.0
 
 var dev: CanvasLayer
 
@@ -48,7 +50,10 @@ func _run() -> void:
 	await _wait(0.3)
 	_check(dev.overlay_text.text.contains("FPS") and dev.overlay_text.text.contains("Ghost P%d" % (game.ghost_slot + 1)) and dev.overlay_text.text.contains("Ship ·"), "The overlay reports the frame rate, the ghost and the ship")
 
-	# The keyboard drives one stand-in mover; the other stands still.
+	# With the bots off, the keyboard drives one stand-in mover and the other stands still.
+	await _ctrl_key(KEY_B)
+	_check(not dev.bot_crew.active, "Ctrl+B turns the bots off")
+	await _wait(0.5) # Let the movers the bots were walking come to rest.
 	var movers: Array = game.participants.filter(func(slot: int) -> bool: return slot != game.ghost_slot)
 	var driven: CharacterBody3D = playground.movers[movers[0]]
 	var idle: CharacterBody3D = playground.movers[movers[1]]
@@ -64,6 +69,23 @@ func _run() -> void:
 	var ghost_from: Vector3 = ghost.global_position
 	await _hold(KEY_D)
 	_check(_flat_gap(ghost.global_position, ghost_from) > MOVED_METRES, "The keyboard drives the ghost too")
+
+	# Bots on: they play every stand-in except the keyboard's.
+	await _key(KEY_1 + movers[0])
+	await _ctrl_key(KEY_B)
+	idle_from = idle.global_position
+	ghost_from = ghost.global_position
+	# Movement can't show it (a bot may bump the keyboard's mover); its input must stay the idle keyboard's.
+	var keyboard_input: Array[bool] = [true]
+	var deadline: int = Time.get_ticks_msec() + int(BOT_SECONDS * 1000.0)
+	while Time.get_ticks_msec() < deadline:
+		var input: Object = router.for_slot(movers[0])
+		keyboard_input[0] = keyboard_input[0] and input.direction.is_zero_approx() and not input.buttons.values().has(true)
+		await _frame()
+	_check(dev.bot_crew.active and _flat_gap(idle.global_position, idle_from) > BOT_METRES, "Bots play the other stand-in mover (%.2f m)" % _flat_gap(idle.global_position, idle_from))
+	_check(_flat_gap(ghost.global_position, ghost_from) > BOT_METRES, "A bot plays the ghost stand-in")
+	_check(keyboard_input[0], "No bot input reaches the keyboard's stand-in")
+	await _ctrl_key(KEY_B) # Off again, so the shortcuts below meet a quiet round.
 
 	# Shortcuts. Ctrl+number never switches the driven slot.
 	var selected: int = router.selected_slot
@@ -86,12 +108,35 @@ func _run() -> void:
 	var clock: float = game.seconds_left
 	await _ctrl_key(KEY_T)
 	_check(game.seconds_left > clock + SETTINGS.DEV_EXTRA_SECONDS - 1.0, "Ctrl+T adds 30 seconds")
+	await _key(KEY_F6)
+	_check(is_equal_approx(game.normal_speed, 2.0) and is_equal_approx(Engine.time_scale, 2.0), "F6 speeds the round up")
+	await _key(KEY_F5)
+	await _key(KEY_F5)
+	_check(is_equal_approx(Engine.time_scale, 0.5), "F5 slows it down")
+	await _key(KEY_F6)
+	await _ctrl_key(KEY_G)
+	ghost.energy = 5.0
+	ghost.hauntings[0].cooldown_left = 20.0
+	await _wait(0.1)
+	_check(is_equal_approx(ghost.energy, SETTINGS.ENERGY_MAX) and is_zero_approx(ghost.hauntings[0].cooldown_left), "Ctrl+G keeps the ghost's energy full and its cooldowns clear")
+	await _ctrl_key(KEY_G)
+	ghost.energy = 5.0
+	await _wait(0.1)
+	_check(ghost.energy < 10.0, "Ctrl+G again ends the cheat")
 	await _ctrl_key(KEY_W)
 	_check(game.phase == "result" and game.result.moversWon, "Ctrl+W ends the round as a movers' win")
 	await _key(KEY_ENTER)
 	await _wait_for_phase("live")
+	_check(is_equal_approx(Engine.time_scale, 1.0), "The next round plays at the chosen speed")
+	await _ctrl_key(KEY_N)
+	_check(game.phase == "result" and game.round_index + 2 == game.round_count, "Ctrl+N makes the next round the last")
+	await _key(KEY_ENTER)
+	await _wait_for_phase("live")
 	await _ctrl_key(KEY_L)
 	_check(game.phase == "result" and not game.result.moversWon, "Ctrl+L ends the round as a loss")
+	await _key(KEY_ENTER)
+	await _wait(0.2)
+	_check(game.phase == "final", "After the last round come the final standings")
 
 	# Back in the lobby the stand-ins ready up again; a fourth fits, a fifth does not.
 	game.return_to_lobby()

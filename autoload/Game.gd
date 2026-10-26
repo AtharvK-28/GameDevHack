@@ -31,6 +31,8 @@ var pause_reason: String = ""
 var host_paused: bool = false
 var broadcast_left: float = 0.0
 var smash_ready_at: int = 0 # Ticks (ms) before another big-smash punch-in may play.
+var slow_until: int = 0 # Ticks (ms) when the current punch-in's slow motion ends.
+var normal_speed: float = 1.0 # Live play's game speed; developer mode changes it (decision 121).
 
 # --- Setup ---
 func _ready() -> void:
@@ -194,11 +196,16 @@ func big_smash(point: Vector3) -> void:
 	if phase != "live" or Time.get_ticks_msec() < smash_ready_at:
 		return
 	smash_ready_at = Time.get_ticks_msec() + int(Balance.SMASH_COOLDOWN * 1000.0)
-	Engine.time_scale = Balance.SMASH_SLOWMO_SCALE
+	slow_until = Time.get_ticks_msec() + int(Balance.SMASH_SLOWMO_SECONDS * 1000.0)
+	Engine.time_scale = Balance.SMASH_SLOWMO_SCALE * normal_speed
 	if is_instance_valid(host) and is_instance_valid(host.camera):
 		host.camera.punch_in(point)
 	# Real time, and through pauses, so nothing can leave the match stuck in slow motion.
-	get_tree().create_timer(Balance.SMASH_SLOWMO_SECONDS, true, false, true).timeout.connect(func() -> void: Engine.time_scale = 1.0)
+	get_tree().create_timer(Balance.SMASH_SLOWMO_SECONDS, true, false, true).timeout.connect(func() -> void: Engine.time_scale = normal_speed if phase == "live" else 1.0)
+
+
+func punching_in() -> bool:
+	return Time.get_ticks_msec() < slow_until
 
 
 # --- Awards ---
@@ -332,8 +339,8 @@ func _players_changed() -> void:
 
 
 func _set_phase(next: String) -> void:
-	if next != "live":
-		Engine.time_scale = 1.0 # A punch-in never outlives live play.
+	# A punch-in never outlives live play; the screens between rounds always run at normal speed.
+	Engine.time_scale = normal_speed if next == "live" else 1.0
 	phase = next
 	InputRouter.input_enabled = phase == "live"
 	InputRouter._clear_keyboard()

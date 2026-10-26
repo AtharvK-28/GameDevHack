@@ -88,8 +88,8 @@ Allow the game (9080) and Python page server (8080) through the host's firewall 
 Turn on **Options → Game → Developer mode (solo testing)**, then go to a lobby. Nothing changes for players while it is off.
 
 1. Press **F10** once per stand-in player (two for a 2-player match, up to four). Stand-ins join and clock in by themselves. Press **Enter** to start.
-2. Drive anyone from the keyboard, the ghost included: **1–4** picks the slot; WASD moves; Space grab, E throw, Shift brace; Q possess, F action, Z shake, C curse. Stand-ins you are not driving stand still.
-3. **F3** shows the debug overlay. In live play: **Ctrl+1** haunting, **Ctrl+2** wave, **Ctrl+3** big smash, **Ctrl+4** fog, **Ctrl+5** audience vote, **Ctrl+W / Ctrl+L** win or lose the round, **Ctrl+T** +30 s.
+2. Drive anyone from the keyboard, the ghost included: **1–4** picks the slot; WASD moves; Space grab, E throw, Shift brace; Q possess, F action, Z shake, C curse. Bots play every stand-in you are not driving (Ship and Mansion); **Ctrl+B** turns them off so the others stand still.
+3. **F3** shows the debug overlay. In live play: **Ctrl+1** haunting, **Ctrl+2** wave, **Ctrl+3** big smash, **Ctrl+4** fog, **Ctrl+5** audience vote, **Ctrl+W / Ctrl+L** win or lose the round, **Ctrl+T** +30 s, **Ctrl+N** end the round and make the next one the last. Any time: **F5 / F6** slower or faster (×0.25 to ×4), **Ctrl+G** ghost cheat (full energy, no cooldowns).
 4. To see the phone screen too, start the page server and press **F9**: the phone page opens in the laptop's browser and joins as a real player (or as audience mid-match). For a second phone, use a private window or another browser: windows of one browser share the same saved player. While the browser has focus, the game window ignores the keyboard.
 
 ## Reconnect and phone behaviour
@@ -115,6 +115,7 @@ godot --headless --path . --script res://core/catalog_check.gd
 godot --headless --path . --script res://core/battery_check.gd
 godot --headless --path . --script res://core/audience_check.gd
 godot --headless --path . --script res://core/dev_mode_check.gd
+godot --headless --path . --script res://core/bot_crew_check.gd
 godot --path . --script res://core/ui_check.gd
 ```
 
