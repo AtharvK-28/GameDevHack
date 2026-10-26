@@ -59,6 +59,14 @@ const VOTE_OPTIONS: Array[Dictionary] = [
 const VOTE_GHOST_ENERGY: float = 30.0
 const VOTE_SPEED_BOOST: float = 1.3
 const VOTE_BOOST_SECONDS: float = 6.0
+# Developer mode (decision 120), for testing alone on the laptop; Options → Game, off by default. F10 in the lobby
+# adds a ready stand-in phone, the keyboard drives any slot, F3 shows the debug overlay, and Ctrl keys fire events.
+const DEV_STAND_IN_NAMES: Array[String] = ["Stand-in A", "Stand-in B", "Stand-in C", "Stand-in D"]
+const DEV_EXTRA_SECONDS: float = 30.0 # Ctrl+T adds this to the round clock.
+const DEV_OVERLAY_RATE: float = 5.0 # Overlay refreshes per second.
+const DEV_OVERLAY_ALPHA: float = 0.82 # The overlay panel's opacity, so the play behind still shows.
+const DEV_OVERLAY_SIZE: int = 11 # Font pixels at the 1152 × 648 base: smaller than player text, as only developers read it.
+const DEV_TOAST_SECONDS: float = 1.5 # How long a shortcut's note stays on screen.
 # Shouts (decision 117): movers tap one on their phone and it pops as comic lettering over their head on the big
 # screen, so a pair can call "lift" or "wait" across a loud room. Sent by index; the words live here only.
 const SHOUTS: Array[String] = ["LIFT!", "WAIT!", "MY BAD!"]

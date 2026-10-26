@@ -83,10 +83,19 @@ Gamepads are a later phase.
 
 Allow the game (9080) and Python page server (8080) through the host's firewall on the private network if prompted. A second game instance shows a port-in-use error. Stop the first host before retrying. Stop Python with Ctrl+C when finished.
 
+## Test alone with developer mode
+
+Turn on **Options → Game → Developer mode (solo testing)**, then go to a lobby. Nothing changes for players while it is off.
+
+1. Press **F10** once per stand-in player (two for a 2-player match, up to four). Stand-ins join and clock in by themselves. Press **Enter** to start.
+2. Drive anyone from the keyboard, the ghost included: **1–4** picks the slot; WASD moves; Space grab, E throw, Shift brace; Q possess, F action, Z shake, C curse. Stand-ins you are not driving stand still.
+3. **F3** shows the debug overlay. In live play: **Ctrl+1** haunting, **Ctrl+2** wave, **Ctrl+3** big smash, **Ctrl+4** fog, **Ctrl+5** audience vote, **Ctrl+W / Ctrl+L** win or lose the round, **Ctrl+T** +30 s.
+4. To see the phone screen too, start the page server and press **F9**: the phone page opens in the laptop's browser and joins as a real player (or as audience mid-match). For a second phone, use a private window or another browser: windows of one browser share the same saved player. While the browser has focus, the game window ignores the keyboard.
+
 ## Reconnect and phone behaviour
 
 - The browser stores its player ID. Rejoin from the same browser to restore the slot and role; another browser is a new identity. Reloading the page requires tapping Join again, while temporary connection loss retries automatically.
-- During a match, slots stay reserved for reconnecting players and new identities are refused. In the lobby, a new phone may replace an offline phone when the roster is full. A fifth phone is refused when all four are connected. **New join code** clears the roster and invalidates the previous credentials.
+- During a match, slots stay reserved for reconnecting players; new phones join the audience instead (decision 119). In the lobby, a new phone may replace an offline phone when the roster is full; a fifth phone joins the audience. **New join code** clears the roster and invalidates the previous credentials.
 - The host clears movement and held buttons after 500 ms without a valid input heartbeat, or immediately on a detected disconnect. Button press/release edges survive between physics frames.
 - Fullscreen, orientation lock, vibration and Wake Lock depend on browser support. Ordinary LAN HTTP does not support Wake Lock; increase the phone's screen timeout for the demo. A rotate overlay covers portrait touch screens.
 
@@ -104,6 +113,8 @@ godot --headless --path . --script res://core/match_check.gd
 godot --headless --path . --script res://core/arena_layout_check.gd
 godot --headless --path . --script res://core/catalog_check.gd
 godot --headless --path . --script res://core/battery_check.gd
+godot --headless --path . --script res://core/audience_check.gd
+godot --headless --path . --script res://core/dev_mode_check.gd
 godot --path . --script res://core/ui_check.gd
 ```
 

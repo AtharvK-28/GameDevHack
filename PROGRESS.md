@@ -105,6 +105,14 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
   ties, every outcome and the timed vote; HUD card and audience phone rendered.
 - [ ] Medals and bonus goals
 
+## Developer mode (decision 120, 2026-10-27)
+
+- [x] Options switch, F10 stand-in phones, keyboard driving of stand-in slots, F9 phone page, F3 overlay and the
+  Ctrl shortcuts. `core/dev_mode_check.gd` passes 22 checks on the Ship with no phones (off by default, stand-ins
+  join and re-ready, keyboard drives a mover and the ghost while an undriven stand-in stays put, every shortcut).
+  Lobby hint and live overlay rendered at 1080p.
+- [ ] Human try-out on the laptop.
+
 ## Blocked / notes
 
 - Verified Godot `4.7.2.stable.official.ed1daf0bf`, Mobile/D3D12 rendering on Intel Iris Xe, Jolt and explicit 60 Hz physics.

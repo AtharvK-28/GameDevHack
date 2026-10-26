@@ -12,6 +12,7 @@ const CAMERA_SCENE := preload("res://actors/PartyCamera.tscn")
 const MANSION_SCENE := preload("res://arenas/Mansion.tscn")
 const GREYBOX_SCENE := preload("res://arenas/Greybox.tscn")
 const WINDOW_KEYS := preload("res://core/window_keys.gd")
+const DEV_TOOLS := preload("res://core/dev_tools.gd")
 const WIPE_PHASES: Array[String] = ["lobby", "intro", "reveal", "result", "final"]
 const SCREEN_SCENES: Array[PackedScene] = [
 	preload("res://screens/HUD.tscn"), preload("res://screens/Lobby.tscn"), preload("res://screens/RoleReveal.tscn"),
@@ -20,6 +21,7 @@ const SCREEN_SCENES: Array[PackedScene] = [
 ]
 var camera: Camera3D
 var audience_vote: AudienceVote # Runs the audience's votes during live play.
+var dev_tools: CanvasLayer # Developer mode: stand-in phones, the debug overlay and event shortcuts.
 var status_label: Label # Harness overlay only; the match uses the screens instead.
 var ghost_panel: PanelContainer
 var ghost_label: Label
@@ -59,6 +61,9 @@ func _ready() -> void:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 		_build_match_screens()
 		Game.attach(self)
+		dev_tools = DEV_TOOLS.new()
+		dev_tools.host = self
+		add_child(dev_tools)
 		print("Match lobby ready: phones join, tap Ready, then press Enter to start.")
 	else:
 		print("Phase 4: ghost greybox ready. Press G to pass the ghost role; the piano needs two movers.")
@@ -132,12 +137,19 @@ func apply_audience_choice(choice: String) -> void:
 		"chaos":
 			if arena.has_method("start_wave"):
 				arena.start_wave(Vector3.RIGHT if randf() < 0.5 else Vector3.LEFT)
-			elif is_instance_valid(ghost) and not ghost.hauntings.is_empty() and ghost.hauntings[0].phase == Haunting.Phase.IDLE:
-				# The arena's own haunting, for free: the ghost's cooldown is left as it was.
-				var haunting: Haunting = ghost.hauntings[0]
-				var cooldown: float = haunting.cooldown_left
-				haunting.trigger(ghost)
-				haunting.cooldown_left = cooldown
+			else:
+				free_haunting()
+
+
+func free_haunting() -> bool:
+	# The arena's own haunting, for free: the ghost's cooldown is left as it was. False when it can't start.
+	if not is_instance_valid(ghost) or ghost.hauntings.is_empty() or ghost.hauntings[0].phase != Haunting.Phase.IDLE:
+		return false
+	var haunting: Haunting = ghost.hauntings[0]
+	var cooldown: float = haunting.cooldown_left
+	haunting.trigger(ghost)
+	haunting.cooldown_left = cooldown
+	return true
 
 
 func _on_shouted(slot: int, shout: int) -> void:

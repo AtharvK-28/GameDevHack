@@ -687,3 +687,25 @@ the waterline.
 
 `CatalogItem.tint` multiplies a kit model's own colours, used to pull the rum barrel, treasure chest and crate off
 the pack's salmon and powder-blue palette. Water stays on the project's own `ship_water.gdshader`.
+
+
+## Developer mode (decision 120)
+
+For testing alone on the laptop, without phones. **Options → Game → Developer mode (solo testing)**, off by default
+and saved with the other options; `core/dev_tools.gd` (added to the match world by `main.gd`) does the rest.
+
+- **Stand-ins.** In the lobby, **F10** adds one ready stand-in phone per press, up to four. Each is a real WebSocket
+  client on the same host, so the match, pause rules and phone messages run exactly as with phones. Its player
+  carries `stand_in`, and it readies up again whenever the lobby returns. **New join code** removes them.
+- **Keyboard.** `InputRouter` lets the keyboard drive the selected slot when a stand-in holds it (1–4 to switch;
+  Ctrl+number never switches). Stand-ins nobody drives stand still. Real phones keep priority.
+- **Phone page.** **F9** opens `http://localhost:8080/#k=<session key>` in the laptop's browser (the page server
+  must be running); the lobby shows the address.
+- **Overlay.** **F3** toggles a debug panel in the bottom-left corner: FPS and phase, the driven slot and role, the
+  ghost's energy, possession and cooldowns, each mover's ghost-near level and held item, the Ship's wave, fog, roll,
+  pitch and rise, banked and lost loot against the target and limit, the round's award stats and the audience vote.
+- **Shortcuts (live play).** Ctrl+1 the arena haunting free (cooldown untouched), Ctrl+2 a wave (Ship), Ctrl+3 a big
+  smash on the dearest item, Ctrl+4 a fog bank (Ship), Ctrl+5 an audience vote, Ctrl+W / Ctrl+L end the round as a
+  win or a loss, Ctrl+T +30 s. Each answers with a short note on screen.
+
+`core/dev_mode_check.gd` covers it on the Ship with no phones. Tunables are `DEV_*` in `Balance.gd`.

@@ -1,4 +1,5 @@
-# Produces one input snapshot per slot; connected phones take priority over keyboard.
+# Produces one input snapshot per slot; connected phones take priority over keyboard, except developer mode's
+# stand-ins, which the keyboard drives.
 extends Node
 
 # --- Input definitions ---
@@ -34,7 +35,7 @@ func _ready() -> void:
 func _input(event: InputEvent) -> void:
 	if not event is InputEventKey or event.echo:
 		return
-	if event.pressed and event.physical_keycode in SLOT_KEYS:
+	if event.pressed and event.physical_keycode in SLOT_KEYS and not event.ctrl_pressed: # Ctrl+number is developer mode's.
 		selected_slot = SLOT_KEYS.find(event.physical_keycode)
 		_clear_keyboard()
 		print("Keyboard selected slot %d" % (selected_slot + 1))
@@ -77,7 +78,8 @@ func _sample_slot(slot: int) -> void:
 	if not input_enabled:
 		return
 	var player := Net.player_for_slot(slot)
-	if not player.is_empty() and player.socket != null:
+	# Developer mode's stand-in phones send nothing; the keyboard may drive their slots.
+	if not player.is_empty() and player.socket != null and not player.get("stand_in", false):
 		snapshot.direction = player.direction
 		snapshot.buttons = player.buttons.duplicate()
 		snapshot.pressed = player.pressed.duplicate()

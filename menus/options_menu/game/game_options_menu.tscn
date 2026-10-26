@@ -28,3 +28,12 @@ option_section = 4
 key = "DemoMode"
 section = "GameSettings"
 default_value = false
+
+[node name="DevModeControl" parent="VBoxContainer" instance=ExtResource("3_toggle")]
+layout_mode = 2
+lock_config_names = true
+option_name = "Developer mode (solo testing)"
+option_section = 4
+key = "DevMode"
+section = "GameSettings"
+default_value = false
