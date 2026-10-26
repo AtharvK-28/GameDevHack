@@ -186,6 +186,9 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - [x] 3. Ship intro comic (decision 114): four panels with lettering, music and cues; Ship match check covers the
   story opening, lettering and Esc skip. Panels rendered and inspected at 1080p. Painted art pending from the team
   (`assets/cutscenes/ship/PANEL_BRIEF.md`).
+- [x] Ship performance re-measured after the sea motion (2026-10-26) with `tools/ship_performance.gd` (4 movers, motion,
+  two breaking waves, a fog bank, 1080p, vsync off) on an AMD Radeon 780M: 134 FPS average, 115 at the 5th percentile,
+  113 minimum; 256 draw calls and 164920 triangles (budgets 350 and 400000). Still to run on the Intel Iris Xe laptop.
 - [ ] 4. Human 2/3/4-phone playtest and tuning (user tested the captain and lantern task on 2026-10-26: "feels right")
 - [x] 5. Deck sway (decision 106): Ship check passes with five new sway checks (bottle creeps both ways, chest stays,
   sea tilts, camera unchanged); lantern, ship match and arena layout checks pass. Peak-roll render inspected. Feel pending.
