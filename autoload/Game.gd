@@ -30,6 +30,7 @@ var result: Dictionary = {}
 var pause_reason: String = ""
 var host_paused: bool = false
 var broadcast_left: float = 0.0
+var smash_ready_at: int = 0 # Ticks (ms) before another big-smash punch-in may play.
 
 # --- Setup ---
 func _ready() -> void:
@@ -98,9 +99,11 @@ func _begin_round(restarting: bool) -> void:
 		room_items[item_id] = {"room": room_at(item.global_position), "state": "pending"}
 		item.shattered.connect(func(_slot: int) -> void: room_items[item_id].state = "broken")
 		# Damage counts against a mover only while they hold or have just thrown the item.
-		item.damaged.connect(func(loss: int, _remaining: int) -> void:
+		item.damaged.connect(func(loss: int, remaining: int) -> void:
 			if item.is_held() or item.thrown:
-				add_stat(item.last_carrier_slot, "smashed", loss))
+				add_stat(item.last_carrier_slot, "smashed", loss)
+			if loss >= Balance.SMASH_PUNCH_LOSS or (remaining == 0 and item.initial_value >= Balance.SFX_TROMBONE_VALUE):
+				big_smash(item.global_position))
 	for mover: CharacterBody3D in host.movers:
 		if not mover.tumbled.is_connected(_on_tumbled):
 			mover.tumbled.connect(_on_tumbled)
@@ -182,6 +185,20 @@ func _finish_round(movers_won: bool, reason: String) -> void:
 	for slot: int in participants:
 		Net.send_to_player(Net.player_for_slot(slot), {"type": "result", "moversWon": movers_won, "points": round_points})
 
+
+
+
+# --- Big smash ---
+func big_smash(point: Vector3) -> void:
+	# Slow the match and ease the camera in on the disaster for a moment, at most every few seconds.
+	if phase != "live" or Time.get_ticks_msec() < smash_ready_at:
+		return
+	smash_ready_at = Time.get_ticks_msec() + int(Balance.SMASH_COOLDOWN * 1000.0)
+	Engine.time_scale = Balance.SMASH_SLOWMO_SCALE
+	if is_instance_valid(host) and is_instance_valid(host.camera):
+		host.camera.punch_in(point)
+	# Real time, and through pauses, so nothing can leave the match stuck in slow motion.
+	get_tree().create_timer(Balance.SMASH_SLOWMO_SECONDS, true, false, true).timeout.connect(func() -> void: Engine.time_scale = 1.0)
 
 
 # --- Awards ---
@@ -315,6 +332,8 @@ func _players_changed() -> void:
 
 
 func _set_phase(next: String) -> void:
+	if next != "live":
+		Engine.time_scale = 1.0 # A punch-in never outlives live play.
 	phase = next
 	InputRouter.input_enabled = phase == "live"
 	InputRouter._clear_keyboard()

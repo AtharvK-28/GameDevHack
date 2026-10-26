@@ -868,6 +868,14 @@ const SFX_PITCH_JITTER: float = 0.08 # Repeated sounds vary their pitch by up to
 const SFX_FRAGILE: int = 3 # Fragility at or above this sounds like glass; below, a thud.
 const SFX_DAMAGE_QUIET_DB: float = -14.0 # A tiny scratch; losing an item's whole value plays at 0 dB.
 const SFX_TROMBONE_VALUE: int = 10000 # Smashing an item worth this much (₹) plays the sad trombone.
+# Big-smash punch-in (decision 118): a costly hit, or a valuable item shattering, slows the match and eases the
+# camera in on it for a moment, so the round's best disaster lands. Matches only.
+const SMASH_PUNCH_LOSS: int = 5000 # Rupees lost in one hit that count as a big smash.
+const SMASH_SLOWMO_SCALE: float = 0.3 # Game speed during the punch-in.
+const SMASH_SLOWMO_SECONDS: float = 0.6 # Real seconds it lasts.
+const SMASH_PUNCH_DISTANCE: float = 10.0 # Metres the camera eases in to.
+const SMASH_PUNCH_FOCUS: float = 0.65 # How far toward the smash the camera's focus moves, 0 to 1.
+const SMASH_COOLDOWN: float = 4.0 # Real seconds before another punch-in.
 const SFX_TROMBONE_DB: float = -4.0
 const SFX_COINS_DB: float = -6.0 # The coin jingle under the banking chime.
 const SFX_CREAK_DB: float = -6.0 # Possession: a creak and a theremin swell.

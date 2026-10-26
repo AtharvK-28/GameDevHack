@@ -99,7 +99,8 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
   MENACE, no blame for unheld loot, award picking and restarts; round end rendered with four players at 1080p.
 - [x] Shout bubbles from the phone (decision 117): Ship match check covers a real phone's shout, the cooldown, junk
   messages and the ghost; phone page rendered at 844 x 390 and 568 x 320; bubbles rendered on the Ship.
-- [ ] Slow-motion punch-in on big smashes
+- [x] Slow-motion punch-in on big smashes (decision 118): Ship match check covers slow-down, camera punch, recovery
+  and the cooldown. Needs a human look at the camera move in a live match.
 - [ ] Audience phones vote on chaos events
 - [ ] Medals and bonus goals
 

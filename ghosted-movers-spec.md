@@ -274,6 +274,8 @@ Each round has a clear team result: the movers either hit the quota or they don'
 | Damage multiplier | 4% per m/s × fragility | Raise to 5% | Lower to 3% |
 | Possession drain | 8 /s | Lower to 6 | Raise to 10 |
 
+**Big-smash punch-in (decision 118).** A hit costing ₹5,000+, or a ₹10,000+ item shattering, slows the match to 30% for 0.6 s while the camera eases in on it (SMASH_* in Balance). At most once every 4 s.
+
 **Awards (decision 116).** After every round, and for the whole match on the final standings, each player can earn one funny award: MAN OVERBOARD, BUTTERFINGERS, FLOOR INSPECTOR, MENACE or PACK MULE (Balance.AWARDS, checked in that order, each to the leader without one). Phones show their own.
 
 ## Camera, visuals and audio

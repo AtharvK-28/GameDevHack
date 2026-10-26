@@ -16,6 +16,8 @@ var distance: float = Balance.CAMERA_DISTANCE
 var trauma: float = 0.0
 var noise := FastNoiseLite.new()
 var time: float = 0.0
+var punch_point := Vector3.ZERO # A big smash the camera is easing in on.
+var punch_left: float = 0.0 # Real seconds left.
 
 # --- Setup ---
 func _ready() -> void:
@@ -32,6 +34,13 @@ func shake(amount: float) -> void:
 	trauma = clampf(maxf(trauma, amount), 0.0, 1.0)
 
 
+
+# --- Big smash ---
+func punch_in(point: Vector3) -> void:
+	punch_point = point
+	punch_left = Balance.SMASH_SLOWMO_SECONDS * 2.0 # Holds a moment after the slow motion ends, then eases back.
+
+
 # --- Following ---
 func _process(delta: float) -> void:
 	time += delta
@@ -39,6 +48,12 @@ func _process(delta: float) -> void:
 	if follow_movers:
 		var framing: Array = _framing()
 		var blend: float = 1.0 - exp(-Balance.CAMERA_FOLLOW_RATE * delta)
+		if punch_left > 0.0:
+			# Real time, so the slow motion doesn't slow the punch-in itself.
+			var real_delta: float = delta / maxf(Engine.time_scale, 0.01)
+			punch_left -= real_delta
+			blend = 1.0 - exp(-Balance.CAMERA_FOLLOW_RATE * 2.0 * real_delta)
+			framing = [framing[0].lerp(Vector3(punch_point.x, 0.0, punch_point.z), Balance.SMASH_PUNCH_FOCUS), Balance.SMASH_PUNCH_DISTANCE]
 		focus = focus.lerp(framing[0], blend)
 		distance = lerpf(distance, framing[1], blend)
 

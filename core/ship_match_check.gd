@@ -68,6 +68,20 @@ func _run() -> void:
 	_check(game.match_stats.is_empty(), "A restarted round's stats never reach the match totals")
 	_check(game.round_seed == seed_before and _ship_placements() == first, "Ship restart reproduces the same catalog pick and spawn positions")
 	_check(playground.arena.rescues.is_empty() and not playground.arena.wind_active, "Ship restart clears wind and pending rescues")
+	while game.phase != "live":
+		await process_frame
+	# Big smash, in the restarted round once it is live (it ends the round: over 30% is lost): a five-figure hit slows the match and eases the camera in, then normal speed returns by itself.
+	game.smash_ready_at = 0 # The awards check above shattered a valuable item, which started the cooldown.
+	var chest: Node = get_nodes_in_group("loot").filter(func(item: Node) -> bool: return item.initial_value >= SETTINGS.SFX_TROMBONE_VALUE)[0]
+	chest._lose_value(SETTINGS.SMASH_PUNCH_LOSS)
+	_check(Engine.time_scale < 1.0 and playground.camera.punch_left > 0.0, "A big smash slows the match and punches the camera in")
+	chest._lose_value(SETTINGS.SMASH_PUNCH_LOSS)
+	await create_timer(SETTINGS.SMASH_SLOWMO_SECONDS + 0.2, true, false, true).timeout
+	_check(is_equal_approx(Engine.time_scale, 1.0), "Normal speed returns after the punch-in")
+	var cooled: float = playground.camera.punch_left
+	chest._lose_value(SETTINGS.SMASH_PUNCH_LOSS)
+	_check(is_equal_approx(Engine.time_scale, 1.0) and playground.camera.punch_left <= cooled, "Another big smash within the cooldown plays no second punch-in")
+
 	for client: WebSocketPeer in clients:
 		client.close()
 	game.return_to_lobby()
