@@ -50,6 +50,7 @@ func run() -> int:
 	await _check_captain()
 	await _check_sway()
 	await _check_wind()
+	await _check_rolling_barrel()
 	await _check_overboard()
 	world.queue_free()
 	await _frames(3)
@@ -154,6 +155,34 @@ func _carry_chest(chest: Loot, target: Vector2) -> bool:
 
 
 # --- Wind and rescue ---
+# --- Rolling barrel hazard ---
+func _check_rolling_barrel() -> void:
+	# The ghost bowls a rum barrel off the stern castle, down its front steps, at a mover on the main deck.
+	world.set_ghost_slot(3)
+	var ghost: Node3D = world.ghost
+	var barrel := _loot("barrel", Vector2(4.6, 9.4))
+	_place(0, Vector2(11.5, 9.4))
+	await _frames(30)
+	var possession: Possessable = barrel.get_node("Possessable")
+	ghost.possess(possession)
+	_check(possession.action_label() == SETTINGS.ROLL_LABEL, "A possessed rum barrel offers ROLL instead of SHOVE")
+	possession.act(Vector2(1, 0))
+	_check(possession.rolling and barrel.angular_velocity.length() > 1.0, "ROLL sets the barrel spinning side-on")
+	var peak: float = 0.0
+	var tumbled: bool = false
+	for frame: int in range(120):
+		await get_tree().physics_frame
+		peak = maxf(peak, barrel.linear_velocity.length())
+		tumbled = tumbled or world.movers[0].is_tumbling()
+	_check(peak > SETTINGS.ROLL_SPEED, "Rolling down the castle steps speeds it up (peak %.2f m/s)" % peak)
+	_check(tumbled, "A rolling barrel knocks over the mover in its path")
+	ghost.leave()
+	barrel.queue_free()
+	_place(0, Vector2(17, 8))
+	world.set_ghost_slot(-1)
+	await _frames(30)
+
+
 # --- Deck sway ---
 func _check_sway() -> void:
 	var light := _loot("bottle", Vector2(17.5, 3.5))

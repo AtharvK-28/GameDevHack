@@ -190,7 +190,8 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - [x] Ship rebuilt around Kenney ship-pirate-large (decision 107): new deck plan, model hull/castles/rails/masts, ghost
   sails, gangplank from the waist port. Ship check passes (routes from every deck, all weights down and up the castle
   steps, chest down the forecastle steps and over the plank, sway, wind, rescue). Party-camera renders inspected.
-- [ ] 6. Rolling barrel hazard
+- [x] 6. Rolling barrel hazard (decision 108): Ship check adds ROLL label, spin, speed-up down the castle steps and the
+  knocked-over mover (69 pass); ghost, ship match, arena layout and match checks pass. Feel pending.
 - [ ] 7. Waves over the gangplank
 - [ ] 8. Ship audio pass
 - [ ] 9. Fog banks

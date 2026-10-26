@@ -170,6 +170,7 @@ The ghost wins by smashing value and wasting time, never by cheap surprise. Ever
 
 How each prop type moves (starting values in `Balance.gd`):
 
+- **Rolling barrel (Ship, decision 108).** A possessed rum barrel's action is ROLL (15 energy) instead of SHOVE: it turns side-on and rolls away at 4.5 m/s, gathering speed down steps and ramps, and knocks over every mover it reaches until it slows below 1.5 m/s.
 - **Slider.** The prop glides at 2.4 m/s, just under the 2.5 m/s damage threshold, so plain sliding never breaks anything; only SHOVE does. SHOVE launches it at 6 m/s along the stick, or the last direction it moved. Both speeds scale by weight class: light × 1.0, medium × 0.8, heavy × 0.6, two-person × 0.45.
 - **Door.** It rests open at 100° and SLAM shuts it in 0.3 s. Movers in its swing tumble. If loot is in the way, the door stops there and the item takes one hit at the door's speed where it stands. After the 3 s lock it reopens over 1 s.
 - **Dropper.** DROP is committed once triggered: the chandelier creaks for 1 s while a floor marker shows where it will land, then falls even if the ghost is exorcised meanwhile. It hangs with its bottom 2.8 m up, so it lands on a head faster than 4 m/s. Afterwards it lies on the floor as debris and can't be possessed again; the ghost pops out without a stun.

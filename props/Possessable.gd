@@ -14,6 +14,7 @@ var prop: Node3D
 var ghost: Node3D # The ghost inside, or null.
 var launched: bool = false # Set by SHOVE or DROP; hits on movers count until the prop slows below the tumble speed.
 var launch_was_fast: bool = false
+var rolling: bool = false # Bowled with ROLL; stays dangerous down to the lower roll speed.
 var previous_velocity := Vector3.ZERO # The prop's velocity going into the latest physics step.
 var last_direction := Vector3.BACK # Where SHOVE goes when the stick is centred.
 var drive_pause: float = 0.0
@@ -63,9 +64,12 @@ func _attach() -> void:
 func _physics_process(_delta: float) -> void:
 	if prop is RigidBody3D:
 		var speed: float = prop.linear_velocity.length()
-		if launched and (prop.sleeping or (launch_was_fast and speed < Balance.TUMBLE_HIT_SPEED)):
+		var threshold: float = _hit_speed()
+		if launched and (prop.sleeping or (launch_was_fast and speed < threshold)):
 			launched = false
-		launch_was_fast = speed >= Balance.TUMBLE_HIT_SPEED
+			if rolling:
+				_stop_rolling()
+		launch_was_fast = speed >= threshold
 		previous_velocity = prop.linear_velocity
 	if is_possessed() and (_gone() or _in_truck()):
 		ghost.leave() # No stun: the prop left play or reached the truck.
@@ -77,7 +81,7 @@ func _on_body_entered(other: Node) -> void:
 		return
 	# Only the prop's own speed toward the mover counts, so walking into a slow possessed prop never trips anyone.
 	var toward: Vector3 = (other.global_position - prop.global_position).normalized()
-	if previous_velocity.dot(toward) > Balance.TUMBLE_HIT_SPEED:
+	if previous_velocity.dot(toward) > _hit_speed():
 		other.tumble.call_deferred(previous_velocity)
 
 
@@ -154,7 +158,7 @@ func set_highlighted(value: bool) -> void:
 
 # --- Stick and ACTION ---
 func action_label() -> String:
-	return Balance.ACTION_LABELS[kind]
+	return Balance.ROLL_LABEL if _rolls() else Balance.ACTION_LABELS[kind]
 
 
 func action_cost() -> int:
@@ -187,7 +191,10 @@ func act(stick: Vector2) -> void:
 	print("Ghost used %s on the %s" % [action_label(), prop_name()])
 	match kind:
 		Kind.SLIDER:
-			_shove()
+			if _rolls():
+				_roll()
+			else:
+				_shove()
 		Kind.HOPPER:
 			_stomp()
 		_:
@@ -196,8 +203,10 @@ func act(stick: Vector2) -> void:
 
 func _slide(direction: Vector3, delta: float) -> void:
 	var body := prop as RigidBody3D
-	# The ghost holds most of the weight, so the prop glides instead of scraping along.
-	body.apply_central_force(-body.get_gravity() * body.mass * Balance.POSSESS_SUPPORT)
+	# The ghost holds most of the weight, so the prop glides instead of scraping along; a rolling barrel is let go
+	# so slopes speed it up.
+	if not rolling:
+		body.apply_central_force(-body.get_gravity() * body.mass * Balance.POSSESS_SUPPORT)
 	drive_pause = maxf(0.0, drive_pause - delta)
 	if drive_pause > 0.0:
 		return
@@ -224,6 +233,38 @@ func _shove() -> void:
 	previous_velocity = body.linear_velocity # This frame's physics step may already reach a mover.
 	launched = true
 	drive_pause = Balance.SHOVE_DRIVE_PAUSE
+
+
+
+func _roll() -> void:
+	# Turn the barrel side-on to the throw and set it spinning, so it rolls rather than slides.
+	var body := prop as RigidBody3D
+	var direction := Vector3(last_direction.x, 0.0, last_direction.z).normalized()
+	var radius: float = prop.item_size.y / 2.0
+	body.axis_lock_angular_x = false # Possession keeps sliders upright; a roll needs to turn over.
+	body.axis_lock_angular_z = false
+	body.global_basis = Basis(Vector3.UP, atan2(direction.x, direction.z) + PI / 2.0)
+	body.linear_velocity = direction * Balance.ROLL_SPEED + Vector3.UP * body.linear_velocity.y
+	body.angular_velocity = Vector3.UP.cross(direction) * Balance.ROLL_SPEED / radius
+	previous_velocity = body.linear_velocity
+	launched = true
+	rolling = true
+	drive_pause = Balance.ROLL_DRIVE_PAUSE
+
+
+func _stop_rolling() -> void:
+	rolling = false
+	if is_possessed():
+		prop.axis_lock_angular_x = true
+		prop.axis_lock_angular_z = true
+
+
+func _rolls() -> bool:
+	return "catalog_item" in prop and prop.catalog_item != null and prop.catalog_item.rolls
+
+
+func _hit_speed() -> float:
+	return Balance.ROLL_TUMBLE_SPEED if rolling else Balance.TUMBLE_HIT_SPEED
 
 
 func _stomp() -> void:

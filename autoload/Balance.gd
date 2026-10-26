@@ -426,6 +426,12 @@ const POSSESS_SUPPORT: float = 0.9 # Fraction of a sliding prop's weight the gho
 const POSSESS_DRIVE_GAIN: float = 10.0 # Per second; how quickly a possessed prop matches the stick.
 const POSSESS_MAX_ACCELERATION: float = 15.0 # Metres per second squared.
 const SHOVE_DRIVE_PAUSE: float = 0.5 # Seconds a shove runs before the stick steers again.
+# ROLL (decision 108): a possessed rolling item (the rum barrels) is bowled instead of shoved. It turns side-on,
+# rolls freely so ramps and steps speed it up, and knocks over every mover it reaches while still rolling.
+const ROLL_LABEL: String = "ROLL"
+const ROLL_SPEED: float = 4.5 # Metres per second at release.
+const ROLL_TUMBLE_SPEED: float = 1.5 # A rolling barrel knocks movers over until it slows below this.
+const ROLL_DRIVE_PAUSE: float = 2.5 # Seconds the stick leaves it alone, so it rolls on down slopes.
 const HOP_INTERVAL: float = 0.55
 const HOP_SPEED: float = 2.5 # Metres per second along the stick.
 const HOP_LIFT: float = 3.5 # Metres per second upwards.
@@ -869,6 +875,7 @@ const LOADING_TIPS: Array[String] = [
 	"Ghost: possess furniture and SHOVE it at the movers.",
 	"Power the generator with 3 batteries to weaken the ghost.",
 	"On the Ship, carry 3 oil cans to the lantern posts on the tug.",
+	"Ghost: possess a rum barrel and ROLL it down the steps.",
 	"A thrown vase can knock a mover flat.",
 ]
 
