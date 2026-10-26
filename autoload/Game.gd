@@ -5,6 +5,7 @@ signal changed
 signal delivery_notice(value: int, item_name: String, slots: Array[int])
 
 # --- Match state ---
+const SHIP_ARENA: String = "res://arenas/Ship.tscn"
 var selected_arena: String = "res://arenas/Mansion.tscn"
 var room_items: Dictionary = {}
 var host: Node3D
@@ -62,10 +63,7 @@ func start_match() -> void:
 	for slot: int in participants:
 		scores[slot] = 0.0
 	Net.accept_new_players = false
-	if selected_arena == "res://arenas/Ship.tscn":
-		_begin_round(false)
-	else:
-		_set_phase("intro") # The Mansion story plays once per match.
+	_set_phase("intro") # Each arena's story plays once per match.
 
 
 func finish_intro() -> void:

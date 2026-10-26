@@ -1,14 +1,23 @@
-# Intro cutscene: the story panels from Balance.INTRO_PANELS, full screen, each slowly zooming and drifting while
-# its cues play over a music bed and looping rain and engine. Shown in the "intro" phase, once per match.
+# Intro cutscene: the arena's story panels (Balance.INTRO_PANELS for the Mansion, SHIP_INTRO_PANELS for the Ship),
+# full screen, each slowly zooming and drifting while its cues play over a music bed and looping beds. Panels may
+# carry lettering (caption, speech bubble, title) drawn over the picture. Shown in the "intro" phase, once per match.
 # Host keys: Enter for the next panel, Esc to skip to the first round.
 extends Control
 
 const Style := preload("res://screens/screen_style.gd")
 const SOUND_FOLDER: String = "res://assets/audio/cutscene/"
-const BEDS: Array[String] = ["rain", "engine"]
+const MUSIC_FILES: Dictionary = {
+	"cozy": SOUND_FOLDER + "music_cozy.ogg", "spooky": SOUND_FOLDER + "music_spooky.ogg",
+	"shanty": "res://assets/audio/ship/music_shanty.ogg",
+}
+const BED_FILES: Dictionary = {
+	"rain": SOUND_FOLDER + "rain_loop.ogg", "engine": SOUND_FOLDER + "engine_loop.ogg",
+	"sea": "res://assets/audio/ship/waves.ogg",
+}
 
 # --- Display state ---
 var stage := Control.new() # Holds the panels; shaken on "shake" panels.
+var lettering := Control.new() # Captions, bubbles and titles over the current panel.
 var flash := ColorRect.new()
 var hint_label: Label
 var panel_index: int = -1
@@ -51,7 +60,7 @@ func _process(delta: float) -> void:
 	if not playing:
 		return
 	panel_time += delta
-	var cues: Array = Balance.INTRO_PANELS[panel_index].cues
+	var cues: Array = _panels()[panel_index].cues
 	while next_cue < cues.size() and panel_time >= cues[next_cue][0]:
 		_play_cue(cues[next_cue][1], cues[next_cue][2])
 		next_cue += 1
@@ -61,7 +70,7 @@ func _process(delta: float) -> void:
 		stage.position = Vector2(shake_noise.randf_range(-1.0, 1.0), shake_noise.randf_range(-1.0, 1.0)) * strength
 	else:
 		stage.position = Vector2.ZERO
-	if panel_time >= Balance.INTRO_PANELS[panel_index].hold:
+	if panel_time >= _panels()[panel_index].hold:
 		_show_panel(panel_index + 1)
 
 
@@ -92,16 +101,22 @@ func _finish() -> void:
 
 
 # --- Panels ---
+func _panels() -> Array[Dictionary]:
+	return Balance.SHIP_INTRO_PANELS if Game.selected_arena == Game.SHIP_ARENA else Balance.INTRO_PANELS
+
+
 func _show_panel(index: int) -> void:
-	if index >= Balance.INTRO_PANELS.size():
+	var panels: Array[Dictionary] = _panels()
+	if index >= panels.size():
 		_finish()
 		return
 	panel_index = index
 	panel_time = 0.0
 	next_cue = 0
-	var panel: Dictionary = Balance.INTRO_PANELS[index]
+	var panel: Dictionary = panels[index]
 	var picture := TextureRect.new()
-	picture.texture = load(Balance.INTRO_FOLDER + panel.image)
+	var folder: String = Balance.SHIP_INTRO_FOLDER if panels == Balance.SHIP_INTRO_PANELS else Balance.INTRO_FOLDER
+	picture.texture = load(folder + panel.image)
 	picture.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
@@ -113,9 +128,56 @@ func _show_panel(index: int) -> void:
 		create_tween().tween_property(flash, "modulate:a", 0.0, Balance.INTRO_FLASH_TIME)
 	shake_left = Balance.INTRO_SHAKE_TIME if panel.get("shake", false) else 0.0
 	_set_music(panel.music)
-	for bed: String in BEDS:
+	for bed: String in BED_FILES:
 		_fade(beds[bed], panel.beds.get(bed, Balance.INTRO_SILENT_DB))
-	hint_label.text = "%d / %d   ·   Enter: next   ·   Esc: skip" % [index + 1, Balance.INTRO_PANELS.size()]
+	_letter(panel)
+	hint_label.text = "%d / %d   ·   Enter: next   ·   Esc: skip" % [index + 1, panels.size()]
+
+
+func _letter(panel: Dictionary) -> void:
+	# Lettering drawn in the game for panels whose pictures carry none: a caption box along the top, a speech
+	# bubble where the panel puts it, and a title stamp near the bottom.
+	for child: Node in lettering.get_children():
+		child.queue_free()
+	if panel.has("caption"):
+		# Dark text on the parchment box, with [b]…[/b] in comic lettering, like a speech bubble's.
+		var caption: PanelContainer = Style.caption()
+		var words := RichTextLabel.new()
+		words.bbcode_enabled = true
+		words.fit_content = true
+		words.scroll_active = false
+		words.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		words.custom_minimum_size.x = size.x * 0.62
+		words.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		words.add_theme_color_override("default_color", Balance.COMIC_INK)
+		words.add_theme_font_size_override("normal_font_size", Balance.INTRO_LETTERING_SIZE)
+		words.add_theme_font_size_override("bold_font_size", roundi(Balance.INTRO_LETTERING_SIZE * 1.3))
+		words.add_theme_font_override("bold_font", load(Balance.COMIC_FONT_PATH))
+		words.text = panel.caption
+		caption.add_child(words)
+		caption.position = Vector2(size.x * 0.03, size.y * 0.04)
+		lettering.add_child(caption)
+		_pop_in(caption, 0.15)
+	if panel.has("bubble"):
+		var bubble: VBoxContainer = Style.bubble(panel.bubble.text, Balance.INTRO_LETTERING_SIZE)
+		bubble.position = Vector2(size.x * panel.bubble.at.x, size.y * panel.bubble.at.y)
+		lettering.add_child(bubble)
+		_pop_in(bubble, 0.9)
+	if panel.has("title"):
+		var title: Control = Style.stamp(panel.title, Balance.SHIP_GOLD_COLOUR, Balance.COMIC_HEADING_SIZE * 2)
+		var holder := CenterContainer.new()
+		holder.position = Vector2(0.0, size.y * 0.7)
+		holder.size = Vector2(size.x, size.y * 0.2)
+		holder.add_child(title)
+		lettering.add_child(holder)
+		_pop_in(holder, 1.2)
+
+
+func _pop_in(item: Control, delay: float) -> void:
+	item.modulate.a = 0.0
+	var tween: Tween = item.create_tween()
+	tween.tween_interval(delay)
+	tween.tween_property(item, "modulate:a", 1.0, Balance.INTRO_FADE_TIME)
 
 
 func _animate_panel(picture: TextureRect, hold: float) -> void:
@@ -139,7 +201,7 @@ func _animate_panel(picture: TextureRect, hold: float) -> void:
 
 # --- Sound ---
 func _play_cue(sound: String, volume_db: float) -> void:
-	var path: String = SOUND_FOLDER + sound + ".ogg"
+	var path: String = ("res://assets/audio/" if sound.begins_with("ship/") else SOUND_FOLDER) + sound + ".ogg"
 	if not ResourceLoader.exists(path):
 		Sfx.play(sound, 1.0, volume_db) # Synthesized in Sfx.
 		return
@@ -194,6 +256,9 @@ func _build() -> void:
 	stage.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(stage)
+	lettering.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	lettering.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	stage.add_sibling(lettering)
 	flash.color = Color.WHITE
 	flash.modulate.a = 0.0
 	flash.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -208,14 +273,14 @@ func _build() -> void:
 
 
 func _build_audio() -> void:
-	for track: String in ["cozy", "spooky"]:
-		music[track] = _loop_player("music_" + track, &"Music")
-	for bed: String in BEDS:
-		beds[bed] = _loop_player(bed + "_loop", &"SFX")
+	for track: String in MUSIC_FILES:
+		music[track] = _loop_player(MUSIC_FILES[track], &"Music")
+	for bed: String in BED_FILES:
+		beds[bed] = _loop_player(BED_FILES[bed], &"SFX")
 
 
-func _loop_player(file: String, bus: StringName) -> AudioStreamPlayer:
-	var stream: AudioStreamOggVorbis = load(SOUND_FOLDER + file + ".ogg")
+func _loop_player(path: String, bus: StringName) -> AudioStreamPlayer:
+	var stream: AudioStreamOggVorbis = load(path)
 	stream.loop = true
 	var player := AudioStreamPlayer.new()
 	player.stream = stream

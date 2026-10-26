@@ -780,6 +780,29 @@ const INTRO_PANELS: Array[Dictionary] = [
 	{"image": "11_title.jpeg", "hold": 4.0, "music": "", "beds": {"rain": -16.0}, "flash": true,
 		"cues": [[0.0, "title_hit", -2.0], [0.0, "thunder", -6.0], [0.5, "title_pizzicato", -4.0]]},
 ]
+# The Ghost Ship's story (decision 114). Pictures are staged renders from tools/make_ship_intro.gd; the cutscene
+# letters each "caption", speech "bubble" (at a share of the screen) and "title" over them, so painted panels can
+# replace the files without code changes. Cues starting "ship/" play from assets/audio/ship/.
+const SHIP_INTRO_FOLDER: String = "res://assets/cutscenes/ship/"
+const SHIP_INTRO_PANELS: Array[Dictionary] = [
+	{"image": "01_the_wreck.jpg", "hold": 7.0, "music": "shanty", "beds": {"sea": -12.0},
+		"caption": "MONTH-END. SETH-JI'S CHEQUE BOUNCED, SO SASTA SHIFTERS TOOK THE ONLY JOB LEFT IN THE PAPER: \"SALVAGE A SHIPWRECK. NO QUESTIONS ASKED.\"",
+		"bubble": {"text": "Since when do we own a [b]BOAT?![/b]", "at": Vector2(0.16, 0.36)},
+		"cues": [[0.4, "ship/foghorn", -8.0], [3.2, "thunder", -8.0]]},
+	{"image": "02_boarding.jpg", "hold": 6.0, "music": "shanty", "beds": {"sea": -10.0},
+		"caption": "THE WRECK WASN'T ON THE SEABED. IT WAS FLOATING. ROCKING. AND COMPLETELY EMPTY...",
+		"bubble": {"text": "In and out. Five minutes.\nWhat could [b]possibly[/b] go wrong?", "at": Vector2(0.47, 0.3)},
+		"cues": [[0.6, "creak", -6.0], [2.6, "ship/rope", -8.0]]},
+	{"image": "03_the_captain.jpg", "hold": 7.0, "music": "", "beds": {"sea": -18.0}, "flash": true, "shake": true,
+		"caption": "NARRATOR: The captain went down with his ship. He did [b]not[/b] stay down.",
+		"bubble": {"text": "[b]ARRR![/b] Every doubloon on\nthis deck is [b]MINE![/b]", "at": Vector2(0.6, 0.18)},
+		"cues": [[0.0, "thunder", -2.0], [0.3, "theremin", -6.0], [1.2, "organ", -8.0]]},
+	{"image": "04_the_job.jpg", "hold": 8.0, "music": "shanty", "beds": {"sea": -12.0}, "flash": true,
+		"caption": "Haul the loot to the tug. Brace for waves. Light the lanterns. And mind the barrels!",
+		"title": "THE GHOST SHIP",
+		"cues": [[0.0, "wave_crash", -4.0], [0.6, "title_hit", -4.0]]},
+]
+const INTRO_LETTERING_SIZE: int = 30 # Caption and bubble text on story panels lettered in the game.
 const INTRO_FADE_TIME: float = 0.5 # Seconds each panel takes to fade in over the last.
 const INTRO_ZOOM: float = 1.06 # Each panel slowly grows to this scale while it shows.
 const INTRO_DRIFT: float = 0.015 # Share of the screen width each panel drifts sideways, alternating direction.

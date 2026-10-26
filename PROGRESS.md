@@ -183,7 +183,9 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - [x] 2. Light the Lanterns map task (decision 105): `core/lantern_check.gd` passes (seeded spots, clearances, a real
   carry over the gangplank, release-only delivery, handicap, lighting through lightning, restart). The battery is now a
   task base the oil can extends; HUD and phones read the task's own name. Tug render inspected. Human feel pending.
-- [ ] 3. Ship intro comic
+- [x] 3. Ship intro comic (decision 114): four panels with lettering, music and cues; Ship match check covers the
+  story opening, lettering and Esc skip. Panels rendered and inspected at 1080p. Painted art pending from the team
+  (`assets/cutscenes/ship/PANEL_BRIEF.md`).
 - [ ] 4. Human 2/3/4-phone playtest and tuning (user tested the captain and lantern task on 2026-10-26: "feels right")
 - [x] 5. Deck sway (decision 106): Ship check passes with five new sway checks (bottle creeps both ways, chest stays,
   sea tilts, camera unchanged); lantern, ship match and arena layout checks pass. Peak-roll render inspected. Feel pending.

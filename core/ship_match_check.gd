@@ -1,4 +1,4 @@
-# Reuses real phone helpers to check Ship selection, roles, intro skipping, possession and seeded restart.
+# Reuses real phone helpers to check Ship selection, its story, roles, possession and seeded restart.
 extends "res://core/match_check.gd"
 
 func _run() -> void:
@@ -18,7 +18,12 @@ func _run() -> void:
 		_send(index, {"type": "ready"})
 	await _wait(0.3)
 	game.start_match()
-	_check(game.phase == "reveal" and playground.arena.ARENA_NAME == "Ghost Ship", "Selecting Ship starts Ship and skips the Mansion intro")
+	_check(game.phase == "intro", "A Ship match opens with its own story")
+	await _wait(0.5)
+	var cutscene: Node = playground.find_children("*", "Control", true, false).filter(func(node: Node) -> bool: return node.get_script() != null and node.get_script().resource_path == "res://screens/cutscene.gd")[0] # Not preload: it would compile before the autoloads.
+	_check(cutscene._panels() == SETTINGS.SHIP_INTRO_PANELS and cutscene.lettering.get_child_count() > 0, "The Ship's panels play, with their captions lettered")
+	await _key(KEY_ESCAPE)
+	_check(game.phase == "reveal" and playground.arena.ARENA_NAME == "Ghost Ship", "Esc skips the story into the Ship's first round")
 	_check(get_nodes_in_group("loot").size() == 6 and game.starting_value > 0, "Ship match has seeded two-player loot and a real quota")
 	var first: Array = _ship_placements()
 	var seed_before: int = game.round_seed
