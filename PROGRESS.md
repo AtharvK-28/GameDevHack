@@ -184,8 +184,9 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
   carry over the gangplank, release-only delivery, handicap, lighting through lightning, restart). The battery is now a
   task base the oil can extends; HUD and phones read the task's own name. Tug render inspected. Human feel pending.
 - [ ] 3. Ship intro comic
-- [ ] 4. Human 2/3/4-phone playtest and tuning
-- [ ] 5. Deck sway
+- [ ] 4. Human 2/3/4-phone playtest and tuning (user tested the captain and lantern task on 2026-10-26: "feels right")
+- [x] 5. Deck sway (decision 106): Ship check passes with five new sway checks (bottle creeps both ways, chest stays,
+  sea tilts, camera unchanged); lantern, ship match and arena layout checks pass. Peak-roll render inspected. Feel pending.
 - [ ] 6. Rolling barrel hazard
 - [ ] 7. Waves over the gangplank
 - [ ] 8. Ship audio pass

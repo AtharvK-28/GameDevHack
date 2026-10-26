@@ -21,6 +21,8 @@ var generator: Node3D # The Light the Lanterns task in a match; the shared HUD a
 var rescues: Dictionary = {}
 var wind_direction := Vector3.ZERO
 var wind_active: bool = false
+var sway_time: float = 0.0
+var sway_override: float = NAN # Checks pin the roll here; NAN leaves it rolling.
 
 # --- Setup ---
 func _ready() -> void:
@@ -79,6 +81,7 @@ func room_at(point: Vector3) -> String:
 # --- Round hazards ---
 func _physics_process(delta: float) -> void:
 	_update_rescues(delta)
+	_update_sway(delta)
 	for mover: Node3D in get_tree().get_nodes_in_group("movers"):
 		if mover.global_position.y <= Balance.SHIP_WATER_Y:
 			_begin_rescue(mover)
@@ -91,6 +94,47 @@ func _physics_process(delta: float) -> void:
 			if possession != null and possession.is_possessed():
 				possession.ghost.leave()
 			furniture.queue_free()
+
+
+# --- Deck sway ---
+func sway() -> float:
+	# -1 to 1: positive rolls the front (+z) side down.
+	if not is_nan(sway_override):
+		return sway_override
+	return sin(TAU * sway_time / Balance.SHIP_SWAY_PERIOD)
+
+
+func _update_sway(delta: float) -> void:
+	sway_time += delta
+	var roll: float = sway()
+	# The ship's colliders stay level, so movers and carries are untouched; the sea and horizon tilt the other
+	# way around the ship's centre line, which reads as the ship rolling without moving the camera.
+	var environment: Node3D = get_node_or_null("ShipEnvironment")
+	if environment != null:
+		environment.rotation.x = -deg_to_rad(Balance.SHIP_SWAY_ANGLE) * roll
+		var pivot := Vector3(0.0, 0.0, ArenaBuilder.rect_of(layout.ghost_bounds).get_center().y)
+		environment.position = pivot - environment.basis * pivot
+	# Loose loot and task items on the ship's own decks creep toward the low side.
+	for body: Node in get_children():
+		if not body is Carryable or body.finished or body.is_held() or body.freeze:
+			continue
+		var possession: Node = body.get_node_or_null("Possessable")
+		if possession != null and possession.is_possessed():
+			continue
+		if not _on_ship_deck(body.global_position):
+			continue
+		var target: float = Balance.SHIP_SWAY_DRIFT_SPEEDS[body.weight_class] * roll
+		var change: float = clampf(target - body.linear_velocity.z, -Balance.SHIP_SWAY_GRIP * delta, Balance.SHIP_SWAY_GRIP * delta)
+		if absf(target) > 0.01 and signf(change) == signf(target):
+			body.apply_central_impulse(Vector3(0, 0, change * body.mass))
+
+
+func _on_ship_deck(point: Vector3) -> bool:
+	# The galleon's own decks roll; the tug and gangplank are a separate boat and plank.
+	for room: Dictionary in layout.rooms:
+		if room.id != "room-salvage-tug" and ArenaBuilder.rect_of(room.rect).has_point(Vector2(point.x, point.z)):
+			return true
+	return false
 
 
 func _begin_rescue(mover: CharacterBody3D) -> void:

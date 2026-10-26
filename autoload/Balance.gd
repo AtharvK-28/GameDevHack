@@ -882,6 +882,11 @@ const SHIP_DECK_THICKNESS: float = 0.22
 const SHIP_DECK_BASE: float = -1.6
 const SHIP_BULWARK_HEIGHT: float = 0.7
 const SHIP_BULWARK_WIDTH: float = 0.18
+# Deck sway (decision 106): the ship rolls side to side; loose loot on the deck creeps toward the low side.
+const SHIP_SWAY_PERIOD: float = 9.0 # Seconds for one full roll, port and back.
+const SHIP_SWAY_ANGLE: float = 2.5 # Degrees the sea and horizon tilt at the peak; the camera never moves.
+const SHIP_SWAY_DRIFT_SPEEDS: Array[float] = [0.35, 0.25, 0.12, 0.0] # Peak creep in m/s by weight class; the chest stays put.
+const SHIP_SWAY_GRIP: float = 12.0 # m/s² the roll may add to reach that creep, enough to beat loot friction.
 const SHIP_GUST_COST: int = 40
 const SHIP_GUST_COOLDOWN: float = 18.0
 const SHIP_GUST_WARNING: float = 1.0

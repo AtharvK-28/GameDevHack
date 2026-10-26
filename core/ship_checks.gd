@@ -48,6 +48,7 @@ func run() -> int:
 	await _check_walks()
 	await _check_chest_route()
 	await _check_captain()
+	await _check_sway()
 	await _check_wind()
 	await _check_overboard()
 	world.queue_free()
@@ -152,6 +153,29 @@ func _carry_chest(chest: Loot, target: Vector2) -> bool:
 
 
 # --- Wind and rescue ---
+# --- Deck sway ---
+func _check_sway() -> void:
+	var light := _loot("bottle", Vector2(19.5, 2.5))
+	var chest := _loot("chest", Vector2(7.0, 2.0))
+	await _frames(40)
+	var light_start: Vector3 = light.position
+	var chest_start: Vector3 = chest.position
+	arena.sway_override = 1.0
+	await _frames(120)
+	_check(light.position.z - light_start.z > 0.3, "A loose bottle creeps toward the low side as the deck rolls")
+	_check(chest.position.distance_to(chest_start) < 0.05, "The two-person chest stays put")
+	_check(absf(arena.get_node("ShipEnvironment").rotation.x) > 0.04, "The sea and horizon tilt with the roll")
+	arena.sway_override = -1.0
+	var turned: Vector3 = light.position
+	await _frames(120)
+	_check(light.position.z < turned.z - 0.3, "Rolling the other way sends it back")
+	_check(world.camera.arena_yaw == SETTINGS.SHIP_CAMERA_YAW, "The roll never turns the camera")
+	arena.sway_override = 0.0
+	light.queue_free()
+	chest.queue_free()
+	await _frames(5)
+
+
 # --- The Ghost Ship's own ghost ---
 func _check_captain() -> void:
 	# The captain is built from shapes with no clips, so the things that would silently break are
