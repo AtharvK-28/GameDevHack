@@ -9,7 +9,7 @@
 				7.6,
 				8.8
 			],
-			"floor": 1.4,
+			"floor": 1.2,
 			"outdoors": true,
 			"zone_height": 1.8
 		},
@@ -59,7 +59,7 @@
 				5.05,
 				8.8
 			],
-			"floor": 1.4,
+			"floor": 1.2,
 			"surface": "wood_planks",
 			"solid": true
 		},
@@ -172,11 +172,11 @@
 			"rect": [
 				6.15,
 				8.55,
-				2.5,
+				3.5,
 				1.8499999999999996
 			],
 			"floor": 0,
-			"rise": 1.4,
+			"rise": 1.2,
 			"direction": -1,
 			"surface": "wood_planks"
 		},
@@ -185,11 +185,11 @@
 			"rect": [
 				6.15,
 				1.6,
-				2.5,
+				3.5,
 				1.85
 			],
 			"floor": 0,
-			"rise": 1.4,
+			"rise": 1.2,
 			"direction": -1,
 			"surface": "wood_planks"
 		},
@@ -231,7 +231,7 @@
 				1.1,
 				10.4
 			],
-			"floor": 1.4
+			"floor": 1.2
 		},
 		{
 			"id": "quarterdeck-back",
@@ -243,7 +243,7 @@
 				6.15,
 				1.6
 			],
-			"floor": 1.4
+			"floor": 1.2
 		},
 		{
 			"id": "quarterdeck-front",
@@ -255,7 +255,7 @@
 				6.15,
 				10.4
 			],
-			"floor": 1.4
+			"floor": 1.2
 		},
 		{
 			"id": "aft-steps-back",
@@ -264,11 +264,11 @@
 				1.6
 			],
 			"to": [
-				8.65,
+				9.65,
 				1.6
 			],
 			"floor": 0,
-			"height": 2.0999999999999996
+			"height": 1.9
 		},
 		{
 			"id": "aft-steps-front",
@@ -277,16 +277,16 @@
 				10.4
 			],
 			"to": [
-				8.65,
+				9.65,
 				10.4
 			],
 			"floor": 0,
-			"height": 2.0999999999999996
+			"height": 1.9
 		},
 		{
 			"id": "main-back",
 			"from": [
-				8.65,
+				9.65,
 				1.6
 			],
 			"to": [
@@ -298,7 +298,7 @@
 		{
 			"id": "main-front-aft",
 			"from": [
-				8.65,
+				9.65,
 				10.4
 			],
 			"to": [
@@ -439,7 +439,7 @@
 				1.75,
 				5.1
 			],
-			"top": 1.9
+			"top": 1.7
 		},
 		{
 			"id": "forecastle-locker",
@@ -544,7 +544,7 @@
 					2.0,
 					2.6
 				],
-				"floor": 1.4,
+				"floor": 1.2,
 				"role": "telescope",
 				"size": "M",
 				"yaw": 0
@@ -555,7 +555,7 @@
 					5.0,
 					2.6
 				],
-				"floor": 1.4,
+				"floor": 1.2,
 				"role": "telescope",
 				"size": "M",
 				"yaw": 0
@@ -566,7 +566,7 @@
 					1.8,
 					6.0
 				],
-				"floor": 1.4,
+				"floor": 1.2,
 				"role": "compass",
 				"size": "S",
 				"yaw": 0
@@ -577,7 +577,7 @@
 					4.6,
 					6.0
 				],
-				"floor": 1.4,
+				"floor": 1.2,
 				"role": "compass",
 				"size": "S",
 				"yaw": 0
@@ -588,7 +588,7 @@
 					4.4,
 					9.0
 				],
-				"floor": 1.4,
+				"floor": 1.2,
 				"role": "portrait",
 				"size": "M",
 				"yaw": 0
@@ -629,8 +629,8 @@
 			{
 				"id": "M4",
 				"at": [
-					9.6,
-					2.4
+					12.6,
+					2.3
 				],
 				"floor": 0,
 				"role": "barrel",
@@ -684,8 +684,8 @@
 			{
 				"id": "F1",
 				"at": [
-					24.3,
-					6.0
+					23.6,
+					8.6
 				],
 				"floor": 0.7,
 				"role": "chest",
@@ -706,8 +706,8 @@
 			{
 				"id": "F3",
 				"at": [
-					23.5,
-					9.2
+					25.0,
+					7.0
 				],
 				"floor": 0.7,
 				"role": "bottle",
@@ -717,8 +717,8 @@
 			{
 				"id": "F4",
 				"at": [
-					25.8,
-					8.1
+					21.5,
+					9.7
 				],
 				"floor": 0.7,
 				"role": "bottle",
@@ -741,7 +741,7 @@
 	"chest_route": [
 		[
 			23.6,
-			8.7
+			8.6
 		],
 		[
 			19.6,
@@ -784,18 +784,18 @@
 		{
 			"kind": "slider",
 			"at": [
-				12.0,
-				3.0
+				11.0,
+				6.0
 			],
 			"floor": 0
 		},
 		{
 			"kind": "hopper",
 			"at": [
-				24.5,
-				8.0
+				16.8,
+				6.8
 			],
-			"floor": 0.7
+			"floor": 0
 		},
 		{
 			"kind": "door",

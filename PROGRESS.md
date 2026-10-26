@@ -195,5 +195,12 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - [x] 7. Waves over the gangplank (decision 109): Ship check adds calm outside matches, warning visuals, no hit during
   the warning, unbraced mover washed into a rescue, braced mover holds, deck untouched, next-wave timing (77 pass).
   Warning render inspected. Feel pending.
-- [ ] 8. Ship audio pass
-- [ ] 9. Fog banks
+- [x] 8. Ship audio (decision 110): bell, shanty, roll creaks; Ship check covers the bell, the track and its file. Mix
+  needs a human listen.
+- [x] 9. Fog banks (decision 111): Ship check covers forming, drifting faint and clearing.
+- [x] Stern castle steps made carryable (decision 112): every weight goes down and up undamaged.
+- [x] The Ship rides the sea (decision 113): rolling, pitching, heaving rig of moving platforms; sea swell and foam;
+  breaking gangplank wave with spray, foam and an eased lurch. Ship check adds movers standing steady on moving decks,
+  loot riding the motion and a wave lurch without damage (an instant lurch had cost 15,814 rupees), and deck height
+  following the tilt. Wave stages and motion rendered and inspected. Tools: `tools/ship_autoplay.gd` plays a scripted
+  Ship round (recording paused at the user's request).

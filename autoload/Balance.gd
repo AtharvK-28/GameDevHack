@@ -25,10 +25,10 @@ const LANTERN_COUNT: int = 3
 const OIL_CAN_SIZE := Vector3(0.4, 0.55, 0.4) # Metres; a medium, single-mover carry.
 const OIL_CAN_COLOUR := Color("c4473a")
 const OIL_CAN_SPOTS: Array[Vector3] = [ # x, deck height, z; three are picked per round by seed.
-	Vector3(4.2, 1.4, 4.2), Vector3(1.9, 1.4, 4.2), Vector3(5.4, 1.4, 7.4), Vector3(11.0, 0.0, 8.9),
-	Vector3(16.8, 0.0, 3.9), Vector3(13.9, 0.0, 8.4), Vector3(19.6, 0.0, 6.0), Vector3(26.0, 0.7, 6.0),
-	Vector3(21.9, 0.7, 9.2)]
-const LANTERN_POST_SPOTS: Array[Vector3] = [Vector3(8.7, 0.0, 18.2), Vector3(15.3, 0.0, 18.2), Vector3(2.2, 1.4, 8.8)] # x, deck height, z: two on the tug, one on the stern castle.
+	Vector3(4.2, 1.2, 4.2), Vector3(1.9, 1.2, 4.2), Vector3(5.4, 1.2, 7.4), Vector3(11.0, 0.0, 8.9),
+	Vector3(16.8, 0.0, 3.9), Vector3(13.9, 0.0, 8.4), Vector3(19.6, 0.0, 6.0), Vector3(24.4, 0.7, 5.6),
+	Vector3(26.0, 0.7, 6.0)]
+const LANTERN_POST_SPOTS: Array[Vector3] = [Vector3(8.7, 0.0, 18.2), Vector3(15.3, 0.0, 18.2), Vector3(2.2, 1.2, 8.8)] # x, deck height, z: two on the tug, one on the stern castle.
 const LANTERN_ZONE_SIZE := Vector3(1.2, 2.0, 1.2) # Metres; the can's centre must be inside on release.
 const LANTERN_POST_HEIGHT: float = 2.0
 const LANTERN_LIT_COLOUR := Color("ffbf4a") # Warm flame, distinct from the cold blue deck lamps.
@@ -890,9 +890,22 @@ const SHIP_DECK_THICKNESS: float = 0.22
 const SHIP_DECK_BASE: float = -1.6
 const SHIP_BULWARK_HEIGHT: float = 0.7
 const SHIP_BULWARK_WIDTH: float = 0.18
-# Deck sway (decision 106): the ship rolls side to side; loose loot on the deck creeps toward the low side.
+# Ship motion (decisions 106 and 113): the whole ship, tug and plank ride the sea as one rig of moving platforms,
+# rolling, pitching and heaving on three cycles that never line up; the camera never moves. Loose loot on the
+# galleon's decks also creeps toward the low side of the roll.
 const SHIP_SWAY_PERIOD: float = 9.0 # Seconds for one full roll, port and back.
-const SHIP_SWAY_ANGLE: float = 2.5 # Degrees the sea and horizon tilt at the peak; the camera never moves.
+const SHIP_SWAY_ANGLE: float = 3.0 # Degrees of roll at the peak.
+const SHIP_PITCH_PERIOD: float = 7.0
+const SHIP_PITCH_ANGLE: float = 1.5 # Degrees of pitch, bow and stern, at the peak.
+const SHIP_HEAVE_PERIOD: float = 5.0
+const SHIP_HEAVE: float = 0.25 # Metres up and down at the peak.
+const SHIP_MOTION_PIVOT := Vector3(16.0, 0.0, 6.0) # The galleon's centre on its main deck.
+const SHIP_WAVE_LURCH: float = 2.5 # Extra degrees of roll a breaking gangplank wave knocks into the ship.
+const SHIP_LURCH_DECAY: float = 2.0 # Per second.
+const SHIP_LURCH_EASE: float = 6.0 # Per second; the lurch rolls in over about a third of a second, never a jolt.
+# The sea's swell: long rolling crests under the existing ripples, foam on the tops.
+const SHIP_SWELL_HEIGHT: float = 0.3
+const SHIP_SWELL_SPEED: float = 0.8
 const SHIP_SWAY_DRIFT_SPEEDS: Array[float] = [0.35, 0.25, 0.12, 0.0] # Peak creep in m/s by weight class; the chest stays put.
 const SHIP_SWAY_GRIP: float = 12.0 # m/s² the roll may add to reach that creep, enough to beat loot friction.
 # Gangplank waves (decision 109): in live play a wave washes over the plank about every 20 s. A foam wall rises
@@ -902,7 +915,31 @@ const SHIP_WAVE_WARNING: float = 1.0
 const SHIP_WAVE_CLEARANCE: float = 0.6 # Metres past the plank's far edge a washed mover is carried.
 const SHIP_WAVE_SEED_OFFSET: int = 4241 # Separate wave timing from the seeded loot selection.
 const SHIP_WAVE_COLOUR := Color(0.85, 0.95, 1.0, 0.65) # Foam.
-const SHIP_WAVE_SWEEP_TIME: float = 0.35 # Seconds the foam takes to sweep across the plank.
+const SHIP_WAVE_SWEEP_TIME: float = 0.35 # Seconds the crest takes to break across the plank.
+const SHIP_WAVE_BODY_COLOUR := Color("1d5d70") # The face of the breaking wave, greener and lighter than the sea.
+const SHIP_WAVE_START: float = 6.0 # Metres out at sea where the swell starts building during the warning.
+const SHIP_WAVE_CREST_SCALE: float = 1.9 # Height of the full crest, as a multiple of its 1.25 m profile.
+const SHIP_WAVE_SPRAY: int = 90 # Spray droplets when it breaks.
+const SHIP_WAVE_FOAM_TIME: float = 1.4 # Seconds the foam sheet takes to drain off the plank.
+# Ship audio (decision 110): a ship's bell rings on the tug instead of the truck's chime, a sea shanty plays in
+# rounds, and the hull creaks at each end of the roll.
+const SHIP_BELL_NOTE: float = 830.0 # Hz, the bell's strike note.
+const SHIP_BELL_PARTIALS: Array[Vector2] = [Vector2(0.5, 1.2), Vector2(1.0, 2.2), Vector2(1.19, 3.0), Vector2(1.5, 3.4), Vector2(2.0, 4.0), Vector2(2.52, 5.5)] # Ratio to the strike note, decay per second.
+const SHIP_BELL_STRIKES: Array[float] = [0.0, 0.32] # Seconds: "ding-ding".
+const SHIP_BELL_LENGTH: float = 2.2
+const SHIP_BELL_VOLUME: float = 0.18
+const SHIP_SWAY_CREAK_DB: float = -14.0
+# Fog banks (decision 111): every so often a thin bank of fog rolls across the ship from stern to bow. Cosmetic
+# only and kept faint, so loot, warnings and players stay readable through it.
+const SHIP_FOG_BANK_INTERVAL := Vector2(25.0, 40.0) # Seconds between banks.
+const SHIP_FOG_BANK_FIRST: float = 10.0 # Seconds into a round before the first bank.
+const SHIP_FOG_BANK_SPEED: float = 1.6 # Metres per second toward the bow.
+const SHIP_FOG_BANK_PATH := Vector2(-14.0, 44.0) # World x where a bank starts and where it is gone.
+const SHIP_FOG_BANK_PUFFS: int = 14
+const SHIP_FOG_BANK_PUFF_SIZE := Vector2(5.0, 2.5)
+const SHIP_FOG_BANK_EXTENTS := Vector3(6.0, 0.6, 7.0) # Half-size of the cloud of puffs.
+const SHIP_FOG_BANK_CENTRE := Vector2(1.2, 8.0) # Height and z of the bank's middle.
+const SHIP_FOG_BANK_ALPHA: float = 0.16 # Per puff, at its thickest.
 const SHIP_GUST_COST: int = 40
 const SHIP_GUST_COOLDOWN: float = 18.0
 const SHIP_GUST_WARNING: float = 1.0
@@ -912,7 +949,7 @@ const SHIP_GUST_WITH_DOT: float = 0.35 # Stick projection along wind that causes
 const SHIP_OCEAN_SIZE: float = 300.0
 const SHIP_NEAR_WATER_SIZE: float = 60.0
 const SHIP_WATER_SUBDIVISIONS: int = 59
-const SHIP_WAVE_HEIGHT: float = 0.12
+const SHIP_WAVE_HEIGHT: float = 0.14
 const SHIP_WAVE_SPEED: float = 0.65
 const SHIP_FOG_BEGIN: float = 32.0
 const SHIP_FOG_END: float = 115.0
@@ -937,7 +974,7 @@ const SHIP_DRAW_CALL_BUDGET: int = 350
 const SHIP_DOOR_HEIGHT: float = 1.8
 const SHIP_DROPPER_HEIGHT: float = 3.0
 const SHIP_WIND_MARKER_SIZE: float = 0.025
-const SHIP_WIND_MARKERS: Array[Vector3] = [Vector3(4, 1.48, 4), Vector3(10, 0.08, 9.2), Vector3(15, 0.08, 9.2), Vector3(17, 0.08, 3.2), Vector3(12, 0.08, 13.5), Vector3(12, 0.08, 15.0)]
+const SHIP_WIND_MARKERS: Array[Vector3] = [Vector3(4, 1.28, 4), Vector3(10.5, 0.08, 9.2), Vector3(15, 0.08, 9.2), Vector3(17, 0.08, 3.2), Vector3(12, 0.08, 13.5), Vector3(12, 0.08, 15.0)]
 
 const SHIP_HULL_TAPER: float = 0.82
 # The tug's hull wraps its deck from just under the rail down past the waterline.
@@ -954,7 +991,7 @@ const SHIP_MODEL_TINT := Color("a39a9e") # Pulls the kit's salmon wood toward we
 const SHIP_MODEL_DECK_LEVELS: Array[float] = [1.6, 2.1, 2.3, 2.4, 2.8, 3.2, 3.5] # Includes the hatch grate and coaming: the main deck is open.
 const SHIP_MODEL_DECK_HALF_WIDTH: float = 1.8 # Inside the rails; rail tops are kept.
 const SHIP_GHOST_SAIL_ALPHA: float = 0.45 # The big sails are see-through so they never hide the deck.
-const SHIP_LAMP_SPOTS: Array[Vector3] = [Vector3(1.6, 1.4, 2.0), Vector3(1.6, 1.4, 10.0), Vector3(9.0, 0, 2.0), Vector3(18.2, 0, 2.0), Vector3(18.2, 0, 10.0), Vector3(25.0, 0.7, 3.4), Vector3(8.2, 0, 20.5), Vector3(15.8, 0, 20.5)]
+const SHIP_LAMP_SPOTS: Array[Vector3] = [Vector3(1.6, 1.2, 2.0), Vector3(1.6, 1.2, 10.0), Vector3(9.0, 0, 2.0), Vector3(18.2, 0, 2.0), Vector3(18.2, 0, 10.0), Vector3(25.0, 0.7, 3.4), Vector3(8.2, 0, 20.5), Vector3(15.8, 0, 20.5)]
 const SHIP_SIGN_SIZE: float = 0.012
 const SHIP_FLOOR_SIGN_SIZE: float = 0.012
 const SHIP_PLANK_MARKS: int = 20

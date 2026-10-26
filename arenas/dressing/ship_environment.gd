@@ -12,6 +12,9 @@ var lighthouse: Node3D
 var creatures: Node3D
 var ambience: Array[AudioStreamPlayer] = []
 var next_call: float = 0.0
+var fog_bank: Node3D # The bank rolling across now, or null.
+var fog_left: float = Balance.SHIP_FOG_BANK_FIRST # Seconds until the next bank.
+var fog_material: StandardMaterial3D
 
 # --- Setup ---
 func _ready() -> void:
@@ -80,6 +83,8 @@ func _water_patch(offset: Vector2, size: Vector2, dense: bool) -> void:
 	water.set_shader_parameter("water_colour", Balance.SHIP_WATER_COLOUR)
 	water.set_shader_parameter("wave_height", Balance.SHIP_WAVE_HEIGHT)
 	water.set_shader_parameter("wave_speed", Balance.SHIP_WAVE_SPEED)
+	water.set_shader_parameter("swell_height", Balance.SHIP_SWELL_HEIGHT)
+	water.set_shader_parameter("swell_speed", Balance.SHIP_SWELL_SPEED)
 	mesh.material_override = water
 	add_child(mesh)
 
@@ -126,6 +131,7 @@ func _process(delta: float) -> void:
 	elif lightning_left <= 0.0:
 		flash_lightning()
 	moon.light_energy = Balance.SHIP_LIGHTNING_ENERGY if lightning_time > 0.0 else Balance.SHIP_MOON_ENERGY * moon_ratio
+	_update_fog_bank(delta)
 	next_call -= delta
 	if next_call <= 0.0:
 		next_call = Balance.SHIP_AMBIENT_CALL_INTERVAL
@@ -173,6 +179,65 @@ func _play_call() -> void:
 		add_child(player)
 		player.finished.connect(player.queue_free)
 		player.play()
+
+
+
+# --- Fog banks ---
+func _update_fog_bank(delta: float) -> void:
+	if is_instance_valid(fog_bank):
+		fog_bank.position.x += Balance.SHIP_FOG_BANK_SPEED * delta
+		# Thicken as it arrives and thin out as it leaves, so it never pops in or out.
+		var along: float = inverse_lerp(Balance.SHIP_FOG_BANK_PATH.x, Balance.SHIP_FOG_BANK_PATH.y, fog_bank.position.x)
+		fog_material.albedo_color.a = Balance.SHIP_FOG_BANK_ALPHA * sin(PI * clampf(along, 0.0, 1.0))
+		if along >= 1.0:
+			fog_bank.queue_free()
+			fog_bank = null
+		return
+	fog_left -= delta
+	if fog_left <= 0.0:
+		roll_fog_bank()
+
+
+func roll_fog_bank() -> void:
+	# A loose cloud of soft puffs that drifts from stern to bow over the whole ship.
+	fog_left = randf_range(Balance.SHIP_FOG_BANK_INTERVAL.x, Balance.SHIP_FOG_BANK_INTERVAL.y)
+	if is_instance_valid(fog_bank):
+		fog_bank.queue_free()
+	fog_bank = Node3D.new()
+	fog_bank.name = "FogBank"
+	fog_bank.position = Vector3(Balance.SHIP_FOG_BANK_PATH.x, Balance.SHIP_FOG_BANK_CENTRE.x, Balance.SHIP_FOG_BANK_CENTRE.y)
+	if fog_material == null:
+		fog_material = _soft_puff_material()
+	fog_material.albedo_color.a = 0.0
+	var quad := QuadMesh.new()
+	quad.size = Balance.SHIP_FOG_BANK_PUFF_SIZE
+	quad.material = fog_material
+	var extents: Vector3 = Balance.SHIP_FOG_BANK_EXTENTS
+	for index: int in Balance.SHIP_FOG_BANK_PUFFS:
+		var puff := MeshInstance3D.new()
+		puff.mesh = quad
+		puff.position = Vector3(randf_range(-extents.x, extents.x), randf_range(-extents.y, extents.y), randf_range(-extents.z, extents.z))
+		puff.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		fog_bank.add_child(puff)
+	add_child(fog_bank)
+
+
+func _soft_puff_material() -> StandardMaterial3D:
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	material.albedo_color = Color(Balance.SHIP_LANTERN_COLOUR, 0.0)
+	var texture := GradientTexture2D.new()
+	texture.fill = GradientTexture2D.FILL_RADIAL
+	texture.fill_from = Vector2(0.5, 0.5)
+	texture.fill_to = Vector2(1.0, 0.5)
+	var gradient := Gradient.new()
+	gradient.set_color(0, Color.WHITE)
+	gradient.set_color(1, Color(1, 1, 1, 0))
+	texture.gradient = gradient
+	material.albedo_texture = texture
+	return material
 
 
 func _build_mist() -> void:

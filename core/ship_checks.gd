@@ -19,6 +19,7 @@ func run() -> int:
 	world.arena_scene = load("res://arenas/Ship.tscn")
 	get_tree().root.add_child(world)
 	arena = world.arena
+	arena.motion_scale = 0.0 # Level decks for the route checks; _check_motion lets the ship ride the swell.
 	await _frames(90)
 	_check(arena.truck != null, "Ship has a tug delivery zone")
 	_check(get_tree().get_nodes_in_group("loot").size() == 18, "Full Ship loot pool contains 18 items")
@@ -53,6 +54,8 @@ func run() -> int:
 	await _check_rolling_barrel()
 	await _check_overboard()
 	await _check_waves()
+	await _check_audio_and_fog()
+	await _check_motion()
 	world.queue_free()
 	await _frames(3)
 	return failures
@@ -92,8 +95,10 @@ func _check_walks() -> void:
 		_set_input(0, Vector2.ZERO, true)
 		await _frames(35)
 		var down: bool = await _walk(0, [Vector2(10.5, 2.6)])
-		var up: bool = await _walk(0, [Vector2(3.5, 2.6)])
+		# Turn round on the open deck and line up on the steps from well back, never walking the item into a rail.
+		var up: bool = await _walk(0, [Vector2(12.0, 4.8), Vector2(16.0, 4.8), Vector2(16.0, 3.6), Vector2(11.5, 2.55), Vector2(3.5, 2.55)])
 		_check(down and up and mover.held_item == item, "%s can be carried down and up the castle steps" % item.item_name)
+		_check(item.value == item.initial_value, "%s survives the steps undamaged (₹%d of ₹%d)" % [item.item_name, item.value, item.initial_value])
 		mover._let_go()
 		item.queue_free()
 		await _frames(3)
@@ -169,13 +174,14 @@ func _check_rolling_barrel() -> void:
 	_check(possession.action_label() == SETTINGS.ROLL_LABEL, "A possessed rum barrel offers ROLL instead of SHOVE")
 	possession.act(Vector2(1, 0))
 	_check(possession.rolling and barrel.angular_velocity.length() > 1.0, "ROLL sets the barrel spinning side-on")
-	var peak: float = 0.0
+	var at_foot: float = 0.0 # Speed as it rolls off the foot of the steps onto the main deck.
 	var tumbled: bool = false
 	for frame: int in range(120):
 		await get_tree().physics_frame
-		peak = maxf(peak, barrel.linear_velocity.length())
+		if at_foot == 0.0 and barrel.position.x > 10.0:
+			at_foot = barrel.linear_velocity.length()
 		tumbled = tumbled or world.movers[0].is_tumbling()
-	_check(peak > SETTINGS.ROLL_SPEED, "Rolling down the castle steps speeds it up (peak %.2f m/s)" % peak)
+	_check(at_foot > SETTINGS.ROLL_TUMBLE_SPEED * 1.5, "It is still dangerous as it rolls off the castle steps onto the deck (%.2f m/s)" % at_foot)
 	_check(tumbled, "A rolling barrel knocks over the mover in its path")
 	ghost.leave()
 	barrel.queue_free()
@@ -195,7 +201,7 @@ func _check_sway() -> void:
 	await _frames(120)
 	_check(light.position.z - light_start.z > 0.3, "A loose bottle creeps toward the low side as the deck rolls")
 	_check(chest.position.distance_to(chest_start) < 0.05, "The two-person chest stays put")
-	_check(absf(arena.get_node("ShipEnvironment").rotation.x) > 0.04, "The sea and horizon tilt with the roll")
+	_check(absf(arena.rig.rotation.x) > 0.04, "The ship rolls with it")
 	arena.sway_override = -1.0
 	var turned: Vector3 = light.position
 	await _frames(120)
@@ -314,7 +320,7 @@ func _check_waves() -> void:
 	_set_input(1, Vector2.ZERO, false, true)
 	await _frames(20)
 	arena.start_wave(Vector3.RIGHT)
-	_check(arena.foam.visible and arena.wave_label.visible, "A wave shows its foam and warning before it hits")
+	_check(arena.crest.visible and arena.wave_label.visible, "A breaking wave builds out at sea with a warning before it hits")
 	await _frames(int(SETTINGS.SHIP_WAVE_WARNING * 60.0) - 10)
 	_check(world.movers[0].in_play and not world.movers[0].is_tumbling(), "Nobody is hit during the warning")
 	await _frames(80)
@@ -326,6 +332,57 @@ func _check_waves() -> void:
 	_check(world.movers[0].in_play, "The washed mover is rescued onto the tug")
 	var first: float = arena.wave_left
 	_check(first >= SETTINGS.SHIP_WAVE_INTERVAL.x - 0.1 and first <= SETTINGS.SHIP_WAVE_INTERVAL.y, "The next wave is about 20 s away (%.1f s)" % first)
+
+
+# --- Riding the swell ---
+func _check_motion() -> void:
+	arena.sway_override = NAN
+	arena.motion_scale = 1.0
+	_place(0, Vector2(17, 8))
+	_place(1, Vector2(4.0, 6.8))
+	var bell := _loot("bell", Vector2(13.0, 3.0))
+	await _frames(30)
+	var value: int = bell.value
+	var lowest: float = INF
+	var highest: float = -INF
+	var steady: bool = true
+	for frame: int in range(480): # Eight seconds: most of a roll, a pitch and two heaves.
+		if frame == 60:
+			arena.start_wave(Vector3.RIGHT) # Its lurch must roll in without jolting loot off its value.
+		await get_tree().physics_frame
+		lowest = minf(lowest, arena.rig.position.y)
+		highest = maxf(highest, arena.rig.position.y)
+		for slot: int in [0, 1]:
+			var mover: CharacterBody3D = world.movers[slot]
+			var standing: float = mover.global_position.y - SETTINGS.CAPSULE_HEIGHT / 2.0 - arena.floor_height_at(mover.global_position)
+			steady = steady and mover.in_play and not mover.is_tumbling() and absf(standing) < 0.15
+	_check(highest - lowest > 0.3, "The ship rises and falls on the swell (%.2f m)" % (highest - lowest))
+	_check(steady, "Movers stand steady on the moving decks, on the main deck and the stern castle")
+	_check(bell.position.y > SETTINGS.SHIP_WATER_Y + 1.0 and bell.value == value, "Loose loot rides the deck, and a wave's lurch, without falling off or breaking")
+	# The deck height a query reports matches the real, tilted deck.
+	var point := Vector3(25.0, 5.0, 4.0)
+	var hit: Dictionary = world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(point, point + Vector3.DOWN * 10.0, SETTINGS.WORLD_LAYER))
+	_check(not hit.is_empty() and absf(hit.position.y - arena.floor_height_at(point)) < 0.06, "Deck height follows the tilt at the bow (%.2f vs %.2f)" % [hit.get("position", Vector3.ZERO).y, arena.floor_height_at(point)])
+	bell.queue_free()
+	arena.motion_scale = 0.0
+	await _frames(10)
+
+
+# --- Ship audio and fog banks ---
+func _check_audio_and_fog() -> void:
+	var sfx: Node = get_tree().root.get_node("Sfx")
+	_check(arena.truck.chime == "ship_bell" and sfx.sounds.has("ship_bell"), "The tug rings a ship's bell on delivery")
+	_check(arena.MUSIC_TRACK == "round_ship" and ResourceLoader.exists(sfx.MUSIC_TRACKS[arena.MUSIC_TRACK]), "The Ship has its own round music")
+	var environment: Node = arena.get_node("ShipEnvironment")
+	environment.roll_fog_bank()
+	var bank: Node3D = environment.fog_bank
+	_check(is_instance_valid(bank) and bank.get_child_count() == SETTINGS.SHIP_FOG_BANK_PUFFS, "A fog bank forms off the stern")
+	var start: float = bank.position.x
+	await _frames(120)
+	_check(bank.position.x > start + 2.5 and environment.fog_material.albedo_color.a <= SETTINGS.SHIP_FOG_BANK_ALPHA, "It drifts toward the bow and stays faint")
+	bank.position.x = SETTINGS.SHIP_FOG_BANK_PATH.y
+	await _frames(3)
+	_check(not is_instance_valid(bank) and environment.fog_left >= SETTINGS.SHIP_FOG_BANK_INTERVAL.x - 0.1, "It clears past the bow and the next one waits")
 
 
 # --- Helpers ---

@@ -136,6 +136,7 @@ Compact mono Vorbis excerpts converted from the publicly supplied MP3 previews; 
 | `audio/ship/creaks.ogg` | PimFeijen, LargeWoodenShip.mp3, https://freesound.org/people/PimFeijen/sounds/195193/ | CC0 |
 | `audio/ship/rope.ogg` | jergonda, Hang Man's Rope, https://freesound.org/people/jergonda/sounds/254735/ | CC0 |
 | `audio/ship/gulls.ogg` | AlienXXX, Seagull, https://freesound.org/people/AlienXXX/sounds/798340/ | CC0 |
+| `audio/ship/music_shanty.ogg` | Thimras, A sailor's chant, https://opengameart.org/content/a-sailors-chant | CC0 |
 | `audio/ship/foghorn.ogg` | bruno.auzet, foghorn.wav, https://freesound.org/people/bruno.auzet/sounds/570906/ | CC0 |
 
 ### Ghost Ship ghost

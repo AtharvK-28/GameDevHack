@@ -753,7 +753,8 @@ func _check_slime() -> void:
 	await _wait(0.5)
 	_set_stick(MOVER_PHONE, Vector2.ZERO)
 	await _wait(0.1)
-	_check(not mover_a.on_slime() and _flat(mover_a.velocity).length() < 0.1, "Off slime the same mover stops as soon as the stick is let go")
+	var stop_speed: float = _flat(mover_a.velocity).length()
+	_check(not mover_a.on_slime() and stop_speed < 0.1, "Off slime the same mover stops as soon as the stick is let go (%.2f m/s, on slime %s)" % [stop_speed, mover_a.on_slime()])
 
 	# The trail ends 4 s after casting; each patch lasts 4 s.
 	await _wait(SETTINGS.SLIME_TRAIL_TIME + 0.2 - (Time.get_ticks_msec() - cast_time) / 1000.0)

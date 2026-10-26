@@ -38,7 +38,8 @@ func _run() -> void:
 	game.phase = "live"
 	world.setup_match_round(ROUND_SEED, game.participants, 0)
 	arena = world.arena
-	arena.wave_left = INF # Waves are checked by the Ship check; keep this carry route calm.
+	arena.wave_left = INF # Waves and motion are checked by the Ship check; keep this carry route calm and level.
+	arena.motion_scale = 0.0
 	await _wait(CHECK_SECONDS * 2.0)
 	_check_spots()
 	_check_clearance()
@@ -177,7 +178,7 @@ func _check_power() -> void:
 	sky.flash_lightning()
 	await _wait(SETTINGS.SHIP_LIGHTNING_DURATION + 0.2)
 	_check(is_equal_approx(sky.moon.light_energy, SETTINGS.SHIP_MOON_ENERGY * SETTINGS.GENERATOR_MOON_RATIO), "Lightning returns to the brighter moon")
-	var lamps: Array[Node] = arena.get_node("ShipDressing").find_children("*", "OmniLight3D", true, false)
+	var lamps: Array[Node] = arena.get_node("ShipRig/ShipDressing").find_children("*", "OmniLight3D", true, false)
 	_check(lamps.size() <= 8 and lamps.all(func(lamp: OmniLight3D) -> bool: return is_equal_approx(lamp.light_energy, SETTINGS.SHIP_LAMP_ENERGY * SETTINGS.LANTERN_LAMP_RATIO)), "Deck lamps brighten without adding lights")
 	_check(arena.generator.hud_text() == "Lanterns lit", "The HUD names the finished task")
 

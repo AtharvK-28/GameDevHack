@@ -13,6 +13,7 @@ var zone_colour: Color = Balance.BANK_COLOUR
 var zone_label: String = "LOAD THE\nTRUCK!"
 var label_yaw: float = Balance.CAMERA_YAW
 var radius: float = 0.0 # Above zero: a half-circle of this radius instead of a box.
+var chime: String = "bank" # The Sfx sound a delivery rings; the Ship's tug rings its bell.
 
 # --- Bank state ---
 var banked_value: int = 0
@@ -59,7 +60,7 @@ func try_bank(item: Loot) -> bool:
 	banked_items += 1
 	banked.emit(amount, carrier_slot)
 	delivered.emit(amount, slots)
-	Sfx.banked(amount)
+	Sfx.banked(amount, chime)
 	print("Banked ₹%d. Truck total: ₹%d" % [amount, banked_value])
 	return true
 

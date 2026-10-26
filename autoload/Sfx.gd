@@ -20,6 +20,7 @@ const FILE_SOUNDS: Dictionary = {
 }
 const MUSIC_TRACKS: Dictionary = {
 	"lobby": "res://assets/audio/cutscene/music_cozy.ogg", "round": "res://assets/audio/cutscene/music_spooky.ogg",
+	"round_ship": "res://assets/audio/ship/music_shanty.ogg",
 }
 
 # --- Audio state ---
@@ -41,7 +42,7 @@ func _ready() -> void:
 	sounds = {
 		"thunder": _thunder(), "owl": _owl(), "howl": _howl(), "caw": _caw(),
 		"goat": _goat(), "whoosh": _whoosh(), "rumble": _rumble(), "crackle": _crackle(), "organ": _organ(),
-		"boing": _boing(), "theremin": _theremin(), "trombone": _trombone(),
+		"boing": _boing(), "theremin": _theremin(), "trombone": _trombone(), "ship_bell": _ship_bell(), "wave_crash": _wave_crash(),
 	}
 	for sound: String in FILE_SOUNDS:
 		var variants: Array[AudioStream] = []
@@ -92,9 +93,9 @@ func shatter(initial_value: int, fragility: int) -> void:
 		play("trombone", 1.0, Balance.SFX_TROMBONE_DB) # Wah-wah-wah-waaah for a big loss.
 
 
-func banked(amount: int) -> void:
+func banked(amount: int, chime: String = "bank") -> void:
 	var pitch: float = Balance.BANK_LARGE_PITCH if amount >= Balance.BANK_LARGE_VALUE else 1.0
-	play("bank", pitch)
+	play(chime, pitch)
 	play("coins", pitch, Balance.SFX_COINS_DB)
 
 
@@ -120,7 +121,10 @@ func _on_phase(phase: String) -> void:
 		"intro":
 			_set_music("", 0.0) # The cutscene plays its own music.
 		"reveal", "live", "paused":
-			_set_music("round", Balance.MUSIC_ROUND_DB)
+			# An arena may bring its own round music (the Ship's shanty); otherwise the spooky waltz.
+			var arena: Node = Game.host.get("arena") if is_instance_valid(Game.host) else null
+			var track: Variant = arena.get("MUSIC_TRACK") if is_instance_valid(arena) else null
+			_set_music(track if track is String else "round", Balance.MUSIC_ROUND_DB)
 		"result":
 			_set_music("", 0.0)
 			play("win" if Game.result.get("moversWon", false) else "lose", 1.0, Balance.SFX_JINGLE_DB)
@@ -271,6 +275,24 @@ func _whoosh() -> AudioStreamWAV:
 	return _stream(samples, RATE, false)
 
 
+
+func _wave_crash() -> AudioStreamWAV:
+	# A wave breaking over the plank: a sharp, bright slap of noise, then a long hiss of water draining away.
+	var count: int = int(RATE * 1.8)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	var water: float = 0.0
+	var low: float = 0.0
+	for index: int in range(count):
+		var time: float = float(index) / RATE
+		var envelope: float = minf(1.0, time / 0.03) * (0.75 * exp(-time * 6.0) + 0.25 * exp(-time * 1.4))
+		var brightness: float = 0.55 + 0.4 * exp(-time * 3.0) # Starts bright, darkens as it drains.
+		water = water * (1.0 - brightness) + noise.randf_range(-1.0, 1.0) * brightness
+		low = low * 0.985 + water * 0.015 # A body of low thump under the hiss.
+		samples[index] = (water * 0.6 + low * 3.0) * envelope * 0.8
+	return _stream(samples, RATE, false)
+
+
 func _rumble() -> AudioStreamWAV:
 	# The House Shake: a deep, uneven rumble that swells and dies away.
 	var count: int = int(RATE * 2.2)
@@ -315,6 +337,25 @@ func _organ() -> AudioStreamWAV:
 				value += sin(TAU * note * harmonic * time) / harmonic
 		var envelope: float = minf(1.0, time * 3.0) * exp(-maxf(0.0, time - 1.2) * 1.8)
 		samples[index] = value * envelope * (0.85 + 0.15 * sin(TAU * 5.5 * time)) * 0.07
+	return _stream(samples, RATE, false)
+
+
+
+func _ship_bell() -> AudioStreamWAV:
+	# A ship's bell struck twice: a handful of inharmonic partials, each ringing down at its own rate.
+	var count: int = int(RATE * Balance.SHIP_BELL_LENGTH)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	for index: int in range(count):
+		var time: float = float(index) / RATE
+		var value: float = 0.0
+		for strike: float in Balance.SHIP_BELL_STRIKES:
+			var since: float = time - strike
+			if since < 0.0:
+				continue
+			for partial: Vector2 in Balance.SHIP_BELL_PARTIALS:
+				value += sin(TAU * Balance.SHIP_BELL_NOTE * partial.x * since) * exp(-partial.y * since) / partial.x
+		samples[index] = value * Balance.SHIP_BELL_VOLUME
 	return _stream(samples, RATE, false)
 
 

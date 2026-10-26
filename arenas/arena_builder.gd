@@ -595,6 +595,7 @@ static func _build_deck_layout(arena: Node3D, layout: Dictionary) -> Area3D:
 	zone.zone_size = Vector3(delivery_rect.size.x, Balance.TRUCK_SIZE.y, delivery_rect.size.y)
 	zone.zone_colour = Balance.SHIP_TUG_COLOUR
 	zone.zone_label = "SALVAGE!"
+	zone.chime = "ship_bell"
 	zone.label_yaw = Balance.SHIP_CAMERA_YAW
 	zone.position = Vector3(delivery_rect.get_center().x, delivery.floor, delivery_rect.get_center().y)
 	arena.add_child(zone)
@@ -628,7 +629,7 @@ static func _build_deck_polygon(arena: Node3D, floor_data: Dictionary, bottom: f
 	var surface := SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
 	for index: int in range(1, outline.size() - 1):
-		for corner: Vector2 in [outline[0], outline[index + 1], outline[index]]:
+		for corner: Vector2 in [outline[0], outline[index], outline[index + 1]]: # Wound to face up.
 			surface.set_uv(corner)
 			surface.add_vertex(Vector3(corner.x, floor_data.floor, corner.y))
 	surface.generate_normals()
