@@ -187,6 +187,9 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - [ ] 4. Human 2/3/4-phone playtest and tuning (user tested the captain and lantern task on 2026-10-26: "feels right")
 - [x] 5. Deck sway (decision 106): Ship check passes with five new sway checks (bottle creeps both ways, chest stays,
   sea tilts, camera unchanged); lantern, ship match and arena layout checks pass. Peak-roll render inspected. Feel pending.
+- [x] Ship rebuilt around Kenney ship-pirate-large (decision 107): new deck plan, model hull/castles/rails/masts, ghost
+  sails, gangplank from the waist port. Ship check passes (routes from every deck, all weights down and up the castle
+  steps, chest down the forecastle steps and over the plank, sway, wind, rescue). Party-camera renders inspected.
 - [ ] 6. Rolling barrel hazard
 - [ ] 7. Waves over the gangplank
 - [ ] 8. Ship audio pass

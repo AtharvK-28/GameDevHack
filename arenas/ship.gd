@@ -64,7 +64,10 @@ func floor_height_at(point: Vector3) -> float:
 			var along: float = (point.x - rect.position.x) / rect.size.x
 			return ramp.floor + ramp.rise * (along if ramp.direction > 0 else 1.0 - along)
 	for floor_data: Dictionary in layout.floors:
-		if ArenaBuilder.rect_of(floor_data.rect).has_point(location):
+		if floor_data.has("polygon"):
+			if Geometry2D.is_point_in_polygon(location, ArenaBuilder.polygon_of(floor_data.polygon)):
+				return floor_data.floor
+		elif ArenaBuilder.rect_of(floor_data.rect).has_point(location):
 			return floor_data.floor
 	return 0.0 # The free wisp flies safely over the ocean.
 

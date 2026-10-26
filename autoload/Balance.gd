@@ -25,10 +25,10 @@ const LANTERN_COUNT: int = 3
 const OIL_CAN_SIZE := Vector3(0.4, 0.55, 0.4) # Metres; a medium, single-mover carry.
 const OIL_CAN_COLOUR := Color("c4473a")
 const OIL_CAN_SPOTS: Array[Vector3] = [ # x, deck height, z; three are picked per round by seed.
-	Vector3(2.4, 1.2, 3.0), Vector3(2.4, 1.2, 7.0), Vector3(13.3, -1.2, 4.3), Vector3(20.5, 0.0, 6.3),
-	Vector3(11.0, 0.0, 8.2), Vector3(16.4, 0.0, 8.8), Vector3(23.4, 0.8, 2.8), Vector3(25.0, 0.8, 3.2),
-	Vector3(6.2, 0.0, 2.9)]
-const LANTERN_POST_SPOTS: Array[Vector3] = [Vector3(10.7, 0.0, 16.0), Vector3(17.3, 0.0, 16.0), Vector3(3.0, 1.2, 9.0)] # x, deck height, z: two on the tug, one on the quarterdeck.
+	Vector3(4.2, 1.4, 4.2), Vector3(1.9, 1.4, 4.2), Vector3(5.4, 1.4, 7.4), Vector3(11.0, 0.0, 8.9),
+	Vector3(16.8, 0.0, 3.9), Vector3(13.9, 0.0, 8.4), Vector3(19.6, 0.0, 6.0), Vector3(26.0, 0.7, 6.0),
+	Vector3(21.9, 0.7, 9.2)]
+const LANTERN_POST_SPOTS: Array[Vector3] = [Vector3(8.7, 0.0, 18.2), Vector3(15.3, 0.0, 18.2), Vector3(2.2, 1.4, 8.8)] # x, deck height, z: two on the tug, one on the stern castle.
 const LANTERN_ZONE_SIZE := Vector3(1.2, 2.0, 1.2) # Metres; the can's centre must be inside on release.
 const LANTERN_POST_HEIGHT: float = 2.0
 const LANTERN_LIT_COLOUR := Color("ffbf4a") # Warm flame, distinct from the cold blue deck lamps.
@@ -874,7 +874,7 @@ const LOADING_TIPS: Array[String] = [
 
 # --- Ghost Ship settings (metres, seconds and rendering limits) ---
 const SHIP_CAMERA_YAW: float = -20.0
-const SHIP_WATER_Y: float = -2.4
+const SHIP_WATER_Y: float = -1.6 # Raised with the Kenney hull (decision 107) so its keel sits in the sea.
 const SHIP_RESCUE_SECONDS: float = 2.0
 const SHIP_RESCUE_CLEARANCE: float = 0.9
 const SHIP_DECK_THICKNESS: float = 0.22
@@ -904,14 +904,12 @@ const SHIP_AMBIENT_ENERGY: float = 0.65
 const SHIP_MOON_ENERGY: float = 1.25
 const SHIP_LAMP_ENERGY: float = 1.0
 const SHIP_LAMP_RANGE: float = 6.0
-const SHIP_SAIL_SWAY: float = 0.025 # Radians; visual only.
 const SHIP_LIGHTNING_INTERVAL := Vector2(40.0, 60.0)
 const SHIP_LIGHTNING_DURATION: float = 0.16
 const SHIP_LIGHTNING_ENERGY: float = 2.6
 const SHIP_BACKGROUND := Color("17253f")
 const SHIP_WATER_COLOUR := Color("203f61")
 const SHIP_WOOD_COLOUR := Color("69535f")
-const SHIP_HULL_COLOUR := Color("383646")
 const SHIP_SAIL_COLOUR := Color("b0a9ba")
 const SHIP_METAL_COLOUR := Color("3a465f")
 const SHIP_GOLD_COLOUR := Color("dfb65f")
@@ -923,30 +921,29 @@ const SHIP_DRAW_CALL_BUDGET: int = 350
 const SHIP_DOOR_HEIGHT: float = 1.8
 const SHIP_DROPPER_HEIGHT: float = 3.0
 const SHIP_WIND_MARKER_SIZE: float = 0.025
-const SHIP_WIND_MARKERS: Array[Vector3] = [Vector3(6, 0.08, 6), Vector3(11, 0.08, 6), Vector3(16, 0.08, 6), Vector3(20, 0.08, 6), Vector3(14, 0.08, 11.7), Vector3(14, 0.08, 14.2)]
+const SHIP_WIND_MARKERS: Array[Vector3] = [Vector3(4, 1.48, 4), Vector3(10, 0.08, 9.2), Vector3(15, 0.08, 9.2), Vector3(17, 0.08, 3.2), Vector3(12, 0.08, 13.5), Vector3(12, 0.08, 15.0)]
 
 const SHIP_HULL_TAPER: float = 0.82
-# The hull wraps the deck blocks from just under the bulwarks down past the waterline, so the ship has a
-# dark hull instead of showing bare deck timber all the way to the sea.
-const SHIP_HULL_TOP: float = 0.75
-const SHIP_HULL_DEPTH: float = 3.55 # Bottom lands below SHIP_WATER_Y.
+# The tug's hull wraps its deck from just under the rail down past the waterline.
 const SHIP_TUG_TOP: float = 0.45
 const SHIP_TUG_DEPTH: float = 3.25 # Also reaches below the water.
-const SHIP_HULL_OUTLINE: Array[Vector2] = [Vector2(-0.3, -0.3), Vector2(26.3, -0.3), Vector2(28.2, 5), Vector2(26.3, 10.3), Vector2(-0.3, 10.3), Vector2(-0.8, 5)]
-const SHIP_TUG_OUTLINE: Array[Vector2] = [Vector2(9.8, 13.5), Vector2(18.2, 13.5), Vector2(18.5, 16), Vector2(17.8, 18.9), Vector2(10.2, 18.9), Vector2(9.5, 16)]
-const SHIP_MAST_SPOTS: Array[Vector3] = [Vector3(7, 0, -0.5), Vector3(19, 0, -0.5)]
-const SHIP_MAST_SCALE: float = 0.72
-# The bowsprit: a spar off the bow, which does more for the galleon silhouette than anything else here.
-const SHIP_BOWSPRIT_SIZE := Vector3(4.2, 0.17, 0.17)
-const SHIP_BOWSPRIT_AT := Vector3(28.6, 1.35, 5.0)
-const SHIP_BOWSPRIT_TILT: float = 0.26 # Radians the far end rises.
-const SHIP_CANNON_SCALE: float = 0.5
-const SHIP_LAMP_SPOTS: Array[Vector3] = [Vector3(0.2, 1.2, 2.8), Vector3(4.8, 1.2, 2.8), Vector3(8.2, 0, 0.2), Vector3(18, 0, 0.2), Vector3(25.8, 0.8, 2.8), Vector3(25.8, 0.8, 7.5), Vector3(10.2, 0, 18.3), Vector3(17.8, 0, 18.3)]
+const SHIP_TUG_OUTLINE: Array[Vector2] = [Vector2(7.8, 15.7), Vector2(16.2, 15.7), Vector2(16.5, 18.2), Vector2(15.8, 21.1), Vector2(8.2, 21.1), Vector2(7.5, 18.2)]
+# The galleon is Kenney's ship-pirate-large (CC0, decision 107): 2.5x in plan so its decks fit play, 1x in height so
+# its steps stay climbable. It is turned so its bow points +x, with its main deck at world height 0.
+const SHIP_MODEL_PATH: String = "res://assets/models/pirate/kenney/ship-pirate-large.glb"
+const SHIP_MODEL_SCALE := Vector3(2.5, 1.0, 2.5)
+const SHIP_MODEL_AT := Vector3(16.4, -2.1, 6.0)
+const SHIP_MODEL_TINT := Color("a39a9e") # Pulls the kit's salmon wood toward weathered grey-brown.
+# The model's own flat deck faces (model units) are removed so the layout's walkable floors show instead.
+const SHIP_MODEL_DECK_LEVELS: Array[float] = [1.6, 2.1, 2.3, 2.4, 2.8, 3.2, 3.5] # Includes the hatch grate and coaming: the main deck is open.
+const SHIP_MODEL_DECK_HALF_WIDTH: float = 1.8 # Inside the rails; rail tops are kept.
+const SHIP_GHOST_SAIL_ALPHA: float = 0.45 # The big sails are see-through so they never hide the deck.
+const SHIP_LAMP_SPOTS: Array[Vector3] = [Vector3(1.6, 1.4, 2.0), Vector3(1.6, 1.4, 10.0), Vector3(9.0, 0, 2.0), Vector3(18.2, 0, 2.0), Vector3(18.2, 0, 10.0), Vector3(25.0, 0.7, 3.4), Vector3(8.2, 0, 20.5), Vector3(15.8, 0, 20.5)]
 const SHIP_SIGN_SIZE: float = 0.012
 const SHIP_FLOOR_SIGN_SIZE: float = 0.012
 const SHIP_PLANK_MARKS: int = 20
 const SHIP_PLANK_SPACING: float = 0.5
-const SHIP_LIGHTHOUSE_SPOT := Vector3(53, -2.4, -39)
+const SHIP_LIGHTHOUSE_SPOT := Vector3(53, -1.6, -39)
 const SHIP_LIGHTHOUSE_SCALE: float = 2.0
 const SHIP_LIGHTHOUSE_HEIGHT: float = 7.0
 const SHIP_LIGHTHOUSE_ENERGY: float = 0.7
@@ -962,19 +959,8 @@ const SHIP_CREATURE_BOB: float = 0.3
 const SHIP_AMBIENT_DB: float = -30.0
 const SHIP_AMBIENT_CALL_INTERVAL: float = 24.0
 
-
-const SHIP_SAIL_HEM: Array[Vector2] = [Vector2(-2.7, 2.6), Vector2(-1.8, 2.9), Vector2(-0.9, 2.55), Vector2(0, 3.15), Vector2(0.9, 2.6), Vector2(1.8, 2.95), Vector2(2.7, 2.6)]
-const SHIP_SAIL_TOP: float = 4.7
-const SHIP_SAIL_OFFSET: float = 0.15
-const SHIP_SAIL_FADE_ALPHA: float = 0.18
-const SHIP_SAIL_OCCLUSION_MARGIN: float = 0.1
-const SHIP_CANVAS_COLOUR := Color("6f6758") # Weathered sailcloth; paler than this and it reads as paper.
-const SHIP_SAIL_TOP_WIDTH: float = 0.68 # The head of the sail, as a fraction of the hem's width.
-const SHIP_SAIL_BILLOW: float = 0.55 # Metres the belly of the sail bulges away from the mast.
-const SHIP_SAIL_ROWS: int = 4 # Vertical segments; the billow needs a few to curve rather than crease.
-
 const SHIP_MIST_SIZE := Vector2(10, 2)
-const SHIP_MIST_POSITION := Vector3(13, -1, 5)
+const SHIP_MIST_POSITION := Vector3(15, -1, 6)
 const SHIP_MIST_EXTENTS := Vector3(35, 0, 25)
 const SHIP_MIST_AMOUNT: int = 8
 const SHIP_MIST_ALPHA: float = 0.12

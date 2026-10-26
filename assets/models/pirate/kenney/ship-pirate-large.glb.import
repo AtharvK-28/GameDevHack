@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://cvgbmiyl7rp71"
-path="res://.godot/imported/cannon-mobile.glb-46f1028ebe26961e55e95247f2111703.scn"
+uid="uid://cwfl62w1q7c07"
+path="res://.godot/imported/ship-pirate-large.glb-42335b2ff1d3a8b49153c2fb83e7706e.scn"
 
 [deps]
 
-source_file="res://assets/models/pirate/kenney/cannon-mobile.glb"
-dest_files=["res://.godot/imported/cannon-mobile.glb-46f1028ebe26961e55e95247f2111703.scn"]
+source_file="res://assets/models/pirate/kenney/ship-pirate-large.glb"
+dest_files=["res://.godot/imported/ship-pirate-large.glb-42335b2ff1d3a8b49153c2fb83e7706e.scn"]
 
 [params]
 

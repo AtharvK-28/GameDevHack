@@ -124,7 +124,7 @@ func _check_carry_and_delivery() -> void:
 	_check(posts.delivered == 0, "A loose can sliding onto a post does not count")
 
 	# A real carry from the main deck over the gangplank onto the tug, ending at the left post.
-	mover.position = Vector3(14.0, SETTINGS.CAPSULE_HEIGHT / 2.0, 8.0)
+	mover.position = Vector3(12.0, SETTINGS.CAPSULE_HEIGHT / 2.0, 9.0)
 	mover.facing = Vector3.BACK
 	mover._update_hold_point()
 	can.position = mover.hold_point.global_position
@@ -135,7 +135,7 @@ func _check_carry_and_delivery() -> void:
 	router.for_slot(1).buttons.grab = true
 	_check(is_equal_approx(mover.movement_speed(), SETTINGS.MOVER_SPEED * SETTINGS.CARRY_SPEEDS[SETTINGS.MEDIUM]), "A can slows its mover to the medium carry speed")
 	_check(not posts.try_deliver(can), "A held can cannot be delivered")
-	for waypoint: Vector2 in [Vector2(14.0, 15.0), Vector2(12.2, 16.0), Vector2(11.9, 16.0)]:
+	for waypoint: Vector2 in [Vector2(12.0, 15.0), Vector2(10.2, 18.2), Vector2(9.9, 18.2)]:
 		await _walk_to(mover, waypoint)
 	await _wait(CHECK_SECONDS)
 	_check(posts.contains_point(can.global_position) and can.is_held(), "A can carried over the gangplank reaches a lantern post")
@@ -158,7 +158,7 @@ func _check_carry_and_delivery() -> void:
 		other.linear_velocity = Vector3.ZERO
 		other.try_grab(mover, mover.hold_point, 1)
 		other.release()
-	_check(posts.delivered == 3 and posts.powered, "Three lit posts complete the task, the quarterdeck one included")
+	_check(posts.delivered == 3 and posts.powered, "Three lit posts complete the task, the stern castle one included")
 	_check(is_equal_approx(world.ghost.hauntings[0].cooldown_left, 15.0), "Lighting the lanterns stretches the running Gust cooldown")
 
 

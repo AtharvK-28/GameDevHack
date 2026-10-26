@@ -626,7 +626,7 @@ Close codes: 4001 auth timeout, 4002 new lobby, 4003 denied credentials, 4008 ra
 
 ## Ghost Ship implementation (decision 100)
 
-`arenas/layouts/ship_layout.json` and `ship_layout.svg` define the approved 26 x 10 m galleon: quarterdeck +1.2 m, forecastle +0.8 m, open 5 x 4 m hold -1.2 m, a 4 m-wide hold ramp, 3 m-wide raised-deck ramps, and a 2.2 x 3.6 m unrailed gangplank. Static floors use separate slabs; water has no ground collider. Five floor-aware zones include the hold and salvage tug. The tug is 8 x 5 m, with a 4 x 3 m amber release-only delivery area. Chest carriers use clear turning areas and cross lengthwise, one ahead and one behind. Ship uses camera yaw -20 degrees, pitch 55 and framing 12-26 m.
+`arenas/layouts/ship_layout.json` and `ship_layout.svg` define the deck plan fitted to Kenney's ship-pirate-large (decision 107): the model is scaled 2.5x in plan and 1x in height with its bow toward +x and main deck at 0. Main deck about 10 x 8.8 m inside the rails, with an open hatch frame; stern castle +1.4 m reached by two 2.5 m side steps; forecastle +0.7 m tapering to the bow, reached by two 2 m side steps, with a locker and foremast as obstacles. No cargo hold. The 2.2 x 3.6 m unrailed gangplank leaves the model's waist port for the 8 x 5 m salvage tug, whose 4 x 3 m amber delivery area is release-only. Static floors use separate slabs (one polygon for the bow); barriers and obstacles collide but draw nothing, because the model draws the rails. Water has no ground collider. Ship uses camera yaw -20 degrees, pitch 55 and framing 12-26 m.
 
 The Ship catalog contains 18 items worth 74500 rupees: chest 18000 (two-person, fragility 1); 3 ships-in-bottles 5000 (light, 3); 2 telescopes 4000 (medium, 2); portrait 7000 (medium, 1); 4 rolling rum barrels 3000 (medium, 1); 2 compasses 2000 (light, 2); 2 chalices 1500 (light, 2); bell 3500 (heavy, 1); sextant 2500 (light, 2); chart tube 1500 (light, 1). Existing 6/9/12 seeded match picks and heavy limits apply, with exactly one chest. Spawn roles and S/M/XL sizes live in the layout.
 
@@ -634,7 +634,7 @@ Ship enables crate/slider, hatch/door, lantern/dropper, anchor/hopper and tarp/r
 
 Deck sway (decision 106): a 9 s roll tilts the sea and horizon up to 2.5 degrees while colliders, movers and the camera stay level; loose loot and oil cans on the galleon's decks creep toward the low side (0.35 / 0.25 / 0.12 m/s light / medium / heavy, never the chest, held or possessed items). Values are SHIP_SWAY_* in Balance.
 
-At the fixed water plane (-2.4 m), loot is lost once through the normal loss/scoring path. A mover releases their own held item/handle, leaves play for 2 s, then returns empty-handed to a clear tug spawn. Rescue pauses with simulation and resets with the round. Camera, physics and HUD do not follow a hidden rescuing mover. No extra money penalty. Colliders never bob.
+At the fixed water plane (-1.6 m), loot is lost once through the normal loss/scoring path. A mover releases their own held item/handle, leaves play for 2 s, then returns empty-handed to a clear tug spawn. Rescue pauses with simulation and resets with the round. Camera, physics and HUD do not follow a hidden rescuing mover. No extra money penalty. Colliders never bob.
 
 ShipDressing and ShipEnvironment remain separate from generated floors. Green environmental glow is prohibited. Kenney Pirate Kit 2.1 CC0 is the main source; the supplied combined Quaternius GLB is excluded because its embedded Standard provenance differs from the original pack's CC0 listing. Sea audio sources are individually credited. Rendering budgets: at most about 400000 displayed triangles, 350 draw calls, 5000 triangles per prop and 60000 for hull/masts/sails; one shadow-casting moon, eight shadowless omnis at most; dense 60 x 60 m near ocean and sparse outer ocean faded into fog. Checks and measured review results are recorded in PROGRESS.md.
 
@@ -660,20 +660,13 @@ he reads on a dark deck. The wisp's frozen tint takes over at 60% after an exorc
 1.6 m movers, hovers 1.0 m below the wisp's node, faces +Z and casts no shadow.
 
 
-## Ghost Ship look (decision 102)
+## Ghost Ship look (decisions 102 and 107)
 
-Hull decks carry `"solid": true` in `ship_layout.json` and are built as blocks from their own height down to
-`SHIP_DECK_BASE` (-1.6), so no step shows open sky underneath and the main deck around the hold forms the hold's
-walls. The gangplank and the tug stay thin slabs over open water. The hull skirt runs from `SHIP_HULL_TOP` (0.75,
-just under the bulwarks) down to -2.8, below the -2.4 waterline, so the ship sits in the sea; the tug's does the
-same. A bowsprit off the bow carries the galleon silhouette at the party camera's angle.
+The galleon is Kenney's ship-pirate-large (CC0). It supplies the hull, stern castle, rails, masts and flags; at load
+its own flat deck and step faces inside the rails are removed, so the layout's floors, which match the colliders
+exactly, show instead. Its wood is tinted `SHIP_MODEL_TINT` toward weathered grey-brown, and its sails are 45% opaque
+(`SHIP_GHOST_SAIL_ALPHA`) so the party camera always sees the deck. The tug keeps its built hull, which reaches below
+the waterline.
 
-Sails are billowed, tapered canvas with a torn hem: the head is 0.68 of the hem's width, the belly bulges 0.55 m
-away from the mast over four vertical segments, in `SHIP_CANVAS_COLOUR`. Flat bright quads read as paper.
-
-`CatalogItem.tint` multiplies a model's own colours. Kit models share one palette texture and cannot be recoloured
-per part, so the three Kenney pirate props (rum barrel, treasure chest, crate) use it to leave the pack's salmon
-and powder-blue palette for wood and treasure tones. White leaves a model alone, which is every other prop.
-
-Water stays on the project's own `ship_water.gdshader`. The MIT reference was rendered side by side and dropped:
-its code is MIT but the textures it needs are not, and with substitute noise it renders as ice floes.
+`CatalogItem.tint` multiplies a kit model's own colours, used to pull the rum barrel, treasure chest and crate off
+the pack's salmon and powder-blue palette. Water stays on the project's own `ship_water.gdshader`.

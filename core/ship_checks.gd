@@ -27,8 +27,8 @@ func run() -> int:
 		total += item.initial_value
 		_check(item.position.y > SETTINGS.SHIP_WATER_Y and absf(item.position.y - arena.floor_height_at(item.position) - item.item_size.y / 2.0) < 0.4, "%s settles on its intended deck" % item.item_name)
 	_check(total == 74500, "Full Ship pool is worth 74500 rupees")
-	_check(arena.room_at(Vector3(11.5, -0.7, 3)) == "Cargo Hold", "Hold has a separate floor-aware progress zone")
-	_check(arena.room_at(Vector3(11.5, 0.8, 6)) == "Main Deck", "Main deck zone resolves independently")
+	_check(arena.room_at(Vector3(3, 1.9, 6)) == "Quarterdeck", "The stern castle has its own floor-aware zone")
+	_check(arena.room_at(Vector3(11.5, 0.8, 9)) == "Main Deck" and arena.room_at(Vector3(7.2, 0.8, 9.5)) == "Main Deck", "The main deck, and the foot of the castle steps, resolve as the main deck")
 	_check(world.camera.arena_yaw == SETTINGS.SHIP_CAMERA_YAW, "Ship gets its approved camera yaw")
 	_check(not arena.has_node("Ground"), "No ground collider under the ocean")
 	var kinds: Dictionary = {}
@@ -58,7 +58,7 @@ func run() -> int:
 
 # --- Routes and clearances ---
 func _check_barrel() -> void:
-	var barrel := _loot("barrel", Vector2(14, 8))
+	var barrel := _loot("barrel", Vector2(12, 9))
 	await _frames(20)
 	barrel.apply_torque_impulse(Vector3.FORWARD * barrel.mass)
 	await _frames(35)
@@ -69,29 +69,29 @@ func _check_barrel() -> void:
 
 func _check_walks() -> void:
 	var routes: Array = [
-		[Vector2(2, 8.5), Vector2(7, 8.5), Vector2(10, 8.5), Vector2(14, 8.5), Vector2(14, 16)],
-		[Vector2(23, 8.5), Vector2(19, 8.5), Vector2(15, 8.5), Vector2(14, 9), Vector2(14, 16)],
-		[Vector2(11.5, 3.8), Vector2(19, 3.8), Vector2(19, 6), Vector2(14, 6), Vector2(14, 16)]
+		[Vector2(2, 9.4), Vector2(5.8, 9.4), Vector2(9.2, 9.4), Vector2(12, 9.4), Vector2(12, 18)],
+		[Vector2(25, 6), Vector2(23, 9.0), Vector2(19.6, 9.1), Vector2(12, 9.2), Vector2(12, 18)],
+		[Vector2(3, 2.6), Vector2(5.8, 2.6), Vector2(9.2, 2.6), Vector2(14.2, 2.6), Vector2(14.2, 9), Vector2(12, 9.2), Vector2(12, 18)]
 	]
 	for index: int in range(routes.size()):
 		var route: Array = routes[index]
 		_place(0, route[0])
-		_check(await _walk(0, route.slice(1)), "Mover route %d reaches the tug through its ramp and gangplank" % index)
+		_check(await _walk(0, route.slice(1)), "Mover route %d reaches the tug down its steps and over the gangplank" % index)
 		_check(arena.truck.contains_point(world.movers[0].position), "Route ends in the tug's banking area")
-	# Every single-person weight climbs and descends the hold ramp while held.
+	# Every single-person weight goes down and back up the stern castle's steps while held.
 	for kind: String in ["compass", "telescope", "bell"]:
-		_place(0, Vector2(18.5, 3))
+		_place(0, Vector2(4.0, 2.6))
 		var mover: CharacterBody3D = world.movers[0]
-		var item := _loot(kind, Vector2(18, 3))
-		mover.facing = Vector3.LEFT
+		var item := _loot(kind, Vector2(4.6, 2.6))
+		mover.facing = Vector3.RIGHT
 		mover._update_hold_point()
 		item.try_grab(mover, mover.hold_point, 0)
 		mover.held_item = item
 		_set_input(0, Vector2.ZERO, true)
 		await _frames(35)
-		var down: bool = await _walk(0, [Vector2(11.5, 3)])
-		var up: bool = await _walk(0, [Vector2(19, 3)])
-		_check(down and up and mover.held_item == item, "%s can be carried down and up the hold ramp" % item.item_name)
+		var down: bool = await _walk(0, [Vector2(10.5, 2.6)])
+		var up: bool = await _walk(0, [Vector2(3.5, 2.6)])
+		_check(down and up and mover.held_item == item, "%s can be carried down and up the castle steps" % item.item_name)
 		mover._let_go()
 		item.queue_free()
 		await _frames(3)
@@ -99,10 +99,10 @@ func _check_walks() -> void:
 
 func _check_chest_route() -> void:
 	# Test the complete continuous route, with real two-player steering at the two turns.
-	var chest := _loot("chest", Vector2(11.5, 3.8))
+	var chest := _loot("chest", Vector2(23.6, 8.7))
 	for slot: int in [0, 1]:
 		var offset: float = -1.6 if slot == 0 else 1.6
-		_place(slot, Vector2(11.5 + offset, 3.8))
+		_place(slot, Vector2(23.6 + offset, 8.7))
 		var mover: CharacterBody3D = world.movers[slot]
 		mover.facing = Vector3.RIGHT if slot == 0 else Vector3.LEFT
 		mover._update_hold_point()
@@ -110,13 +110,14 @@ func _check_chest_route() -> void:
 		mover.held_item = chest
 		_set_input(slot, Vector2.ZERO, true)
 	await _frames(50)
-	_check(chest.holder_count() == 2, "Two movers take the chest in the open hold")
+	_check(chest.holder_count() == 2, "Two movers take the chest on the forecastle")
 	var route_ok: bool = true
-	for target: Vector2 in [Vector2(19, 3.8), Vector2(19, 6), Vector2(14, 6), Vector2(14, 8), Vector2(14, 16)]:
+	for target: Vector2 in [Vector2(19.6, 8.9), Vector2(12, 8.9), Vector2(12, 11.3), Vector2(12, 18)]:
 		route_ok = await _carry_chest(chest, target) and route_ok
-		if not is_instance_valid(chest) or chest.holder_count() < 2:
+		if not route_ok or not is_instance_valid(chest) or chest.holder_count() < 2:
+			print("Chest stopped at ", chest.position if is_instance_valid(chest) else "freed", " aiming for ", target)
 			break
-	_check(route_ok and is_instance_valid(chest) and chest.holder_count() == 2, "Two movers carry the chest from the hold, turn and cross the 2.2 m plank")
+	_check(route_ok and is_instance_valid(chest) and chest.holder_count() == 2, "Two movers carry the chest down the forecastle steps, turn and cross the 2.2 m plank")
 	if is_instance_valid(chest):
 		var before: int = arena.truck.banked_items
 		for slot: int in [0, 1]:
@@ -155,8 +156,8 @@ func _carry_chest(chest: Loot, target: Vector2) -> bool:
 # --- Wind and rescue ---
 # --- Deck sway ---
 func _check_sway() -> void:
-	var light := _loot("bottle", Vector2(19.5, 2.5))
-	var chest := _loot("chest", Vector2(7.0, 2.0))
+	var light := _loot("bottle", Vector2(17.5, 3.5))
+	var chest := _loot("chest", Vector2(24.3, 6.0))
 	await _frames(40)
 	var light_start: Vector3 = light.position
 	var chest_start: Vector3 = chest.position
@@ -212,8 +213,8 @@ func _check_captain() -> void:
 
 
 func _check_wind() -> void:
-	_place(0, Vector2(14, 8))
-	_place(1, Vector2(11, 8))
+	_place(0, Vector2(17, 8))
+	_place(1, Vector2(14, 8.2))
 	world.set_ghost_slot(3)
 	var ghost: Node3D = world.ghost
 	ghost.demo_rules = true
@@ -226,14 +227,14 @@ func _check_wind() -> void:
 	_set_input(1, Vector2(0, 1))
 	await _frames(80)
 	_check(world.movers[1].is_tumbling(), "Walking with the gust tumbles a mover")
-	_check(not world.movers[0].is_tumbling() and world.movers[0].position.distance_to(Vector3(14, 0.8, 8)) < 0.3, "Bracing holds a mover against the gust")
+	_check(not world.movers[0].is_tumbling() and world.movers[0].position.distance_to(Vector3(17, 0.8, 8)) < 0.3, "Bracing holds a mover against the gust")
 	_set_input(0, Vector2(-1, 0))
 	await _frames(20)
 	_check(not world.movers[0].is_tumbling(), "Walking across the gust is a valid counter")
 	await _frames(160)
 	_check(not arena.wind_active, "Wind ends and clears its effect")
 	world.set_ghost_slot(-1)
-	_place(0, Vector2(14, 8))
+	_place(0, Vector2(17, 8))
 	_set_input(0, Vector2.ZERO)
 	arena.wind_direction = Vector3.BACK
 	arena.wind_active = true
@@ -243,9 +244,9 @@ func _check_wind() -> void:
 
 
 func _check_overboard() -> void:
-	_place(0, Vector2(14, 11.5))
+	_place(0, Vector2(12, 13.8))
 	var mover: CharacterBody3D = world.movers[0]
-	mover.position.x = 16.0
+	mover.position.x = 14.5
 	await _frames(65)
 	_check(arena.rescues.has(0) and not mover.in_play, "Falling off the unrailed plank starts a tug rescue")
 	var left: float = arena.rescues.get(0, {}).get("left", 0)
@@ -254,16 +255,16 @@ func _check_overboard() -> void:
 	_check(is_equal_approx(arena.rescues.get(0, {}).get("left", 0), left), "Rescue countdown pauses with arena simulation")
 	arena.process_mode = Node.PROCESS_MODE_INHERIT
 	await _frames(150)
-	_check(mover.in_play and mover.position.y > 0 and mover.position.z > 13.6 and mover.held_item == null, "Mover returns to the tug empty-handed after two seconds")
+	_check(mover.in_play and mover.position.y > 0 and mover.position.z > 15.8 and mover.held_item == null, "Mover returns to the tug empty-handed after two seconds")
 	# A forced release inside the zone still cannot bank an item.
-	var forced := _loot("compass", Vector2(14, 16))
+	var forced := _loot("compass", Vector2(12, 18))
 	forced.try_grab(mover, mover.hold_point, 0)
 	mover.held_item = forced
 	var banked_before: int = arena.truck.banked_items
 	arena._begin_rescue(mover)
 	_check(arena.truck.banked_items == banked_before and not forced.is_held(), "Rescue drops cannot accidentally deliver held loot")
 	forced.queue_free()
-	var item := _loot("compass", Vector2(16, 12))
+	var item := _loot("compass", Vector2(14.5, 13.8))
 	item.position.y = SETTINGS.SHIP_WATER_Y - 0.1
 	var item_ref: WeakRef = weakref(item)
 	await _frames(3)

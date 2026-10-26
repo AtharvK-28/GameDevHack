@@ -1,122 +1,57 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 900" width="1240" height="900" font-family="Helvetica, Arial, sans-serif">
-<title>Ghost Ship proposed deck plan v1</title><desc>One grid square is one metre, 30 pixels. Origin at the aft port corner. X increases toward the bow at right; Z increases toward the tug at bottom; Y is height. Proposed dimensions, not implemented.</desc>
-<defs><pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M30 0H0V30" fill="none" stroke="#cddae1" stroke-width="1" /></pattern><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#b16913" /></marker></defs>
-<rect width="1240" height="900" fill="#fff" />
-<text x="60" y="34" font-size="23" font-weight="bold" fill="#252333">Ghost Ship — proposed deck plan v1</text>
-<text x="60" y="58" font-size="13" fill="#5b6570">Top-down · 1 square = 1 m · bow right · camera / salvage tug at bottom · all dimensions are clear walkable space</text>
-<rect x="30" y="90" width="870" height="600" rx="16" fill="#edf5fa" />
-<rect x="60" y="90" width="840" height="600" fill="url(#grid)" />
-<path id="visual-hull" d="M60 78 L780 78 Q840 100 885 240 Q840 380 780 402 L60 402 Q35 240 60 78Z" fill="#b9c4cc" stroke="#566577" stroke-width="3" />
-
-<g id="room-quarterdeck" data-x="0" data-z="0" data-w="5" data-d="10" data-y="1.2"><rect x="60" y="90" width="150" height="300" fill="#e7e0f6" stroke="#5b6170" stroke-width="1.5" /></g>
-<g id="room-main-deck" data-x="5" data-z="0" data-w="16" data-d="10" data-y="0" data-exclude="room-cargo-hold area-hold-ramp"><rect x="210" y="90" width="480" height="300" fill="#f6eedb" stroke="#5b6170" stroke-width="1.5" /></g>
-<g id="room-forecastle" data-x="21" data-z="0" data-w="5" data-d="10" data-y="0.8"><rect x="690" y="90" width="150" height="300" fill="#e7e0f6" stroke="#5b6170" stroke-width="1.5" /></g>
-<g id="room-cargo-hold" data-x="9" data-z="1" data-w="5" data-d="4" data-y="-1.2"><rect x="330" y="120" width="150" height="120" fill="#d3e7f5" stroke="#5b6170" stroke-width="1.5" /></g>
-<g id="area-hold-ramp" data-x="14" data-z="1" data-w="3" data-d="4" data-y="-1.2" data-rise="1.2" data-up="+x"><rect x="480" y="120" width="90" height="120" fill="#eee" stroke="#5b6170" stroke-width="1.5" /></g>
-<g id="area-quarterdeck-ramp" data-x="5" data-z="7" data-w="4" data-d="3" data-y="0" data-rise="1.2" data-up="-x"><rect x="210" y="300" width="120" height="90" fill="#eee" stroke="#5b6170" stroke-width="1.5" /></g>
-<g id="area-forecastle-ramp" data-x="17" data-z="7" data-w="4" data-d="3" data-y="0" data-rise="0.8" data-up="+x"><rect x="570" y="300" width="120" height="90" fill="#eee" stroke="#5b6170" stroke-width="1.5" /></g>
-<g id="area-turning-pad-main" data-x="11.9" data-z="6" data-w="4" data-d="4" data-y="0"><rect x="417.0" y="270" width="120" height="120" fill="#fff9e9" stroke="#5b6170" stroke-width="1.5" /></g>
-<g id="area-gangplank" data-x="12.9" data-z="10" data-w="2.2" data-d="3.6" data-y="0" data-railings="false"><rect x="447.0" y="390" width="66.0" height="108.0" fill="#d8b587" stroke="#5b6170" stroke-width="1.5" /></g>
-<g id="room-salvage-tug" data-x="10" data-z="13.6" data-w="8" data-d="5" data-y="0"><rect x="360" y="498.0" width="240" height="150" fill="#ffe7c7" stroke="#5b6170" stroke-width="1.5" /></g>
-<g id="area-turning-pad-tug" data-x="12" data-z="13.6" data-w="4" data-d="4" data-y="0"><rect x="420" y="498.0" width="120" height="120" fill="#fff9e9" stroke="#5b6170" stroke-width="1.5" /></g>
-<g id="area-delivery-zone" data-x="12" data-z="14.6" data-w="4" data-d="3" data-y="0" data-delivery="release-only"><rect x="420" y="528.0" width="120" height="90" fill="#ffd87a" stroke="#5b6170" stroke-width="1.5" /></g>
-<path d="M60 390H447 M513 390H840 M60 90H840" fill="none" stroke="#545666" stroke-width="5" />
-<text x="135.0" y="180.0" text-anchor="middle" fill="#343449" font-size="14" font-weight="bold">QUARTERDECK</text>
-<text x="135.0" y="198.0" text-anchor="middle" fill="#343449" font-size="14" font-weight="normal">5 × 10 m</text>
-<text x="135.0" y="216.0" text-anchor="middle" fill="#343449" font-size="14" font-weight="normal">floor +1.2 m</text>
-<text x="765.0" y="180" text-anchor="middle" fill="#343449" font-size="14" font-weight="bold">FORECASTLE</text>
-<text x="765.0" y="198" text-anchor="middle" fill="#343449" font-size="14" font-weight="normal">5 × 10 m</text>
-<text x="765.0" y="216" text-anchor="middle" fill="#343449" font-size="14" font-weight="normal">floor +0.8 m</text>
-<text x="405" y="159.0" text-anchor="middle" fill="#343449" font-size="12" font-weight="bold">OPEN CARGO HOLD</text>
-<text x="405" y="177.0" text-anchor="middle" fill="#343449" font-size="12" font-weight="normal">5 × 4 m</text>
-<text x="405" y="195.0" text-anchor="middle" fill="#343449" font-size="12" font-weight="normal">floor −1.2 m; no roof</text>
-<text x="525" y="165.0" text-anchor="middle" fill="#343449" font-size="12" font-weight="bold">RAMP →</text>
-<text x="525" y="183.0" text-anchor="middle" fill="#343449" font-size="12" font-weight="normal">3 m run</text>
-<text x="525" y="201.0" text-anchor="middle" fill="#343449" font-size="12" font-weight="normal">4 m wide</text>
-<text x="270" y="333.0" text-anchor="middle" fill="#343449" font-size="12" font-weight="bold">← UP</text>
-<text x="270" y="351.0" text-anchor="middle" fill="#343449" font-size="12" font-weight="normal">3 m wide</text>
-<text x="630" y="333.0" text-anchor="middle" fill="#343449" font-size="12" font-weight="bold">UP →</text>
-<text x="630" y="351.0" text-anchor="middle" fill="#343449" font-size="12" font-weight="normal">3 m wide</text>
-<text x="450" y="110" text-anchor="middle" fill="#343449" font-size="13" font-weight="bold">MAIN DECK · floor 0</text>
-<text x="480" y="300.0" text-anchor="middle" fill="#343449" font-size="11" font-weight="bold">TURN</text>
-<text x="480" y="318.0" text-anchor="middle" fill="#343449" font-size="11" font-weight="normal">4 × 4 m</text>
-<text x="480" y="429.0" text-anchor="middle" fill="#343449" font-size="11" font-weight="bold">2.2 m</text>
-<text x="480" y="447.0" text-anchor="middle" fill="#343449" font-size="11" font-weight="normal">clear</text>
-<text x="624.0" y="426.0" text-anchor="middle" fill="#a85032" font-size="12" font-weight="bold">3.6 m crossing</text>
-<text x="624.0" y="444.0" text-anchor="middle" fill="#a85032" font-size="12" font-weight="normal">NO RAILINGS</text>
-<text x="480" y="558.0" text-anchor="middle" fill="#343449" font-size="12" font-weight="bold">DELIVER ON TUG</text>
-<text x="480" y="576.0" text-anchor="middle" fill="#343449" font-size="12" font-weight="normal">Release GRAB</text>
-<text x="480" y="594.0" text-anchor="middle" fill="#343449" font-size="12" font-weight="normal">4 × 3 m zone</text>
-<text x="480" y="670.5" text-anchor="middle" fill="#343449" font-size="13" font-weight="bold">SASTA SALVAGE TUG · 8 × 5 m</text>
-<path d="M405 204H630V270H480V535" fill="none" stroke="#b16913" stroke-width="3" stroke-dasharray="8 5" marker-end="url(#arrow)" />
-<g id="spawn-Q1" data-x="1.1" data-z="1" data-w="1" data-d="1" data-y="1.2" data-size="M"><circle cx="93.0" cy="120" r="8" fill="#ffd04a" stroke="#866525" /><text x="93.0" y="108" text-anchor="middle" font-size="10" fill="#65512b">Q1</text></g>
-<g id="spawn-Q2" data-x="3.8" data-z="1" data-w="1" data-d="1" data-y="1.2" data-size="M"><circle cx="174.0" cy="120" r="8" fill="#ffd04a" stroke="#866525" /><text x="174.0" y="108" text-anchor="middle" font-size="10" fill="#65512b">Q2</text></g>
-<g id="spawn-Q3" data-x="1" data-z="5.2" data-w="0.6" data-d="0.6" data-y="1.2" data-size="S"><circle cx="90" cy="246.0" r="8" fill="#ffd04a" stroke="#866525" /><text x="90" y="234.0" text-anchor="middle" font-size="10" fill="#65512b">Q3</text></g>
-<g id="spawn-Q4" data-x="3.8" data-z="5.2" data-w="0.6" data-d="0.6" data-y="1.2" data-size="S"><circle cx="174.0" cy="246.0" r="8" fill="#ffd04a" stroke="#866525" /><text x="174.0" y="234.0" text-anchor="middle" font-size="10" fill="#65512b">Q4</text></g>
-<g id="spawn-Q5" data-x="1" data-z="8.7" data-w="1" data-d="1" data-y="1.2" data-size="M"><circle cx="90" cy="351.0" r="8" fill="#ffd04a" stroke="#866525" /><text x="90" y="339.0" text-anchor="middle" font-size="10" fill="#65512b">Q5</text></g>
-<g id="spawn-H1" data-x="11.5" data-z="3.8" data-w="2" data-d="1.2" data-y="-1.2" data-size="XL"><circle cx="405.0" cy="204.0" r="8" fill="#ffd04a" stroke="#866525" /><text x="405.0" y="192.0" text-anchor="middle" font-size="10" fill="#65512b">H1</text></g>
-<g id="spawn-H2" data-x="13.2" data-z="1.8" data-w="1" data-d="1" data-y="-1.2" data-size="M"><circle cx="456.0" cy="144.0" r="8" fill="#ffd04a" stroke="#866525" /><text x="456.0" y="132.0" text-anchor="middle" font-size="10" fill="#65512b">H2</text></g>
-<g id="spawn-H3" data-x="9.8" data-z="1.8" data-w="1" data-d="1" data-y="-1.2" data-size="M"><circle cx="354.0" cy="144.0" r="8" fill="#ffd04a" stroke="#866525" /><text x="354.0" y="132.0" text-anchor="middle" font-size="10" fill="#65512b">H3</text></g>
-<g id="spawn-H4" data-x="11.5" data-z="1.6" data-w="0.6" data-d="0.6" data-y="-1.2" data-size="S"><circle cx="405.0" cy="138.0" r="8" fill="#ffd04a" stroke="#866525" /><text x="405.0" y="126.0" text-anchor="middle" font-size="10" fill="#65512b">H4</text></g>
-<g id="spawn-M1" data-x="6.2" data-z="1.2" data-w="1" data-d="1" data-y="0" data-size="M"><circle cx="246.0" cy="126.0" r="8" fill="#ffd04a" stroke="#866525" /><text x="246.0" y="114.0" text-anchor="middle" font-size="10" fill="#65512b">M1</text></g>
-<g id="spawn-M2" data-x="8.5" data-z="1.2" data-w="1" data-d="1" data-y="0" data-size="M"><circle cx="315.0" cy="126.0" r="8" fill="#ffd04a" stroke="#866525" /><text x="315.0" y="114.0" text-anchor="middle" font-size="10" fill="#65512b">M2</text></g>
-<g id="spawn-M3" data-x="6.2" data-z="4.5" data-w="0.6" data-d="0.6" data-y="0" data-size="S"><circle cx="246.0" cy="225.0" r="8" fill="#ffd04a" stroke="#866525" /><text x="246.0" y="213.0" text-anchor="middle" font-size="10" fill="#65512b">M3</text></g>
-<g id="spawn-M4" data-x="9.8" data-z="9.3" data-w="0.6" data-d="0.6" data-y="0" data-size="S"><circle cx="354.0" cy="369.0" r="8" fill="#ffd04a" stroke="#866525" /><text x="354.0" y="357.0" text-anchor="middle" font-size="10" fill="#65512b">M4</text></g>
-<g id="spawn-M5" data-x="8.2" data-z="4.4" data-w="0.6" data-d="0.6" data-y="0" data-size="S"><circle cx="306.0" cy="222.0" r="8" fill="#ffd04a" stroke="#866525" /><text x="306.0" y="210.0" text-anchor="middle" font-size="10" fill="#65512b">M5</text></g>
-<g id="spawn-F1" data-x="22" data-z="1" data-w="1" data-d="1" data-y="0.8" data-size="M"><circle cx="720" cy="120" r="8" fill="#ffd04a" stroke="#866525" /><text x="720" y="108" text-anchor="middle" font-size="10" fill="#65512b">F1</text></g>
-<g id="spawn-F2" data-x="24.6" data-z="1" data-w="0.6" data-d="0.6" data-y="0.8" data-size="S"><circle cx="798.0" cy="120" r="8" fill="#ffd04a" stroke="#866525" /><text x="798.0" y="108" text-anchor="middle" font-size="10" fill="#65512b">F2</text></g>
-<g id="spawn-F3" data-x="24.6" data-z="5.4" data-w="0.6" data-d="0.6" data-y="0.8" data-size="S"><circle cx="798.0" cy="252.0" r="8" fill="#ffd04a" stroke="#866525" /><text x="798.0" y="240.0" text-anchor="middle" font-size="10" fill="#65512b">F3</text></g>
-<g id="spawn-F4" data-x="24.6" data-z="8.8" data-w="0.6" data-d="0.6" data-y="0.8" data-size="S"><circle cx="798.0" cy="354.0" r="8" fill="#ffd04a" stroke="#866525" /><text x="798.0" y="342.0" text-anchor="middle" font-size="10" fill="#65512b">F4</text></g>
-<g id="furniture-slider" data-x="7.5" data-z="3"><rect x="278.0" y="173" width="14" height="14" fill="#9c80c4" stroke="#57416d" /><text x="296.0" y="184" font-size="9" fill="#57416d">SLIDER</text></g>
-<g id="furniture-hopper" data-x="22" data-z="5"><rect x="713" y="233" width="14" height="14" fill="#9c80c4" stroke="#57416d" /><text x="731" y="244" font-size="9" fill="#57416d">HOPPER</text></g>
-<g id="furniture-door" data-x="23" data-z="7"><rect x="743" y="293" width="14" height="14" fill="#9c80c4" stroke="#57416d" /><text x="761" y="304" font-size="9" fill="#57416d">DOOR</text></g>
-<g id="furniture-dropper" data-x="9" data-z="5.4"><rect x="323" y="245.0" width="14" height="14" fill="#9c80c4" stroke="#57416d" /><text x="341" y="256.0" font-size="9" fill="#57416d">DROPPER</text></g>
-<g id="furniture-tarp" data-x="7" data-z="5.8"><rect x="263" y="257.0" width="14" height="14" fill="#9c80c4" stroke="#57416d" /><text x="281" y="268.0" font-size="9" fill="#57416d">TARP</text></g>
-<text x="60" y="84" text-anchor="middle" font-size="10" fill="#566577">0</text>
-<text x="210" y="84" text-anchor="middle" font-size="10" fill="#566577">5</text>
-<text x="360" y="84" text-anchor="middle" font-size="10" fill="#566577">10</text>
-<text x="510" y="84" text-anchor="middle" font-size="10" fill="#566577">15</text>
-<text x="660" y="84" text-anchor="middle" font-size="10" fill="#566577">20</text>
-<text x="810" y="84" text-anchor="middle" font-size="10" fill="#566577">25</text>
-<text x="23" y="94" text-anchor="end" font-size="10" fill="#566577">0</text>
-<text x="23" y="244" text-anchor="end" font-size="10" fill="#566577">5</text>
-<text x="23" y="394" text-anchor="end" font-size="10" fill="#566577">10</text>
-<text x="23" y="544" text-anchor="end" font-size="10" fill="#566577">15</text>
-<text x="23" y="694" text-anchor="end" font-size="10" fill="#566577">20</text>
-<text x="930" y="110" font-size="13" font-weight="bold" fill="#343449">THE PLAY ROUTE</text>
-<text x="930" y="133" font-size="12" fill="#5b6570">Chest begins in the open hold.</text>
-<text x="930" y="150" font-size="12" fill="#5b6570">Carry up the wide ramp, turn</text>
-<text x="930" y="167" font-size="12" fill="#5b6570">on the main deck, then cross</text>
-<text x="930" y="184" font-size="12" fill="#5b6570">lengthwise: one mover ahead,</text>
-<text x="930" y="201" font-size="12" fill="#5b6570">one behind. No side-by-side</text>
-<text x="930" y="218" font-size="12" fill="#5b6570">squeeze is required.</text>
-<text x="930" y="262" font-size="13" font-weight="bold" fill="#343449">HEIGHTS / EDGES</text>
-<text x="930" y="285" font-size="12" fill="#5b6570">Deck 0 m; water −2.4 m.</text>
-<text x="930" y="302" font-size="12" fill="#5b6570">Hold −1.2 m; aft +1.2 m;</text>
-<text x="930" y="319" font-size="12" fill="#5b6570">bow +0.8 m. Ramps are solid.</text>
-<text x="930" y="336" font-size="12" fill="#5b6570">Front bulwarks: 0.7 m high.</text>
-<text x="930" y="353" font-size="12" fill="#5b6570">Gangplank edges stay open.</text>
-<text x="930" y="397" font-size="13" font-weight="bold" fill="#343449">FIVE PROGRESS ZONES</text>
-<text x="930" y="420" font-size="12" fill="#5b6570">Quarterdeck / Main deck /</text>
-<text x="930" y="437" font-size="12" fill="#5b6570">Cargo hold / Forecastle / Tug.</text>
-<text x="930" y="454" font-size="12" fill="#5b6570">The hold is its own room;</text>
-<text x="930" y="471" font-size="12" fill="#5b6570">zones resolve by floor height.</text>
-<text x="930" y="515" font-size="13" font-weight="bold" fill="#343449">CAMERA / READABILITY</text>
-<text x="930" y="538" font-size="12" fill="#5b6570">55° pitch; Ship yaw −20°.</text>
-<text x="930" y="555" font-size="12" fill="#5b6570">Follow distance 12–26 m.</text>
-<text x="930" y="572" font-size="12" fill="#5b6570">Masts and sails stay behind</text>
-<text x="930" y="589" font-size="12" fill="#5b6570">play or fade when obstructing.</text>
-<text x="930" y="606" font-size="12" fill="#5b6570">No green environmental glow.</text>
-<text x="930" y="650" font-size="13" font-weight="bold" fill="#343449">LEGEND</text>
-<text x="930" y="673" font-size="12" fill="#5b6570">Gold circles: loot spawn spots.</text>
-<text x="930" y="690" font-size="12" fill="#5b6570">Purple squares: hauntable props.</text>
-<text x="930" y="707" font-size="12" fill="#5b6570">Dashed amber: chest route.</text>
-<text x="930" y="724" font-size="12" fill="#5b6570">Grey hull: visual shell only.</text>
-<text x="930" y="741" font-size="12" fill="#5b6570">All geometry is proposed.</text>
-<path d="M60 750H210 M60 744V756 M210 744V756" stroke="#343449" stroke-width="2" />
-<text x="135" y="775" text-anchor="middle" font-size="12" fill="#343449">5 metres</text>
-<text x="270" y="752" font-size="13" fill="#343449">Loot tags: S ≤ 0.6 × 0.6 m · M ≤ 1 × 1 m · XL chest 2 × 1.2 m</text>
-<text x="270" y="775" font-size="12" fill="#5b6570">Turning pads are clear of spawns and decorations. Exact collision clearances will be tested in Godot.</text>
-<text x="60" y="828" font-size="13" fill="#343449">Proposed mover overboard rule: release item on falling in → 2 s rescue → return to a clear tug spawn.</text>
-<text x="60" y="851" font-size="12" fill="#5b6570">World physics stays still. Only sails, ropes, distant creatures and cosmetic hull accents animate.</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 720" width="1000" height="720" font-family="Helvetica, Arial, sans-serif">
+<title>Ghost Ship deck plan v2</title><desc>Fitted to Kenney ship-pirate-large at 2.5x plan scale (decision 107). One metre is 30 px; x toward the bow at right, z toward the tug at bottom.</desc>
+<rect width="1000" height="720" fill="#dfeaf0"/>
+<rect x="73" y="88" width="152" height="264" fill="#c9a77c" stroke="#333" stroke-width="1"/><text x="149" y="224" font-size="12" text-anchor="middle">stern castle +1.4</text>
+<rect x="300" y="88" width="298" height="264" fill="#e8d3b0" stroke="#333" stroke-width="1"/><text x="449" y="224" font-size="12" text-anchor="middle">main deck 0</text>
+<rect x="277" y="144" width="22" height="153" fill="#e8d3b0" stroke="#333" stroke-width="1"/>
+<rect x="598" y="162" width="75" height="112" fill="#e8d3b0" stroke="#333" stroke-width="1"/>
+<rect x="367" y="352" width="66" height="54" fill="#e8d3b0" stroke="#333" stroke-width="1"/>
+<polygon points="658,88 727,88 907,198 907,242 727,352 658,352" fill="#d8b88c" stroke="#333"/><text x="760" y="224" font-size="12" text-anchor="middle">forecastle +0.7</text>
+<rect x="367" y="406" width="66" height="108" fill="#e8d3b0" stroke="#333" stroke-width="1"/><text x="400" y="464" font-size="12" text-anchor="middle">plank</text>
+<rect x="280" y="514" width="240" height="150" fill="#f2b36b" stroke="#333" stroke-width="1"/><text x="400" y="593" font-size="12" text-anchor="middle">salvage tug</text>
+<rect x="224" y="296" width="75" height="55" fill="#b9c7a0" stroke="#333" stroke-width="1"/><text x="262" y="328" font-size="12" text-anchor="middle">steps</text>
+<rect x="224" y="88" width="75" height="56" fill="#b9c7a0" stroke="#333" stroke-width="1"/><text x="262" y="120" font-size="12" text-anchor="middle">steps</text>
+<rect x="598" y="274" width="60" height="78" fill="#b9c7a0" stroke="#333" stroke-width="1"/><text x="628" y="317" font-size="12" text-anchor="middle">steps</text>
+<rect x="598" y="88" width="60" height="74" fill="#b9c7a0" stroke="#333" stroke-width="1"/><text x="628" y="129" font-size="12" text-anchor="middle">steps</text>
+<rect x="224" y="144" width="52" height="153" fill="#6b5a4e" stroke="#333" stroke-width="1"/>
+<rect x="673" y="162" width="38" height="112" fill="#6b5a4e" stroke="#333" stroke-width="1"/>
+<rect x="118" y="208" width="24" height="24" fill="#6b5a4e" stroke="#333" stroke-width="1"/>
+<rect x="490" y="205" width="30" height="30" fill="#6b5a4e" stroke="#333" stroke-width="1"/>
+<rect x="835" y="208" width="24" height="24" fill="#6b5a4e" stroke="#333" stroke-width="1"/>
+<rect x="340" y="544" width="120" height="90" fill="#ffcf6b" stroke="#333" stroke-width="1"/><text x="400" y="593" font-size="12" text-anchor="middle">SALVAGE</text>
+<line x1="73.0" y1="88.0" x2="73.0" y2="352.0" stroke="#7a2e1f" stroke-width="4"/>
+<line x1="73.0" y1="88.0" x2="224.5" y2="88.0" stroke="#7a2e1f" stroke-width="4"/>
+<line x1="73.0" y1="352.0" x2="224.5" y2="352.0" stroke="#7a2e1f" stroke-width="4"/>
+<line x1="224.5" y1="88.0" x2="299.5" y2="88.0" stroke="#7a2e1f" stroke-width="4"/>
+<line x1="224.5" y1="352.0" x2="299.5" y2="352.0" stroke="#7a2e1f" stroke-width="4"/>
+<line x1="299.5" y1="88.0" x2="598.0" y2="88.0" stroke="#7a2e1f" stroke-width="4"/>
+<line x1="299.5" y1="352.0" x2="367.0" y2="352.0" stroke="#7a2e1f" stroke-width="4"/>
+<line x1="433.0" y1="352.0" x2="598.0" y2="352.0" stroke="#7a2e1f" stroke-width="4"/>
+<line x1="367.0" y1="352.0" x2="367.0" y2="406.0" stroke="#7a2e1f" stroke-width="4"/>
+<line x1="433.0" y1="352.0" x2="433.0" y2="406.0" stroke="#7a2e1f" stroke-width="4"/>
+<line x1="598.0" y1="88.0" x2="658.0" y2="88.0" stroke="#7a2e1f" stroke-width="4"/>
+<line x1="598.0" y1="352.0" x2="658.0" y2="352.0" stroke="#7a2e1f" stroke-width="4"/>
+<line x1="658.0" y1="88.0" x2="727.0" y2="88.0" stroke="#7a2e1f" stroke-width="4"/>
+<line x1="658.0" y1="352.0" x2="727.0" y2="352.0" stroke="#7a2e1f" stroke-width="4"/>
+<line x1="727.0" y1="88.0" x2="907.0" y2="197.5" stroke="#7a2e1f" stroke-width="4"/>
+<line x1="727.0" y1="352.0" x2="907.0" y2="242.5" stroke="#7a2e1f" stroke-width="4"/>
+<line x1="907.0" y1="197.5" x2="907.0" y2="242.5" stroke="#7a2e1f" stroke-width="4"/>
+<circle cx="100.0" cy="118.0" r="5" fill="#2a6fdb"/>
+<circle cx="190.0" cy="118.0" r="5" fill="#2a6fdb"/>
+<circle cx="94.0" cy="220.0" r="5" fill="#2a6fdb"/>
+<circle cx="178.0" cy="220.0" r="5" fill="#2a6fdb"/>
+<circle cx="172.0" cy="310.0" r="5" fill="#2a6fdb"/>
+<circle cx="472.0" cy="109.0" r="5" fill="#2a6fdb"/>
+<circle cx="562.0" cy="109.0" r="5" fill="#2a6fdb"/>
+<circle cx="547.0" cy="322.0" r="5" fill="#2a6fdb"/>
+<circle cx="328.0" cy="112.0" r="5" fill="#2a6fdb"/>
+<circle cx="376.0" cy="112.0" r="5" fill="#2a6fdb"/>
+<circle cx="466.0" cy="181.0" r="5" fill="#2a6fdb"/>
+<circle cx="580.0" cy="178.0" r="5" fill="#2a6fdb"/>
+<circle cx="580.0" cy="268.0" r="5" fill="#2a6fdb"/>
+<circle cx="769.0" cy="220.0" r="5" fill="#2a6fdb"/>
+<circle cx="730.0" cy="118.0" r="5" fill="#2a6fdb"/>
+<circle cx="745.0" cy="316.0" r="5" fill="#2a6fdb"/>
+<circle cx="814.0" cy="283.0" r="5" fill="#2a6fdb"/>
+<circle cx="814.0" cy="157.0" r="5" fill="#2a6fdb"/>
 </svg>

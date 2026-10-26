@@ -552,16 +552,28 @@ static func _set_world_layers(body: StaticBody3D) -> void:
 static func _build_deck_layout(arena: Node3D, layout: Dictionary) -> Area3D:
 	# Separate slabs leave the lower hold and ramp openings empty; there is no ocean collider.
 	for floor_data: Dictionary in layout.floors:
-		var floor_rect: Rect2 = rect_of(floor_data.rect)
-		# Hull decks are solid blocks down to a shared base, so a step never shows open sky underneath and
-		# the deck around the hold forms its walls. The gangplank and the tug stay thin slabs over water.
+		# Hull decks are solid blocks down to a shared base, so a step never shows open sky underneath.
+		# The gangplank and the tug stay thin slabs over water. A "polygon" floor follows a tapering bow.
 		var solid: bool = floor_data.get("solid", false)
 		var bottom: float = Balance.SHIP_DECK_BASE if solid else floor_data.floor - Balance.SHIP_DECK_THICKNESS
-		_solid_box(arena, floor_data.id, _box_from_rect(floor_rect, bottom, floor_data.floor - bottom), _surface(floor_data.surface))
+		if floor_data.has("polygon"):
+			_build_deck_polygon(arena, floor_data, bottom)
+		else:
+			_solid_box(arena, floor_data.id, _box_from_rect(rect_of(floor_data.rect), bottom, floor_data.floor - bottom), _surface(floor_data.surface))
 	for ramp_data: Dictionary in layout.ramps:
 		_build_deck_ramp(arena, ramp_data)
+	# Rails come from the ship model, so barriers and obstacles (castle wall, hatch coaming, masts) only collide.
 	for barrier: Dictionary in layout.barriers:
-		_solid_box(arena, barrier.id, _segment_box(barrier.from, barrier.to, barrier.floor, barrier.floor + Balance.SHIP_BULWARK_HEIGHT, Balance.SHIP_BULWARK_WIDTH), _surface("wood_planks"))
+		# An oriented slab along the line, so the bow's diagonal rails follow the hull instead of boxing it in.
+		var height: float = barrier.get("height", Balance.SHIP_BULWARK_HEIGHT)
+		var middle: float = barrier.floor + height / 2.0
+		var body := StaticBody3D.new()
+		body.name = barrier.id
+		_set_world_layers(body)
+		arena.add_child(body)
+		_add_slab_shape(body, Vector3(barrier.from[0], middle, barrier.from[1]), Vector3(barrier.to[0], middle, barrier.to[1]), height, Balance.SHIP_BULWARK_WIDTH)
+	for obstacle: Dictionary in layout.get("obstacles", []):
+		_hidden_box(arena, obstacle.id, _box_from_rect(rect_of(obstacle.rect), Balance.SHIP_DECK_BASE, obstacle.top - Balance.SHIP_DECK_BASE))
 	for room: Dictionary in layout.rooms:
 		var zone := Area3D.new()
 		zone.name = room.id
@@ -587,6 +599,50 @@ static func _build_deck_layout(arena: Node3D, layout: Dictionary) -> Area3D:
 	zone.position = Vector3(delivery_rect.get_center().x, delivery.floor, delivery_rect.get_center().y)
 	arena.add_child(zone)
 	return zone
+
+
+static func _hidden_box(arena: Node3D, node_name: String, box: AABB) -> void:
+	var body := StaticBody3D.new()
+	body.name = node_name
+	_set_world_layers(body)
+	_add_box_shape(body, box)
+	arena.add_child(body)
+
+
+static func _build_deck_polygon(arena: Node3D, floor_data: Dictionary, bottom: float) -> void:
+	# A convex deck outline extruded from its floor down to the base, for the narrowing forecastle.
+	var outline: PackedVector2Array = polygon_of(floor_data.polygon)
+	var points := PackedVector3Array()
+	for corner: Vector2 in outline:
+		points.append(Vector3(corner.x, floor_data.floor, corner.y))
+		points.append(Vector3(corner.x, bottom, corner.y))
+	var body := StaticBody3D.new()
+	body.name = floor_data.id
+	_set_world_layers(body)
+	arena.add_child(body)
+	var shape := ConvexPolygonShape3D.new()
+	shape.points = points
+	var collision := CollisionShape3D.new()
+	collision.shape = shape
+	body.add_child(collision)
+	var surface := SurfaceTool.new()
+	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for index: int in range(1, outline.size() - 1):
+		for corner: Vector2 in [outline[0], outline[index + 1], outline[index]]:
+			surface.set_uv(corner)
+			surface.add_vertex(Vector3(corner.x, floor_data.floor, corner.y))
+	surface.generate_normals()
+	var mesh := MeshInstance3D.new()
+	mesh.mesh = surface.commit()
+	mesh.material_override = _surface(floor_data.surface)
+	body.add_child(mesh)
+
+
+static func polygon_of(values: Array) -> PackedVector2Array:
+	var outline := PackedVector2Array()
+	for corner: Array in values:
+		outline.append(Vector2(corner[0], corner[1]))
+	return outline
 
 
 static func _build_deck_ramp(arena: Node3D, ramp: Dictionary) -> void:
