@@ -172,4 +172,19 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
   on the three Kenney pirate props that were rendering salmon and powder blue.
 - [x] Reference-water comparison done: the project's own shader is kept; the MIT reference renders as ice floes
   without the author's own (non-MIT) textures, so it and its licence file were removed from `assets/`.
+- [x] Davy Jones replaced by an original drowned captain built from shapes (decision 103, 2026-10-26); the rip and
+  its textures are deleted. Ship check passes 60 (captain checks rewritten: built body, per-part colours, no shadow,
+  faces +Z travel, tumble) and ghost check 128. Portraits at three angles rendered with the Mobile renderer and inspected.
 - [ ] Human 2/3/4-phone Ship playtest.
+
+## Ghost Ship expansion (decision 104, for the 2 Nov presentation)
+
+- [x] 1. Original captain replaces Davy Jones
+- [ ] 2. Light the Lanterns map task
+- [ ] 3. Ship intro comic
+- [ ] 4. Human 2/3/4-phone playtest and tuning
+- [ ] 5. Deck sway
+- [ ] 6. Rolling barrel hazard
+- [ ] 7. Waves over the gangplank
+- [ ] 8. Ship audio pass
+- [ ] 9. Fog banks

@@ -637,26 +637,25 @@ At the fixed water plane (-2.4 m), loot is lost once through the normal loss/sco
 ShipDressing and ShipEnvironment remain separate from generated floors. Green environmental glow is prohibited. Kenney Pirate Kit 2.1 CC0 is the main source; the supplied combined Quaternius GLB is excluded because its embedded Standard provenance differs from the original pack's CC0 listing. Sea audio sources are individually credited. Rendering budgets: at most about 400000 displayed triangles, 350 draw calls, 5000 triangles per prop and 60000 for hull/masts/sails; one shadow-casting moon, eight shadowless omnis at most; dense 60 x 60 m near ocean and sparse outer ocean faded into fog. Checks and measured review results are recorded in PROGRESS.md.
 
 
-## The Ghost Ship's ghost: Davy Jones (decision 101)
+## The Ghost Ship's ghost: the drowned captain (decisions 101 and 103)
 
-The Ghost Ship's ghost wears Davy Jones; the Mansion keeps the bedsheet wisp. Each arena names its body in
+The Ghost Ship's ghost is a drowned sea captain; the Mansion keeps the bedsheet wisp. Each arena names its body in
 `GHOST_AVATAR`, which `main.gd` hands to the wisp beside `SIGNATURE_HAUNTING`, and both bodies implement the
 `GhostAvatar` interface (`update_motion`, `is_busy`, `apply_shimmer` and the action calls). The ghost's rules,
 energy, reach, possession and hauntings are identical on both arenas; only the body differs.
 
-The model is a single static pose with no rig, clips or blend shapes, so `DavyJonesModel` animates him in code:
-hovering, turning to face his travel, leaning into it, a swelling pop as he leaves a prop, a lean and shake while
-casting, and a tumble into a dizzy wobble when exorcised. Action lengths match the clips the wisp plays, so no
-timing shifts.
+`GhostCaptainModel` builds him in code from low-poly primitives, so the model is the project's own: a wispy tail
+in place of legs, a long navy coat with a belt and two rows of gold buttons, gold epaulettes, pale hands with a
+lantern in the left, a pale head with glowing yellow eyes, a beard of five swaying tentacles and a three-cornered
+hat with a gold band and skull badge. Colours are `CAPTAIN_*` in `Balance.gd`. He has no rig, so the script
+animates him: hovering, turning to face his travel, leaning into it, the beard trailing and swaying, a swelling
+pop as he leaves a prop, a lean and shake while casting, and a tumble into a dizzy wobble when exorcised. Action
+lengths match the clips the wisp plays, so no timing shifts.
 
-He keeps his own textures through `ghost_apparition.gdshader`: alpha shimmering 0.80-0.93 in step with the wisp's
-own shimmer, his colours pulled 10% toward sea green, a tight ghost-green fresnel edge and a 0.5 self glow so he
-reads on a dark deck. Below about 0.75 alpha the lit deck bleeds through and washes him out to plain green. The
-wisp's frozen tint takes over at 60% after an exorcism. He stands 2.0 m against the 1.6 m movers, hovers 1.0 m
-below the wisp's node, and is modelled facing -Z, so his yaw carries a half-circle offset. He casts no shadow.
-
-The model is a Disney Infinity rip, not CC0. It is committed so both developers can run the arena, and must be
-replaced with an original before any public or judged release; see `assets/CREDITS.md`.
+Every part uses `ghost_apparition.gdshader` with its own `base_colour`: alpha shimmering 0.80-0.93 in step with
+the wisp's shimmer, colours pulled 10% toward sea green, a tight ghost-green fresnel edge and a 0.5 self glow so
+he reads on a dark deck. The wisp's frozen tint takes over at 60% after an exorcism. He stands 2.0 m against the
+1.6 m movers, hovers 1.0 m below the wisp's node, faces +Z and casts no shadow.
 
 
 ## Ghost Ship look (decision 102)

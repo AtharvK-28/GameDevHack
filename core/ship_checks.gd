@@ -154,28 +154,29 @@ func _carry_chest(chest: Loot, target: Vector2) -> bool:
 # --- Wind and rescue ---
 # --- The Ghost Ship's own ghost ---
 func _check_captain() -> void:
-	# Davy Jones is a static model with no clips, so the things that silently broke while building him
-	# are checked here: his body, his textures, which way he faces and his shadow.
+	# The captain is built from shapes with no clips, so the things that would silently break are
+	# checked here: his body, his colours, which way he faces and his shadow.
 	world.set_ghost_slot(3)
 	var ghost: Node3D = world.ghost
-	_check(ghost.model is DavyJonesModel, "The Ghost Ship's ghost is Davy Jones, not the bedsheet wisp")
-	_check(ghost.model.materials.size() == 4, "Every one of his surfaces is ghosted")
+	_check(ghost.model is GhostCaptainModel, "The Ghost Ship's ghost is the drowned captain, not the bedsheet wisp")
+	var parts: Array[Node] = ghost.model.body.find_children("*", "MeshInstance3D", true, false)
+	_check(parts.size() > 10 and ghost.model.materials.size() == parts.size(), "Every one of his parts is ghosted")
 
-	var textured: bool = true
+	var coloured: bool = true
 	for material: ShaderMaterial in ghost.model.materials:
-		textured = textured and material.get_shader_parameter(&"albedo_texture") != null
-	_check(textured, "His own texture reaches the shader, so he is not washed out to a plain silhouette")
+		coloured = coloured and material.get_shader_parameter(&"base_colour") != null
+	_check(coloured, "Each part carries its own colour, so he is not washed out to a plain silhouette")
 
 	var shadowed: bool = false
-	for part: MeshInstance3D in ghost.model.body.find_children("*", "MeshInstance3D", true, false):
+	for part: MeshInstance3D in parts:
 		shadowed = shadowed or part.cast_shadow != GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_check(not shadowed, "He casts no shadow, which would give the ghost away")
 
-	# He is modelled facing -Z, so travelling +Z must turn him right round to face his travel.
-	ghost.model.rotation.y = 0.0
+	# He is built facing +Z, so travelling +Z must leave him facing +Z.
+	ghost.model.rotation.y = PI
 	for frame: int in range(60):
 		ghost.model.update_motion(Vector3(0, 0, Balance.WISP_SPEED), 1.0 / 60.0)
-	_check(ghost.model.global_basis.z.dot(Vector3.BACK) < -0.9, "He faces the way he flies")
+	_check(ghost.model.global_basis.z.dot(Vector3.BACK) > 0.9, "He faces the way he flies")
 
 	ghost.model.play_exorcised(1.0)
 	_check(ghost.model.is_busy(), "Being blasted out of a prop starts his tumble")
