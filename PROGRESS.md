@@ -91,6 +91,16 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - [ ] Backup video recorded
 - [ ] Attract loop running
 
+## Genre research follow-ups (2026-10-26, approved)
+
+- [x] Ghost-nearby buzz and glow on mover phones (decision 115): Ship check covers levels 0-3 and silence inside a prop;
+  phone page rendered in headless Edge at 844 x 390 at levels 1 and 3, JS syntax-checked.
+- [ ] Funny end-of-round awards
+- [ ] Shout bubbles from the phone
+- [ ] Slow-motion punch-in on big smashes
+- [ ] Audience phones vote on chaos events
+- [ ] Medals and bonus goals
+
 ## Blocked / notes
 
 - Verified Godot `4.7.2.stable.official.ed1daf0bf`, Mobile/D3D12 rendering on Intel Iris Xe, Jolt and explicit 60 Hz physics.

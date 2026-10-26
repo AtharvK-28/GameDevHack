@@ -180,6 +180,7 @@ function handleMessage(message) {
 
 function showRole(message) {
   releaseInputs();
+  setGhostNear(0);
   activeRole = message.role;
   const isGhost = activeRole === "ghost";
   document.body.classList.toggle("ghost", isGhost);
@@ -265,7 +266,31 @@ function clock(seconds) {
   return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, "0")}`;
 }
 
+// --- Ghost nearby: a pulse of buzz and ghost-green edge glow, quicker the closer the ghost is ---
+let ghostNear = 0;
+let ghostPulseTimer = null;
+
+function setGhostNear(level) {
+  level = Math.max(0, Math.min(3, Number(level) || 0));
+  if (level === ghostNear) return;
+  ghostNear = level;
+  document.body.dataset.ghostNear = String(level);
+  clearTimeout(ghostPulseTimer);
+  if (level > 0) ghostPulse();
+}
+
+function ghostPulse() {
+  if (ghostNear === 0 || activeRole !== "mover") return;
+  if (navigator.vibrate) navigator.vibrate(settings.ghostNearBuzzMs[ghostNear - 1]);
+  const glow = elements["ghost-glow"];
+  glow.classList.remove("pulse");
+  void glow.offsetWidth; // Restart the CSS animation.
+  glow.classList.add("pulse");
+  ghostPulseTimer = setTimeout(ghostPulse, settings.ghostNearPulseMs[ghostNear - 1]);
+}
+
 function renderMoverHud(message) {
+  setGhostNear(message.near);
   elements["held-label"].textContent = !message.held ? "Hands free" : Number.isFinite(message.value) ? `${message.held} · ₹${message.value.toLocaleString("en-IN")}` : message.held;
   const generator = message.generator;
   if (generator?.total && (!message.held || message.held === generator.item)) {

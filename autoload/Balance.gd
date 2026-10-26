@@ -44,6 +44,11 @@ const BATTERY_SEED_OFFSET: int = 7919 # Separate battery placement from the seed
 # --- Controller cadence ---
 const INPUT_RATE: int = 30 # Messages per second, including idle heartbeats.
 const HUD_RATE: int = 8 # Messages per second in later gameplay phases.
+# Ghost nearby (decision 115): a mover's phone buzzes and glows ghost-green while the free-flying ghost is close,
+# faster and stronger the closer it gets, so players feel the near-invisible wisp. Not while it hides in a prop.
+const GHOST_NEAR_RANGES: Array[float] = [5.0, 3.5, 2.0] # Metres (flat); inside each the level rises from 1 to 3.
+const GHOST_NEAR_BUZZ_MS: Array[int] = [30, 45, 70] # Each pulse's vibration at levels 1 to 3.
+const GHOST_NEAR_PULSE_MS: Array[int] = [1200, 700, 350] # Time between pulses at levels 1 to 3.
 const INPUT_TIMEOUT_MS: int = 500
 const MAX_PACKETS_PER_FRAME: int = 64
 const MAX_NAME_LENGTH: int = 20

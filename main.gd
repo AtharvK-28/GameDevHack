@@ -106,7 +106,20 @@ func _send_hud() -> void:
 		if has_item and item is Loot:
 			value = item.value
 		var cursed: float = item.curse_left if has_item and item is Loot else 0.0
-		Net.send_to_player(player, {"type": "hud", "held": item.item_name if has_item else "", "value": value, "cursed": ceili(cursed), "t": ceili(Game.seconds_left) if match_mode else 0, "generator": task})
+		Net.send_to_player(player, {"type": "hud", "held": item.item_name if has_item else "", "value": value, "cursed": ceili(cursed), "t": ceili(Game.seconds_left) if match_mode else 0, "generator": task, "near": ghost_near_level(mover)})
+
+
+
+func ghost_near_level(mover: CharacterBody3D) -> int:
+	# 0 to 3: how close the free-flying ghost is to this mover. A ghost inside a prop is already marked by its glow.
+	if not is_instance_valid(ghost) or is_instance_valid(ghost.possessing) or not mover.in_play:
+		return 0
+	var gap: float = Vector2(ghost.global_position.x - mover.global_position.x, ghost.global_position.z - mover.global_position.z).length()
+	var level: int = 0
+	for range_metres: float in Balance.GHOST_NEAR_RANGES:
+		if gap <= range_metres:
+			level += 1
+	return level
 
 
 func _update_ghost_panel() -> void:

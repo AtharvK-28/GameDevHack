@@ -239,6 +239,21 @@ func _check_captain() -> void:
 		ghost.model.update_motion(Vector3(0, 0, Balance.WISP_SPEED), 1.0 / 60.0)
 	_check(ghost.model.global_basis.z.dot(Vector3.BACK) > 0.9, "He faces the way he flies")
 
+	# Ghost nearby: a mover's phone level rises as the free ghost closes in, and stays quiet while it hides in a prop.
+	_place(0, Vector2(13.0, 8.5))
+	var levels: Array[int] = []
+	for gap: float in [6.0, 4.5, 3.0, 1.0]:
+		ghost.global_position = world.movers[0].global_position + Vector3(gap, 0.0, 0.0)
+		levels.append(world.ghost_near_level(world.movers[0]))
+	_check(levels == [0, 1, 2, 3], "A mover's phone feels the ghost closing in (levels %s)" % [levels])
+	var barrel := _loot("barrel", Vector2(13.6, 8.5))
+	await _frames(5)
+	ghost.possess(barrel.get_node("Possessable"))
+	_check(world.ghost_near_level(world.movers[0]) == 0, "A ghost hiding in a prop gives no buzz")
+	ghost.leave()
+	barrel.queue_free()
+	world.movers[0].set_in_play(false)
+
 	ghost.model.play_exorcised(1.0)
 	_check(ghost.model.is_busy(), "Being blasted out of a prop starts his tumble")
 	await _frames(60)

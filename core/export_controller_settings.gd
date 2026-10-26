@@ -13,6 +13,8 @@ func _initialize() -> void:
 		"joystickSize": SETTINGS.JOYSTICK_SIZE,
 		"joystickDeadzone": SETTINGS.JOYSTICK_DEADZONE,
 		"ghostEnergyMax": SETTINGS.ENERGY_MAX,
+		"ghostNearBuzzMs": SETTINGS.GHOST_NEAR_BUZZ_MS,
+		"ghostNearPulseMs": SETTINGS.GHOST_NEAR_PULSE_MS,
 	}
 	var file := FileAccess.open("res://controller/settings.json", FileAccess.WRITE)
 	if file == null:

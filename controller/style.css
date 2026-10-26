@@ -12,6 +12,7 @@
   --curse: #8a3fc1;
   --curse-light: #e4c6ff;
   --line: #b8acd9;
+  --ghost-near: #8cffc4;
   --player: var(--orange);
   --gap: clamp(12px, 2vw, 24px);
   font-family: Baloo, sans-serif;
@@ -143,3 +144,12 @@ body.ghost .stage h1, #final-standings li.me { color: var(--green); }
 
 .ghost-buttons .action.unavailable { color: #433159; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* --- Ghost nearby: an edge glow that pulses with each buzz, stronger the closer the ghost is --- */
+#ghost-glow { position: fixed; inset: 0; pointer-events: none; z-index: 50; opacity: 0; box-shadow: inset 0 0 var(--glow-size, 40px) var(--glow-spread, 8px) var(--ghost-near); }
+body[data-ghost-near="1"] #ghost-glow { --glow-size: 36px; --glow-spread: 4px; --glow-peak: .45; }
+body[data-ghost-near="2"] #ghost-glow { --glow-size: 56px; --glow-spread: 10px; --glow-peak: .7; }
+body[data-ghost-near="3"] #ghost-glow { --glow-size: 80px; --glow-spread: 18px; --glow-peak: 1; }
+#ghost-glow.pulse { animation: ghost-pulse .5s ease-out; }
+@keyframes ghost-pulse { 0% { opacity: var(--glow-peak, .5); } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { #ghost-glow.pulse { animation-duration: .01s; } }
