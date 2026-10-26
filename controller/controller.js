@@ -30,7 +30,7 @@ let identity = readIdentity(); // { key, pid, secret } from the last welcome in 
 let matchPhase = null; // Null outside a match: the greybox harness shows controls as soon as a role arrives.
 let matchState = {};
 const heldPointers = new Map();
-const SCREENS = ["lobby", "story", "controls", "reveal", "result", "final"];
+const SCREENS = ["lobby", "audience", "story", "controls", "reveal", "result", "final"];
 const LIVE_PHASES = ["live", "paused"];
 
 // --- Setup ---
@@ -59,6 +59,10 @@ async function initialize() {
 }
 
 function setupPageEvents() {
+  elements["watch-button"].addEventListener("click", () => {
+    joinAsAudience = true;
+    elements["join-form"].requestSubmit();
+  });
   elements["join-form"].addEventListener("submit", event => {
     event.preventDefault();
     playerName = elements["player-name"].value.trim();
@@ -99,7 +103,7 @@ function connect() {
   socket.addEventListener("open", () => {
     const credentials = sessionKey ? { key: sessionKey } : { code: elements["join-code"].value.trim().toUpperCase() };
     const rejoin = identity.pid ? { pid: identity.pid, secret: identity.secret } : {};
-    send({ type: "hello", name: playerName, ...credentials, ...rejoin });
+    send({ type: "hello", name: playerName, ...credentials, ...rejoin, ...(joinAsAudience ? { audience: true } : {}) });
   });
   socket.addEventListener("message", event => {
     try { handleMessage(JSON.parse(event.data)); }
@@ -134,6 +138,11 @@ function connect() {
 function handleMessage(message) {
   switch (message.type) {
     case "welcome":
+      if (message.audience) {
+        showAudience(message);
+        break;
+      }
+      audienceMode = false;
       releaseInputs();
       joined = true;
       activeRole = "";
@@ -176,6 +185,9 @@ function handleMessage(message) {
       finalAwards = message.awards || [];
       render();
       break;
+    case "vote":
+      renderVote(message);
+      break;
     case "buzz":
       if (navigator.vibrate && Number.isFinite(message.ms)) navigator.vibrate(message.ms);
       break;
@@ -208,6 +220,10 @@ function showRole(message) {
 function render() {
   const inMatch = matchPhase !== null;
   let screen = "lobby";
+  if (audienceMode) {
+    for (const name of SCREENS) elements[name].hidden = name !== "audience";
+    return;
+  }
   if (joined && !inMatch) screen = activeRole ? "controls" : "lobby";
   else if (joined && matchPhase === "intro") screen = "story";
   else if (joined && ["setup", "reveal"].includes(matchPhase)) screen = "reveal";
@@ -276,6 +292,49 @@ function renderFinal() {
 function clock(seconds) {
   const whole = Math.max(0, Math.ceil(Number(seconds) || 0));
   return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, "0")}`;
+}
+
+// --- The audience: no controls, just a vote every so often ---
+let joinAsAudience = false;
+let audienceMode = false;
+
+function showAudience(message) {
+  audienceMode = true;
+  joined = true;
+  document.body.classList.add("audience");
+  sessionKey = message.key;
+  identity = { key: message.key, pid: message.pid, secret: message.secret };
+  writeStorage(STORAGE_IDENTITY, JSON.stringify(identity));
+  elements.connection.textContent = "Watching · audience";
+  elements["join-form"].hidden = true;
+  render();
+}
+
+function renderVote(message) {
+  const options = elements["vote-options"];
+  if (message.open) {
+    elements["audience-title"].textContent = "VOTE NOW!";
+    elements["audience-note"].textContent = `${message.left} seconds. Tap one.`;
+    options.replaceChildren(...message.options.map((option, index) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = `vote ${option.id}`;
+      button.innerHTML = "<strong></strong><small></small>";
+      button.querySelector("strong").textContent = option.label;
+      button.querySelector("small").textContent = option.note;
+      button.addEventListener("click", () => {
+        send({ type: "vote", o: index });
+        for (const other of options.children) other.classList.toggle("chosen", other === button);
+        elements["audience-note"].textContent = "Vote in! You can change it until time's up.";
+      });
+      return button;
+    }));
+    options.hidden = false;
+  } else {
+    options.hidden = true;
+    elements["audience-title"].textContent = message.winner >= 0 ? `THE AUDIENCE CHOSE: ${message.label}` : "Nobody voted!";
+    elements["audience-note"].textContent = "Next vote soon. Watch the big screen.";
+  }
 }
 
 // --- Shouts: the host shows them over this mover's head ---

@@ -114,18 +114,24 @@ func _check_reveal() -> void:
 	fresh_layout = _layout()
 	_check(load("res://props/loot.gd").lone_mover == true, "A 2-player match makes the one mover the lone mover")
 
-	# A third phone cannot join mid-match.
+	# A third phone cannot join the crew mid-match; it is seated in the audience instead (decision 119).
 	var outsider := WebSocketPeer.new()
 	outsider.connect_to_url("ws://127.0.0.1:%d" % SETTINGS.SOCKET_PORT)
 	var deadline: int = Time.get_ticks_msec() + 2000
 	var said_hello: bool = false
-	while Time.get_ticks_msec() < deadline and outsider.get_ready_state() != WebSocketPeer.STATE_CLOSED:
+	var welcome: Dictionary = {}
+	while Time.get_ticks_msec() < deadline and welcome.is_empty():
 		outsider.poll()
 		if outsider.get_ready_state() == WebSocketPeer.STATE_OPEN and not said_hello:
 			outsider.send_text(JSON.stringify({"type": "hello", "name": "Late", "key": net.session_key}))
 			said_hello = true
+		while outsider.get_available_packet_count() > 0:
+			var reply: Variant = JSON.parse_string(outsider.get_packet().get_string_from_utf8())
+			if reply is Dictionary and reply.get("type") == "welcome":
+				welcome = reply
 		await _frame()
-	_check(outsider.get_close_code() == net.CLOSE_MATCH and net.players.size() == 2, "A new phone is refused while the match runs")
+	_check(welcome.get("audience", false) and net.players.size() == 2, "A new phone mid-match joins the audience, not the crew")
+	outsider.close()
 
 	# Buttons pressed during the reveal do nothing.
 	_send(1, {"type": "btn", "b": "grab", "down": true})

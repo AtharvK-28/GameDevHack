@@ -101,7 +101,8 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
   messages and the ghost; phone page rendered at 844 x 390 and 568 x 320; bubbles rendered on the Ship.
 - [x] Slow-motion punch-in on big smashes (decision 118): Ship match check covers slow-down, camera punch, recovery
   and the cooldown. Needs a human look at the camera move in a live match.
-- [ ] Audience phones vote on chaos events
+- [x] Audience phones vote (decision 119): `core/audience_check.gd` (real WebSocket phones) covers joining, voting,
+  ties, every outcome and the timed vote; HUD card and audience phone rendered.
 - [ ] Medals and bonus goals
 
 ## Blocked / notes

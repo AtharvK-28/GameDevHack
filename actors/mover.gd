@@ -20,6 +20,7 @@ var grab_released: bool = true
 var tumble_time_left: float = 0.0
 var name_label := Label3D.new()
 var shout_left: float = 0.0 # Cooldown before the next shout.
+var boost_left: float = 0.0 # Seconds of the audience's speed boost left.
 var hold_point: Marker3D
 var model: MoverModel
 var shove := Vector3.ZERO # Fading push from bumping into another mover.
@@ -60,6 +61,7 @@ func _label_stack() -> int:
 # --- Movement and controls ---
 func _physics_process(delta: float) -> void:
 	shout_left = maxf(0.0, shout_left - delta)
+	boost_left = maxf(0.0, boost_left - delta)
 	var player_input: InputRouter.PlayerInput = InputRouter.for_slot(slot)
 	if is_instance_valid(held_item) and (held_item.finished or not held_item.is_held_by(self)):
 		held_item = null
@@ -106,9 +108,10 @@ func _physics_process(delta: float) -> void:
 
 
 func movement_speed() -> float:
+	var boost: float = Balance.VOTE_SPEED_BOOST if boost_left > 0.0 else 1.0
 	if is_instance_valid(held_item):
-		return Balance.MOVER_SPEED * Balance.CARRY_SPEEDS[held_item.weight_class] * held_item.carry_speed_ratio()
-	return Balance.MOVER_SPEED
+		return Balance.MOVER_SPEED * Balance.CARRY_SPEEDS[held_item.weight_class] * held_item.carry_speed_ratio() * boost
+	return Balance.MOVER_SPEED * boost
 
 
 func carry_stick() -> Vector3:

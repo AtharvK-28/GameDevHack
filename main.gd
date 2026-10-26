@@ -19,6 +19,7 @@ const SCREEN_SCENES: Array[PackedScene] = [
 	preload("res://screens/Cutscene.tscn"),
 ]
 var camera: Camera3D
+var audience_vote: AudienceVote # Runs the audience's votes during live play.
 var status_label: Label # Harness overlay only; the match uses the screens instead.
 var ghost_panel: PanelContainer
 var ghost_label: Label
@@ -35,6 +36,11 @@ func _ready() -> void:
 	arena = _arena_scene().instantiate()
 	add_child(arena)
 	_build_camera()
+	if match_mode: # Matches take audience votes; the test harness has no audience.
+		audience_vote = AudienceVote.new()
+		audience_vote.name = "AudienceVote"
+		audience_vote.host = self
+		add_child(audience_vote)
 	_build_overlay()
 	for slot: int in range(Balance.MAX_PLAYERS):
 		var mover := MOVER_SCENE.instantiate()
@@ -110,6 +116,28 @@ func _send_hud() -> void:
 		Net.send_to_player(player, {"type": "hud", "held": item.item_name if has_item else "", "value": value, "cursed": ceili(cursed), "t": ceili(Game.seconds_left) if match_mode else 0, "generator": task, "near": ghost_near_level(mover)})
 
 
+
+
+
+# --- The audience ---
+func apply_audience_choice(choice: String) -> void:
+	match choice:
+		"ghost":
+			if is_instance_valid(ghost):
+				ghost.energy = minf(Balance.ENERGY_MAX, ghost.energy + Balance.VOTE_GHOST_ENERGY)
+		"movers":
+			for mover: CharacterBody3D in movers:
+				if mover.in_play and not is_ghost_slot(mover.slot):
+					mover.boost_left = Balance.VOTE_BOOST_SECONDS
+		"chaos":
+			if arena.has_method("start_wave"):
+				arena.start_wave(Vector3.RIGHT if randf() < 0.5 else Vector3.LEFT)
+			elif is_instance_valid(ghost) and not ghost.hauntings.is_empty() and ghost.hauntings[0].phase == Haunting.Phase.IDLE:
+				# The arena's own haunting, for free: the ghost's cooldown is left as it was.
+				var haunting: Haunting = ghost.hauntings[0]
+				var cooldown: float = haunting.cooldown_left
+				haunting.trigger(ghost)
+				haunting.cooldown_left = cooldown
 
 
 func _on_shouted(slot: int, shout: int) -> void:

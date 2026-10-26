@@ -126,7 +126,7 @@ func _check_reconnect_and_capacity() -> void:
 	var extra_index: int = clients.size() - 1
 	_send(extra_index, {"type": "hello", "name": "Fifth", "key": net.session_key})
 	await _pump(WAIT_SECONDS)
-	_check(clients[extra_index].get_close_code() == net.CLOSE_FULL and net.players.size() == 4, "Fifth player cannot claim another slot")
+	_check(_find_message(extra_index, "welcome").get("audience", false) and not _find_message(extra_index, "welcome").has("slot") and net.players.size() == 4, "A fifth phone joins the audience and cannot claim a slot (decision 119)")
 
 
 func _check_keyboard() -> void:
@@ -226,7 +226,12 @@ func _check_security() -> void:
 	await _reject_hello({"type": "hello", "name": "Thief", "key": net.session_key, "pid": player.pid, "secret": "forged"}, net.CLOSE_DENIED, "Forged reconnect secret rejected")
 	_check(player.socket == owner_socket, "Forgery leaves the real player connected")
 	net.accept_new_players = false
-	await _reject_hello({"type": "hello", "name": "Late", "key": net.session_key}, net.CLOSE_MATCH, "New identities rejected mid-match")
+	await _connect_client()
+	var late: int = clients.size() - 1
+	var crew: int = net.players.size()
+	_send(late, {"type": "hello", "name": "Late", "key": net.session_key})
+	await _pump(WAIT_SECONDS)
+	_check(_find_message(late, "welcome").get("audience", false) and net.players.size() == crew, "New identities mid-match join the audience, never the crew (decision 119)")
 	var old_key: String = net.session_key
 	net.rotate_session()
 	_check(net.session_key == old_key, "Rotation is blocked during a match")

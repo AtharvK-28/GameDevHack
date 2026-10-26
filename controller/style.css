@@ -161,3 +161,19 @@ body[data-ghost-near="3"] #ghost-glow { --glow-size: 80px; --glow-spread: 18px; 
 .shouts { display: flex; gap: 8px; flex: 1; justify-content: center; }
 .shouts button { min-height: 36px; padding: 0 14px; border: 2px solid var(--line); border-radius: 18px; background: transparent; color: var(--ink); font: inherit; font-size: 13px; font-weight: 800; letter-spacing: .03em; }
 .shouts button.pressed { background: var(--orange); color: var(--paper); border-color: var(--orange); }
+
+/* --- Audience: watch and vote --- */
+.secondary { margin-top: 10px; width: 100%; min-height: 44px; border: 2px solid var(--line); border-radius: 12px; background: transparent; color: var(--ink); font: inherit; font-weight: 800; letter-spacing: .04em; }
+.vote-options { display: grid; gap: 10px; width: min(560px, 100%); margin-top: 12px; }
+.vote-options .vote { min-height: 64px; border: 0; border-radius: 14px; font: inherit; color: var(--paper); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.vote-options .vote strong { font-size: 20px; font-weight: 900; }
+.vote-options .vote small { font-size: 12px; }
+.vote-options .vote.ghost { background: var(--ghost-near); }
+.vote-options .vote.movers { background: var(--orange); }
+.vote-options .vote.chaos { background: #ff7a6b; }
+.vote-options .vote.chosen { outline: 4px solid var(--ink); outline-offset: 3px; }
+@media (orientation: landscape) {
+  .vote-options { grid-template-columns: repeat(3, 1fr); width: min(900px, 100%); }
+  #audience h1 { font-size: clamp(28px, 6vw, 56px); }
+}
+body.audience #rotate-overlay { display: none !important; } /* Watching works upright; only players need landscape. */

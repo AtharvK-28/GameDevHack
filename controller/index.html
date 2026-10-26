@@ -33,6 +33,7 @@
             <input id="join-code" name="code" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="6" placeholder="On the big screen">
           </div>
           <button id="join-button" class="primary" type="submit">JOIN THE CREW <span aria-hidden="true">→</span></button>
+          <button id="watch-button" class="secondary" type="button">WATCH &amp; VOTE</button>
         </form>
         <div id="joined" hidden>
           <p id="identity" class="identity"></p>
@@ -86,6 +87,13 @@
         <strong>PAUSED</strong>
         <p id="pause-reason"></p>
       </div>
+    </section>
+
+    <section id="audience" class="stage" aria-live="polite" hidden>
+      <p class="eyebrow">YOU'RE IN THE AUDIENCE</p>
+      <h1 id="audience-title">Watch the big screen.</h1>
+      <p id="audience-note">A vote opens every so often. Pick what happens next!</p>
+      <div id="vote-options" class="vote-options" hidden></div>
     </section>
 
     <section id="story" class="stage" aria-live="polite" hidden>

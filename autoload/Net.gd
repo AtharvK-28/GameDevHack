@@ -9,6 +9,7 @@ signal players_changed
 signal role_changed(slot: int)
 signal session_changed
 signal shouted(slot: int, shout: int) # A phone tapped a shout; Main shows it over that mover.
+signal voted(pid: String, option: int) # An audience phone voted; AudienceVote counts it.
 
 # --- Protocol constants ---
 const BUTTONS: Array[String] = ["grab", "throw", "brace", "possess", "action", "haunt1", "haunt2", "haunt3"]
@@ -25,6 +26,7 @@ const CLOSE_LOCKED: int = 4012
 var server := TCPServer.new()
 var peers: Array[Dictionary] = []
 var players: Array[Dictionary] = []
+var audience: Array[Dictionary] = [] # Watching phones: {pid, secret, name, socket}; no slot, role or input.
 var listen_error: Error = OK
 var accept_new_players: bool = true
 var session_key: String = ""
@@ -85,6 +87,7 @@ func rotate_session() -> void:
 	for connection: Dictionary in peers.duplicate():
 		_drop(connection, CLOSE_NEW_LOBBY, "The host started a new lobby. Scan the new code.")
 	players.clear()
+	audience.clear()
 	_new_session()
 	players_changed.emit()
 
@@ -166,6 +169,11 @@ func _handle_message(connection: Dictionary, message: Dictionary) -> void:
 		if message.get("type") == "hello":
 			_join(connection, message)
 		return
+	if connection.get("audience", false):
+		var option: Variant = message.get("o")
+		if message.get("type") == "vote" and option is float and option == floorf(option) and int(option) >= 0 and int(option) < Balance.VOTE_OPTIONS.size():
+			voted.emit(connection.pid, int(option))
+		return
 	var player := _player_for_pid(connection.pid)
 	if player.is_empty() or player.socket != connection.socket:
 		return
@@ -197,19 +205,24 @@ func _join(connection: Dictionary, message: Dictionary) -> void:
 	var player: Dictionary = {}
 	if message.get("pid") is String:
 		player = _player_for_pid(message.pid)
+		var watcher: Dictionary = _audience_for_pid(message.pid)
+		if not watcher.is_empty() and _same(str(message.get("secret", "")), watcher.secret):
+			_seat_audience(connection, watcher)
+			return
 	if not player.is_empty() and not _same(str(message.get("secret", "")), player.secret):
 		# Someone else's pid without its secret: refuse, and leave the real player untouched.
 		_record_failure(connection.address)
 		_drop(connection, CLOSE_DENIED, "That player is already taken.")
 		return
 	if player.is_empty():
-		if not accept_new_players:
-			_drop(connection, CLOSE_MATCH, "Match in progress. Only players already in this match can rejoin.")
+		# Phones that ask to watch, arrive mid-match or find all four slots taken join the audience.
+		if message.get("audience") == true or not accept_new_players:
+			_join_audience(connection, player_name)
 			return
 		if players.size() >= Balance.MAX_PLAYERS:
 			_free_offline_slot() # In the lobby, a new phone may take an offline phone's slot.
 		if players.size() >= Balance.MAX_PLAYERS:
-			_drop(connection, CLOSE_FULL, "All four players are connected. Wait for a free slot.")
+			_join_audience(connection, player_name)
 			return
 		player = _new_player(player_name)
 		players.append(player)
@@ -228,6 +241,48 @@ func _join(connection: Dictionary, message: Dictionary) -> void:
 	print("Controller joined slot %d: %s" % [player.slot + 1, player.name])
 
 
+# --- The audience ---
+func send_to_audience(message: Dictionary) -> void:
+	var text: String = JSON.stringify(message)
+	for watcher: Dictionary in audience:
+		var socket: WebSocketPeer = watcher.socket
+		if socket != null and socket.get_ready_state() == WebSocketPeer.STATE_OPEN:
+			socket.send_text(text)
+
+
+func audience_count() -> int:
+	return audience.filter(func(watcher: Dictionary) -> bool: return watcher.socket != null).size()
+
+
+func _join_audience(connection: Dictionary, watcher_name: String) -> void:
+	if audience.size() >= Balance.AUDIENCE_MAX:
+		_drop(connection, CLOSE_FULL, "The audience is full. Watch the big screen!")
+		return
+	var crypto := Crypto.new()
+	var watcher: Dictionary = {"pid": "aud-" + crypto.generate_random_bytes(16).hex_encode(),
+		"secret": crypto.generate_random_bytes(Balance.PLAYER_SECRET_BYTES).hex_encode(), "name": watcher_name, "socket": null}
+	audience.append(watcher)
+	_seat_audience(connection, watcher)
+
+
+func _seat_audience(connection: Dictionary, watcher: Dictionary) -> void:
+	if watcher.socket != null and watcher.socket != connection.socket:
+		watcher.socket.close(1000, "Rejoined from another connection")
+	watcher.socket = connection.socket
+	connection.pid = watcher.pid
+	connection.audience = true
+	connection.socket.send_text(JSON.stringify({"type": "welcome", "audience": true, "pid": watcher.pid, "secret": watcher.secret, "key": session_key}))
+	print("Audience joined: %s (%d watching)" % [watcher.name, audience_count()])
+	players_changed.emit()
+
+
+func _audience_for_pid(pid: String) -> Dictionary:
+	for watcher: Dictionary in audience:
+		if watcher.pid == pid:
+			return watcher
+	return {}
+
+
 func _drop(connection: Dictionary, code: int, reason: String) -> void:
 	var socket: WebSocketPeer = connection.socket
 	socket.close(code, reason)
@@ -236,6 +291,11 @@ func _drop(connection: Dictionary, code: int, reason: String) -> void:
 
 func _disconnect(connection: Dictionary) -> void:
 	peers.erase(connection)
+	if connection.get("audience", false):
+		var watcher: Dictionary = _audience_for_pid(connection.pid)
+		if not watcher.is_empty() and watcher.socket == connection.socket:
+			watcher.socket = null # Kept, so the same browser can come back into the audience.
+		return
 	var player := _player_for_pid(connection.pid)
 	if player.is_empty() or player.socket != connection.socket:
 		return

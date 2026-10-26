@@ -410,6 +410,8 @@ flowchart LR
 
 ## Network protocol
 
+**Audience (decision 119).** A hello may carry `"audience": true`; phones that ask, arrive mid-match or find all four slots taken join the audience (up to 50) and get `{"type": "welcome", "audience": true, ...}`. During live play the host sends `{"type": "vote", "open": true, "options": [...], "left": 8}` every 25 s and `{"type": "vote", "open": false, "winner": i, "label": "..."}` after 8 s; audience phones answer `{"type": "vote", "o": i}`. Options: HELP THE GHOST (+30 energy), HELP THE MOVERS (30% faster for 6 s), CHAOS (Ship: rogue wave; Mansion: free House Shake); ties go to chaos.
+
 Phones talk directly to the Godot game over WebSocket, sending short JSON messages. Godot is the single source of truth: phones send intent and receive only what their own screen needs.
 
 **Wire format.** Each JSON object has a `type` discriminator alongside its payload fields, for example `{"type":"in","x":0.5,"y":-0.5}`. Slots are zero-based (0–3); player-facing labels are 1–4. Positive joystick x means right; positive y means toward the bottom of the screen. The input vector is limited to length 1 by the host.

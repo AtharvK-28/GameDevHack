@@ -44,6 +44,21 @@ const BATTERY_SEED_OFFSET: int = 7919 # Separate battery placement from the seed
 # --- Controller cadence ---
 const INPUT_RATE: int = 30 # Messages per second, including idle heartbeats.
 const HUD_RATE: int = 8 # Messages per second in later gameplay phases.
+# The audience (decision 119): phones beyond the four players, or arriving after a match starts, join as audience.
+# Every VOTE_INTERVAL seconds of live play they vote for VOTE_SECONDS on three options; ties go to chaos, and no
+# votes means nothing happens. Chaos keeps its usual warning.
+const AUDIENCE_MAX: int = 50
+const VOTE_INTERVAL: float = 25.0
+const VOTE_SECONDS: float = 8.0
+const VOTE_RESULT_SECONDS: float = 2.5 # The winner stays on the big screen this long.
+const VOTE_OPTIONS: Array[Dictionary] = [
+	{"id": "ghost", "label": "HELP THE GHOST", "note": "+30 ghost energy"},
+	{"id": "movers", "label": "HELP THE MOVERS", "note": "Movers run 30% faster for 6 s"},
+	{"id": "chaos", "label": "CHAOS!", "note": "Something nasty, with a warning"},
+]
+const VOTE_GHOST_ENERGY: float = 30.0
+const VOTE_SPEED_BOOST: float = 1.3
+const VOTE_BOOST_SECONDS: float = 6.0
 # Shouts (decision 117): movers tap one on their phone and it pops as comic lettering over their head on the big
 # screen, so a pair can call "lift" or "wait" across a loud room. Sent by index; the words live here only.
 const SHOUTS: Array[String] = ["LIFT!", "WAIT!", "MY BAD!"]

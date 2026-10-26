@@ -32,6 +32,9 @@ var previous_phase: String = ""
 var generator_label: Label
 var danger: Control
 var clock_time: float = 0.0 # Seconds since start, for the wobble and the red pulse.
+var vote_card: PanelContainer
+var vote_title: Label
+var vote_lines: Array[Label] = []
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -113,6 +116,7 @@ func _ready() -> void:
 	pause_rows.add_child(pause_label)
 	pause_box = Style.centre(pause_panel)
 	add_child(pause_box)
+	_build_vote_card()
 	Game.delivery_notice.connect(_delivered)
 	resized.connect(_layout_cards)
 
@@ -139,6 +143,43 @@ func _position_card(panel: Control, preset: int) -> void:
 	if preset in [Control.PRESET_BOTTOM_LEFT, Control.PRESET_BOTTOM_RIGHT]:
 		y = screen.y - margin - panel.size.y
 	panel.position = Vector2(x, y)
+
+# --- The audience vote card ---
+func _build_vote_card() -> void:
+	vote_card = Style.ink_panel(0.0, Balance.HUD_PANEL_PADDING, Color(Balance.UI_PANEL, Balance.UI_HUD_ALPHA))
+	add_child(vote_card)
+	var column := VBoxContainer.new()
+	column.add_theme_constant_override("separation", 0)
+	vote_card.add_child(column)
+	vote_title = Style.lettering("", Balance.COMIC_LABEL_SIZE, Balance.UI_MONEY)
+	vote_title.autowrap_mode = TextServer.AUTOWRAP_OFF
+	column.add_child(vote_title)
+	for option: Dictionary in Balance.VOTE_OPTIONS:
+		var line := Style.label("", Balance.UI_SMALL_SIZE)
+		line.autowrap_mode = TextServer.AUTOWRAP_OFF
+		column.add_child(line)
+		vote_lines.append(line)
+	vote_card.hide()
+
+
+func _refresh_vote_card() -> void:
+	# Hidden with no audience; otherwise the open vote with live counts, the winner for a moment, or a quiet count.
+	var vote: AudienceVote = Game.host.get("audience_vote") if is_instance_valid(Game.host) else null
+	var watching: int = Net.audience_count()
+	vote_card.visible = vote != null and watching > 0
+	if not vote_card.visible:
+		return
+	var counts: Array[int] = vote.tally()
+	for index: int in range(vote_lines.size()):
+		vote_lines[index].visible = vote.open
+		vote_lines[index].text = "%s   %d" % [Balance.VOTE_OPTIONS[index].label, counts[index]]
+	if vote.open:
+		vote_title.text = "AUDIENCE VOTE · %ds" % ceili(vote.left)
+	elif vote.result_left > 0.0 and vote.winner >= 0:
+		vote_title.text = "THE AUDIENCE CHOSE: %s" % Balance.VOTE_OPTIONS[vote.winner].label
+	else:
+		vote_title.text = "AUDIENCE · %d watching · vote in %ds" % [watching, ceili(vote.next_left)]
+
 
 func _label(parent: Node, text: String, font_size: int) -> Label:
 	var label := Style.label(text, font_size)
@@ -194,6 +235,7 @@ func _process(delta: float) -> void:
 			toasts.add_child(_toast(entry))
 	totals.visible = Input.is_physical_key_pressed(KEY_TAB)
 	totals_label.text = "TOTALS · %s\nDelivered %s / %s\nLost %s / %s\n\n%s" % [Style.clock(Game.seconds_left), Loot.rupees(Game.banked_value), Loot.rupees(Game.target_value()), Loot.rupees(Game.lost_value), Loot.rupees(Game.loss_limit()), "\n".join(lines)]
+	_refresh_vote_card()
 	pause_box.visible = Game.phase == "paused" and not Game.host_paused
 	pause_label.text = "%s\nL: cancel to lobby" % Game.pause_reason
 
@@ -424,3 +466,6 @@ func _layout_cards() -> void:
 		if child.has_meta("edge_preset"):
 			child.reset_size()
 			_position_card(child, child.get_meta("edge_preset"))
+	if is_instance_valid(vote_card):
+		vote_card.reset_size() # Under the timer, centred.
+		vote_card.position = Vector2((size.x - vote_card.size.x) / 2.0, timer_card.position.y + timer_card.size.y + Balance.HOST_ROW_GAP)
