@@ -185,6 +185,8 @@ function handleMessage(message) {
 function showRole(message) {
   releaseInputs();
   setGhostNear(0);
+  elements.shouts.hidden = message.role === "ghost";
+  elements["control-note"].hidden = message.role !== "ghost";
   activeRole = message.role;
   const isGhost = activeRole === "ghost";
   document.body.classList.toggle("ghost", isGhost);
@@ -274,6 +276,16 @@ function renderFinal() {
 function clock(seconds) {
   const whole = Math.max(0, Math.ceil(Number(seconds) || 0));
   return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, "0")}`;
+}
+
+// --- Shouts: the host shows them over this mover's head ---
+for (const button of document.querySelectorAll("[data-shout]")) {
+  button.addEventListener("pointerdown", event => {
+    event.preventDefault();
+    send({ type: "shout", s: Number(button.dataset.shout) });
+    button.classList.add("pressed");
+    setTimeout(() => button.classList.remove("pressed"), 150);
+  });
 }
 
 // --- Ghost nearby: a pulse of buzz and ghost-green edge glow, quicker the closer the ghost is ---

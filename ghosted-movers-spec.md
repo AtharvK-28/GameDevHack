@@ -329,6 +329,8 @@ Sources: Kenney audio packs, CC0 sounds from freesound.org, and jsfxr for quick 
 
 ## Phone controllers
 
+**Shouts (decision 117).** Movers have LIFT!, WAIT! and MY BAD! along the bottom of their controls; a tap pops the words over their head on the big screen (one a second). The ghost has none.
+
 **Ghost nearby (decision 115).** While the ghost flies free, each mover's phone buzzes and pulses a ghost-green edge glow, quicker and stronger within 5, 3.5 and 2 m (GHOST_NEAR_* in Balance). The glow covers phones that cannot vibrate. Nothing while the ghost hides in a prop.
 
 One web page with three screens (lobby, Mover, Ghost). The host decides which screen each phone shows. Phones are held in landscape, with the thumbs on the joystick and buttons, and eyes on the projector, so buttons are big and few.

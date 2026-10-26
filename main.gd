@@ -44,6 +44,7 @@ func _ready() -> void:
 		movers.append(mover)
 	_apply_arena_bounds()
 	Net.players_changed.connect(_start_ready_controllers)
+	Net.shouted.connect(_on_shouted)
 	_build_connection_text()
 	_start_ready_controllers()
 	add_child(WINDOW_KEYS.new())
@@ -108,6 +109,13 @@ func _send_hud() -> void:
 		var cursed: float = item.curse_left if has_item and item is Loot else 0.0
 		Net.send_to_player(player, {"type": "hud", "held": item.item_name if has_item else "", "value": value, "cursed": ceili(cursed), "t": ceili(Game.seconds_left) if match_mode else 0, "generator": task, "near": ghost_near_level(mover)})
 
+
+
+
+func _on_shouted(slot: int, shout: int) -> void:
+	# Only movers in play shout; the ghost has its own ways to be heard.
+	if slot < movers.size() and not is_ghost_slot(slot):
+		movers[slot].shout(Balance.SHOUTS[shout])
 
 
 func ghost_near_level(mover: CharacterBody3D) -> int:

@@ -73,7 +73,15 @@
           <button id="haunt3-button" class="action curse" type="button" data-button="haunt3" hidden><strong>CURSE</strong><small id="haunt3-cost"></small></button>
         </div>
       </div>
-      <footer><span id="control-note">Eyes on the big screen.</span><button id="fullscreen-button" type="button">FULLSCREEN</button></footer>
+      <footer>
+        <span id="control-note">Eyes on the big screen.</span>
+        <div id="shouts" class="shouts" aria-label="Shout to your team">
+          <button type="button" data-shout="0">LIFT!</button>
+          <button type="button" data-shout="1">WAIT!</button>
+          <button type="button" data-shout="2">MY BAD!</button>
+        </div>
+        <button id="fullscreen-button" type="button">FULLSCREEN</button>
+      </footer>
       <div id="pause-notice" class="notice" role="status" hidden>
         <strong>PAUSED</strong>
         <p id="pause-reason"></p>

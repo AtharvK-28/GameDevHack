@@ -31,6 +31,18 @@ func _run() -> void:
 	_check(game.phase == "live" and not paused, "Ship reaches live play with both phones")
 	var ghost: Node3D = playground.ghost
 	_check(ghost.hauntings[0].label == "WIND" and ghost.hud().simple, "Ghost phone uses Wind and Curse controls")
+	# Shouts: a mover's phone pops words over their head; spam, junk and the ghost are ignored.
+	var shouter: int = 1 - game.ghost_slot
+	_send(shouter, {"type": "shout", "s": 0})
+	_send(shouter, {"type": "shout", "s": 1}) # Inside the cooldown.
+	_send(shouter, {"type": "shout", "s": 9})
+	_send(shouter, {"type": "shout", "s": "LIFT"})
+	_send(game.ghost_slot, {"type": "shout", "s": 2})
+	await _wait(0.3)
+	var words: Array = playground.movers[shouter].find_children("*", "Label3D", false, false).map(func(label: Label3D) -> String: return label.text)
+	_check(words.count("LIFT!") == 1 and not words.has("WAIT!"), "A mover's shout pops over their head once, cooldown respected (%s)" % [words])
+	var ghost_words: Array = playground.movers[game.ghost_slot].find_children("*", "Label3D", false, false).map(func(label: Label3D) -> String: return label.text)
+	_check(not ghost_words.has("MY BAD!"), "The ghost's phone cannot shout")
 	for prop: Node3D in get_nodes_in_group("furniture"):
 		var component: Node3D = prop.get_node("Possessable")
 		ghost.position = component.global_position

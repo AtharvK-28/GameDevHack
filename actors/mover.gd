@@ -19,6 +19,7 @@ var held_item: Carryable
 var grab_released: bool = true
 var tumble_time_left: float = 0.0
 var name_label := Label3D.new()
+var shout_left: float = 0.0 # Cooldown before the next shout.
 var hold_point: Marker3D
 var model: MoverModel
 var shove := Vector3.ZERO # Fading push from bumping into another mover.
@@ -58,6 +59,7 @@ func _label_stack() -> int:
 
 # --- Movement and controls ---
 func _physics_process(delta: float) -> void:
+	shout_left = maxf(0.0, shout_left - delta)
 	var player_input: InputRouter.PlayerInput = InputRouter.for_slot(slot)
 	if is_instance_valid(held_item) and (held_item.finished or not held_item.is_held_by(self)):
 		held_item = null
@@ -296,6 +298,36 @@ func wash(direction: Vector3, distance: float) -> void:
 	shove = direction.normalized() * distance * Balance.BUMP_SHOVE_DECAY
 	velocity.x = shove.x # Walking speed stays zero, so the whole push carries the mover.
 	velocity.z = shove.z
+
+
+
+# --- Shouts ---
+func shout(words: String) -> bool:
+	# Pops the words over this mover's head in comic lettering, unless they shouted a moment ago.
+	if shout_left > 0.0 or not in_play:
+		return false
+	shout_left = Balance.SHOUT_COOLDOWN
+	var bubble := Label3D.new()
+	bubble.text = words
+	bubble.font = load(Balance.COMIC_FONT_PATH)
+	bubble.font_size = Balance.PRICE_FONT_SIZE
+	bubble.pixel_size = Balance.SHOUT_PIXEL_SIZE
+	bubble.modulate = Color.WHITE
+	bubble.outline_size = Balance.VALUE_POPUP_OUTLINE
+	bubble.outline_modulate = Color(Balance.PLAYER_COLOURS[slot]).darkened(0.55) # Tinted toward who shouted.
+	bubble.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	bubble.no_depth_test = true
+	bubble.position.y = name_label.position.y + Balance.SHOUT_HEIGHT
+	bubble.scale = Vector3.ONE * Balance.VALUE_POPUP_PUNCH
+	add_child(bubble)
+	var punch := bubble.create_tween()
+	punch.tween_property(bubble, "scale", Vector3.ONE, Balance.VALUE_POPUP_PUNCH_TIME).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	var fade := bubble.create_tween()
+	fade.tween_interval(Balance.SHOUT_LIFETIME * 0.6)
+	fade.tween_property(bubble, "modulate:a", 0.0, Balance.SHOUT_LIFETIME * 0.4)
+	fade.tween_callback(bubble.queue_free)
+	Sfx.play("grab", 1.4, -8.0) # A small chirp so heads turn.
+	return true
 
 
 # --- Bumping (goofy physics) ---

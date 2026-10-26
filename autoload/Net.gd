@@ -8,6 +8,7 @@ extends Node
 signal players_changed
 signal role_changed(slot: int)
 signal session_changed
+signal shouted(slot: int, shout: int) # A phone tapped a shout; Main shows it over that mover.
 
 # --- Protocol constants ---
 const BUTTONS: Array[String] = ["grab", "throw", "brace", "possess", "action", "haunt1", "haunt2", "haunt3"]
@@ -176,6 +177,10 @@ func _handle_message(connection: Dictionary, message: Dictionary) -> void:
 			_set_direction(player, message)
 		"btn":
 			_set_button(player, message)
+		"shout":
+			var shout: Variant = message.get("s")
+			if shout is float and shout == floorf(shout) and int(shout) >= 0 and int(shout) < Balance.SHOUTS.size():
+				shouted.emit(player.slot, int(shout))
 
 
 func _join(connection: Dictionary, message: Dictionary) -> void:

@@ -44,6 +44,13 @@ const BATTERY_SEED_OFFSET: int = 7919 # Separate battery placement from the seed
 # --- Controller cadence ---
 const INPUT_RATE: int = 30 # Messages per second, including idle heartbeats.
 const HUD_RATE: int = 8 # Messages per second in later gameplay phases.
+# Shouts (decision 117): movers tap one on their phone and it pops as comic lettering over their head on the big
+# screen, so a pair can call "lift" or "wait" across a loud room. Sent by index; the words live here only.
+const SHOUTS: Array[String] = ["LIFT!", "WAIT!", "MY BAD!"]
+const SHOUT_COOLDOWN: float = 1.0 # Seconds before the same mover can shout again.
+const SHOUT_LIFETIME: float = 1.6 # Seconds a shout stays up.
+const SHOUT_HEIGHT: float = 0.8 # Metres above the name tag.
+const SHOUT_PIXEL_SIZE: float = 0.03 # Big enough to read from across the room at the party camera's distance.
 # Funny awards (decision 116), after every round and for the whole match. Checked in this order: each goes to the
 # player with the most of its stat (at least "least") who has no award yet, so nobody collects two.
 const AWARDS: Array[Dictionary] = [
