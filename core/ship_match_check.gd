@@ -36,8 +36,24 @@ func _run() -> void:
 		ghost.position = component.global_position
 		ghost._update_target()
 		_check(ghost.target != null and ghost.target.kind == component.kind, "Ship permits possession type %d in match mode" % component.kind)
+	# Awards: a real fall overboard and a real tumble count; the ghost is credited with what was lost.
+	var mover_slot: int = 1 - game.ghost_slot
+	var mover: CharacterBody3D = playground.movers[mover_slot]
+	mover.tumble()
+	playground.arena._begin_rescue(mover)
+	var any_loot: Node = get_nodes_in_group("loot")[0]
+	any_loot._lose_value(any_loot.value) # Lost to the ghost, so it is not anyone's butterfingers.
+	await _wait(0.1)
 	game._finish_round(false, "Ship restart check")
+	var awards: Array = game.result.get("awards", [])
+	_check(game.award_for(mover_slot, awards).get("title", "") == "MAN OVERBOARD", "The mover who fell in gets MAN OVERBOARD (%s)" % [awards])
+	_check(game.award_for(game.ghost_slot, awards).get("title", "") == "MENACE", "The ghost gets MENACE for the loot it wrecked")
+	_check(game.round_stats.get(mover_slot, {}).get("tumbles", 0) == 1 and not game.round_stats.get(mover_slot, {}).has("smashed"), "Tumbles count; loot lost while nobody held it is not a mover's fault")
+	var picked: Array = game.awards_for({0: {"smashed": 900, "tumbles": 3}, 1: {"banked": 4000, "tumbles": 5}, 2: {"tumbles": 1}})
+	_check(picked.size() == 2 and game.award_for(0, picked).title == "BUTTERFINGERS" and game.award_for(1, picked).title == "FLOOR INSPECTOR" and game.award_for(2, picked).is_empty(),
+		"Each award goes to the leader without one already, above its threshold (%s)" % [picked])
 	game.restart_round()
+	_check(game.match_stats.is_empty(), "A restarted round's stats never reach the match totals")
 	_check(game.round_seed == seed_before and _ship_placements() == first, "Ship restart reproduces the same catalog pick and spawn positions")
 	_check(playground.arena.rescues.is_empty() and not playground.arena.wind_active, "Ship restart clears wind and pending rescues")
 	for client: WebSocketPeer in clients:

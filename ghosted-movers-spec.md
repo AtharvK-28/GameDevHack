@@ -274,6 +274,8 @@ Each round has a clear team result: the movers either hit the quota or they don'
 | Damage multiplier | 4% per m/s × fragility | Raise to 5% | Lower to 3% |
 | Possession drain | 8 /s | Lower to 6 | Raise to 10 |
 
+**Awards (decision 116).** After every round, and for the whole match on the final standings, each player can earn one funny award: MAN OVERBOARD, BUTTERFINGERS, FLOOR INSPECTOR, MENACE or PACK MULE (Balance.AWARDS, checked in that order, each to the leader without one). Phones show their own.
+
 ## Camera, visuals and audio
 
 The game is judged on a projector from across a room. Everything must read instantly: big shapes, strong colours, loud feedback.

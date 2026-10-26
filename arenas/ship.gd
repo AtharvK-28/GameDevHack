@@ -14,6 +14,8 @@ const OIL_CAN_SCENE := preload("res://props/tasks/oil_can.tscn")
 const LANTERN_SCENE := preload("res://props/tasks/lantern_posts.tscn")
 const FURNITURE := {"slider": "Crate", "hopper": "Armour", "door": "Door", "dropper": "Chandelier", "rug": "Rug"}
 
+signal overboard(slot: int) # A mover fell in the sea; the round's awards count it.
+
 # --- Round settings and state ---
 var demo_mode: bool = false
 var player_count: int = 2
@@ -429,6 +431,7 @@ func _begin_rescue(mover: CharacterBody3D) -> void:
 		mover.held_item = null
 	mover.set_in_play(false)
 	rescues[mover.slot] = {"mover": mover, "left": Balance.SHIP_RESCUE_SECONDS}
+	overboard.emit(mover.slot)
 	print("Player %d overboard: rescue in %.0f seconds" % [mover.slot + 1, Balance.SHIP_RESCUE_SECONDS])
 
 

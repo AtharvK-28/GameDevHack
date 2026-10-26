@@ -172,6 +172,10 @@ function handleMessage(message) {
         renderGhostHud(message);
       }
       break;
+    case "final":
+      finalAwards = message.awards || [];
+      render();
+      break;
     case "buzz":
       if (navigator.vibrate && Number.isFinite(message.ms)) navigator.vibrate(message.ms);
       break;
@@ -248,14 +252,20 @@ function renderResult() {
   elements["result-title"].textContent = won ? "YOU WIN" : "YOU LOSE";
   elements["result-reason"].textContent = result.reason || "";
   elements["result-points"].textContent = me ? `+${Math.round(me.roundPoints)} this round · ${Math.round(me.points)} total` : "";
+  const award = (result.awards || []).find(entry => entry.slot === playerSlot);
+  elements["result-award"].hidden = !award;
+  elements["result-award"].textContent = award ? `${award.title}! ${award.detail}` : "";
 }
+
+let finalAwards = [];
 
 function renderFinal() {
   const rows = matchState.standings || [];
   elements["final-title"].textContent = rows.length ? `${rows[0].name} wins` : "";
   elements["final-standings"].replaceChildren(...rows.map(row => {
     const item = document.createElement("li");
-    item.textContent = `${row.name} · ${Math.round(row.points)} points`;
+    const award = finalAwards.find(entry => entry.slot === row.slot);
+    item.textContent = `${row.name} · ${Math.round(row.points)} points${award ? ` · ${award.title}` : ""}`;
     if (row.slot === playerSlot) item.classList.add("me");
     return item;
   }));

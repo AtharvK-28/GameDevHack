@@ -153,3 +153,6 @@ body[data-ghost-near="3"] #ghost-glow { --glow-size: 80px; --glow-spread: 18px; 
 #ghost-glow.pulse { animation: ghost-pulse .5s ease-out; }
 @keyframes ghost-pulse { 0% { opacity: var(--glow-peak, .5); } 100% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { #ghost-glow.pulse { animation-duration: .01s; } }
+
+/* --- Funny awards on the result screen --- */
+.award { margin: .2em 0 0; color: var(--orange); font-weight: 800; letter-spacing: .02em; }

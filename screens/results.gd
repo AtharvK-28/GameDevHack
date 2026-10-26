@@ -61,6 +61,12 @@ func _column(entry: Dictionary, place: int) -> Control:
 	name_line.autowrap_mode = TextServer.AUTOWRAP_OFF
 	column.add_child(name_line)
 	column.add_child(Style.label("%d points" % roundi(entry.points), Balance.UI_SMALL_SIZE, Balance.UI_TEXT))
+	var award: Dictionary = Game.award_for(int(entry.slot), Game.awards_for(Game.match_stats))
+	if not award.is_empty():
+		var title := Style.lettering(award.title, Balance.UI_BODY_SIZE, Balance.UI_MONEY)
+		title.autowrap_mode = TextServer.AUTOWRAP_OFF
+		column.add_child(title)
+		column.add_child(Style.label(award.detail, Balance.UI_SMALL_SIZE, Balance.UI_MUTED))
 	if place == 0:
 		var crown := _crown()
 		crown.size_flags_horizontal = Control.SIZE_SHRINK_CENTER

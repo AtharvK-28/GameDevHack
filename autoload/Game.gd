@@ -24,6 +24,8 @@ var lost_value: int = 0
 var scores: Dictionary = {}
 var bank_credit: Dictionary = {}
 var round_points: Dictionary = {}
+var round_stats: Dictionary = {} # Slot -> {stat: amount} this round, for the awards.
+var match_stats: Dictionary = {} # The same, summed over the rounds played to the end.
 var result: Dictionary = {}
 var pause_reason: String = ""
 var host_paused: bool = false
@@ -60,6 +62,7 @@ func start_match() -> void:
 	round_count = Balance.MATCH_ROUNDS[participants.size() - 2]
 	round_index = 0
 	scores.clear()
+	match_stats.clear()
 	for slot: int in participants:
 		scores[slot] = 0.0
 	Net.accept_new_players = false
@@ -80,6 +83,7 @@ func _begin_round(restarting: bool) -> void:
 	ghost_slot = participants[round_index % participants.size()]
 	bank_credit.clear()
 	round_points.clear()
+	round_stats.clear()
 	result.clear()
 	banked_value = 0
 	lost_value = 0
@@ -93,6 +97,15 @@ func _begin_round(restarting: bool) -> void:
 		var item_id: int = item.get_instance_id()
 		room_items[item_id] = {"room": room_at(item.global_position), "state": "pending"}
 		item.shattered.connect(func(_slot: int) -> void: room_items[item_id].state = "broken")
+		# Damage counts against a mover only while they hold or have just thrown the item.
+		item.damaged.connect(func(loss: int, _remaining: int) -> void:
+			if item.is_held() or item.thrown:
+				add_stat(item.last_carrier_slot, "smashed", loss))
+	for mover: CharacterBody3D in host.movers:
+		if not mover.tumbled.is_connected(_on_tumbled):
+			mover.tumbled.connect(_on_tumbled)
+	if host.arena.has_signal("overboard"):
+		host.arena.overboard.connect(func(slot: int) -> void: add_stat(slot, "overboard", 1))
 	host.arena.truck.delivered.connect(_on_delivered)
 	host.arena.truck.delivery_notice.connect(_delivery_notice)
 	for slot: int in participants:
@@ -161,10 +174,64 @@ func _finish_round(movers_won: bool, reason: String) -> void:
 		round_points[slot] = points
 		scores[slot] += points
 		Net.player_for_slot(slot).points = scores[slot]
-	result = {"moversWon": movers_won, "reason": reason, "banked": banked_value, "starting": starting_value, "lost": lost_value}
+	for slot: int in bank_credit:
+		add_stat(slot, "banked", roundi(bank_credit[slot]))
+	add_stat(ghost_slot, "wrecked", lost_value)
+	result = {"moversWon": movers_won, "reason": reason, "banked": banked_value, "starting": starting_value, "lost": lost_value, "awards": awards_for(round_stats)}
 	_set_phase("result")
 	for slot: int in participants:
 		Net.send_to_player(Net.player_for_slot(slot), {"type": "result", "moversWon": movers_won, "points": round_points})
+
+
+
+# --- Awards ---
+func add_stat(slot: int, stat: String, amount: int) -> void:
+	if phase != "live" and stat not in ["banked", "wrecked"]:
+		return # Stats only count during play; the round's totals are added as it finishes.
+	if slot not in participants or amount <= 0:
+		return
+	var stats: Dictionary = round_stats.get_or_add(slot, {})
+	stats[stat] = stats.get(stat, 0) + amount
+
+
+func awards_for(stats: Dictionary) -> Array[Dictionary]:
+	# Each award, in order, to the player with the most of its stat who has none yet: [{slot, title, detail}].
+	var awards: Array[Dictionary] = []
+	var awarded: Dictionary = {}
+	for award: Dictionary in Balance.AWARDS:
+		var best_slot: int = -1
+		var best: int = award.least - 1
+		for slot: int in stats:
+			var amount: int = stats[slot].get(award.stat, 0)
+			if not awarded.has(slot) and amount > best:
+				best = amount
+				best_slot = slot
+		if best_slot < 0:
+			continue
+		awarded[best_slot] = true
+		var shown: String = Loot.rupees(best) if award.get("money", false) else str(best)
+		awards.append({"slot": best_slot, "title": award.title, "detail": award.detail % shown if award.get("money", false) else award.detail % best})
+	return awards
+
+
+func award_for(slot: int, awards: Array) -> Dictionary:
+	for award: Dictionary in awards:
+		if int(award.slot) == slot:
+			return award
+	return {}
+
+
+func _fold_round_stats() -> void:
+	for slot: int in round_stats:
+		var total: Dictionary = match_stats.get_or_add(slot, {})
+		for stat: String in round_stats[slot]:
+			total[stat] = total.get(stat, 0) + round_stats[slot][stat]
+	round_stats.clear()
+
+
+func _on_tumbled(slot: int) -> void:
+	if slot != ghost_slot:
+		add_stat(slot, "tumbles", 1)
 
 
 # --- Host actions ---
@@ -194,10 +261,11 @@ func restart_round() -> void:
 func next_round() -> void:
 	if phase != "result":
 		return
+	_fold_round_stats() # Only rounds played on count: a restart replays the round instead.
 	if round_index + 1 >= round_count:
 		_set_phase("final")
 		for player: Dictionary in Net.players:
-			Net.send_to_player(player, {"type": "final", "standings": standings(), "awards": []})
+			Net.send_to_player(player, {"type": "final", "standings": standings(), "awards": awards_for(match_stats)})
 		return
 	round_index += 1
 	_begin_round(false)

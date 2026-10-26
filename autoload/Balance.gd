@@ -44,6 +44,15 @@ const BATTERY_SEED_OFFSET: int = 7919 # Separate battery placement from the seed
 # --- Controller cadence ---
 const INPUT_RATE: int = 30 # Messages per second, including idle heartbeats.
 const HUD_RATE: int = 8 # Messages per second in later gameplay phases.
+# Funny awards (decision 116), after every round and for the whole match. Checked in this order: each goes to the
+# player with the most of its stat (at least "least") who has no award yet, so nobody collects two.
+const AWARDS: Array[Dictionary] = [
+	{"stat": "overboard", "title": "MAN OVERBOARD", "detail": "%d× in the sea", "least": 1},
+	{"stat": "smashed", "title": "BUTTERFINGERS", "detail": "%s smashed", "least": 500, "money": true},
+	{"stat": "tumbles", "title": "FLOOR INSPECTOR", "detail": "fell over %d times", "least": 2},
+	{"stat": "wrecked", "title": "MENACE", "detail": "%s wrecked", "least": 1, "money": true},
+	{"stat": "banked", "title": "PACK MULE", "detail": "%s delivered", "least": 1, "money": true},
+]
 # Ghost nearby (decision 115): a mover's phone buzzes and glows ghost-green while the free-flying ghost is close,
 # faster and stronger the closer it gets, so players feel the near-invisible wisp. Not while it hides in a prop.
 const GHOST_NEAR_RANGES: Array[float] = [5.0, 3.5, 2.0] # Metres (flat); inside each the level rises from 1 to 3.

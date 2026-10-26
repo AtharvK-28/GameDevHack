@@ -95,7 +95,8 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 
 - [x] Ghost-nearby buzz and glow on mover phones (decision 115): Ship check covers levels 0-3 and silence inside a prop;
   phone page rendered in headless Edge at 844 x 390 at levels 1 and 3, JS syntax-checked.
-- [ ] Funny end-of-round awards
+- [x] Funny end-of-round and match awards (decision 116): Ship match check covers overboard, tumbles, the ghost's
+  MENACE, no blame for unheld loot, award picking and restarts; round end rendered with four players at 1080p.
 - [ ] Shout bubbles from the phone
 - [ ] Slow-motion punch-in on big smashes
 - [ ] Audience phones vote on chaos events

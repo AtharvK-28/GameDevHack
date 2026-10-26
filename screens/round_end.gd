@@ -104,9 +104,15 @@ func _player_row(slot: int) -> Control:
 	name_line.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	name_line.autowrap_mode = TextServer.AUTOWRAP_OFF
 	who.add_child(name_line)
+	var award: Dictionary = Game.award_for(slot, Game.result.get("awards", []))
 	var role := Style.label("Ghost" if ghost else "Mover", Balance.UI_SMALL_SIZE, Balance.UI_GHOST if ghost else Balance.UI_MUTED)
 	role.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	if not award.is_empty():
+		role.text += " · " + award.detail
+	role.autowrap_mode = TextServer.AUTOWRAP_OFF
 	who.add_child(role)
+	if not award.is_empty():
+		who.add_child(_award_title(award.title))
 	var gained: int = roundi(Game.round_points.get(slot, 0.0))
 	var points := Style.lettering("+0", Balance.COMIC_HEADING_SIZE, Balance.UI_MONEY)
 	points.autowrap_mode = TextServer.AUTOWRAP_OFF
@@ -119,6 +125,19 @@ func _player_row(slot: int) -> Control:
 	total.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	row.add_child(total)
 	return pill
+
+
+
+func _award_title(title: String) -> Control:
+	# A funny award in comic lettering, stamped on a moment after the row appears.
+	var line := Style.lettering(title, Balance.UI_BODY_SIZE, Balance.UI_MONEY)
+	line.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	line.autowrap_mode = TextServer.AUTOWRAP_OFF
+	line.modulate.a = 0.0
+	var appear: Tween = line.create_tween()
+	appear.tween_interval(Balance.COUNT_UP_TIME)
+	appear.tween_property(line, "modulate:a", 1.0, 0.25)
+	return line
 
 
 # --- Layout ---
