@@ -289,6 +289,15 @@ func tumble(_push: Vector3 = Vector3.ZERO) -> void:
 	print("Player %d tumbled" % (slot + 1))
 
 
+
+func wash(direction: Vector3, distance: float) -> void:
+	# A wave knocks the mover down and carries them this far sideways; the shove decays, so this speed travels it.
+	tumble(direction)
+	shove = direction.normalized() * distance * Balance.BUMP_SHOVE_DECAY
+	velocity.x = shove.x # Walking speed stays zero, so the whole push carries the mover.
+	velocity.z = shove.z
+
+
 # --- Bumping (goofy physics) ---
 func _check_bumps(before_slide: Vector3, delta: float) -> void:
 	# Walking into another mover shoves both apart a little and squashes them; nobody falls over.

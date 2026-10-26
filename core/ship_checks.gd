@@ -52,6 +52,7 @@ func run() -> int:
 	await _check_wind()
 	await _check_rolling_barrel()
 	await _check_overboard()
+	await _check_waves()
 	world.queue_free()
 	await _frames(3)
 	return failures
@@ -298,6 +299,33 @@ func _check_overboard() -> void:
 	var item_ref: WeakRef = weakref(item)
 	await _frames(3)
 	_check(item_ref.get_ref() == null, "Overboard loot is removed once at the fixed water plane")
+
+
+# --- Gangplank waves ---
+func _check_waves() -> void:
+	_check(not arena.demo_mode and arena.wave_warning_left < 0.0, "Outside a match the sea stays calm")
+	for frame: int in range(300): # Let any rescue left over from the overboard checks finish first.
+		if arena.rescues.is_empty():
+			break
+		await get_tree().physics_frame
+	_place(0, Vector2(12.0, 13.5)) # Mid-plank, about to be washed.
+	_place(1, Vector2(12.4, 14.5)) # On the plank, bracing.
+	_place(2, Vector2(12.0, 9.0)) # On the main deck, out of reach.
+	_set_input(1, Vector2.ZERO, false, true)
+	await _frames(20)
+	arena.start_wave(Vector3.RIGHT)
+	_check(arena.foam.visible and arena.wave_label.visible, "A wave shows its foam and warning before it hits")
+	await _frames(int(SETTINGS.SHIP_WAVE_WARNING * 60.0) - 10)
+	_check(world.movers[0].in_play and not world.movers[0].is_tumbling(), "Nobody is hit during the warning")
+	await _frames(80)
+	_check(arena.rescues.has(0), "The wave carries an unbraced mover off the plank into a tug rescue")
+	_check(not arena.rescues.has(1) and world.movers[1].in_play and arena.on_gangplank(world.movers[1].global_position), "A braced mover rides the wave out on the plank")
+	_check(not arena.rescues.has(2) and not world.movers[2].is_tumbling(), "Movers off the plank are untouched")
+	_set_input(1, Vector2.ZERO)
+	await _frames(150)
+	_check(world.movers[0].in_play, "The washed mover is rescued onto the tug")
+	var first: float = arena.wave_left
+	_check(first >= SETTINGS.SHIP_WAVE_INTERVAL.x - 0.1 and first <= SETTINGS.SHIP_WAVE_INTERVAL.y, "The next wave is about 20 s away (%.1f s)" % first)
 
 
 # --- Helpers ---

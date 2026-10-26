@@ -23,6 +23,12 @@ var wind_direction := Vector3.ZERO
 var wind_active: bool = false
 var sway_time: float = 0.0
 var sway_override: float = NAN # Checks pin the roll here; NAN leaves it rolling.
+var waves := RandomNumberGenerator.new()
+var wave_left: float = 0.0 # Seconds until the next wave's warning.
+var wave_warning_left: float = -1.0 # Counting down while a wave is about to hit; negative when calm.
+var wave_direction := Vector3.RIGHT # The way the next wave pushes across the plank.
+var foam: MeshInstance3D
+var wave_label: Label3D
 
 # --- Setup ---
 func _ready() -> void:
@@ -32,6 +38,9 @@ func _ready() -> void:
 	_spawn_furniture()
 	if demo_mode:
 		_spawn_lantern_task()
+	_build_wave()
+	waves.seed = spawn_seed + Balance.SHIP_WAVE_SEED_OFFSET
+	wave_left = waves.randf_range(Balance.SHIP_WAVE_INTERVAL.x, Balance.SHIP_WAVE_INTERVAL.y)
 
 
 # --- Arena interface ---
@@ -85,6 +94,7 @@ func room_at(point: Vector3) -> String:
 func _physics_process(delta: float) -> void:
 	_update_rescues(delta)
 	_update_sway(delta)
+	_update_waves(delta)
 	for mover: Node3D in get_tree().get_nodes_in_group("movers"):
 		if mover.global_position.y <= Balance.SHIP_WATER_Y:
 			_begin_rescue(mover)
@@ -97,6 +107,92 @@ func _physics_process(delta: float) -> void:
 			if possession != null and possession.is_possessed():
 				possession.ghost.leave()
 			furniture.queue_free()
+
+
+# --- Gangplank waves ---
+func _update_waves(delta: float) -> void:
+	if wave_warning_left >= 0.0:
+		wave_warning_left -= delta
+		if wave_warning_left < 0.0:
+			_wave_hit()
+		return
+	# Waves are a match hazard: only in live play, so the reveal and the test harness stay calm.
+	if not demo_mode or Game.phase != "live":
+		return
+	wave_left -= delta
+	if wave_left <= 0.0:
+		start_wave(Vector3.RIGHT if waves.randf() < 0.5 else Vector3.LEFT)
+
+
+func start_wave(direction: Vector3) -> void:
+	wave_direction = direction
+	wave_warning_left = Balance.SHIP_WAVE_WARNING
+	wave_left = waves.randf_range(Balance.SHIP_WAVE_INTERVAL.x, Balance.SHIP_WAVE_INTERVAL.y)
+	# The foam rises out of the sea on the side it will come from.
+	var plank: Rect2 = ArenaBuilder.rect_of(layout.gangplank)
+	var side: float = plank.position.x - 0.6 if direction.x > 0.0 else plank.end.x + 0.6
+	foam.position = Vector3(side, Balance.SHIP_WATER_Y, plank.get_center().y)
+	foam.show()
+	wave_label.show()
+	var rise := create_tween()
+	rise.set_pause_mode(Tween.TWEEN_PAUSE_BOUND)
+	rise.tween_property(foam, "position:y", 0.3, Balance.SHIP_WAVE_WARNING).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	Sfx.play("whoosh", 0.7)
+	print("Wave coming over the gangplank")
+
+
+func on_gangplank(point: Vector3) -> bool:
+	return ArenaBuilder.rect_of(layout.gangplank).has_point(Vector2(point.x, point.z)) and point.y > -0.5 and point.y < 1.5
+
+
+func _wave_hit() -> void:
+	var plank: Rect2 = ArenaBuilder.rect_of(layout.gangplank)
+	var far_edge: float = plank.end.x if wave_direction.x > 0.0 else plank.position.x
+	for mover: CharacterBody3D in get_tree().get_nodes_in_group("movers"):
+		if mover.in_play and not mover.is_bracing() and on_gangplank(mover.global_position):
+			mover.wash(wave_direction, absf(far_edge - mover.global_position.x) + Balance.SHIP_WAVE_CLEARANCE)
+	# The foam sweeps across the plank and sinks back.
+	var sweep := create_tween()
+	sweep.set_pause_mode(Tween.TWEEN_PAUSE_BOUND)
+	sweep.tween_property(foam, "position:x", foam.position.x + wave_direction.x * (plank.size.x + 1.2), Balance.SHIP_WAVE_SWEEP_TIME)
+	sweep.tween_property(foam, "position:y", Balance.SHIP_WATER_Y, Balance.SHIP_WAVE_SWEEP_TIME)
+	sweep.tween_callback(foam.hide)
+	wave_label.hide()
+	Fx.burst(Vector3(plank.get_center().x, 0.3, plank.get_center().y), Fx.Kind.SPARKLE, self, 2.0)
+	Sfx.play("thud", 0.6)
+
+
+func _build_wave() -> void:
+	var plank: Rect2 = ArenaBuilder.rect_of(layout.gangplank)
+	foam = MeshInstance3D.new()
+	foam.name = "WaveFoam"
+	var crest := CapsuleMesh.new() # A rounded crest lying along the plank reads as a wave, not a wall.
+	crest.radius = 0.55
+	crest.height = plank.size.y + 1.2
+	foam.mesh = crest
+	foam.rotation.x = PI / 2.0
+	var material := StandardMaterial3D.new()
+	material.albedo_color = Balance.SHIP_WAVE_COLOUR
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.emission_enabled = true
+	material.emission = Color(Balance.SHIP_WAVE_COLOUR, 1.0)
+	material.emission_energy_multiplier = 0.4
+	foam.material_override = material
+	foam.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	foam.hide()
+	add_child(foam)
+	wave_label = Label3D.new()
+	wave_label.text = "WAVE! BRACE!"
+	wave_label.font = load(Balance.COMIC_FONT_PATH)
+	wave_label.font_size = Balance.PRICE_FONT_SIZE
+	wave_label.pixel_size = Balance.FLOOR_LABEL_PIXEL_SIZE * 1.6
+	wave_label.outline_size = Balance.LABEL_OUTLINE
+	wave_label.outline_modulate = Balance.COMIC_INK
+	wave_label.modulate = Color(Balance.SHIP_WAVE_COLOUR, 1.0)
+	wave_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	wave_label.position = Vector3(plank.get_center().x, 2.2, plank.get_center().y)
+	wave_label.hide()
+	add_child(wave_label)
 
 
 # --- Deck sway ---

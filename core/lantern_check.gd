@@ -38,6 +38,7 @@ func _run() -> void:
 	game.phase = "live"
 	world.setup_match_round(ROUND_SEED, game.participants, 0)
 	arena = world.arena
+	arena.wave_left = INF # Waves are checked by the Ship check; keep this carry route calm.
 	await _wait(CHECK_SECONDS * 2.0)
 	_check_spots()
 	_check_clearance()

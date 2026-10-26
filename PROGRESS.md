@@ -192,6 +192,8 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
   steps, chest down the forecastle steps and over the plank, sway, wind, rescue). Party-camera renders inspected.
 - [x] 6. Rolling barrel hazard (decision 108): Ship check adds ROLL label, spin, speed-up down the castle steps and the
   knocked-over mover (69 pass); ghost, ship match, arena layout and match checks pass. Feel pending.
-- [ ] 7. Waves over the gangplank
+- [x] 7. Waves over the gangplank (decision 109): Ship check adds calm outside matches, warning visuals, no hit during
+  the warning, unbraced mover washed into a rescue, braced mover holds, deck untouched, next-wave timing (77 pass).
+  Warning render inspected. Feel pending.
 - [ ] 8. Ship audio pass
 - [ ] 9. Fog banks

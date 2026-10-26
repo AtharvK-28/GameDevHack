@@ -876,6 +876,7 @@ const LOADING_TIPS: Array[String] = [
 	"Power the generator with 3 batteries to weaken the ghost.",
 	"On the Ship, carry 3 oil cans to the lantern posts on the tug.",
 	"Ghost: possess a rum barrel and ROLL it down the steps.",
+	"Wave coming? Hold BRACE on the gangplank or get washed overboard.",
 	"A thrown vase can knock a mover flat.",
 ]
 
@@ -894,6 +895,14 @@ const SHIP_SWAY_PERIOD: float = 9.0 # Seconds for one full roll, port and back.
 const SHIP_SWAY_ANGLE: float = 2.5 # Degrees the sea and horizon tilt at the peak; the camera never moves.
 const SHIP_SWAY_DRIFT_SPEEDS: Array[float] = [0.35, 0.25, 0.12, 0.0] # Peak creep in m/s by weight class; the chest stays put.
 const SHIP_SWAY_GRIP: float = 12.0 # m/s² the roll may add to reach that creep, enough to beat loot friction.
+# Gangplank waves (decision 109): in live play a wave washes over the plank about every 20 s. A foam wall rises
+# beside the plank for the warning; then every unbraced mover on the plank is knocked down and carried off it.
+const SHIP_WAVE_INTERVAL := Vector2(17.0, 23.0) # Seconds between waves, picked per wave from a seeded stream.
+const SHIP_WAVE_WARNING: float = 1.0
+const SHIP_WAVE_CLEARANCE: float = 0.6 # Metres past the plank's far edge a washed mover is carried.
+const SHIP_WAVE_SEED_OFFSET: int = 4241 # Separate wave timing from the seeded loot selection.
+const SHIP_WAVE_COLOUR := Color(0.85, 0.95, 1.0, 0.65) # Foam.
+const SHIP_WAVE_SWEEP_TIME: float = 0.35 # Seconds the foam takes to sweep across the plank.
 const SHIP_GUST_COST: int = 40
 const SHIP_GUST_COOLDOWN: float = 18.0
 const SHIP_GUST_WARNING: float = 1.0
