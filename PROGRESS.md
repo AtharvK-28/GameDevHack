@@ -115,6 +115,24 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
   `core/stick_check.gd` pushes up and right from a real phone on both arenas and measures the mover on screen.
 - [ ] Playtest the new balance and stick with people.
 
+## Joining and the venue network (2026-10-27)
+
+- [x] The host serves the phone page (decision 125): `autoload/PageServer.gd` on 8080, so there is no second
+  server to start and no Python dependency. `core/page_server_check.gd` passes 27 assertions (the page and every
+  file the phone needs, content types, the served `settings.json` parsing as JSON, five traversal and 404
+  refusals, non-GET refused, the WebSocket port unaffected). All 17 suites pass, 1,226 assertions, no failures.
+  Worth knowing for future checks: autoload globals do not resolve in `extends SceneTree` scripts — use
+  `preload("res://autoload/Balance.gd")` and `root.get_node("Net")`, as every other check does — and `_get` is
+  reserved by `Object`.
+- [ ] Export filter: `controller/` carries a `.gdignore`, so the page is read from disk when running from source
+  but would not be packed into an exported build. Add `controller/*` to the export preset's include filter when
+  the export is built.
+- [ ] Venue network still untested. The laptop hotspot caps at 8 devices on Windows, which covers 4 players plus
+  4 spectators but not audience mode's 50; that needs venue Wi-Fi without client isolation.
+- Dropped for now: a Wi-Fi QR beside the join QR. Two codes cost more experience than they save, and the
+  one-scan version needs a captive portal, whose iOS WebView has no `localStorage` — which reconnect depends on.
+- [ ] Preflight panel (detected IPs, page server state, connected devices) — proposed, not built.
+
 ## Developer mode (decision 120, 2026-10-27)
 
 - [x] Options switch, F10 stand-in phones, keyboard driving of stand-in slots, F9 phone page, F3 overlay and the

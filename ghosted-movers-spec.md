@@ -391,7 +391,7 @@ flowchart LR
     MP["Mover phones (1–3)<br/>joystick + 3 buttons"]
     GP["Ghost phone<br/>joystick, POSSESS, ACTION, hauntings"]
     subgraph HOST["Host laptop"]
-      WEB["Web server :8080<br/>serves the controller page"]
+      WEB["PageServer :8080<br/>serves the controller page"]
       GODOT["Godot 4 game<br/>Net.gd WebSocket server :9080<br/>physics, possession, hauntings, scoring<br/>single source of truth"]
     end
   end
@@ -404,7 +404,7 @@ flowchart LR
 
 **How the bridge works in Godot.** `Net.gd` opens a `TCPServer` on port 9080. Each incoming connection is upgraded with `WebSocketPeer.accept_stream()`, and every peer is polled in `_process`. Messages are JSON text. No Godot multiplayer API is needed, because phones are plain browsers, not Godot clients.
 
-**Serving the page.** Run `python -m http.server 8080` inside `controller/` (`python3` or `py` depending on how Python is installed). Phones open `http://<laptop-ip>:8080`, and the page connects to `ws://<laptop-ip>:9080`. Use plain `http`: an `https` page is not allowed to open a `ws://` connection.
+**Serving the page.** The host serves it itself: `autoload/PageServer.gd` listens on 8080 and serves `controller/` read-only over HTTP, so the laptop runs the game alone with no second server to start. Phones open `http://<laptop-ip>:8080`, and the page connects to `ws://<laptop-ip>:9080`. Use plain `http`: an `https` page is not allowed to open a `ws://` connection. Only the page's own file types are served and nothing outside `controller/` is reachable. Note `controller/` carries a `.gdignore`, so an exported build must add it to the export filter for the page to ship.
 
 **Stretch goal.** A ~40-line static file server inside Godot, also on `TCPServer`, would make the game one self-contained executable.
 
@@ -706,8 +706,8 @@ and saved with the other options; `core/dev_tools.gd` (added to the match world 
   two-person item in pairs and brace for hauntings and waves; the ghost bot haunts, curses, steals and shoves.
   **Ctrl+B** turns them off, and stand-ins nobody drives then stand still. Pairs give up on a stalled item, and a
   wedged carrier puts its item down, so a round never stalls.
-- **Phone page.** **F9** opens `http://localhost:8080/#k=<session key>` in the laptop's browser (the page server
-  must be running); the lobby shows the address.
+- **Phone page.** **F9** opens `http://localhost:8080/#k=<session key>` in the laptop's browser; the host serves
+  the page itself, and the lobby shows the address.
 - **Overlay.** **F3** toggles a debug panel in the bottom-left corner: FPS and phase, the driven slot and role, the
   ghost's energy, possession and cooldowns, each mover's ghost-near level and held item, the Ship's wave, fog, roll,
   pitch and rise, banked and lost loot against the target and limit, the round's award stats and the audience vote.

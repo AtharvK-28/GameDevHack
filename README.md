@@ -18,7 +18,7 @@ Use the installed Godot executable if `godot` is not on PATH. In PowerShell, put
 ## Play a match
 
 1. Press **F5 (Run Project)** in Godot. **F6 runs only the open scene**: using it with `Main.tscn` opens the QR lobby directly, bypassing Home. The title screen opens over the Mansion; choose **Play**, then the **Old Mansion**, to reach the lobby with its QR code, join link and six-character code. **F11** switches between fullscreen and a window. (If Godot runs the game inside the editor's Game tab, fullscreen needs the game in its own window: turn off the Game tab's embed option.)
-2. Start the phone page server (see the next section, step 2). Phones on the same Wi-Fi scan the QR code or open the link, enter a name and tap **Ready to move**. If opening the plain link, also enter the six-character code shown on the host.
+2. Phones on the same Wi-Fi scan the QR code or open the link, enter a name and tap **Ready to move**. If opening the plain link, also enter the six-character code shown on the host.
 3. With 2–4 phones ready, press **Enter** on the host. The intro cutscene plays first (about a minute; **Enter** shows the next panel, **Esc** skips it), once per match. Each round: a 3 s role reveal, then 150 s of play. 2 players play 4 rounds, 3 play 3 and 4 play 4; the ghost passes to the next player every round.
 4. **Winning a round:** movers must deliver their target share of the round's starting value: **55%** with one mover, **60%** with two, **65%** with three. Losing so much that the target is out of reach (damage, shattering, items lost) ends the round for the ghost at once. Each round also has a bonus goal, and movers earn 1–3 stars for their haul. Otherwise the round ends when time runs out or every item has been delivered or destroyed; only delivered value counts.
 5. **Host keys.** Round end: **Enter** next round, **R** restart the round (same layout and roles; its points are replaced), **L** back to the lobby. Final standings: **Enter** back to the lobby. If a phone drops mid-round the round pauses until it rejoins from the same browser with its saved secret; **L** cancels to the lobby without scoring.
@@ -45,13 +45,7 @@ The Phase 4 sandbox, with every ghost ability and the G key, is still available:
 ### Harness steps
 
 1. Import this folder's `project.godot` into Godot and press **F6 with Main.tscn open**, or **F5** to run the project. Only run one host at a time: it listens on port 9080.
-2. In a terminal, change into `controller/` and start the page server:
-
-   ```text
-   python -m http.server 8080
-   ```
-
-   If your Python installation uses a different command, use `python3 -m http.server 8080` (commonly Linux/macOS) or `py -m http.server 8080` (Windows).
+2. Nothing else to start: the running game serves the phone page itself on port 8080, from `controller/`.
 
 3. Put the laptop and phones on the same private Wi-Fi/hotspot. Open the `http://<laptop-ip>:8080` address shown in the game on each phone. Do not use `localhost` on phones. Use the address belonging to the shared network if the host lists several.
 4. Hold the phone sideways, enter a name, join, and tap **Ready to move**. Each phone controls its own coloured mover. The page and nipplejs are served locally; internet is not needed.
@@ -81,7 +75,7 @@ The Phase 4 sandbox, with every ghost ability and the G key, is still available:
 
 Gamepads are a later phase.
 
-Allow the game (9080) and Python page server (8080) through the host's firewall on the private network if prompted. A second game instance shows a port-in-use error. Stop the first host before retrying. Stop Python with Ctrl+C when finished.
+Allow the game through the host's firewall on the private network if prompted: it listens on both 9080 (controllers) and 8080 (the phone page). A second game instance shows a port-in-use error. Stop the first host before retrying.
 
 ## Test alone with developer mode
 
@@ -90,7 +84,7 @@ Turn on **Options → Game → Developer mode (solo testing)**, then go to a lob
 1. Press **F10** once per stand-in player (two for a 2-player match, up to four). Stand-ins join and clock in by themselves. Press **Enter** to start.
 2. Drive anyone from the keyboard, the ghost included: **1–4** picks the slot; WASD moves; Space grab, E throw, Shift brace; Q possess, F action, Z shake, C curse. Bots play every stand-in you are not driving (Ship and Mansion); **Ctrl+B** turns them off so the others stand still.
 3. **F3** shows the debug overlay. In live play: **Ctrl+1** haunting, **Ctrl+2** wave, **Ctrl+3** big smash, **Ctrl+4** fog, **Ctrl+5** audience vote, **Ctrl+W / Ctrl+L** win or lose the round, **Ctrl+T** +30 s, **Ctrl+N** end the round and make the next one the last. Any time: **F5 / F6** slower or faster (×0.25 to ×4), **Ctrl+G** ghost cheat (full energy, no cooldowns).
-4. To see the phone screen too, start the page server and press **F9**: the phone page opens in the laptop's browser and joins as a real player (or as audience mid-match). For a second phone, use a private window or another browser: windows of one browser share the same saved player. While the browser has focus, the game window ignores the keyboard.
+4. To see the phone screen too, press **F9**: the phone page opens in the laptop's browser and joins as a real player (or as audience mid-match). For a second phone, use a private window or another browser: windows of one browser share the same saved player. While the browser has focus, the game window ignores the keyboard.
 
 ## Reconnect and phone behaviour
 
@@ -151,7 +145,7 @@ Walking feel (acceleration, stopping, the stick curve) is under "Movement and te
 
 ## Menus and HUD
 
-The game starts at the template's opening (`menus/opening/opening.tscn`), then the title, map select and the match (`Main.tscn`). The menus are customised copies of Maaack's Game Template scenes in `menus/`, themed by `assets/ui/ghosted_theme.tres` (made by `tools/make_ui_theme.gd`). Options include a saved 60-second Demo mode. In a round, Escape opens the pause menu and holding Tab shows the totals. The HTTP page server command is unchanged; reload the phone page to load the new local font, colours and authenticated joining.
+The game starts at the template's opening (`menus/opening/opening.tscn`), then the title, map select and the match (`Main.tscn`). The menus are customised copies of Maaack's Game Template scenes in `menus/`, themed by `assets/ui/ghosted_theme.tres` (made by `tools/make_ui_theme.gd`). Options include a saved 60-second Demo mode. In a round, Escape opens the pause menu and holding Tab shows the totals. Reload the phone page to load the new local font, colours and authenticated joining.
 
 The QR includes a session key; manual joining needs the six-character lobby code. Reconnect uses a private per-player secret saved in that browser. New join code disconnects everyone and requires the new QR/code. Five bad credentials from one address temporarily lock it out; oversized messages and floods disconnect. `core/plumbing_check.gd` covers these cases in addition to four simultaneous controllers.
 
