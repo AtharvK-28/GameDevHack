@@ -1,6 +1,6 @@
 # One of developer mode's stand-in phones: a real WebSocket client on the host's own port, so a match runs exactly
-# as with phones. core/bot_crew.gd sets its stick and buttons; send_input() sends them on real time at a phone's
-# rate, so a sped-up round never trips the host's rate limit.
+# as with phones. core/bot_crew.gd sets its stick (a world direction) and buttons; send_input() sends them on real
+# time at a phone's rate, so a sped-up round never trips the host's rate limit.
 extends RefCounted
 
 var name: String = ""
@@ -42,7 +42,8 @@ func send_input() -> void:
 		# A phone's rate in game time, so a sped-up round still steers smoothly, within the host's rate limit.
 		var rate: float = minf(Balance.INPUT_RATE * maxf(Engine.time_scale, 1.0), Balance.BOT_MAX_INPUT_RATE)
 		next_input = now + int(1000.0 / rate)
-		send({"type": "in", "x": stick.x, "y": stick.y})
+		var screen: Vector2 = InputRouter.world_to_stick(stick) # Bots steer in the world; a phone speaks screen.
+		send({"type": "in", "x": screen.x, "y": screen.y})
 	for button: String in buttons:
 		if sent_buttons.get(button, false) != buttons[button]:
 			sent_buttons[button] = buttons[button]

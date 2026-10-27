@@ -243,6 +243,35 @@ static func mover_figure(colour: Color, size: float, possessed: bool = false) ->
 	return figure
 
 
+static func star_row(stars: int, total: int, size: float) -> Control:
+	# A row of drawn stars, the earned ones gold and the rest hollow (decision 123). Drawn, as the comic font has none.
+	var row := Control.new()
+	row.custom_minimum_size = Vector2(size * total + size * 0.2 * (total - 1), size)
+	row.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.draw.connect(func() -> void:
+		for index: int in total:
+			var centre := Vector2(size * 0.5 + index * size * 1.2, size * 0.53)
+			var points := PackedVector2Array()
+			for corner: int in 10:
+				var reach: float = size * (0.5 if corner % 2 == 0 else 0.21)
+				points.append(centre + Vector2.from_angle(-PI / 2.0 + corner * PI / 5.0) * reach)
+			if index < stars:
+				row.draw_colored_polygon(points, Balance.UI_MONEY)
+			points.append(points[0])
+			row.draw_polyline(points, Balance.COMIC_INK if index < stars else Balance.UI_MUTED, Balance.COMIC_BORDER, true)
+	)
+	return row
+
+
+static func goal_line(goal: Dictionary, label: String) -> String:
+	# One bonus goal as a line of text: "BONUS: Nothing shatters · DONE".
+	if goal.is_empty():
+		return ""
+	var state: String = {"met": " · DONE", "failed": " · MISSED"}.get(goal.get("state"), "")
+	return "%s: %s%s" % [label, goal.text, state]
+
+
 static func keycap(key: String) -> PanelContainer:
 	var cap := _boxed(comic_box(Balance.COMIC_PAPER, 4, 4), 0.0)
 	cap.get_theme_stylebox("panel").shadow_offset = Vector2(2.0, 3.0)

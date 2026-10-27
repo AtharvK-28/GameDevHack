@@ -64,7 +64,7 @@ A match is a set of rounds where the ghost role passes along each time. Each sta
 ```mermaid
 flowchart LR
   L["Lobby<br/>2–4 phones join"] --> R["Role reveal<br/>phones buzz roles"]
-  R --> LIVE["Round live<br/>150 s · target 70%"]
+  R --> LIVE["Round live<br/>150 s · target 55-65%"]
   LIVE --> E["Round end<br/>winner + restart"]
   E -- restart --> LIVE
   E --> D{"All rounds<br/>played?"}
@@ -77,7 +77,7 @@ flowchart LR
 
 - **Start.** A 3-second countdown: movers spawn at the truck, the ghost wisp spawns at the far end of the house (in the Old Mansion, for now, outside beyond the garden).
 - **Live.** The timer and the truck-value bar show on screen. In the last 30 s the music speeds up and the quota line pulses.
-- **End.** The round ends on timeout, when all items are banked/destroyed/lost, or immediately once irreversible loss exceeds 30%. Reaching the bank target alone does not end play. The screen shows the reason, winner and each player's points.
+- **End.** The round ends on timeout, when all items are banked/destroyed/lost, or immediately once irreversible loss makes the crew's target impossible (decision 122). Reaching the bank target alone does not end play. The screen shows the reason, winner and each player's points.
 - **Restart.** Replays the same arena with the same roles; points from the aborted attempt are discarded.
 
 ## Movers
@@ -88,7 +88,7 @@ Movers have one job: get value onto the truck. Every control is about carrying w
 
 | Input | Action |
 | --- | --- |
-| Joystick | Move. Base speed 4.5 m/s, reduced by what you carry. Speed follows tilt^1.6 (half tilt is about a third of full speed); walking eases in over about 0.3 s and stops in about 0.15 s; bracing stops at once. |
+| Joystick | Move. Base speed 4.5 m/s, reduced by what you carry. Up on the stick is up on the big screen, whatever the camera's angle (decision 124). Speed follows tilt^1.3 (half tilt is about 40% of full speed); walking eases in over about 0.3 s and stops in about 0.15 s; bracing stops at once. |
 | GRAB (hold) | Pick up the nearest item in front of you. Let go to drop it. |
 | THROW (tap while holding) | Throw a light item. Fast, but it lands hard and takes damage. Medium and heavy loot cannot be thrown. |
 | BRACE (hold) | Plant your feet. You can't move, but shake and wind can't knock you over. |
@@ -106,7 +106,7 @@ Movers have one job: get value onto the truck. Every control is about carrying w
 **Damage**
 
 - Every item has a value, a weight and a fragility (1–3).
-- Any collision above 2.5 m/s costs `impact speed × fragility × 4%` of its current value.
+- Any collision above 3.0 m/s (2.5 m/s for a thrown item in flight) costs `impact speed × fragility × 3%` of its current value (decision 122).
 - Impact speed is relative closing speed along the collision normal. Count each distinct impact once, rather than each physics frame of resting contact. Round damage up to whole rupees and cap it at the item's remaining value.
 - A floating red price drop pops off the item ("−₹1,200") and the price tag above it ticks down.
 - At zero value the item shatters, disappears, and counts toward the ghost.
@@ -238,18 +238,20 @@ Each round has a clear team result: the movers either hit the quota or they don'
 
 **Round result**
 
-- Movers win if the final banked value is **at least 70% of original spawned value**. Exactly 30% loss is allowed.
+- Movers win if the final banked value reaches **the crew's target share of the original spawned value: 55% with one mover, 60% with two, 65% with three** (decision 122). Losing exactly the rest (45/40/35%) is allowed.
 - End on 150 s timeout or when every loot item has been banked, destroyed or permanently lost. Undelivered items count as zero delivered value.
-- End immediately for the ghost if original value minus (banked plus remaining loot value) exceeds 30% of original value: the target is then impossible. Count damage and destruction only once.
-- Reaching 70% banked does not end the round while loot and time remain. Evaluate final results once, then freeze scoring and gameplay.
+- End immediately for the ghost if original value minus (banked plus remaining loot value) exceeds the rest of the original value: the target is then impossible. Count damage and destruction only once.
+- Reaching the target does not end the round while loot and time remain. Evaluate final results once, then freeze scoring and gameplay.
 - The ghost wins whenever final banked value misses the target. Restart restores original values and replaces the previous attempt score.
 
 **Individual points**
 
 | Role | How you score |
 | --- | --- |
-| Mover | 1 point per ₹100 you bank; two-person items split evenly. +100 each if the quota is met. |
-| Ghost | 1 point per ₹100 destroyed (damage, shattering, overboard). +150 if the quota fails. |
+| Mover | 1 point per ₹100 you bank; two-person items split evenly. +100 each if the quota is met. +25 per star and +50 for the bonus goal. |
+| Ghost | 1 point per ₹100 destroyed (damage, shattering, overboard). +150 if the quota fails. +50 for shattering the dearest item. |
+
+**Medals and bonus goals (decision 123).** Movers earn 1 star at the target, 2 at target +15% and 3 at target +30% (never above 100%), none on a loss. Each round also sets one bonus goal from the round seed, among those the arena allows: Nothing shatters; Deliver the two-person item with 90% of its value; Nobody goes overboard (Ship); the arena task (Light all the lanterns / Power the generator). It pays even on a loss. The ghost's counter-goal is to shatter the round's dearest item. Goals show on the role reveal, the HUD truck card and the round end (with a STARS tile); phones show them at the reveal and the result.
 
 **Rounds per match.** Every player is the ghost the same number of times, so totals stay fair: 2 players play 4 rounds, 3 players play 3, and 4 players play 4. The demo repeats Mansion; later arenas cycle Mansion → Ship → Museum.
 
@@ -269,9 +271,9 @@ Each round has a clear team result: the movers either hit the quota or they don'
 | Knob | Start value | If movers win too easily | If the ghost wins too easily |
 | --- | --- | --- | --- |
 | Ghost energy regen | 8/10/12 per second by mover count | Increase after playtesting | Decrease after playtesting |
-| Delivery target | 70% | Changes need approval | Changes need approval |
+| Delivery target | 55/60/65% by mover count | Changes need approval | Changes need approval |
 | Round time | 150 s | Lower to 120 s | Raise to 180 s |
-| Damage multiplier | 4% per m/s × fragility | Raise to 5% | Lower to 3% |
+| Damage multiplier | 3% per m/s × fragility, above 3.0 m/s | Raise to 4% | Lower to 2.5% |
 | Possession drain | 8 /s | Lower to 6 | Raise to 10 |
 
 **Big-smash punch-in (decision 118).** A hit costing ₹5,000+, or a ₹10,000+ item shattering, slows the match to 30% for 0.6 s while the camera eases in on it (SMASH_* in Balance). At most once every 4 s.
@@ -309,7 +311,7 @@ The game is judged on a projector from across a room. Everything must read insta
 - Comic style throughout (decision 89): ink-bordered panels, comic lettering, player colours for players and a ghost glow or icon for the role that round.
 - Top centre: round timer with a punch-clock dial; red and rocking during the final 30 seconds.
 - Top left: majority-mover room progress ring and individual item marks.
-- Top right: the truck meter (cargo filling toward the 70% flag) and a vase that cracks toward the 30% loss limit; the screen edges pulse red from 70% of that limit.
+- Top right: the truck meter (cargo filling toward the crew's target flag) and a vase that cracks toward the loss limit, with the bonus goal beneath; the screen edges pulse red from 70% of that limit.
 - Bottom left: up to three DELIVERED! notices, each lasting three live seconds.
 - Bottom right: player chips with live points; the ghost's chip carries its energy ring. Hold Tab for totals.
 - In the world: comic popups for damage, scraping, smashing and banking; name tags in player colours that stack when movers bunch; truck and generator markings painted on the ground.
@@ -414,7 +416,7 @@ flowchart LR
 
 Phones talk directly to the Godot game over WebSocket, sending short JSON messages. Godot is the single source of truth: phones send intent and receive only what their own screen needs.
 
-**Wire format.** Each JSON object has a `type` discriminator alongside its payload fields, for example `{"type":"in","x":0.5,"y":-0.5}`. Slots are zero-based (0–3); player-facing labels are 1–4. Positive joystick x means right; positive y means toward the bottom of the screen. The input vector is limited to length 1 by the host.
+**Wire format.** Each JSON object has a `type` discriminator alongside its payload fields, for example `{"type":"in","x":0.5,"y":-0.5}`. Slots are zero-based (0–3); player-facing labels are 1–4. Positive joystick x means right; positive y means toward the bottom of the screen: the host turns the stick by the live camera's angle into the world (decision 124). The input vector is limited to length 1 by the host. Phones send a stick change as it happens, at most 60 a second, and otherwise a heartbeat 30 times a second; the stick's base follows a thumb that slides past its edge.
 
 | Message | Direction | Payload | When |
 | --- | --- | --- | --- |
@@ -427,7 +429,7 @@ Phones talk directly to the Godot game over WebSocket, sending short JSON messag
 | `btn` | phone → host | `{b, down}`; b = grab, throw, brace, possess, action, haunt1, haunt2, haunt3 | On press and on release |
 | `hud` | host → phone | Mover: `{held, value}`; Ghost: `{energy, action, costs, cd, ok}`; both: `{t}` | 8 per second |
 | `buzz` | host → phone | `{ms}` | Damage, tumble, role reveal |
-| `result` | host → all | `{moversWon, points}` | Round end |
+| `result` | host → all | `{moversWon, points, stars, goal, ghostGoal}` (decision 123) | Round end |
 | `final` | host → all | `{standings, awards}` | Match end |
 
 **The ghost's `hud` fields**
@@ -472,7 +474,7 @@ ghosted-movers/
 │   ├── RoundEnd.tscn     # DELIVERED!/GHOSTED! stamp, reason, stat tiles, counting points; Enter next, R restart, L lobby
 │   ├── Results.tscn      # podium for the top three with a crown (awards deferred)
 │   ├── Cutscene.tscn     # intro story panels with music and sound cues; Enter next, Esc skip
-│   └── HUD.tscn          # timer, delivered vs 70% target, lost vs 30% limit, ghost energy, pause overlay
+│   └── HUD.tscn          # timer, delivered vs target, lost vs limit, bonus goal, ghost energy, pause overlay
 ├── actors/
 │   ├── Mover.tscn        # CharacterBody3D, hold point, carry spring, tumble
 │   ├── mover_model.gd    # the character model: clip choice from the mover's state, playback speed, team colours

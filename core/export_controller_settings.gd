@@ -12,6 +12,8 @@ func _initialize() -> void:
 		"joinCodeLength": SETTINGS.JOIN_CODE_LENGTH,
 		"joystickSize": SETTINGS.JOYSTICK_SIZE,
 		"joystickDeadzone": SETTINGS.JOYSTICK_DEADZONE,
+		"joystickFollow": SETTINGS.JOYSTICK_FOLLOW,
+		"stickSendRate": SETTINGS.STICK_SEND_RATE,
 		"ghostEnergyMax": SETTINGS.ENERGY_MAX,
 		"ghostNearBuzzMs": SETTINGS.GHOST_NEAR_BUZZ_MS,
 		"ghostNearPulseMs": SETTINGS.GHOST_NEAR_PULSE_MS,

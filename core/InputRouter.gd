@@ -81,12 +81,12 @@ func _sample_slot(slot: int) -> void:
 	# Developer mode's stand-ins are played by bots, except the one the keyboard has picked.
 	var keyboard_slot: bool = slot == selected_slot and player.get("stand_in", false)
 	if not player.is_empty() and player.socket != null and not keyboard_slot:
-		snapshot.direction = player.direction
+		snapshot.direction = stick_to_world(player.direction)
 		snapshot.buttons = player.buttons.duplicate()
 		snapshot.pressed = player.pressed.duplicate()
 		snapshot.released = player.released.duplicate()
 	elif slot == selected_slot and has_focus:
-		snapshot.direction = _keyboard_direction()
+		snapshot.direction = stick_to_world(_keyboard_direction())
 		snapshot.buttons = keyboard_buttons.duplicate()
 		snapshot.pressed = keyboard_pressed.duplicate()
 		snapshot.released = keyboard_released.duplicate()
@@ -100,6 +100,32 @@ func _sample_slot(slot: int) -> void:
 			snapshot.pressed[button] = true
 		if held_before and not held_now:
 			snapshot.released[button] = true
+
+
+# --- Screen to world ---
+func stick_to_world(stick: Vector2) -> Vector2:
+	# Phones and keys give a screen direction (up is up on the big screen); movers, the ghost and possessed props move
+	# in the world's x and z. The camera looks in at an angle, so the stick turns with it (decision 124).
+	var axes: Array[Vector2] = _screen_axes()
+	return axes[0] * stick.x + axes[1] * stick.y
+
+
+func world_to_stick(direction: Vector2) -> Vector2:
+	# The reverse, for bots and checks that steer toward a point in the world.
+	var axes: Array[Vector2] = _screen_axes()
+	return Vector2(direction.dot(axes[0]), direction.dot(axes[1]))
+
+
+func _screen_axes() -> Array[Vector2]:
+	# The screen's right and down as flat world directions, from the camera now showing the play; none, the world's.
+	var camera: Camera3D = get_viewport().get_camera_3d()
+	if camera == null:
+		return [Vector2.RIGHT, Vector2.DOWN]
+	var right := Vector2(camera.global_basis.x.x, camera.global_basis.x.z)
+	var down := Vector2(camera.global_basis.z.x, camera.global_basis.z.z) # The camera's back, flattened.
+	if right.length() < 0.01 or down.length() < 0.01:
+		return [Vector2.RIGHT, Vector2.DOWN] # Looking straight down or along the ground: keep the world's axes.
+	return [right.normalized(), down.normalized()]
 
 
 # --- Keyboard helpers ---

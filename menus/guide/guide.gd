@@ -22,7 +22,7 @@ func _ready() -> void:
 	panel.add_child(roles)
 	roles.add_child(_role("MOVERS", "Stick to move. Hold GRAB to carry; release in the marked delivery zone to bank. Bumps lose value. THROW light loot only.\nTwo movers carry the piano or chest; dragging loses value.\nSHAKE: stop or BRACE. WIND: BRACE or walk across/against it."))
 	roles.add_child(_role("GHOST", "Fly through walls. POSSESS loose loot or the sofa, steer, then SHOVE. LEAVE to refill energy.\nSHAKE tumbles moving movers. CURSE slows carriers. Buttons show costs and cooldowns.\nMansion: slider actions only. Ship: SLAM, DROP, STOMP and YANK are enabled too."))
-	column.add_child(_label("Bank 70% before time runs out to win as movers. Lose more than 30% and the ghost wins.", &"BodyLabel"))
+	column.add_child(_label("Movers win by banking 55-65% (by crew size) in time. Lose too much and the ghost wins.", &"BodyLabel"))
 	column.add_child(_label("Mansion optional task: deliver 3 batteries to the cyan generator for brighter lights and a weaker ghost for the round.\nJoin on the same Wi-Fi, scan QR, enter a name and tap Ready (2+ phones).", &"MutedLabel"))
 
 	var back := Button.new()

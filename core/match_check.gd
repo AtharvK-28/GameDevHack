@@ -10,9 +10,9 @@ const SETTLE_SECONDS: float = 0.6
 const PHASE_TIMEOUT: float = 6.0 # Seconds to wait for a phase change.
 const MOVER_HEIGHT: float = 0.8
 const TOLERANCE: float = 0.3 # Metres per second, or energy per second.
-const BOUNDARY_START: int = 1000 # Rupees: a round rebuilt so the 70% target and 30% limit are whole numbers.
-const BOUNDARY_PIANO: int = 700
-const BOUNDARY_SMALL: int = 60 # Each of the five other items; 5 × 60 = 300 is exactly the loss limit.
+const BOUNDARY_START: int = 1000 # Rupees: a round rebuilt so the 55% target and 45% limit (one mover) are whole numbers.
+const BOUNDARY_PIANO: int = 550
+const BOUNDARY_SMALL: int = 90 # Each of the five other items; 5 × 90 = 450 is exactly the loss limit.
 
 # --- Test state ---
 var game: Node
@@ -110,7 +110,7 @@ func _check_reveal() -> void:
 		if item.weight_class == SETTINGS.TWO_PERSON:
 			pianos += 1
 	_check(loot.size() == get_nodes_in_group("loot").size() and pianos == 1, "Two players get %d seeded items with exactly one centrepiece (%d)" % [get_nodes_in_group("loot").size(), loot.size()])
-	_check(game.starting_value == total and game.target_value() == ceili(total * 0.7), "The starting value is the spawned total (%s) and the target is 70%%" % _rupees(total))
+	_check(game.starting_value == total and game.target_value() == ceili(total * 55 / 100.0), "The starting value is the spawned total (%s) and one mover's target is 55%%" % _rupees(total))
 	fresh_layout = _layout()
 	_check(load("res://props/loot.gd").lone_mover == true, "A 2-player match makes the one mover the lone mover")
 
@@ -225,7 +225,7 @@ func _check_curse_slowdown() -> void:
 
 # --- Scoring ---
 func _check_exact_boundary() -> void:
-	# Exactly 70% delivered and exactly 30% lost: the movers win once every item is accounted for.
+	# Exactly 55% delivered and exactly 45% lost: the movers win once every item is accounted for.
 	_set_boundary_values()
 	var piano: Node = _piano()
 	piano.global_position = playground.arena.truck.global_position + Vector3.UP * 0.6
@@ -235,8 +235,12 @@ func _check_exact_boundary() -> void:
 		item._lose_value(item.value)
 	await _wait_for_phase("result")
 	var result: Dictionary = game.result
-	_check(result.get("moversWon") == true and result.get("banked") == BOUNDARY_PIANO and result.get("lost") == BOUNDARY_START - BOUNDARY_PIANO, "Exactly 70%% delivered with exactly 30%% lost is a movers' win (%s)" % result.get("reason", ""))
-	_check(roundi(game.round_points.get(1, -1.0)) == roundi(SETTINGS.MOVER_WIN_BONUS) and roundi(game.round_points.get(0, -1.0)) == 3, "Points: the mover gets the win bonus, the ghost 1 per ₹100 lost")
+	_check(result.get("moversWon") == true and result.get("banked") == BOUNDARY_PIANO and result.get("lost") == BOUNDARY_START - BOUNDARY_PIANO, "Exactly 55%% delivered with exactly 45%% lost is a movers' win (%s)" % result.get("reason", ""))
+	# The mover banked nothing themselves; their stars and bonus goal pay on top of the win bonus (decision 123).
+	var medals: float = result.get("stars", 0) * SETTINGS.STAR_POINTS + (SETTINGS.GOAL_POINTS if result.goal.get("state") == "met" else 0.0)
+	var ghost_goal: float = SETTINGS.GHOST_GOAL_POINTS if result.ghostGoal.get("state") == "met" else 0.0
+	_check(result.get("stars") == 1, "Exactly the target earns one star")
+	_check(is_equal_approx(game.round_points.get(1, -1.0), SETTINGS.MOVER_WIN_BONUS + medals) and is_equal_approx(game.round_points.get(0, -1.0), 4.5 + ghost_goal), "Points: the mover gets the win bonus and medals, the ghost 1 per ₹100 lost (%.1f, %.1f)" % [game.round_points.get(1, -1.0), game.round_points.get(0, -1.0)])
 	_check(paused and not router.input_enabled, "The result freezes play")
 	await _wait(INPUT_SECONDS)
 	_check(_last(1, "match").get("phase") == "result" and _last(1, "result").get("moversWon") == true, "Phones receive the result")
@@ -255,17 +259,18 @@ func _check_restart() -> void:
 
 
 func _check_early_loss() -> void:
-	# Losing even ₹1 more than 30% makes the target impossible, so the ghost wins at once.
+	# Losing even ₹1 more than 45% makes one mover's target impossible, so the ghost wins at once.
 	_set_boundary_values()
 	for item: Node in _loose_loot():
 		if item.weight_class != SETTINGS.TWO_PERSON:
 			item._lose_value(item.value)
 	await _wait(INPUT_SECONDS)
-	_check(game.phase == "live", "Exactly 30% lost does not end the round")
+	_check(game.phase == "live", "Exactly 45% lost does not end the round")
 	_piano()._lose_value(1)
 	await _wait_for_phase("result")
-	_check(game.result.get("moversWon") == false and String(game.result.get("reason", "")).contains("30%"), "One rupee past the 30%% limit ends it for the ghost (%s)" % game.result.get("reason", ""))
-	_check(absf(game.round_points.get(0, 0.0) - (3.01 + SETTINGS.GHOST_WIN_BONUS)) < 0.01, "The ghost scores the loss plus the win bonus (%.2f)" % game.round_points.get(0, 0.0))
+	_check(game.result.get("moversWon") == false and String(game.result.get("reason", "")).contains("45%"), "One rupee past the 45%% limit ends it for the ghost (%s)" % game.result.get("reason", ""))
+	var ghost_goal: float = SETTINGS.GHOST_GOAL_POINTS if game.result.ghostGoal.get("state") == "met" else 0.0 # Decision 123.
+	_check(absf(game.round_points.get(0, 0.0) - (4.51 + SETTINGS.GHOST_WIN_BONUS + ghost_goal)) < 0.01, "The ghost scores the loss plus the win bonus (%.2f)" % game.round_points.get(0, 0.0))
 
 
 func _check_rotation_and_timeout() -> void:
@@ -324,7 +329,7 @@ func _check_full_match() -> void:
 
 # --- Scenario helpers ---
 func _set_boundary_values() -> void:
-	# Rebuild this round's values so the 70% target and 30% limit are exact whole numbers.
+	# Rebuild this round's values so the 55% target and 45% limit are exact whole numbers.
 	for item: Node in get_nodes_in_group("loot"):
 		var value: int = BOUNDARY_PIANO if item.weight_class == SETTINGS.TWO_PERSON else BOUNDARY_SMALL
 		item.value = value
@@ -430,7 +435,8 @@ func _last(index: int, message_type: String) -> Dictionary:
 
 func _set_stick(index: int, direction: Vector2) -> void:
 	sticks[index] = direction
-	_send(index, {"type": "in", "x": direction.x, "y": direction.y})
+	var screen: Vector2 = router.world_to_stick(direction) # Sticks are screen-relative.
+	_send(index, {"type": "in", "x": screen.x, "y": screen.y})
 
 
 func _wait(seconds: float) -> void:
@@ -450,7 +456,8 @@ func _frame() -> void:
 			if message is Dictionary:
 				inboxes[index].append(message)
 		if send_heartbeat:
-			_send(index, {"type": "in", "x": sticks[index].x, "y": sticks[index].y})
+			var screen: Vector2 = router.world_to_stick(sticks[index]) # Sticks are screen-relative.
+			_send(index, {"type": "in", "x": screen.x, "y": screen.y})
 	if send_heartbeat:
 		next_heartbeat = Time.get_ticks_msec() + int(1000.0 / SETTINGS.INPUT_RATE)
 	await process_frame

@@ -231,7 +231,8 @@ func _send_inputs() -> void:
 				phone.tap_frames.erase(button)
 				phone.buttons[button] = false
 		if frame % INPUT_INTERVAL == 0:
-			phone.send({"type": "in", "x": phone.stick.x, "y": phone.stick.y})
+			var screen: Vector2 = root.get_node("InputRouter").world_to_stick(phone.stick) # Sticks are screen-relative.
+			phone.send({"type": "in", "x": screen.x, "y": screen.y})
 		for button: String in phone.buttons:
 			if phone.sent_buttons.get(button, false) != phone.buttons[button]:
 				phone.sent_buttons[button] = phone.buttons[button]

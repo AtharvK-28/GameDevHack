@@ -8,6 +8,7 @@ const Style := preload("res://screens/screen_style.gd")
 # --- Display state ---
 var stamp_holder := CenterContainer.new() # Holds this round's stamp, rebuilt each time.
 var reason_label: Label
+var goals_label: Label
 var tiles := HBoxContainer.new()
 var points_list := GridContainer.new() # Two columns for three or more players, so four rows fit the screen.
 var next_button: Button
@@ -60,9 +61,14 @@ func _refresh() -> void:
 	var percent: int = floori(100.0 * Game.result.banked / starting)
 	for tile: Node in tiles.get_children():
 		tile.queue_free()
-	tiles.add_child(_tile("DELIVERED", "%d%%" % percent, Loot.rupees(Game.result.banked), Balance.UI_GHOST if percent >= Balance.DELIVERY_PERCENT else Balance.UI_MONEY))
-	tiles.add_child(_tile("TARGET", "%d%%" % Balance.DELIVERY_PERCENT, Loot.rupees(ceili(starting * Balance.DELIVERY_PERCENT / 100.0)), Balance.UI_TEXT))
+	tiles.add_child(_tile("DELIVERED", "%d%%" % percent, Loot.rupees(Game.result.banked), Balance.UI_GHOST if percent >= Game.delivery_percent() else Balance.UI_MONEY))
+	tiles.add_child(_tile("TARGET", "%d%%" % Game.delivery_percent(), Loot.rupees(Game.target_value()), Balance.UI_TEXT))
 	tiles.add_child(_tile("LOST", Loot.rupees(Game.result.lost), "of %s" % Loot.rupees(starting), Balance.UI_DANGER))
+	tiles.add_child(_star_tile(Game.result.get("stars", 0)))
+	var goal: Dictionary = Game.result.get("goal", {})
+	var ghost_goal: Dictionary = Game.result.get("ghostGoal", {})
+	goals_label.text = "%s (+%d each mover)    %s (+%d)" % [Style.goal_line(goal, "BONUS"), Balance.GOAL_POINTS, Style.goal_line(ghost_goal, "GHOST'S GOAL"), Balance.GHOST_GOAL_POINTS]
+	goals_label.visible = not goal.is_empty()
 
 	for row: Node in points_list.get_children():
 		row.queue_free()
@@ -71,6 +77,24 @@ func _refresh() -> void:
 		points_list.add_child(_player_row(slot))
 	var last: bool = Game.round_index + 1 >= Game.round_count
 	next_button.text = "FINAL RESULTS" if last else "NEXT ROUND"
+
+
+func _star_tile(stars: int) -> Control:
+	# The movers' medal: one star at the target, two and three further on (decision 123).
+	var tile := Style.ink_panel(Balance.RESULT_TILE_WIDTH, Balance.UI_PANEL_MARGIN / 2)
+	var rows := VBoxContainer.new()
+	rows.add_theme_constant_override("separation", Balance.HOST_ROW_GAP)
+	tile.add_child(rows)
+	rows.add_child(Style.label("STARS", Balance.UI_SMALL_SIZE, Balance.UI_MUTED))
+	var row := Style.star_row(stars, Balance.MEDAL_STEPS.size(), Balance.RESULT_STAR_SIZE)
+	var holder := CenterContainer.new() # Style.slam animates a holder's first child.
+	holder.add_child(row)
+	rows.add_child(holder)
+	rows.add_child(Style.label("+%d each mover" % (stars * Balance.STAR_POINTS), Balance.UI_SMALL_SIZE, Balance.UI_TEXT))
+	if stars > 0:
+		row.pivot_offset = row.custom_minimum_size / 2.0
+		Style.slam(holder)
+	return tile
 
 
 func _tile(title: String, big: String, small: String, colour: Color) -> Control:
@@ -155,6 +179,9 @@ func _build() -> void:
 	tiles.alignment = BoxContainer.ALIGNMENT_CENTER
 	tiles.add_theme_constant_override("separation", Balance.UI_PANEL_MARGIN)
 	rows.add_child(tiles)
+	goals_label = Style.label("", Balance.UI_SMALL_SIZE, Balance.UI_TEXT)
+	goals_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	rows.add_child(goals_label)
 	points_list.add_theme_constant_override("h_separation", Balance.UI_PANEL_MARGIN)
 	points_list.add_theme_constant_override("v_separation", Balance.HOST_ROW_GAP)
 	points_list.size_flags_horizontal = Control.SIZE_SHRINK_CENTER

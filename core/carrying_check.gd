@@ -53,6 +53,7 @@ func _run() -> void:
 	playground = load("res://Main.tscn").instantiate()
 	playground.match_mode = false # The greybox harness, not the match flow.
 	root.add_child(playground)
+	playground.camera.arena_yaw = 0.0 # Straight on, so the arrow keys walk along the world's axes (decision 124).
 	mover = playground.movers[0]
 	_park_other_movers()
 	await _clear_furniture()
@@ -189,12 +190,12 @@ func _check_damage_math() -> void:
 	var item := _spawn(0, Vector3(0.0, _rest_height(0), -5.0))
 	item.apply_impact(SETTINGS.DAMAGE_SPEED_THRESHOLD)
 	_check(item.value == 3000, "Threshold-speed contact causes no damage")
-	item.apply_impact(3.0)
-	_check(item.value == 1920, "3 m/s impact removes 36% of a fragility-3 vase")
-	item.apply_impact(3.0)
+	item.apply_impact(4.0)
+	_check(item.value == 1920, "4 m/s impact removes 36% of a fragility-3 vase")
+	item.apply_impact(4.0)
 	_check(item.value == 1228, "Subsequent damage uses current value and rounds up")
 	item.value = 1
-	item.apply_impact(3.0)
+	item.apply_impact(4.0)
 	_check(item.value == 0 and item.finished, "Whole-rupee damage reaches zero and shatters")
 	item.apply_impact(100.0)
 	_check(item.value == 0, "Finished loot cannot lose value again")

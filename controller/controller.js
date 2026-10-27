@@ -23,6 +23,8 @@ let wakeLock;
 let joined = false;
 let activeRole = "";
 let movement = { x: 0, y: 0 };
+let lastMovementSent = 0; // performance.now() of the last stick message.
+let movementTimer = null; // A stick change waiting for the send gap.
 let playerSlot = 0;
 let playerName = "";
 let sessionKey = new URLSearchParams(location.hash.slice(1)).get("k") || "";
@@ -55,7 +57,10 @@ async function initialize() {
   setupJoystick();
   setupButtons();
   setupPageEvents();
-  setInterval(sendMovement, MILLISECONDS_PER_SECOND / settings.inputRate);
+  // The heartbeat: the stick's state at a steady rate, unless a change went out just now (decision 124).
+  setInterval(() => {
+    if (performance.now() - lastMovementSent >= MILLISECONDS_PER_SECOND / settings.inputRate - 2) sendMovement();
+  }, MILLISECONDS_PER_SECOND / settings.inputRate);
 }
 
 function setupPageEvents() {
@@ -259,6 +264,10 @@ function renderReveal() {
   elements["reveal-role"].textContent = isGhost ? "YOU ARE THE GHOST" : "YOU'RE A MOVER";
   elements["reveal-line"].textContent = isGhost ? "Break everything." : "Carry it to the truck. Don't break it.";
   elements["reveal-countdown"].textContent = matchState.countdown > 0 ? matchState.countdown : "";
+  // This round's bonus goal for movers, the counter-goal for the ghost (decision 123).
+  const goal = isGhost ? matchState.ghostGoal : matchState.goal;
+  elements["reveal-goal"].hidden = !goal?.text;
+  elements["reveal-goal"].textContent = goal?.text ? `${isGhost ? "YOUR GOAL" : "BONUS"}: ${goal.text}` : "";
   document.body.classList.toggle("ghost", isGhost);
 }
 
@@ -273,6 +282,16 @@ function renderResult() {
   const award = (result.awards || []).find(entry => entry.slot === playerSlot);
   elements["result-award"].hidden = !award;
   elements["result-award"].textContent = award ? `${award.title}! ${award.detail}` : "";
+  // The movers' stars and this player's goal (decision 123).
+  const stars = Number(result.stars) || 0;
+  elements["result-stars"].hidden = activeRole === "ghost";
+  elements["result-stars"].textContent = "★".repeat(stars) + "☆".repeat(Math.max(0, 3 - stars));
+  elements["result-stars"].setAttribute("aria-label", `${stars} of 3 stars`);
+  const goal = activeRole === "ghost" ? result.ghostGoal : result.goal;
+  const outcome = { met: "DONE", failed: "MISSED" }[goal?.state] || "";
+  elements["result-goal"].hidden = !goal?.text;
+  elements["result-goal"].textContent = goal?.text ? `${activeRole === "ghost" ? "YOUR GOAL" : "BONUS"}: ${goal.text} · ${outcome}` : "";
+  elements["result-goal"].classList.toggle("met", goal?.state === "met");
 }
 
 let finalAwards = [];
@@ -444,18 +463,20 @@ function renderRoster(players) {
 
 // --- Continuous joystick and button edges ---
 function setupJoystick() {
-  joystick = nipplejs.create({ zone: elements["joystick-zone"], mode: "dynamic", color: "#183a38", size: settings.joystickSize, multitouch: false });
+  // follow: a thumb that slides past the edge drags the stick along instead of pinning it (decision 124).
+  joystick = nipplejs.create({ zone: elements["joystick-zone"], mode: "dynamic", color: "#183a38", size: settings.joystickSize, multitouch: false, follow: settings.joystickFollow });
   joystick.on("start", () => elements["joystick-zone"].classList.add("active"));
   joystick.on("move", (_event, data) => {
     if (!canPlay()) return;
     const magnitude = Math.hypot(data.vector.x, data.vector.y);
     if (magnitude < settings.joystickDeadzone) {
       movement = { x: 0, y: 0 };
-      return;
+    } else {
+      // Rescale past the dead zone so speed starts from zero instead of jumping; the host adds the response curve.
+      const scaled = Math.min(1, (magnitude - settings.joystickDeadzone) / (1 - settings.joystickDeadzone));
+      movement = { x: (data.vector.x / magnitude) * scaled, y: (-data.vector.y / magnitude) * scaled };
     }
-    // Rescale past the dead zone so speed starts from zero instead of jumping; the host adds the response curve.
-    const scaled = Math.min(1, (magnitude - settings.joystickDeadzone) / (1 - settings.joystickDeadzone));
-    movement = { x: (data.vector.x / magnitude) * scaled, y: (-data.vector.y / magnitude) * scaled };
+    queueMovement();
   });
   joystick.on("end", () => {
     elements["joystick-zone"].classList.remove("active");
@@ -517,7 +538,24 @@ function releaseInputs() {
 
 function sendMovement() {
   if (!joined || document.hidden) return;
+  lastMovementSent = performance.now();
   send({ type: "in", x: movement.x, y: movement.y });
+}
+
+function queueMovement() {
+  // A stick change goes out at once, at most stickSendRate times a second; a change inside that gap goes out at
+  // its end, so the host never waits for the next heartbeat (decision 124).
+  if (movementTimer !== null) return;
+  const gap = MILLISECONDS_PER_SECOND / settings.stickSendRate;
+  const wait = lastMovementSent + gap - performance.now();
+  if (wait <= 0) {
+    sendMovement();
+    return;
+  }
+  movementTimer = setTimeout(() => {
+    movementTimer = null;
+    sendMovement();
+  }, wait);
 }
 
 function canPlay() {

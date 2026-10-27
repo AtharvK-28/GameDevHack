@@ -1046,7 +1046,8 @@ func _ghost_ok(button: String) -> Variant:
 
 func _set_stick(index: int, direction: Vector2) -> void:
 	sticks[index] = direction
-	_send(index, {"type": "in", "x": direction.x, "y": direction.y})
+	var screen: Vector2 = router.world_to_stick(direction) # Sticks are screen-relative.
+	_send(index, {"type": "in", "x": screen.x, "y": screen.y})
 
 
 func _press(index: int, button: String, down: bool) -> void:
@@ -1079,7 +1080,8 @@ func _frame() -> void:
 				if index == GHOST_PHONE and message.get("type") == "hud" and message.has("energy"):
 					_note_ghost_hud(message)
 		if send_heartbeat:
-			_send(index, {"type": "in", "x": sticks[index].x, "y": sticks[index].y})
+			var screen: Vector2 = router.world_to_stick(sticks[index]) # Sticks are screen-relative.
+			_send(index, {"type": "in", "x": screen.x, "y": screen.y})
 	if send_heartbeat:
 		next_heartbeat = Time.get_ticks_msec() + int(1000.0 / SETTINGS.INPUT_RATE)
 	await process_frame

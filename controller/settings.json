@@ -13,8 +13,10 @@
 	"inputRate": 30,
 	"joinCodeLength": 6,
 	"joystickDeadzone": 0.15,
+	"joystickFollow": true,
 	"joystickSize": 120,
 	"maxNameLength": 20,
 	"reconnectDelayMs": 1000,
-	"socketPort": 9080
+	"socketPort": 9080,
+	"stickSendRate": 60
 }

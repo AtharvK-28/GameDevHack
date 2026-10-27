@@ -278,12 +278,14 @@ func _detach() -> void:
 
 
 # --- Damage ---
-func _on_impact(speed: float) -> void:
-	apply_impact(speed)
+func _on_impact(speed: float, was_thrown: bool = false) -> void:
+	apply_impact(speed, was_thrown)
 
 
-func apply_impact(speed: float) -> void:
-	if finished or speed <= Balance.DAMAGE_SPEED_THRESHOLD:
+func apply_impact(speed: float, was_thrown: bool = false) -> void:
+	# A thrown item lands hard at a lower speed than a bump: throwing stays a gamble (decision 122).
+	var threshold: float = Balance.THROWN_DAMAGE_SPEED_THRESHOLD if was_thrown or thrown else Balance.DAMAGE_SPEED_THRESHOLD
+	if finished or speed <= threshold:
 		return
 	var loss: int = mini(value, ceili(speed * fragility * Balance.DAMAGE_MULTIPLIER * value))
 	show_popup("CRASH!\n−" + rupees(loss), Balance.DAMAGE_COLOUR)

@@ -30,6 +30,8 @@ var result: Dictionary = {}
 var pause_reason: String = ""
 var host_paused: bool = false
 var broadcast_left: float = 0.0
+const ROUND_GOALS := preload("res://core/round_goals.gd")
+var goals: RefCounted = ROUND_GOALS.new() # This round's stars and bonus goals (decision 123).
 var smash_ready_at: int = 0 # Ticks (ms) before another big-smash punch-in may play.
 var slow_until: int = 0 # Ticks (ms) when the current punch-in's slow motion ends.
 var normal_speed: float = 1.0 # Live play's game speed; developer mode changes it (decision 121).
@@ -99,7 +101,10 @@ func _begin_round(restarting: bool) -> void:
 		starting_value += item.value
 		var item_id: int = item.get_instance_id()
 		room_items[item_id] = {"room": room_at(item.global_position), "state": "pending"}
-		item.shattered.connect(func(_slot: int) -> void: room_items[item_id].state = "broken")
+		item.shattered.connect(func(_slot: int) -> void:
+			room_items[item_id].state = "broken"
+			if phase == "live":
+				goals.on_shattered(item))
 		# Damage counts against a mover only while they hold or have just thrown the item.
 		item.damaged.connect(func(loss: int, remaining: int) -> void:
 			if item.is_held() or item.thrown:
@@ -110,7 +115,11 @@ func _begin_round(restarting: bool) -> void:
 		if not mover.tumbled.is_connected(_on_tumbled):
 			mover.tumbled.connect(_on_tumbled)
 	if host.arena.has_signal("overboard"):
-		host.arena.overboard.connect(func(slot: int) -> void: add_stat(slot, "overboard", 1))
+		host.arena.overboard.connect(func(slot: int) -> void:
+			add_stat(slot, "overboard", 1)
+			if phase == "live":
+				goals.on_overboard())
+	goals.start(host.arena, get_tree().get_nodes_in_group("loot"), round_seed)
 	host.arena.truck.delivered.connect(_on_delivered)
 	host.arena.truck.delivery_notice.connect(_delivery_notice)
 	for slot: int in participants:
@@ -130,6 +139,7 @@ func _process(delta: float) -> void:
 			_set_phase("live")
 	elif phase == "live":
 		seconds_left = maxf(0.0, seconds_left - delta)
+		goals.update()
 		_evaluate_round()
 	broadcast_left -= delta
 	if broadcast_left <= 0.0:
@@ -149,10 +159,10 @@ func _evaluate_round() -> void:
 		remaining += item.value
 		unresolved += 1
 	lost_value = maxi(0, starting_value - banked_value - remaining)
-	if (banked_value + remaining) * 100 < starting_value * Balance.DELIVERY_PERCENT:
-		_finish_round(false, "More than 30% of the starting value was lost.")
+	if (banked_value + remaining) * 100 < starting_value * delivery_percent():
+		_finish_round(false, "More than %d%% of the starting value was lost." % (100 - delivery_percent()))
 	elif seconds_left <= 0.0 or unresolved == 0:
-		var won: bool = banked_value * 100 >= starting_value * Balance.DELIVERY_PERCENT
+		var won: bool = banked_value * 100 >= starting_value * delivery_percent()
 		_finish_round(won, "Time is up." if seconds_left <= 0.0 else "All items are accounted for.")
 
 
@@ -170,22 +180,30 @@ func _on_delivered(value: int, carrier_slots: Array[int]) -> void:
 func _finish_round(movers_won: bool, reason: String) -> void:
 	if phase != "live":
 		return
+	goals.finish()
+	var stars: int = ROUND_GOALS.stars_for(banked_value, starting_value, delivery_percent()) if movers_won else 0
+	var goal_met: bool = goals.goal.get("state") == "met"
+	var ghost_goal_met: bool = goals.ghost_goal.get("state") == "met"
 	for slot: int in participants:
 		var points: float
 		if slot == ghost_slot:
 			points = lost_value / Balance.RUPEES_PER_POINT + (0.0 if movers_won else Balance.GHOST_WIN_BONUS)
+			points += Balance.GHOST_GOAL_POINTS if ghost_goal_met else 0.0
 		else:
 			points = bank_credit.get(slot, 0.0) / Balance.RUPEES_PER_POINT + (Balance.MOVER_WIN_BONUS if movers_won else 0.0)
+			points += stars * Balance.STAR_POINTS + (Balance.GOAL_POINTS if goal_met else 0.0)
 		round_points[slot] = points
 		scores[slot] += points
 		Net.player_for_slot(slot).points = scores[slot]
 	for slot: int in bank_credit:
 		add_stat(slot, "banked", roundi(bank_credit[slot]))
 	add_stat(ghost_slot, "wrecked", lost_value)
-	result = {"moversWon": movers_won, "reason": reason, "banked": banked_value, "starting": starting_value, "lost": lost_value, "awards": awards_for(round_stats)}
+	result = {"moversWon": movers_won, "reason": reason, "banked": banked_value, "starting": starting_value, "lost": lost_value, "awards": awards_for(round_stats),
+		"stars": stars, "goal": goals.goal.duplicate(), "ghostGoal": goals.ghost_goal.duplicate()}
 	_set_phase("result")
 	for slot: int in participants:
-		Net.send_to_player(Net.player_for_slot(slot), {"type": "result", "moversWon": movers_won, "points": round_points})
+		Net.send_to_player(Net.player_for_slot(slot), {"type": "result", "moversWon": movers_won, "points": round_points, "stars": stars,
+			"goal": goals.goal.duplicate(), "ghostGoal": goals.ghost_goal.duplicate()})
 
 
 
@@ -359,13 +377,19 @@ func snapshot() -> Dictionary:
 		"t": ceili(seconds_left), "countdown": ceili(reveal_left), "target": target_value(),
 		"starting": starting_value, "banked": banked_value, "lost": lost_value, "ghost": ghost_slot,
 		"result": result, "standings": standings(), "pauseReason": pause_reason, "canStart": can_start(),
-		"players": players}
+		"players": players, "goal": goals.goal, "ghostGoal": goals.ghost_goal}
 
 
 # --- Queries for the host screens ---
 func target_value() -> int:
-	# The smallest whole-rupee delivery that reaches DELIVERY_PERCENT of the starting value.
-	return ceili(starting_value * Balance.DELIVERY_PERCENT / 100.0)
+	# The smallest whole-rupee delivery that reaches the crew's share of the starting value.
+	return ceili(starting_value * delivery_percent() / 100.0)
+
+
+func delivery_percent() -> int:
+	# The movers' target share, by how many movers there are (decision 122).
+	var movers: int = maxi(1, participants.size() - 1)
+	return Balance.DELIVERY_PERCENTS[mini(movers, Balance.DELIVERY_PERCENTS.size()) - 1]
 
 
 func loss_limit() -> int:
@@ -400,6 +424,9 @@ func _broadcast() -> void:
 
 
 func _delivery_notice(value: int, item_name: String, slots: Array[int], item_id: int) -> void:
+	var item: Object = instance_from_id(item_id)
+	if phase == "live" and is_instance_valid(item):
+		goals.on_delivered(item_id, value, item.initial_value)
 	if room_items.has(item_id):
 		room_items[item_id].state = "delivered"
 	delivery_notice.emit(value, item_name, slots)

@@ -103,7 +103,17 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
   and the cooldown. Needs a human look at the camera move in a live match.
 - [x] Audience phones vote (decision 119): `core/audience_check.gd` (real WebSocket phones) covers joining, voting,
   ties, every outcome and the timed vote; HUD card and audience phone rendered.
-- [ ] Medals and bonus goals
+- [x] Medals and bonus goals (decision 123): stars, one bonus goal a round and the ghost's counter-goal on the
+  reveal, HUD, round end and phones. Phone result rendered at 844 x 390.
+
+## Playtest follow-ups (2026-10-27)
+
+- [x] Balance (decision 122): target 55/60/65% by mover count, softer impacts. `tools/balance_sim.gd`, 10 seeded bot
+  rounds per arena at x3: Mansion movers won 0 of 10 before (banked 37%, lost 31%) and 5 of 10 after (banked 62%,
+  lost 27%). Ship 1 of 10 both times: the Ship bots seldom deliver, so only a human playtest can judge the Ship.
+- [x] Joystick feel (decision 124): screen-relative stick, changes sent as they happen, follow, tilt^1.3.
+  `core/stick_check.gd` pushes up and right from a real phone on both arenas and measures the mover on screen.
+- [ ] Playtest the new balance and stick with people.
 
 ## Developer mode (decision 120, 2026-10-27)
 

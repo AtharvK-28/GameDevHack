@@ -20,7 +20,7 @@ Use the installed Godot executable if `godot` is not on PATH. In PowerShell, put
 1. Press **F5 (Run Project)** in Godot. **F6 runs only the open scene**: using it with `Main.tscn` opens the QR lobby directly, bypassing Home. The title screen opens over the Mansion; choose **Play**, then the **Old Mansion**, to reach the lobby with its QR code, join link and six-character code. **F11** switches between fullscreen and a window. (If Godot runs the game inside the editor's Game tab, fullscreen needs the game in its own window: turn off the Game tab's embed option.)
 2. Start the phone page server (see the next section, step 2). Phones on the same Wi-Fi scan the QR code or open the link, enter a name and tap **Ready to move**. If opening the plain link, also enter the six-character code shown on the host.
 3. With 2–4 phones ready, press **Enter** on the host. The intro cutscene plays first (about a minute; **Enter** shows the next panel, **Esc** skips it), once per match. Each round: a 3 s role reveal, then 150 s of play. 2 players play 4 rounds, 3 play 3 and 4 play 4; the ghost passes to the next player every round.
-4. **Winning a round:** movers must deliver at least **70%** of the round's starting value. Losing more than 30% (damage, shattering, items lost) ends the round for the ghost at once. Otherwise the round ends when time runs out or every item has been delivered or destroyed; only delivered value counts.
+4. **Winning a round:** movers must deliver their target share of the round's starting value: **55%** with one mover, **60%** with two, **65%** with three. Losing so much that the target is out of reach (damage, shattering, items lost) ends the round for the ghost at once. Each round also has a bonus goal, and movers earn 1–3 stars for their haul. Otherwise the round ends when time runs out or every item has been delivered or destroyed; only delivered value counts.
 5. **Host keys.** Round end: **Enter** next round, **R** restart the round (same layout and roles; its points are replaced), **L** back to the lobby. Final standings: **Enter** back to the lobby. If a phone drops mid-round the round pauses until it rejoins from the same browser with its saved secret; **L** cancels to the lobby without scoring.
 6. **The demo ghost** has POSSESS (any loose loot or the Mansion sofa), SHOVE, SHAKE (House Shake, 45) and CURSE (30, 15 s cooldown: nearby loot glows and is 30% slower to carry for 6 s). Hauntings are locked for the first 8 s and for 4 s after each one; the ghost's phone shows why a button is unavailable and for how long. Keyboard ghost: Q possess, F action, Z shake, C curse.
 
@@ -116,6 +116,7 @@ godot --headless --path . --script res://core/battery_check.gd
 godot --headless --path . --script res://core/audience_check.gd
 godot --headless --path . --script res://core/dev_mode_check.gd
 godot --headless --path . --script res://core/bot_crew_check.gd
+godot --headless --path . --script res://core/stick_check.gd
 godot --path . --script res://core/ui_check.gd
 ```
 
@@ -131,6 +132,8 @@ Close a running host before any integration check; they all open port 9080.
 - `catalog_check.gd` checks the furniture catalog: entries, loot values and colliders, the piano's route, decor never priced or possessable, the whole pool resting where it spawns, and every match-sized pick. Success ends with `CATALOG CHECK: PASS`.
 - `arena_layout_check.gd` checks the Old Mansion: room zones, doorway widths, walking from every room to the truck, carrying every weight up and down the stairs, two movers taking the piano down and back up, railings and walls holding movers and loot, walls fading only while they hide a player, the ghost spawning outside, decor keeping clear of every spawn spot, and arches and gates leaving their openings clear. Success ends with `ARENA LAYOUT CHECK: PASS` and exit code 0. The other checks run on the one-room greybox (`arenas/Greybox.tscn`).
 - `match_check.gd` plays whole matches with two phones and the host keys: lobby and ready, Enter to start, the intro phase and Esc to skip it, a third phone refused mid-match, the seeded 6-item setup with one piano, reveal and live phases, the three-quarter camera following the mover, energy regeneration, opening protection, the shared haunting lock and their phone reasons, Curse (cost, no stacking, 30% slower carry for 6 s), the exact 70%/30% boundaries, an early ghost win, restart with the same layout and replaced points, ghost rotation, timeout, disconnect pause and resume, cancelling to the lobby, and a full 4-round match to the final standings. Success ends with `MATCH CHECK: PASS` and exit code 0.
+
+To compare balance changes, `godot --headless --path . --script res://tools/balance_sim.gd -- --rounds=10 --speed=3` plays the same seeded bot rounds on each arena and prints the movers' wins, banked and lost shares. Bots play worse than people: read it as a direction.
 
 Change tuning values in `autoload/Balance.gd`. After changing controller settings, regenerate the committed browser settings:
 

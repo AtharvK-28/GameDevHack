@@ -1,4 +1,4 @@
-# Comic edge HUD: a punch-clock timer, the truck meter (cargo filling toward the 70% flag) with a cracking-vase
+# Comic edge HUD: a punch-clock timer, the truck meter (cargo filling toward the target flag) with a cracking-vase
 # damage meter, room item status, delivery notices and player chips. Panels sit at the screen edges so the centre
 # stays clear; the screen edges pulse red near the loss limit. Holding Tab shows the full totals, Esc opens the
 # pause menu.
@@ -30,6 +30,7 @@ var pause_label: Label
 var toast_entries: Array[Dictionary] = []
 var previous_phase: String = ""
 var generator_label: Label
+var goal_label: Label # The round's bonus goal and whether it is met (decision 123).
 var danger: Control
 var clock_time: float = 0.0 # Seconds since start, for the wobble and the red pulse.
 var vote_card: PanelContainer
@@ -83,6 +84,7 @@ func _ready() -> void:
 	damage.add_child(lost_label)
 	generator_label = _label(truck, "", Balance.UI_SMALL_SIZE)
 	generator_label.modulate = Balance.GENERATOR_COLOUR
+	goal_label = _label(truck, "", Balance.UI_SMALL_SIZE)
 
 	var room := _card(Control.PRESET_TOP_LEFT, 200.0)
 	room_label = _label(room, "Main room", Balance.UI_BODY_SIZE)
@@ -216,6 +218,9 @@ func _process(delta: float) -> void:
 	generator_label.visible = is_instance_valid(generator)
 	if generator_label.visible:
 		generator_label.text = generator.hud_text()
+	goal_label.text = Style.goal_line(Game.goals.goal, "BONUS")
+	goal_label.visible = not goal_label.text.is_empty()
+	goal_label.modulate = {"met": Balance.UI_GHOST, "failed": Balance.UI_DANGER}.get(Game.goals.goal.get("state"), Balance.UI_MONEY)
 	_refresh_room()
 	if chip_slots != Game.participants or chip_ghost_slot != Game.ghost_slot:
 		_build_chips()
@@ -358,7 +363,7 @@ func _draw_dial() -> void:
 
 
 func _draw_truck() -> void:
-	# A side-on truck: the cargo box fills with gold as value is delivered; a flag marks the 70% target.
+	# A side-on truck: the cargo box fills with gold as value is delivered; a flag marks the crew's target.
 	var size_now: Vector2 = Balance.HUD_TRUCK_SIZE
 	var ink: Color = Balance.COMIC_INK
 	var wheel: float = size_now.y * 0.15
@@ -376,8 +381,8 @@ func _draw_truck() -> void:
 		truck_meter.draw_circle(hub, wheel, ink)
 		truck_meter.draw_circle(hub, wheel * 0.45, Balance.UI_MUTED)
 	# The target flag: a pole through the cargo at the delivery percentage, with a pennant above it.
-	var pole_x: float = cargo.position.x + cargo.size.x * Balance.DELIVERY_PERCENT / 100.0
-	var flag_colour: Color = Balance.UI_GHOST if filled * 100.0 >= Balance.DELIVERY_PERCENT else Balance.UI_TEXT
+	var pole_x: float = cargo.position.x + cargo.size.x * Game.delivery_percent() / 100.0
+	var flag_colour: Color = Balance.UI_GHOST if filled * 100.0 >= Game.delivery_percent() else Balance.UI_TEXT
 	truck_meter.draw_line(Vector2(pole_x, cargo.position.y - 2.0), Vector2(pole_x, cargo.end.y), ink, 3.0)
 	truck_meter.draw_line(Vector2(pole_x, cargo.position.y), Vector2(pole_x, cargo.end.y), flag_colour, 1.5)
 	truck_meter.draw_colored_polygon(PackedVector2Array([Vector2(pole_x, cargo.position.y + 2.0), Vector2(pole_x + 14.0, cargo.position.y + 7.0), Vector2(pole_x, cargo.position.y + 12.0)]), flag_colour)

@@ -31,6 +31,7 @@ func _run() -> void:
 	playground = load("res://Main.tscn").instantiate()
 	playground.match_mode = false # The greybox harness, not the match flow.
 	root.add_child(playground)
+	playground.camera.arena_yaw = 0.0 # Straight on, so the arrow keys walk along the world's axes (decision 124).
 	for slot: int in range(SETTINGS.MAX_PLAYERS):
 		await _connect_client()
 		_send(slot, {"type": "hello", "name": TEST_NAMES[slot], "key": net.session_key})
@@ -65,7 +66,8 @@ func _check_movement() -> void:
 		starts.append(mover.position)
 	var directions: Array[Vector2] = [Vector2.RIGHT, Vector2.LEFT, Vector2.UP, Vector2.DOWN]
 	for slot: int in range(SETTINGS.MAX_PLAYERS):
-		_send(slot, {"type": "in", "x": directions[slot].x, "y": directions[slot].y})
+		var screen: Vector2 = router.world_to_stick(directions[slot]) # Sticks are screen-relative.
+		_send(slot, {"type": "in", "x": screen.x, "y": screen.y})
 	await _pump(WAIT_SECONDS)
 	for slot: int in range(SETTINGS.MAX_PLAYERS):
 		var displacement: Vector3 = movers[slot].position - starts[slot]
@@ -139,7 +141,7 @@ func _check_keyboard() -> void:
 	event.pressed = true
 	Input.parse_input_event(event)
 	await _pump(WAIT_SECONDS)
-	_check(router.for_slot(0).direction == Vector2.RIGHT, "Keyboard fallback moves an unconnected slot")
+	_check(router.for_slot(0).direction.is_equal_approx(Vector2.RIGHT), "Keyboard fallback moves an unconnected slot")
 	event.pressed = false
 	Input.parse_input_event(event)
 	await _pump(WAIT_SECONDS)

@@ -110,7 +110,7 @@ func _check_contacts(state: PhysicsDirectBodyState3D) -> void:
 			collider.tumble.call_deferred(previous_velocity)
 		if speed > Balance.JIGGLE_MIN_SPEED:
 			jiggle.call_deferred(Balance.JIGGLE_MAX * minf(speed / Balance.JIGGLE_FULL_SPEED, 1.0))
-		_on_impact.call_deferred(speed)
+		_on_impact.call_deferred(speed, thrown) # Whether it was thrown, before landing slows it and clears that.
 	previous_contacts = contacts
 
 
@@ -118,7 +118,7 @@ func _on_contact(_normal: Vector3) -> void:
 	pass # Loot uses this to notice floor contact while dragging.
 
 
-func _on_impact(_speed: float) -> void:
+func _on_impact(_speed: float, _was_thrown: bool = false) -> void:
 	pass # Loot turns impacts into damage.
 
 

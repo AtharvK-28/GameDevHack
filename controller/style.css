@@ -156,6 +156,9 @@ body[data-ghost-near="3"] #ghost-glow { --glow-size: 80px; --glow-spread: 18px; 
 
 /* --- Funny awards on the result screen --- */
 .award { margin: .2em 0 0; color: var(--orange); font-weight: 800; letter-spacing: .02em; }
+.stars { margin: .1em 0 0; color: var(--orange); font-size: clamp(30px, 6vw, 48px); letter-spacing: .12em; line-height: 1; }
+.goal { margin: .3em 0 0; color: var(--line); font-weight: 800; letter-spacing: .02em; }
+.goal.met { color: var(--green); }
 
 /* --- Shouts along the bottom of the mover controls --- */
 .shouts { display: flex; gap: 8px; flex: 1; justify-content: center; }

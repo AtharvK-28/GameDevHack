@@ -70,8 +70,9 @@ const DEV_TOAST_SECONDS: float = 1.5 # How long a shortcut's note stays on scree
 const DEV_SPEEDS: Array[float] = [0.25, 0.5, 1.0, 2.0, 4.0] # F5 and F6 step the round speed through these.
 # Playing stand-ins (decision 121, core/bot_crew.gd): tuning from the recording bots in tools/.
 const BOT_ARRIVE_DISTANCE: float = 0.45 # Metres from a route point that counts as reached.
-const BOT_CARRY_STICK: float = 0.5 # Stick while carrying: slow enough that a snag stays under the damage speed.
-const BOT_PAIR_STICK: float = 0.55 # Top stick for the two holders of the two-person item.
+const BOT_CARRY_STICK: float = 0.43 # Stick while carrying: slow enough that a snag stays under the damage speed.
+const BOT_PAIR_STICK: float = 0.48 # Top stick for the two holders of the two-person item. Both keep the recording
+# bots' speeds under the 1.3 response curve (0.5 and 0.55 under 1.6).
 const BOT_SNAG_DISTANCE: float = 0.45 # Metres a carried item may lag its carry point before the bot waits for it.
 const BOT_STAND_DISTANCE: float = 1.1 # Metres from an item where a bot stops to grab it.
 const BOT_GRAB_REACH: float = 1.6 # Metres (3D) within which a bot tries GRAB.
@@ -150,7 +151,7 @@ const PLAYER_COLOURS: Array[String] = ["#ffb84d", "#64d9ee", "#ed8bb6", "#b6de70
 const MOVER_SPEED: float = 4.5 # Metres per second; unchanged from the spec.
 const MOVER_ACCELERATION: float = 15.0 # Metres per second squared; about 0.3 s from standing to full speed.
 const MOVER_DECELERATION: float = 30.0 # Metres per second squared when stopping or reversing; about 0.15 s.
-const STICK_RESPONSE_EXPONENT: float = 1.6 # Speed = tilt ^ this, so small tilts walk gently; 1 is linear.
+const STICK_RESPONSE_EXPONENT: float = 1.3 # Speed = tilt ^ this, so small tilts walk gently; 1 is linear (decision 124; was 1.6).
 const GRAVITY: float = 9.8 # Metres per second squared.
 const CAPSULE_RADIUS: float = 0.4
 const CAPSULE_HEIGHT: float = 1.6
@@ -180,6 +181,8 @@ const LIGHT_ROTATION := Vector3(-55.0, -25.0, 0.0) # Degrees.
 const OVERLAY_MARGIN: float = 16.0 # Pixels.
 const JOYSTICK_SIZE: int = 120 # CSS pixels.
 const JOYSTICK_DEADZONE: float = 0.15 # Normalised stick magnitude, 0 to 1; the phone rescales past it, so there is no jump.
+const JOYSTICK_FOLLOW: bool = true # The stick's base follows a thumb that slides past its edge (decision 124).
+const STICK_SEND_RATE: int = 60 # Most stick changes a phone sends a second, sent as they happen (decision 124).
 
 # --- Goofy physics settings (turned up; mostly visual) ---
 # To tone it back down: set GOOFINESS to 1.0 and the three *_DAMPING values to 12, 14 and 10 (decision 84's mild
@@ -356,13 +359,24 @@ const EXORCISE_FREEZE: float = 1.0 # Seconds the ejected wisp cannot move or pre
 # --- Match settings ---
 const ROUND_SECONDS: float = 150.0
 const REVEAL_SECONDS: float = 3.0
-const DELIVERY_PERCENT: int = 70 # Integer arithmetic keeps the exact boundary fair.
+# The share of the starting value movers must deliver, by mover count (1, 2, 3; decision 122). Fewer movers carry
+# more each, so their bar is lower. Losing more than the rest ends the round for the ghost at once.
+const DELIVERY_PERCENTS: Array[int] = [55, 60, 65] # Integer arithmetic keeps the exact boundary fair.
 const LOOT_COUNTS: Array[int] = [6, 9, 12] # For 2, 3, 4 players.
 const HEAVY_LOOT_LIMITS: Array[int] = [1, 2, 2] # Most heavy items a round spawns, for 2, 3, 4 players.
 const MATCH_ROUNDS: Array[int] = [4, 3, 4]
 const RUPEES_PER_POINT: float = 100.0
 const MOVER_WIN_BONUS: float = 100.0
 const GHOST_WIN_BONUS: float = 150.0
+# Medals and bonus goals (decision 123): stars for the movers' haul, one bonus goal a round, a ghost counter-goal.
+const MEDAL_STEPS: Array[int] = [0, 15, 30] # Percent above the crew's target for 1, 2 and 3 stars (at most 100%).
+const STAR_POINTS: float = 25.0 # Each mover, per star.
+const GOAL_POINTS: float = 50.0 # Each mover, when the bonus goal is met.
+const GHOST_GOAL_POINTS: float = 50.0 # The ghost, for shattering the round's dearest item.
+const GOAL_CAREFUL_SHARE: int = 90 # Percent of its value the two-person item must still have when delivered.
+const GOAL_SEED_OFFSET: int = 4243 # Separates the goal pick from the round's other seeded picks.
+const RESULT_STAR_SIZE: float = 30.0 # Pixels per star on the round end, at the 1152 × 648 base.
+const GOAL_TASK_TEXTS: Dictionary = {"Lanterns": "Light all the lanterns", "Generator": "Power the generator"}
 const LOST_ITEM_Y: float = -10.0 # Metres below the arena; permanently lost.
 const MATCH_SPAWN_POINTS: Array[Vector2] = [
 	Vector2(-4.5, -10.5), Vector2(4.5, -10.5), Vector2(-4.5, -6.5),
@@ -399,7 +413,7 @@ const HUD_TEXT_SIZE: int = 13
 const HUD_BAR_SIZE := Vector2(300.0, 10.0)
 const HUD_ENERGY_BAR_SIZE := Vector2(150.0, 10.0)
 const HUD_MARKER_WIDTH: float = 3.0
-const HUD_MARKER_OVERHANG: float = 4.0 # Pixels the 70% tick reaches above and below the bar.
+const HUD_MARKER_OVERHANG: float = 4.0 # Pixels the target tick reaches above and below the bar.
 
 # --- UI look (assets/ui/ghosted_theme.tres is made from these by tools/make_ui_theme.gd; base 1152 × 648) ---
 const UI_NIGHT := Color("1a1228") # Screen backgrounds.
@@ -583,8 +597,9 @@ const CAMERA_SHAKE_ROLL: float = 2.5 # Degrees of camera roll at full trauma.
 const CAMERA_SHAKE_FREQUENCY: float = 18.0 # How fast the shake noise moves.
 
 # --- Damage, loot and feedback settings ---
-const DAMAGE_SPEED_THRESHOLD: float = 2.5 # Metres per second of closing speed.
-const DAMAGE_MULTIPLIER: float = 0.04 # Fraction of current value per m/s × fragility.
+const DAMAGE_SPEED_THRESHOLD: float = 3.0 # Metres per second of closing speed (decision 122; was 2.5).
+const DAMAGE_MULTIPLIER: float = 0.03 # Fraction of current value per m/s × fragility (decision 122; was 0.04).
+const THROWN_DAMAGE_SPEED_THRESHOLD: float = 2.5 # The old threshold, for thrown items in flight, so throwing stays risky.
 const LOOT_CONTACT_LIMIT: int = 16
 const FLOOR_NORMAL_MIN: float = 0.7 # Contacts with a steeper normal than this count as floor.
 const LOOT_NAMES: Array[String] = ["Antique vase", "Old TV", "Grandfather clock", "Grand piano"]
@@ -752,7 +767,7 @@ const DEMO_ROUND_SECONDS: float = 60.0
 const HUD_DIAL_SIZE: float = 54.0 # The punch-clock dial beside the timer.
 const HUD_WOBBLE_DEGREES: float = 4.0 # How far the timer card rocks in the last stretch.
 const HUD_WOBBLE_RATE: float = 9.0 # Radians per second of that rocking.
-const HUD_TRUCK_SIZE := Vector2(236.0, 62.0) # The truck meter: cargo fills toward the 70% flag.
+const HUD_TRUCK_SIZE := Vector2(236.0, 62.0) # The truck meter: cargo fills toward the target flag.
 const HUD_VASE_SIZE := Vector2(30.0, 40.0) # The damage meter: a vase that cracks as value is lost.
 const HUD_VASE_CRACKS: int = 4 # Cracks at the loss limit; the vase shatters past it.
 const HUD_DANGER_FRACTION: float = 0.7 # Share of the loss limit at which the screen edges pulse red.
@@ -984,7 +999,7 @@ const LOADING_TIPS: Array[String] = [
 	"The piano needs two movers. Turn it to fit through doors.",
 	"House shaking? Stand still or hold BRACE.",
 	"Fragile things lose value with every bump.",
-	"Deliver 70% of the haul to the truck to win.",
+	"Deliver the target share of the haul to win: 55% to 65%, by crew size.",
 	"Ghost: possess furniture and SHOVE it at the movers.",
 	"Power the generator with 3 batteries to weaken the ghost.",
 	"On the Ship, carry 3 oil cans to the lantern posts on the tug.",
