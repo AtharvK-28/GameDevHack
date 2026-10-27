@@ -24,6 +24,8 @@ enum Category { LOOT, FURNITURE, DECOR }
 @export var throwable: bool = false
 @export var two_person_handles: bool = false # A handle at each end along X, like the piano.
 @export var count: int = 1 # How many of it the arena's pool holds.
+@export var every_round: bool = false # Placed in every round, right after the centrepiece, like the Ship's parrot.
+@export var loot_script: Script # A Loot subclass with its own behaviour (e.g. props/parrot.gd); empty for plain loot.
 
 # --- Furniture ---
 @export_enum("Slider", "Door", "Dropper", "Hopper", "Rug") var possessable_kind: int = 0

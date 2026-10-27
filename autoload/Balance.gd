@@ -1006,6 +1006,7 @@ const LOADING_TIPS: Array[String] = [
 	"On the Ship, carry 3 oil cans to the lantern posts on the tug.",
 	"Ghost: possess a rum barrel and ROLL it down the steps.",
 	"Wave coming? Hold BRACE on the gangplank or get washed overboard.",
+	"Walk the Captain's parrot. Run with it and it flies off.",
 	"A thrown vase can knock a mover flat.",
 ]
 
@@ -1075,6 +1076,22 @@ const SHIP_GUST_WARNING: float = 1.0
 const SHIP_GUST_DURATION: float = 3.0
 const SHIP_GUST_PUSH_SPEED: float = 1.0 # Stationary, unbraced movers drift in metres/second.
 const SHIP_GUST_WITH_DOT: float = 0.35 # Stick projection along wind that causes a tumble.
+
+# --- The Captain's parrot (decision 127): walk it, don't run ---
+const PARROT_CALM_RATIO: float = 0.85 # Share of the carrier's full speed that counts as running.
+const PARROT_WARN_SECONDS: float = 1.5 # Running this long with it brings the SQUAWK! warning,
+const PARROT_ESCAPE_SECONDS: float = 1.0 # and this much longer after the warning, it flies off.
+const PARROT_FLIGHT_SECONDS: float = 2.0
+const PARROT_FLIGHT_HEIGHT: float = 3.0 # Metres the arc rises above a straight line at its middle.
+const PARROT_MIN_HOP: float = 6.0 # Metres: it always flies at least this far, so getting it back is a chase.
+const PARROT_PERCH_CLEARANCE: float = 0.5 # Radius that must be free of movers and loot for a perch to be picked.
+const PARROT_FLAP_RATE: float = 6.0 # Wingbeats a second in flight.
+const PARROT_FLAP_ANGLE: float = 55.0 # Degrees each wing swings up and down.
+const PARROT_WARN_BUZZ_MS: int = 150 # The carrier's phone buzzes with the warning.
+const PARROT_WARN_COLOUR := Color("ffd23f")
+const PARROT_SQUAWK_DB: float = -6.0
+const PARROT_ESCAPE_PITCH: float = 1.25 # Flying off squawks higher than the warning.
+const PARROT_SEED_OFFSET: int = 7907 # Separates perch picks from the seeded loot selection.
 const SHIP_OCEAN_SIZE: float = 300.0
 const SHIP_NEAR_WATER_SIZE: float = 60.0
 const SHIP_WATER_SUBDIVISIONS: int = 59

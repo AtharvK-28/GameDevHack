@@ -43,6 +43,7 @@ func _ready() -> void:
 		"thunder": _thunder(), "owl": _owl(), "howl": _howl(), "caw": _caw(),
 		"goat": _goat(), "whoosh": _whoosh(), "rumble": _rumble(), "crackle": _crackle(), "organ": _organ(),
 		"boing": _boing(), "theremin": _theremin(), "trombone": _trombone(), "ship_bell": _ship_bell(), "wave_crash": _wave_crash(),
+		"squawk": _squawk(),
 	}
 	for sound: String in FILE_SOUNDS:
 		var variants: Array[AudioStream] = []
@@ -239,6 +240,24 @@ func _caw() -> AudioStreamWAV:
 		var envelope: float = exp(-note_time * 9.0) if note_time < 0.25 else 0.0
 		var buzz: float = signf(sin(TAU * (620.0 - note_time * 500.0) * time))
 		samples[index] = (buzz * 0.6 + noise.randf_range(-1.0, 1.0) * 0.4) * envelope * 0.3
+	return _stream(samples, RATE, false)
+
+
+func _squawk() -> AudioStreamWAV:
+	# The parrot: a harsh two-part "squa-AWK", a buzzy tone that leaps up then falls, roughened with noise.
+	var count: int = int(RATE * 0.45)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	var phase: float = 0.0
+	for index: int in range(count):
+		var time: float = float(index) / RATE
+		var second: bool = time >= 0.13
+		var local: float = time - (0.13 if second else 0.0)
+		var pitch: float = (1500.0 - local * 1800.0) if second else (900.0 + local * 2500.0)
+		phase += TAU * (pitch + 60.0 * sin(TAU * 55.0 * time)) / RATE
+		var envelope: float = minf(1.0, local * 80.0) * exp(-local * (7.0 if second else 14.0))
+		var tone: float = clampf(sin(phase) * 3.0, -1.0, 1.0) # Clipped sine: a reedy buzz.
+		samples[index] = (tone * 0.7 + noise.randf_range(-1.0, 1.0) * 0.3) * envelope * 0.35
 	return _stream(samples, RATE, false)
 
 

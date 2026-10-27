@@ -473,6 +473,8 @@ func _spawn_loot() -> void:
 	for placement: Dictionary in Catalog.pick_loot(&"ship", layout.spawns.loot, count, heavy_limit, random):
 		var item: CatalogItem = placement.item
 		var loot: RigidBody3D = LOOT_SCENE.instantiate()
+		if item.loot_script != null:
+			loot.set_script(item.loot_script) # Before catalog_item: swapping the script resets its properties.
 		loot.catalog_item = item
 		loot.position = ArenaBuilder.point_of(placement.spot, item.footprint.y / 2.0 + Balance.LOOT_SPAWN_CLEARANCE)
 		add_child(loot)

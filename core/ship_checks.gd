@@ -22,12 +22,12 @@ func run() -> int:
 	arena.motion_scale = 0.0 # Level decks for the route checks; _check_motion lets the ship ride the swell.
 	await _frames(90)
 	_check(arena.truck != null, "Ship has a tug delivery zone")
-	_check(get_tree().get_nodes_in_group("loot").size() == 18, "Full Ship loot pool contains 18 items")
+	_check(get_tree().get_nodes_in_group("loot").size() == 19, "Full Ship loot pool contains 19 items, the parrot included")
 	var total: int = 0
 	for item: Loot in get_tree().get_nodes_in_group("loot"):
 		total += item.initial_value
 		_check(item.position.y > SETTINGS.SHIP_WATER_Y and absf(item.position.y - arena.floor_height_at(item.position) - item.item_size.y / 2.0) < 0.4, "%s settles on its intended deck" % item.item_name)
-	_check(total == 74500, "Full Ship pool is worth 74500 rupees")
+	_check(total == 78500, "Full Ship pool is worth 78500 rupees")
 	_check(arena.room_at(Vector3(3, 1.9, 6)) == "Quarterdeck", "The stern castle has its own floor-aware zone")
 	_check(arena.room_at(Vector3(11.5, 0.8, 9)) == "Main Deck" and arena.room_at(Vector3(7.2, 0.8, 9.5)) == "Main Deck", "The main deck, and the foot of the castle steps, resolve as the main deck")
 	_check(world.camera.arena_yaw == SETTINGS.SHIP_CAMERA_YAW, "Ship gets its approved camera yaw")

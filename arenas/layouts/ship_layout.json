@@ -735,6 +735,51 @@
 				"role": "sextant",
 				"size": "S",
 				"yaw": 0
+			},
+			{
+				"id": "P1",
+				"at": [
+					3.1,
+					7.6
+				],
+				"floor": 1.2,
+				"role": "parrot",
+				"size": "S",
+				"yaw": 0
+			}
+		],
+		"perches": [
+			{
+				"id": "perch-quarterdeck",
+				"at": [
+					3.1,
+					7.6
+				],
+				"floor": 1.2
+			},
+			{
+				"id": "perch-main-castle",
+				"at": [
+					9.4,
+					5.6
+				],
+				"floor": 0
+			},
+			{
+				"id": "perch-main-mast",
+				"at": [
+					13.2,
+					6.4
+				],
+				"floor": 0
+			},
+			{
+				"id": "perch-forecastle",
+				"at": [
+					24.8,
+					2.4
+				],
+				"floor": 0.7
 			}
 		]
 	},

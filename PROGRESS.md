@@ -218,6 +218,11 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 
 - [x] Approved deck-plan SVG and data-driven split-floor layout, ramps, open hold, tug delivery and map selection.
 - [x] Ship catalog: 18 items, 74500 rupees; seeded match picks, chest and rolling barrels.
+- [x] The Captain's parrot (decision 127, 2026-10-28): Ship loot with a personality, in every round; walk it, don't
+  run. The catalog is now 19 items, 78500 rupees. `core/parrot_check.gd` passes 35 assertions (spawning, perch
+  clearances, the walk, the reset, warning then escape, throws, knocks, the sea, landing on a perch, banking). All
+  18 suites pass, 1,278 assertions. `tools/balance_sim.gd` on the Ship: movers won 1 of 10, the same as before;
+  the parrot flew off 5 times (4 knocks, 1 fall in the sea), never from a bot running with it.
 - [x] All five possessable types, Gust warning/counters, two-second overboard rescue and water-plane loot loss.
 - [x] Initial real-physics Ship check passes: all room routes, held ramp travel, continuous two-player chest route and delivery, wind counters, rescue/pause and loot removal.
 - [x] Initial Mobile performance with four movers/full pool passes: wide 149758 triangles / 287 draws; close 158834 / 282 on Intel Iris Xe. Final visual capture/measurement still pending.

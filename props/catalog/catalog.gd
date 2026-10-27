@@ -35,13 +35,17 @@ static func pick_loot(pool: StringName, spots: Array, total: int, heavy_limit: i
 		for copy: int in range(item.count):
 			copies.append(item)
 	_shuffle(copies, random)
-	# Keep the shuffled order stable while placing centrepieces first. sort_custom is not stable for ties.
+	# Keep the shuffled order stable while placing centrepieces, then every-round items, first. sort_custom is not
+	# stable for ties.
 	var ordered: Array[CatalogItem] = []
 	for item: CatalogItem in copies:
 		if item.weight_class == Balance.TWO_PERSON:
 			ordered.append(item)
 	for item: CatalogItem in copies:
-		if item.weight_class != Balance.TWO_PERSON:
+		if item.weight_class != Balance.TWO_PERSON and item.every_round:
+			ordered.append(item)
+	for item: CatalogItem in copies:
+		if item.weight_class != Balance.TWO_PERSON and not item.every_round:
 			ordered.append(item)
 	copies = ordered
 
