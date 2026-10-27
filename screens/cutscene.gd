@@ -102,6 +102,9 @@ func _finish() -> void:
 
 # --- Panels ---
 func _panels() -> Array[Dictionary]:
+	if Game.selected_arena == Game.MUSEUM_ARENA:
+		var none: Array[Dictionary] = [] # The Museum's story panels come with the story work; until then, straight to the round.
+		return none
 	return Balance.SHIP_INTRO_PANELS if Game.selected_arena == Game.SHIP_ARENA else Balance.INTRO_PANELS
 
 

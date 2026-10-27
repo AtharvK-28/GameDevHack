@@ -144,3 +144,28 @@ Compact mono Vorbis excerpts converted from the publicly supplied MP3 previews; 
 - The drowned captain is built in code from Godot's primitive meshes (`actors/ghost_captain_model.gd`); no
   external model. The Davy Jones rip (decision 101) was removed by decision 103.
 
+
+## Museum of Mostly Real Things
+
+Every model below is CC0 1.0 (licences checked on each source page, 2026-10-28). Raw downloads stay in
+`assets/_incoming/`; only the pieces used are copied into the project.
+
+### Kenney Car Kit 3.1
+Author: Kenney  
+Source: [kenney.nl: Car Kit](https://kenney.nl/assets/car-kit)  
+License: CC0 1.0. The getaway van and the police car (`assets/models/vehicles/kenney/`).  
+
+### Kenney Space Kit 2.0
+Author: Kenney  
+Source: [kenney.nl: Space Kit](https://kenney.nl/assets/space-kit)  
+License: CC0 1.0. The Space Gallery's astronaut, the genuine alien, the rover, the satellite dish, rocket parts and bones, and the meteor model used for the moon rock and the meteorite (`assets/models/space/kenney/`).  
+
+### Models from Poly Pizza (`assets/models/museum/polypizza/`)
+Source: [poly.pizza](https://poly.pizza), each page marked CC0 1.0.  
+- Quaternius: T-Rex, Triceratops, Stegosaurus, Parasaurolophus, Apatosaurus (Animated Lowpoly Dinosaurs), pedestals, columns, bench, planet, mineral, crown, gold ingots, golden armour, celtic shield, astronaut, torch.  
+- CreativeTrio: painting, globe.  
+- iPoly3D: crystals (the crystal sculpture).  
+- Kay Lousberg: plaque.  
+- hat_my_guy: UFO.  
+
+The T-Rex skull, the Ming vase, the golden mask, the marble bust, the bronze elephant and the pharaoh are built from simple shapes in the project's style (`props/catalog/built/museum_*.tscn`, `arenas/dressing/museum_dressing.gd`).

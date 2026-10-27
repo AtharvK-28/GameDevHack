@@ -6,6 +6,7 @@ signal delivery_notice(value: int, item_name: String, slots: Array[int])
 
 # --- Match state ---
 const SHIP_ARENA: String = "res://arenas/Ship.tscn"
+const MUSEUM_ARENA: String = "res://arenas/Museum.tscn"
 var selected_arena: String = "res://arenas/Mansion.tscn"
 var room_items: Dictionary = {}
 var host: Node3D

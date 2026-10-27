@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CatalogItem" load_steps=3 format=3]
+[ext_resource type="Script" path="res://props/catalog/catalog_item.gd" id="1"]
+[ext_resource type="PackedScene" path="res://props/catalog/built/museum_golden_mask.tscn" id="2"]
+[resource]
+script = ExtResource("1")
+id = &"museum_golden_mask"
+display_name = "Golden mask"
+model = ExtResource("2")
+value = 4000
+weight_class = 0
+fragility = 1
+count = 2
+two_person_handles = false
+throwable = true
+footprint = Vector3(0.4, 0.42, 0.16)
+spot_roles = Array[StringName]([&"egypt"])
+pools = Array[StringName]([&"museum"])
+rolls = false

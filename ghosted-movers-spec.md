@@ -20,7 +20,7 @@ Ghosted Movers is a 2–4 player physics party game for PS02. A cheap moving com
 | Screen | One shared screen; angled "dollhouse" camera that auto-frames all movers |
 | Controllers | Phones over local Wi-Fi; keyboard and gamepad fallback |
 | Players | 2–4: one ghost, the rest movers |
-| Arenas | Old Mansion, Ghost Ship, Abandoned Museum |
+| Arenas | Old Mansion, Ghost Ship, Museum of Mostly Real Things |
 | Tone | Bright, comedic, low-poly |
 
 ## PS02 compliance and beyond
@@ -31,7 +31,7 @@ The core design covers every compulsory requirement; the three-arena submission 
 | --- | --- |
 | Objective Runner and Saboteur roles | Movers carry loot to the truck; the Ghost smashes and blocks |
 | Minimum 2 active players | 2–4 players; a 1v1 (one mover against the ghost) is fully playable |
-| Minimum 3 arenas | Old Mansion, Ghost Ship, Abandoned Museum |
+| Minimum 3 arenas | Old Mansion, Ghost Ship, Museum of Mostly Real Things |
 | At least 3 interactive environmental elements | Possessable props, plus House Shake, Gust of Wind and Lights Out hauntings |
 | Role switching after each round | The Ghost passes to the next player every round |
 | Limited sabotage | Ghost energy bar, haunting cooldowns, Battery Run: optional generator task that weakens the ghost |
@@ -185,7 +185,7 @@ The demo enables House Shake and Curse. The following catalog also preserves def
 | --- | --- | --- | --- | --- | --- | --- |
 | House Shake | Old Mansion | Rumble, ceiling dust, small camera shake for 1 s | 2.5 s: anyone moving tumbles; shelf items fall | Stand still or BRACE | 45 | 20 s |
 | Gust of Wind | Ghost Ship | Wind streaks and a whistle show the direction for 1 s | 3 s: moving with the wind tumbles you; standing still slowly pushes you | BRACE, or walk against or across the wind | 40 | 18 s |
-| Lights Out | Abandoned Museum | Lights flicker for 1 s | 6 s of darkness except the truck light (to be redesigned with the Museum) | To be redesigned with the Museum | 50 | 25 s |
+| JAAGTE RAHO! (replaces Lights Out, decision 128) | Museum of Mostly Real Things | A whistle, then the lights dim (1.5 s) | 7 s of darkness except the van; the ghost steers a 2 m torch beam, and a mover moving in it drops what they hold and tumbles | Hold BRACE to freeze as a statue; the beam passes | 50 | 25 s |
 | Ecto Slime | All arenas | The wisp leaves a green trail | For 4 s, movers on slime slide with their momentum | Walk around it | 25 | 10 s |
 
 - **House Shake.** "Moving" means the stick is pushed or the mover is sliding; BRACE protects. Shelf items falling waits for the Phase 6 Mansion, since the greybox has no shelves.
@@ -201,7 +201,7 @@ Three single-floor, roofless houses, each with its own layout, signature hauntin
 | --- | --- | --- | --- | --- |
 | Old Mansion | From `arenas/layouts/mansion-layout.svg`: main room and kitchen with a raised 1.2 m gallery behind them (reached only by stairs), a fenced garden, and a path from the front door to the truck; the piano starts on the gallery. The only arena with stairs. | House Shake | Many doors and two chandeliers over the main route | Dusk: violet fog and moonlight, warm lamplight, glowing windows, purple wallpaper |
 | Ghost Ship | Open deck, crate stacks, a 2.2 m gangplank with no rails to the salvage tug delivery zone | Gust of Wind | Water: anything that falls overboard is lost | Moonlight blue, pale blue/yellow lanterns |
-| Abandoned Museum | Long galleries of pedestals; the furthest distance to the truck | Lights Out | Very fragile, very valuable exhibits | Cold white spotlights, dusty fog |
+| Museum of Mostly Real Things | Six galleries (Egypt, Rotunda, Jurassic Hall, Art, Space, Grand Hall) on pedestals; a short laser-hall shortcut or the long way round through the lobby to the van | JAAGTE RAHO! | Very fragile, very valuable exhibits; the T-Rex skull starts on its skeleton | Cold white gallery lights in the dark, dusty fog |
 
 **Loot list** (fragility: 1 = sturdy, 3 = glass)
 
@@ -225,11 +225,14 @@ Three single-floor, roofless houses, each with its own layout, signature hauntin
 | Ghost Ship | Captain's portrait | 1 | 7,000 | Medium | 1 |
 | Ghost Ship | Rum barrel (rolls if dropped) | 4 | 3,000 | Medium | 1 |
 | Ghost Ship | Captain's parrot (every round; flies off if you run with it) | 1 | 4,000 | Light | never loses value |
-| Abandoned Museum | Dinosaur skull | 1 | 25,000 | Two-person | 2 |
-| Abandoned Museum | Crystal sculpture | 2 | 9,000 | Medium | 3 |
-| Abandoned Museum | Ming vase | 2 | 6,000 | Light | 3 |
-| Abandoned Museum | Golden mask | 2 | 4,000 | Light | 1 |
-| Abandoned Museum | Marble bust | 2 | 3,000 | Medium | 2 |
+| Museum | T-Rex skull | 1 | 25,000 | Two-person | 2 |
+| Museum | Crystal sculpture | 2 | 9,000 | Medium | 3 |
+| Museum | Bronze elephant | 1 | 8,000 | Heavy | 1 |
+| Museum | Ming vase | 2 | 6,000 | Light | 3 |
+| Museum | Meteorite (pebble-sized, but heavy) | 1 | 6,000 | Heavy | 1 |
+| Museum | Moon rock (floats down when thrown) | 1 | 5,000 | Light | 1 |
+| Museum | Golden mask | 2 | 4,000 | Light | 1 |
+| Museum | Marble bust | 2 | 3,000 | Medium | 2 |
 
 Every arena has exactly one two-person centrepiece worth about a third of the house. It's the round's big gamble: going for it wins the quota, and dropping it hands the round to the ghost.
 
@@ -624,7 +627,7 @@ Let the judges play within 15 seconds. A teammate plays the first ghost so the h
 
 Use Maaack's MIT template scenes for opening, main menu, options, pause, credits and loading. Restyle with the Kenney CC0 UI Pack v2 theme and locally bundled Baloo 2 OFL font; the azagaya theme is not used. `menus/` holds the adapted scenes, `assets/ui/` the theme/icons/map previews, `assets/fonts/` the font, and `controller/fonts/` its browser copy. Preserve license notices in `assets/CREDITS.md` and the respective asset/addon directories.
 
-The approved launch flow is title (dimmed, idling Mansion) -> map selection -> join lobby -> role reveal -> round -> round end -> final standings -> lobby. Mansion and Ghost Ship are playable; Museum explicitly says coming soon. Title has Play, Guide, Options, Credits and Quit. Guide briefly explains joining, mover controls, the demo ghost abilities and winning; Back or Escape returns home. Lobby displays the keyed QR, manual code, four slot cards with ready state, and Start enabled with at least two ready phones. New join code disconnects all phones and replaces both credentials. The game starts at `menus/opening/opening.tscn` and wipes between full screens (lobby, reveal, round end, results).
+The approved launch flow is title (dimmed, idling Mansion) -> map selection -> join lobby -> role reveal -> round -> round end -> final standings -> lobby. Mansion, Ghost Ship and the Museum of Mostly Real Things are playable. Title has Play, Guide, Options, Credits and Quit. Guide briefly explains joining, mover controls, the demo ghost abilities and winning; Back or Escape returns home. Lobby displays the keyed QR, manual code, four slot cards with ready state, and Start enabled with at least two ready phones. New join code disconnects all phones and replaces both credentials. The game starts at `menus/opening/opening.tscn` and wipes between full screens (lobby, reveal, round end, results).
 
 Options persist Master, Music and SFX volumes, fullscreen, and Demo mode (60-second rounds; full rounds remain 150). Escape opens the template pause menu. Game owns pause state: the host resume action does not bypass a missing phone, and a reconnect does not bypass host pause. Back to lobby cancels without scoring the incomplete attempt.
 
@@ -645,6 +648,8 @@ Close codes: 4001 auth timeout, 4002 new lobby, 4003 denied credentials, 4008 ra
 The Ship catalog contains 19 items worth 78500 rupees: chest 18000 (two-person, fragility 1); the Captain's parrot 4000 (light, placed in every round, never loses value; see below); 3 ships-in-bottles 5000 (light, 3); 2 telescopes 4000 (medium, 2); portrait 7000 (medium, 1); 4 rolling rum barrels 3000 (medium, 1); 2 compasses 2000 (light, 2); 2 chalices 1500 (light, 2); bell 3500 (heavy, 1); sextant 2500 (light, 2); chart tube 1500 (light, 1). Existing 6/9/12 seeded match picks and heavy limits apply, with exactly one chest and the parrot. Spawn roles and S/M/XL sizes live in the layout.
 
 **The Captain's parrot (decision 127).** Walk it, don't run. Carried at 85% or more of the carrier's full speed for 1.5 s, it shows "SQUAWK!", squawks and buzzes the carrier's phone; 1.0 s more and it flies off. Slowing below 85% resets the count. A throw, a knock above the damage threshold or the sea also make it fly off; it never loses value. It flies a 2 s, 3 m high arc to a random free perch at least 6 m away (the layout's `spawns.perches`); in flight it cannot be grabbed or possessed. On the tug it banks like any loot. Numbers live in `Balance.gd` (`PARROT_*`).
+
+**The Museum of Mostly Real Things (decision 128).** Built from `arenas/layouts/museum_layout.json`: a 30 × 20 m building of six galleries round a grand hall (Egypt, Rotunda, Jurassic Hall on the back row; Art Gallery, Grand Hall, Space Gallery in the middle), a laser hall and a lobby along the front, and the crew's van at the outdoor loading dock. Two ways out: the short laser hall (2.6 m doors) or the long way through the lobby's front door and along the dock. The museum pool is 12 items worth ₹88,000 (the loot table above); small exhibits stand on 0.9 m pedestals, the T-Rex skull on a plinth in the rotunda. The moon rock falls at a quarter of normal gravity while thrown. Gallery decor uses CC0 models (the Quaternius dinosaurs, Kenney's astronaut and alien) placed at real sizes by `MuseumKit`. Approved for the next stages: Bahadur the watchman as the ghost with JAAGTE RAHO! (see the hauntings table), lasers that blink on and off across the laser hall (crossing a lit beam sounds the alarm and gives the ghost energy), and the swap-the-fakes task whose cardboard skull goes on the headless T-Rex skeleton. The Museum has no story panels yet; it goes straight to the first round.
 
 Ship enables crate/slider, hatch/door, lantern/dropper, anchor/hopper and tarp/rug, while retaining opening/shared haunting locks, match energy regeneration and Curse. Gust of Wind is included: 40 energy, 18 s cooldown, 1 s cardinal direction warning and 3 s effect; moving with the wind tumbles, still unbraced movers drift at 1 m/s, bracing or walking against/across counters it. The Ship opens a match with its own four-panel story (decision 114: the wreck, boarding, the captain, the job), lettered over staged renders until painted panels replace them. No Battery Run here; the Ship's own match task is Light the Lanterns (decision 105): three seeded oil cans (medium carry, valueless, unpossessable, recovered from the sea) carried to three lantern posts, two on the tug beside the delivery area and one on the stern castle. A release inside an unlit post's 1.2 m mark lights it; all three apply the Battery Run's ghost handicap and brighten the ambient, moon and existing deck lamps (no new lights). The story intro plays once per match on both arenas, each with its own panels.
 

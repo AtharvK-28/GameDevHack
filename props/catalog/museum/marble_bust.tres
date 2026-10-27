@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CatalogItem" load_steps=3 format=3]
+[ext_resource type="Script" path="res://props/catalog/catalog_item.gd" id="1"]
+[ext_resource type="PackedScene" path="res://props/catalog/built/museum_marble_bust.tscn" id="2"]
+[resource]
+script = ExtResource("1")
+id = &"museum_marble_bust"
+display_name = "Marble bust"
+model = ExtResource("2")
+value = 3000
+weight_class = 1
+fragility = 2
+count = 2
+two_person_handles = false
+throwable = false
+footprint = Vector3(0.42, 0.7, 0.3)
+spot_roles = Array[StringName]([&"bust"])
+pools = Array[StringName]([&"museum"])
+rolls = false

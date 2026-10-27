@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CatalogItem" load_steps=3 format=3]
+[ext_resource type="Script" path="res://props/catalog/catalog_item.gd" id="1"]
+[ext_resource type="PackedScene" path="res://props/catalog/built/museum_ming_vase.tscn" id="2"]
+[resource]
+script = ExtResource("1")
+id = &"museum_ming_vase"
+display_name = "Ming vase"
+model = ExtResource("2")
+value = 6000
+weight_class = 0
+fragility = 3
+count = 2
+two_person_handles = false
+throwable = true
+footprint = Vector3(0.36, 0.6, 0.36)
+spot_roles = Array[StringName]([&"vase"])
+pools = Array[StringName]([&"museum"])
+rolls = false

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CatalogItem" load_steps=3 format=3]
+[ext_resource type="Script" path="res://props/catalog/catalog_item.gd" id="1"]
+[ext_resource type="PackedScene" path="res://props/catalog/built/museum_bronze_elephant.tscn" id="2"]
+[resource]
+script = ExtResource("1")
+id = &"museum_bronze_elephant"
+display_name = "Bronze elephant"
+model = ExtResource("2")
+value = 8000
+weight_class = 2
+fragility = 1
+count = 1
+two_person_handles = false
+throwable = false
+footprint = Vector3(0.95, 0.8, 0.5)
+spot_roles = Array[StringName]([&"elephant"])
+pools = Array[StringName]([&"museum"])
+rolls = false

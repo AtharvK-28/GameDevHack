@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="CatalogItem" load_steps=3 format=3]
+[ext_resource type="Script" path="res://props/catalog/catalog_item.gd" id="1"]
+[ext_resource type="PackedScene" path="res://props/catalog/built/museum_meteor.tscn" id="2"]
+[resource]
+script = ExtResource("1")
+id = &"museum_meteorite"
+display_name = "Meteorite"
+model = ExtResource("2")
+model_scale = 0.35
+tint = Color(0.36, 0.3, 0.3, 1)
+value = 6000
+weight_class = 2
+fragility = 1
+count = 1
+two_person_handles = false
+throwable = false
+footprint = Vector3(0.3, 0.26, 0.29)
+spot_roles = Array[StringName]([&"space"])
+pools = Array[StringName]([&"museum"])
+rolls = false

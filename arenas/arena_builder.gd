@@ -442,7 +442,9 @@ static func _build_truck(arena: Node3D, truck: Dictionary) -> Area3D:
 	# the delivery half-circle shares that point and direction.
 	var tailgate := Vector3(truck.tailgate[0], 0.0, truck.tailgate[1])
 	var yaw: float = atan2(truck.faces[1], -truck.faces[0]) # Turns local −X onto the faces direction.
-	var body: Node3D = TRUCK_MODEL_SCENE.instantiate()
+	# "model" picks another vehicle scene with the same contract (tailgate at the origin, cab along +X), e.g. the van.
+	var model_scene: PackedScene = TRUCK_MODEL_SCENE if not truck.has("model") else load("res://props/%s.tscn" % String(truck.model).capitalize())
+	var body: Node3D = model_scene.instantiate()
 	body.position = tailgate
 	body.rotation.y = yaw
 	arena.add_child(body)

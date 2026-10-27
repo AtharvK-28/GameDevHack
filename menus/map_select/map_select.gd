@@ -1,5 +1,5 @@
 # Map select, opened by the title's Play: the host picks a house with the mouse or the keyboard. The Mansion is
-# playable; the Ghost Ship and the Abandoned Museum are locked "coming soon" tiles. Esc or Back returns to the
+# playable, and so are the Ghost Ship and the Museum of Mostly Real Things. Esc or Back returns to the
 # title (Maaack's MainMenu closes a sub menu when it hides).
 extends Control
 
@@ -12,7 +12,7 @@ static func maps() -> Array[Dictionary]:
 	return [
 		{"name": "Old Mansion", "note": "Gallery, stairs and a grand piano", "arena": "res://arenas/Mansion.tscn", "preview": Balance.MAP_PREVIEW_ART, "crop": Balance.MAP_PREVIEW_CROP},
 		{"name": "Ghost Ship", "note": "Salvage, wind and a risky crossing", "arena": "res://arenas/Ship.tscn", "preview": "res://assets/ui/ship_preview.svg", "crop": Rect2(0, 0, 640, 360)},
-		{"name": "Abandoned Museum", "note": "Coming soon", "arena": "", "preview": ""},
+		{"name": "Museum of Mostly Real Things", "note": "Dinosaurs, lasers and a watchman", "arena": "res://arenas/Museum.tscn", "preview": "res://assets/ui/museum_preview.svg", "crop": Rect2(0, 0, 640, 360)},
 	]
 
 var first_tile: Button

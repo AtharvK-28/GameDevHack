@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/space/kenney/meteor_detailed.glb" id="1"]
+
+[node name="museum_meteor" type="Node3D"]
+
+[node name="Rock" parent="." instance=ExtResource("1")]
+position = Vector3(-2.0, 0, -1.5)

@@ -64,7 +64,14 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 
 - [ ] Old Mansion — layout, truck and look pass done (dusk lighting, textures, wall fade, arches, gates, windows, decor, grounds); furniture catalog and possessable furniture built; human playtest of the look still pending
 - [ ] Ghost Ship
-- [ ] Abandoned Museum
+- [ ] Museum of Mostly Real Things (decision 128). Stage A done 2026-10-28: the arena from
+  `arenas/layouts/museum_layout.json` (six galleries, laser hall, lobby, van at the loading dock), 12 loot items worth
+  ₹88,000 on pedestals, the moon rock's floaty throw, CC0 exhibits placed at real size by `MuseumKit`, the map tile
+  unlocked, no intro yet. `core/museum_check.gd` passes 28 assertions (pool, seeded rounds, exhibits resting on their
+  spots, a mover walking from the van into every gallery, the skull carried by two through the laser hall to the
+  van, the moon rock). All 19 suites pass, 1,304 assertions. Next: the museum look (lighting, marble, facade,
+  ropes, plaques), then stage B (skull teeth, headless skeleton, Bahadur, JAAGTE RAHO!) and stage C (lasers, swap
+  the fakes). Until stage B it borrows the Mansion's House Shake and ghost model.
 - [ ] Gust of Wind and Lights Out
 - [x] Mover and ghost character models integrated (brought forward; visual acceptance pending)
 - [x] Party camera and Mansion wall fade implemented (human acceptance pending)

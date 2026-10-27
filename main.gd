@@ -324,7 +324,11 @@ func _arena_scene() -> PackedScene:
 func _apply_arena_bounds() -> void:
 	# The camera, movers and ghost stay within the current arena's limits.
 	camera.bounds = arena.camera_bounds()
-	camera.arena_yaw = Balance.SHIP_CAMERA_YAW if arena.ARENA_NAME == "Ghost Ship" else Balance.CAMERA_YAW
+	camera.arena_yaw = Balance.CAMERA_YAW
+	if arena.ARENA_NAME == "Ghost Ship":
+		camera.arena_yaw = Balance.SHIP_CAMERA_YAW
+	elif arena.ARENA_NAME == "Museum of Mostly Real Things":
+		camera.arena_yaw = Balance.MUSEUM_CAMERA_YAW
 	camera.limit_overview = arena.ARENA_NAME == "Ghost Ship"
 	for mover: CharacterBody3D in movers:
 		mover.bounds = arena.mover_bounds()

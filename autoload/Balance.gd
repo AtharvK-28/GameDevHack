@@ -1077,6 +1077,39 @@ const SHIP_GUST_DURATION: float = 3.0
 const SHIP_GUST_PUSH_SPEED: float = 1.0 # Stationary, unbraced movers drift in metres/second.
 const SHIP_GUST_WITH_DOT: float = 0.35 # Stick projection along wind that causes a tumble.
 
+# --- The Museum of Mostly Real Things (decision 128) ---
+const MUSEUM_CAMERA_YAW: float = -25.0 # Degrees; looks in from the left, over the fading front and left walls.
+const MUSEUM_BACKGROUND := Color("141a26") # After hours: a dark blue-grey night; the fog fades into it.
+const MUSEUM_AMBIENT_COLOUR := Color("7e8aa8")
+const MUSEUM_AMBIENT_ENERGY: float = 0.5
+const MUSEUM_MOON_ENERGY: float = 0.55
+const MUSEUM_LIGHT_HEIGHT: float = 2.7 # Metres: one cold gallery light per room, just under the wall tops.
+const MUSEUM_LIGHT_COLOUR := Color("dfe8ff")
+const MUSEUM_OUTSIDE_LIGHT_COLOUR := Color("ffcf8a") # Sodium lamp over the loading dock.
+const MUSEUM_LIGHT_ENERGY: float = 1.6
+const MUSEUM_LIGHT_REACH: float = 0.95 # Light range as a share of the room's longer side.
+const MUSEUM_SKULL_PLINTH := Vector2(2.6, 1.3) # Metres (x, z) under the T-Rex skull.
+const MUSEUM_PEDESTAL_WIDTH: float = 0.7 # Collider of each pedestal under small exhibits.
+const MUSEUM_EXHIBIT_COLLIDER: float = 0.8 # Share of an exhibit's bounds that blocks movers.
+const MUSEUM_BONE_PAD: float = 0.06 # Animated models: bone bounds grown by this share of their size.
+const MUSEUM_GOLD := Color("e7b53b")
+const MUSEUM_SKIN := Color("d9a35c")
+const MUSEUM_LAPIS := Color("2648a0")
+const MUSEUM_PAINTING_HEIGHT: float = 0.9 # Metres from the floor to a hung painting's bottom.
+const MUSEUM_PAINTING_SCALE: float = 1.6
+const MUSEUM_SIGN_FONT_SIZE: int = 64
+const MUSEUM_SIGN_PIXEL_SIZE: float = 0.006
+const MUSEUM_SIGN_COLOUR := Color("ffe9b0")
+const MUSEUM_SIGN_OUTLINE: int = 14
+const MOON_ROCK_GRAVITY: float = 0.25 # Share of normal gravity while a thrown moon rock is in the air.
+const VAN_LENGTH: float = 4.5 # Metres, like the farm truck.
+const VAN_SIGN: String = "SASTA SHIFTERS
+Museum Maintenance (Totally)"
+const VAN_SIGN_FONT_SIZE: int = 64
+const VAN_SIGN_PIXEL_SIZE: float = 0.005
+const VAN_SIGN_COLOUR := Color("ff9a3c") # Sasta Shifters orange.
+const VAN_SIGN_OUTLINE: int = 14
+
 # --- The Captain's parrot (decision 127): walk it, don't run ---
 const PARROT_CALM_RATIO: float = 0.85 # Share of the carrier's full speed that counts as running.
 const PARROT_WARN_SECONDS: float = 1.5 # Running this long with it brings the SQUAWK! warning,

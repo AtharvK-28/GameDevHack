@@ -1,0 +1,103 @@
+[gd_scene load_steps=13 format=3]
+
+[sub_resource type="StandardMaterial3D" id="mat0"]
+albedo_color = Color(0.7255, 0.7137, 0.6902, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="BoxMesh" id="mesh0"]
+size = Vector3(0.3, 0.12, 0.26)
+material = SubResource("mat0")
+
+[sub_resource type="StandardMaterial3D" id="mat1"]
+albedo_color = Color(0.9333, 0.9176, 0.8941, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="BoxMesh" id="mesh1"]
+size = Vector3(0.42, 0.22, 0.22)
+material = SubResource("mat1")
+
+[sub_resource type="StandardMaterial3D" id="mat2"]
+albedo_color = Color(0.9333, 0.9176, 0.8941, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="CylinderMesh" id="mesh2"]
+top_radius = 0.055
+bottom_radius = 0.065
+height = 0.1
+radial_segments = 10
+rings = 1
+material = SubResource("mat2")
+
+[sub_resource type="StandardMaterial3D" id="mat3"]
+albedo_color = Color(0.9333, 0.9176, 0.8941, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="SphereMesh" id="mesh3"]
+radius = 0.12
+height = 0.24
+radial_segments = 12
+rings = 6
+material = SubResource("mat3")
+
+[sub_resource type="StandardMaterial3D" id="mat4"]
+albedo_color = Color(0.9333, 0.9176, 0.8941, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="BoxMesh" id="mesh4"]
+size = Vector3(0.035, 0.06, 0.05)
+material = SubResource("mat4")
+
+[sub_resource type="StandardMaterial3D" id="mat5"]
+albedo_color = Color(0.7255, 0.7137, 0.6902, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="SphereMesh" id="mesh5"]
+radius = 0.115
+height = 0.23
+radial_segments = 12
+rings = 6
+material = SubResource("mat5")
+
+[node name="marble_bust" type="Node3D"]
+
+[node name="base" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh0")
+position = Vector3(0, 0.06, 0)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="shoulders" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh1")
+position = Vector3(0, 0.23, 0)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="neck" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh2")
+position = Vector3(0, 0.39, 0)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="head" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh3")
+position = Vector3(0, 0.53, 0)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(0.9, 1.05, 1)
+
+[node name="nose" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh4")
+position = Vector3(0, 0.53, 0.12)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="hair" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh5")
+position = Vector3(0, 0.58, -0.02)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(0.95, 0.75, 1)
