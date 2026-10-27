@@ -124,6 +124,10 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
   Worth knowing for future checks: autoload globals do not resolve in `extends SceneTree` scripts — use
   `preload("res://autoload/Balance.gd")` and `root.get_node("Net")`, as every other check does — and `_get` is
   reserved by `Object`.
+- [x] Busy page port (decision 126, 2026-10-28): a backup tool's service held 8080 on the host laptop, so the page
+  server failed silently. It now falls back to the next free port up to 8090, every link uses `PageServer.port`, and
+  the lobby says "PHONE PAGE COULDN'T START" when all are taken. `core/page_server_check.gd` covers the move, the QR
+  link and the all-busy report (33 assertions). All 17 suites pass, 1,241 assertions, no failures.
 - [ ] Export filter: `controller/` carries a `.gdignore`, so the page is read from disk when running from source
   but would not be packed into an exported build. Add `controller/*` to the export preset's include filter when
   the export is built.

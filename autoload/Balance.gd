@@ -2,7 +2,8 @@
 extends Node
 
 # --- Network settings ---
-const WEB_PORT: int = 8080
+const WEB_PORT: int = 8080 # First choice for the phone page; PageServer.port is the one actually serving.
+const WEB_PORT_TRIES: int = 11 # Ports tried for the phone page, from WEB_PORT up (8080–8090).
 const SOCKET_PORT: int = 9080
 const MAX_PLAYERS: int = 4
 

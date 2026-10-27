@@ -1,5 +1,5 @@
 # Checks the built-in phone page server: real HTTP requests over TCP to the running host, the content types the
-# page needs, and that nothing outside controller/ can be fetched.
+# page needs, that nothing outside controller/ can be fetched, and that a busy port moves the page to the next free one.
 extends SceneTree
 
 const SETTINGS := preload("res://autoload/Balance.gd")
@@ -7,6 +7,7 @@ const HOST: String = "127.0.0.1"
 const REPLY_TIMEOUT_MS: int = 3000
 
 var failures: int = 0
+var port: int = 0 # Where the page server is listening now.
 
 
 func _initialize() -> void:
@@ -17,7 +18,9 @@ func _run() -> void:
 	await process_frame
 	# Taken from the tree rather than the autoload identifier, which only exists once the editor has cached it.
 	var page_server: Node = root.get_node("PageServer")
-	_check(page_server.listen_error == OK, "The page server is listening on port %d" % SETTINGS.WEB_PORT)
+	port = page_server.port
+	var last: int = SETTINGS.WEB_PORT + SETTINGS.WEB_PORT_TRIES - 1
+	_check(page_server.listen_error == OK and port >= SETTINGS.WEB_PORT and port <= last, "The page server is listening on port %d (first choice %d)" % [port, SETTINGS.WEB_PORT])
 
 	# --- The page and every file it is made of ---
 	var index: Dictionary = await _fetch("/")
@@ -52,7 +55,34 @@ func _run() -> void:
 
 	# --- The play socket is untouched ---
 	_check(root.get_node("Net").listen_error == OK, "The WebSocket port is still open alongside the page server")
-	_check(SETTINGS.WEB_PORT != SETTINGS.SOCKET_PORT, "The page and the socket use their own ports")
+	_check(SETTINGS.SOCKET_PORT < SETTINGS.WEB_PORT or SETTINGS.SOCKET_PORT > last, "The page's fallback ports never reach the socket's port")
+
+	# --- A busy port moves the page to the next free one (decision 126) ---
+	var taken: int = port
+	page_server.stop()
+	var blocker := TCPServer.new()
+	_check(blocker.listen(taken) == OK, "Another program can take the page's port %d" % taken)
+	page_server.start()
+	port = page_server.port
+	_check(page_server.listen_error == OK and port != taken and port <= last, "With %d taken, the page server moves to %d" % [taken, port])
+	_check((await _fetch("/")).status == "200", "The page is served on the fallback port")
+	var join: String = root.get_node("Net").join_url("127.0.0.1")
+	_check(join.begins_with("http://127.0.0.1:%d/" % port), "The QR link points at the port actually serving the page")
+
+	# Every port in the range taken: the server reports it instead of failing silently.
+	page_server.stop()
+	var blockers: Array[TCPServer] = [blocker]
+	for candidate: int in range(SETTINGS.WEB_PORT, last + 1):
+		var extra := TCPServer.new()
+		if extra.listen(candidate) == OK:
+			blockers.append(extra)
+	page_server.start()
+	_check(page_server.listen_error != OK, "With ports %d–%d all taken, the page server reports the failure" % [SETTINGS.WEB_PORT, last])
+	for held: TCPServer in blockers:
+		held.stop()
+	page_server.start()
+	port = page_server.port
+	_check(page_server.listen_error == OK and (await _fetch("/")).status == "200", "Once the ports free up, the page is served again on %d" % port)
 
 	print("PAGE SERVER CHECK: %s" % ("PASS" if failures == 0 else "%d failures" % failures))
 	quit(0 if failures == 0 else 1)
@@ -70,7 +100,7 @@ func _fetch_post(path: String) -> Dictionary:
 func _request(request: String) -> Dictionary:
 	var stream := StreamPeerTCP.new()
 	var empty := {"status": "", "type": "", "length": 0, "body": ""}
-	if stream.connect_to_host(HOST, SETTINGS.WEB_PORT) != OK:
+	if stream.connect_to_host(HOST, port) != OK:
 		return empty
 
 	var started: int = Time.get_ticks_msec()

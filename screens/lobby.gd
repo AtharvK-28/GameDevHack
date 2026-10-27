@@ -61,6 +61,8 @@ func _refresh() -> void:
 	start_button.disabled = not Game.can_start()
 	if Net.listen_error != OK:
 		status_label.text = "Port %d is busy. Close the other game window, then restart." % Balance.SOCKET_PORT
+	elif PageServer.listen_error != OK:
+		status_label.text = "PHONE PAGE COULDN'T START: ports %d–%d are in use. Close what uses them, then restart." % [Balance.WEB_PORT, Balance.WEB_PORT + Balance.WEB_PORT_TRIES - 1]
 	elif now_ready.size() < 2:
 		status_label.text = "2–4 movers: each phone taps Ready (%d clocked in)" % now_ready.size()
 	else:
@@ -206,7 +208,7 @@ func _join_urls() -> PackedStringArray:
 	for address: String in IP.get_local_addresses():
 		if not address.contains(".") or address.begins_with("127.") or address.begins_with("169.254."):
 			continue
-		var url: String = "http://%s:%d" % [address, Balance.WEB_PORT]
+		var url: String = "http://%s:%d" % [address, PageServer.port]
 		if address.begins_with("192.168.") or address.begins_with("10.") or _is_private_172(address):
 			preferred.append(url)
 		else:

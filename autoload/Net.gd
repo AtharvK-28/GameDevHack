@@ -77,7 +77,7 @@ func _exit_tree() -> void:
 # --- Public session access ---
 func join_url(address: String) -> String:
 	# The QR link: the key rides after "#", so it never reaches the phone page's web server.
-	return "http://%s:%d/#k=%s" % [address, Balance.WEB_PORT, session_key]
+	return "http://%s:%d/#k=%s" % [address, PageServer.port, session_key]
 
 
 func rotate_session() -> void:

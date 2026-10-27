@@ -89,11 +89,13 @@ func _update_harness_overlay() -> void:
 func _build_connection_text() -> void:
 	if Net.listen_error != OK:
 		connection_text = "PORT %d BUSY — close the other game instance, then restart." % Balance.SOCKET_PORT
+	elif PageServer.listen_error != OK:
+		connection_text = "PHONE PAGE COULDN'T START — ports %d–%d in use." % [Balance.WEB_PORT, Balance.WEB_PORT + Balance.WEB_PORT_TRIES - 1]
 	else:
 		var addresses: PackedStringArray = []
 		for address: String in IP.get_local_addresses():
 			if address.contains(".") and not address.begins_with("127.") and not address.begins_with("169.254."):
-				addresses.append("http://%s:%d" % [address, Balance.WEB_PORT])
+				addresses.append("http://%s:%d" % [address, PageServer.port])
 		connection_text = "Phones: " + " · ".join(addresses)
 
 

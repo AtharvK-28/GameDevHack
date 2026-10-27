@@ -135,7 +135,7 @@ func change_speed(step: int) -> void:
 
 func phone_page_url() -> String:
 	# The laptop's own browser reaches the page server on localhost.
-	return "http://localhost:%d/#k=%s" % [Balance.WEB_PORT, Net.session_key]
+	return "http://localhost:%d/#k=%s" % [PageServer.port, Net.session_key]
 
 
 # --- Shortcuts ---

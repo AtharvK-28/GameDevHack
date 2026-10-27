@@ -23,23 +23,41 @@ const TYPES: Dictionary = {
 # --- State ---
 var server := TCPServer.new()
 var listen_error: int = OK
+var port: int = Balance.WEB_PORT # The port actually serving the page; every link to the page uses it.
 var pending: Array[Dictionary] = [] # Connections whose request head has not arrived yet.
 
 
 # --- Setup ---
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	listen_error = server.listen(Balance.WEB_PORT)
-	if listen_error != OK:
-		push_error("Phone page port %d unavailable: %s" % [Balance.WEB_PORT, error_string(listen_error)])
-		return
-	print("Phone page: serving controller/ on port %d" % Balance.WEB_PORT)
+	start()
+
+
+# Listens on WEB_PORT, or the next free port after it when another program holds it (decision 126).
+func start() -> void:
+	stop()
+	var last: int = Balance.WEB_PORT + Balance.WEB_PORT_TRIES - 1
+	for candidate: int in range(Balance.WEB_PORT, last + 1):
+		listen_error = server.listen(candidate)
+		if listen_error == OK:
+			port = candidate
+			if port != Balance.WEB_PORT:
+				push_warning("Phone page port %d is in use; serving on %d instead" % [Balance.WEB_PORT, port])
+			print("Phone page: serving controller/ on port %d" % port)
+			return
+	port = Balance.WEB_PORT
+	push_error("Phone page ports %d–%d unavailable: %s" % [Balance.WEB_PORT, last, error_string(listen_error)])
+
+
+func stop() -> void:
+	for connection: Dictionary in pending:
+		connection.stream.disconnect_from_host()
+	pending.clear()
+	server.stop()
 
 
 func _exit_tree() -> void:
-	for connection: Dictionary in pending:
-		connection.stream.disconnect_from_host()
-	server.stop()
+	stop()
 
 
 # --- Connection loop ---

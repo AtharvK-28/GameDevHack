@@ -35,7 +35,7 @@ func _run() -> void:
 	await _wait(0.5)
 	var stand_ins: Array = net.players.filter(func(player: Dictionary) -> bool: return player.get("stand_in", false))
 	_check(stand_ins.size() == 3 and game.ready_slots().size() == 3 and game.can_start(), "F10 three times: three stand-in phones join and ready up (%d)" % stand_ins.size())
-	_check(dev.lobby_hint.visible and dev.lobby_hint.text.contains("localhost:%d" % SETTINGS.WEB_PORT), "The lobby shows the laptop's phone-page link")
+	_check(dev.lobby_hint.visible and dev.lobby_hint.text.contains("localhost:%d" % root.get_node("PageServer").port), "The lobby shows the laptop's phone-page link")
 	await _key(KEY_F3)
 	_check(dev.overlay.visible, "F3 shows the debug overlay")
 

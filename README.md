@@ -45,9 +45,9 @@ The Phase 4 sandbox, with every ghost ability and the G key, is still available:
 ### Harness steps
 
 1. Import this folder's `project.godot` into Godot and press **F6 with Main.tscn open**, or **F5** to run the project. Only run one host at a time: it listens on port 9080.
-2. Nothing else to start: the running game serves the phone page itself on port 8080, from `controller/`.
+2. Nothing else to start: the running game serves the phone page itself on port 8080, from `controller/`. If another program already uses 8080, it moves to the next free port up to 8090; the address shown in the game is always the right one.
 
-3. Put the laptop and phones on the same private Wi-Fi/hotspot. Open the `http://<laptop-ip>:8080` address shown in the game on each phone. Do not use `localhost` on phones. Use the address belonging to the shared network if the host lists several.
+3. Put the laptop and phones on the same private Wi-Fi/hotspot. Open the `http://<laptop-ip>:8080` address shown in the game on each phone (the port can differ if 8080 was taken; the game always shows the right one). Do not use `localhost` on phones. Use the address belonging to the shared network if the host lists several.
 4. Hold the phone sideways, enter a name, join, and tap **Ready to move**. Each phone controls its own coloured mover. The page and nipplejs are served locally; internet is not needed.
 5. To test with the keyboard, focus the game, select an unconnected slot with **1–4**, and move with **WASD/arrows**. **Space** holds Grab, **E** sends Throw, and **Shift** holds Brace. A connected phone takes priority over keyboard input for its slot.
 6. To play the ghost, press **G** on the host: the ghost passes to the next active slot (a connected phone, or the keyboard's slot), and after the last one back to no ghost. That player's mover leaves the board and their phone switches to the green ghost screen. On the keyboard, **Q** possesses or leaves, **F** is the prop's ACTION, **Z** is House Shake and **X** is Ecto Slime.
@@ -75,7 +75,7 @@ The Phase 4 sandbox, with every ghost ability and the G key, is still available:
 
 Gamepads are a later phase.
 
-Allow the game through the host's firewall on the private network if prompted: it listens on both 9080 (controllers) and 8080 (the phone page). A second game instance shows a port-in-use error. Stop the first host before retrying.
+Allow the game through the host's firewall on the private network if prompted: it listens on both 9080 (controllers) and 8080 (the phone page, or the next free port up to 8090). A second game instance shows a port-in-use error. Stop the first host before retrying.
 
 ## Test alone with developer mode
 
