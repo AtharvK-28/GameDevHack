@@ -13,7 +13,7 @@
 	"exterior_surface": "stone_facade",
 	"fence_surface": "stone_facade",
 	"trim": {
-		"wainscot": "wainscot_walnut",
+		"wainscot": "marble_dark",
 		"rail": "trim_walnut"
 	},
 	"rooms": [
@@ -27,8 +27,8 @@
 				8
 			],
 			"floor": 0,
-			"floor_surface": "stone_tiles",
-			"wall_surface": "plaster_sage"
+			"floor_surface": "marble_floor",
+			"wall_surface": "gallery_sand"
 		},
 		{
 			"id": "room-rotunda",
@@ -40,8 +40,8 @@
 				8
 			],
 			"floor": 0,
-			"floor_surface": "stone_tiles",
-			"wall_surface": "stone_facade"
+			"floor_surface": "marble_floor",
+			"wall_surface": "gallery_cream"
 		},
 		{
 			"id": "room-jurassic",
@@ -53,8 +53,8 @@
 				8
 			],
 			"floor": 0,
-			"floor_surface": "stone_tiles",
-			"wall_surface": "plaster_sage"
+			"floor_surface": "marble_floor",
+			"wall_surface": "gallery_cream"
 		},
 		{
 			"id": "room-art",
@@ -66,8 +66,8 @@
 				7
 			],
 			"floor": 0,
-			"floor_surface": "stone_tiles",
-			"wall_surface": "wallpaper_purple"
+			"floor_surface": "marble_floor",
+			"wall_surface": "gallery_red"
 		},
 		{
 			"id": "room-grand-hall",
@@ -79,8 +79,8 @@
 				7
 			],
 			"floor": 0,
-			"floor_surface": "stone_tiles",
-			"wall_surface": "stone_facade"
+			"floor_surface": "marble_floor",
+			"wall_surface": "gallery_cream"
 		},
 		{
 			"id": "room-space",
@@ -92,8 +92,8 @@
 				7
 			],
 			"floor": 0,
-			"floor_surface": "stone_tiles",
-			"wall_surface": "wallpaper_purple"
+			"floor_surface": "marble_floor",
+			"wall_surface": "gallery_navy"
 		},
 		{
 			"id": "room-laser-hall",
@@ -105,8 +105,8 @@
 				5
 			],
 			"floor": 0,
-			"floor_surface": "stone_tiles",
-			"wall_surface": "plaster_sage"
+			"floor_surface": "marble_floor",
+			"wall_surface": "gallery_navy"
 		},
 		{
 			"id": "room-lobby",
@@ -118,8 +118,8 @@
 				5
 			],
 			"floor": 0,
-			"floor_surface": "stone_tiles",
-			"wall_surface": "stone_facade"
+			"floor_surface": "marble_floor",
+			"wall_surface": "gallery_cream"
 		},
 		{
 			"id": "room-loading-dock",
@@ -437,7 +437,7 @@
 			],
 			"width": 2.6,
 			"floor": 0,
-			"arch": "stone_facade"
+			"arch": "marble_floor"
 		},
 		{
 			"id": "door-wall-front-250",
@@ -451,7 +451,7 @@
 			],
 			"width": 3,
 			"floor": 0,
-			"arch": "stone_facade"
+			"arch": "marble_floor"
 		},
 		{
 			"id": "door-wall-egypt-rotunda-30",
@@ -465,7 +465,7 @@
 			],
 			"width": 2.6,
 			"floor": 0,
-			"arch": "stone_facade"
+			"arch": "marble_floor"
 		},
 		{
 			"id": "door-wall-egypt-rotunda-102",
@@ -479,7 +479,7 @@
 			],
 			"width": 2.6,
 			"floor": 0,
-			"arch": "stone_facade"
+			"arch": "marble_floor"
 		},
 		{
 			"id": "door-wall-rotunda-jurassic-30",
@@ -493,7 +493,7 @@
 			],
 			"width": 2.6,
 			"floor": 0,
-			"arch": "stone_facade"
+			"arch": "marble_floor"
 		},
 		{
 			"id": "door-wall-rotunda-jurassic-102",
@@ -507,7 +507,7 @@
 			],
 			"width": 2.6,
 			"floor": 0,
-			"arch": "stone_facade"
+			"arch": "marble_floor"
 		},
 		{
 			"id": "door-wall-middle-37",
@@ -521,7 +521,7 @@
 			],
 			"width": 2.6,
 			"floor": 0,
-			"arch": "stone_facade"
+			"arch": "marble_floor"
 		},
 		{
 			"id": "door-wall-middle-135",
@@ -535,7 +535,7 @@
 			],
 			"width": 3.0,
 			"floor": 0,
-			"arch": "stone_facade"
+			"arch": "marble_floor"
 		},
 		{
 			"id": "door-wall-middle-237",
@@ -549,7 +549,7 @@
 			],
 			"width": 2.6,
 			"floor": 0,
-			"arch": "stone_facade"
+			"arch": "marble_floor"
 		},
 		{
 			"id": "door-wall-lower-135",
@@ -563,7 +563,7 @@
 			],
 			"width": 3.0,
 			"floor": 0,
-			"arch": "stone_facade"
+			"arch": "marble_floor"
 		},
 		{
 			"id": "door-wall-lower-237",
@@ -577,7 +577,7 @@
 			],
 			"width": 2.6,
 			"floor": 0,
-			"arch": "stone_facade"
+			"arch": "marble_floor"
 		},
 		{
 			"id": "door-wall-laser-lobby-160",
@@ -591,7 +591,7 @@
 			],
 			"width": 2.6,
 			"floor": 0,
-			"arch": "stone_facade"
+			"arch": "marble_floor"
 		}
 	],
 	"truck": {

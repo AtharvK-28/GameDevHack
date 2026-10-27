@@ -72,6 +72,9 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
   van, the moon rock). All 19 suites pass, 1,304 assertions. Next: the museum look (lighting, marble, facade,
   ropes, plaques), then stage B (skull teeth, headless skeleton, Bahadur, JAAGTE RAHO!) and stage C (lasers, swap
   the fakes). Until stage B it borrows the Mansion's House Shake and ghost model.
+- [x] Museum look (decision 129, 2026-10-28): spotlit exhibits in dim galleries, marble, gallery paint, ropes, plaques,
+  name plates, EXIT signs, runner, desk, UFO, gold case, dock markings and the classical facade. Museum, layout,
+  catalog and UI checks pass; 131 fps average at 1080p on the Radeon 780M.
 - [ ] Gust of Wind and Lights Out
 - [x] Mover and ghost character models integrated (brought forward; visual acceptance pending)
 - [x] Party camera and Mansion wall fade implemented (human acceptance pending)

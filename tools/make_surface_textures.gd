@@ -24,6 +24,12 @@ const SURFACES: Dictionary = {
 	"wainscot_walnut": {"tile": 1.0, "roughness": 0.6},
 	"plaster_sage": {"tile": 2.0, "roughness": 0.9},
 	"stone_facade": {"tile": 2.0, "roughness": 0.9},
+	"marble_floor": {"tile": 1.6, "roughness": 0.22}, # The Museum: polished tiles that catch the gallery lights.
+	"marble_dark": {"tile": 1.2, "roughness": 0.25},
+	"gallery_cream": {"tile": 2.0, "roughness": 0.9},
+	"gallery_red": {"tile": 2.0, "roughness": 0.9},
+	"gallery_navy": {"tile": 2.0, "roughness": 0.9},
+	"gallery_sand": {"tile": 2.0, "roughness": 0.9},
 }
 
 # --- Setup ---
@@ -41,6 +47,12 @@ func _initialize() -> void:
 		"wainscot_walnut": _beadboard(),
 		"plaster_sage": _plaster(),
 		"stone_facade": _ashlar(),
+		"marble_floor": _marble(Color("e9e6df"), Color("8f8b86"), 41),
+		"marble_dark": _marble(Color("2f3634"), Color("9aa6a0"), 43),
+		"gallery_cream": _paint(Color("d8ccb4"), Color("e6dcc6"), 61),
+		"gallery_red": _paint(Color("6e1f24"), Color("80292e"), 62),
+		"gallery_navy": _paint(Color("1d2a4a"), Color("27365c"), 63),
+		"gallery_sand": _paint(Color("b98f55"), Color("caa36a"), 64),
 	}
 	for surface: String in images:
 		var image: Image = images[surface]
@@ -225,6 +237,43 @@ func _ashlar() -> Image:
 			if y % 32 < 3 or shifted % 64 < 3:
 				colour = Color("3d3836")
 			image.set_pixel(x, y, colour)
+	return image
+
+
+func _marble(base: Color, vein: Color, seed_value: int) -> Image:
+	# 2 × 2 polished marble tiles of 80 cm, each a touch different, with thin dark grout and soft veins.
+	var broad: PackedFloat32Array = _noise_grid(6, seed_value)
+	var fine: PackedFloat32Array = _noise_grid(20, seed_value + 1)
+	var random := RandomNumberGenerator.new()
+	random.seed = seed_value
+	var tones: Array[float] = []
+	for tile: int in range(4):
+		tones.append(random.randf_range(-0.04, 0.04))
+	var image := _blank()
+	for y: int in range(SIZE):
+		for x: int in range(SIZE):
+			var local_x: int = x % 128
+			var local_y: int = y % 128
+			var edge: int = mini(mini(local_x, 127 - local_x), mini(local_y, 127 - local_y))
+			var flow: float = _sample(broad, 6, x, y) * 0.65 + _sample(fine, 20, x, y) * 0.35
+			var veining: float = 1.0 - smoothstep(0.0, 0.035, absf(flow - 0.5))
+			var tone: float = tones[floori(y / 128.0) * 2 + floori(x / 128.0)]
+			var colour: Color = base.lightened(maxf(tone, 0.0)).darkened(maxf(-tone, 0.0)).lerp(vein, veining * 0.55)
+			if edge < 1:
+				colour = base.darkened(0.35)
+			image.set_pixel(x, y, colour)
+	return image
+
+
+func _paint(base: Color, light: Color, seed_value: int) -> Image:
+	# Flat museum wall paint with a faint brushed mottle, so large walls never look like plastic.
+	var mottle: PackedFloat32Array = _noise_grid(10, seed_value)
+	var fine: PackedFloat32Array = _noise_grid(48, seed_value + 1)
+	var image := _blank()
+	for y: int in range(SIZE):
+		for x: int in range(SIZE):
+			var amount: float = _sample(mottle, 10, x, y) * 0.6 + _sample(fine, 48, x, y) * 0.4
+			image.set_pixel(x, y, base.lerp(light, amount * 0.7))
 	return image
 
 
