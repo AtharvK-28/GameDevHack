@@ -1,0 +1,7 @@
+; Museum task item: a cheap fake for the fake plinths.
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://props/tasks/replica.gd" id="1"]
+
+[node name="Replica" type="RigidBody3D"]
+script = ExtResource("1")

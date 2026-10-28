@@ -7,6 +7,8 @@ extends Node3D
 # --- Scene resources ---
 const LAYOUT_PATH: String = "res://arenas/layouts/museum_layout.json"
 const LOOT_SCENE := preload("res://props/Loot.tscn")
+const FAKES_SCENE := preload("res://props/tasks/fake_plinths.tscn")
+const REPLICA_SCENE := preload("res://props/tasks/replica.tscn")
 const FURNITURE := {"animatronic": preload("res://props/Animatronic.tscn"), "revolving_door": preload("res://props/RevolvingDoor.tscn")}
 
 # --- Arena identity ---
@@ -15,6 +17,7 @@ const SIGNATURE_HAUNTING := preload("res://hauntings/JaagteRaho.gd")
 const GHOST_AVATAR := preload("res://actors/ghost_watchman_model.gd") # Bahadur, the night watchman.
 
 signal caught_in_beam(slot: int) # A mover moved in Bahadur's torch beam; the round's goals and awards count it.
+signal alarm_tripped(slot: int) # A mover crossed a lit laser in the laser hall.
 
 # --- Round settings, set by Main before the arena enters the tree ---
 var demo_mode: bool = false
@@ -23,7 +26,7 @@ var spawn_seed: int = 0
 
 var layout: Dictionary
 var truck: Area3D
-var generator: Node3D # The swap-the-fakes task arrives in Museum stage C.
+var generator: Node3D # Swap the Fakes in a match: the shared HUD, phones and ghost read it like the generator.
 var gallery_lights: Dictionary = {} # Light -> its full energy; JAAGTE RAHO! dims these, never the street or the van.
 var ambient_energy: float = 0.0
 
@@ -34,6 +37,8 @@ func _ready() -> void:
 	_build_mood()
 	_spawn_loot()
 	_spawn_furniture()
+	if demo_mode:
+		_spawn_fakes_task()
 	_collect_gallery_lights.call_deferred() # After the dressing has hung its spotlights.
 
 
@@ -137,6 +142,29 @@ func set_darkness(amount: float) -> void:
 	$WorldEnvironment.environment.ambient_light_energy = ambient_energy * keep
 	$Moonlight.light_energy = Balance.MUSEUM_MOON_ENERGY * lerpf(1.0, Balance.JAAGTE_MOON_LEFT, amount)
 	$WorldEnvironment.environment.tonemap_exposure = Balance.MOOD_EXPOSURE * lerpf(1.0, Balance.JAAGTE_EXPOSURE_LEFT, amount)
+
+
+# --- Swap the Fakes ---
+func _spawn_fakes_task() -> void:
+	generator = FAKES_SCENE.instantiate()
+	add_child(generator)
+	generator.powered_on.connect(_fakes_swapped)
+	for index: int in range(Balance.REPLICA_COUNT):
+		var replica: RigidBody3D = REPLICA_SCENE.instantiate()
+		replica.kind = index
+		replica.generator = generator
+		replica.arena = self
+		var spot: Vector3 = Balance.REPLICA_SPOTS[index]
+		replica.position = spot + Vector3.UP * (Balance.REPLICA_SIZES[index].y / 2.0 + Balance.LOOT_SPAWN_CLEARANCE)
+		add_child(replica)
+
+
+func _fakes_swapped() -> void:
+	# The cameras see nothing missing, and Bahadur is slowed for the round, as with the generator and the lanterns.
+	for ghost: Node in get_tree().get_nodes_in_group("ghosts"):
+		if ghost.arena == self:
+			ghost.apply_generator_power()
+	print("Fakes swapped: the cameras see nothing missing, and Bahadur is slowed")
 
 
 # --- Spawning ---

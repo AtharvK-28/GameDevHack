@@ -180,6 +180,60 @@ func run() -> int:
 	world.set_ghost_slot(-1)
 	await _clear_props()
 
+	# --- The laser hall ---
+	var lasers: Node = arena.get_node("MuseumLasers")
+	_check(lasers.gates.size() == 3, "Three laser gates cross the laser hall")
+	var states: Array[bool] = []
+	for step: int in range(12):
+		lasers.cycle_time = step * SETTINGS.LASER_PERIOD / 12.0
+		states.append(lasers.is_on(0))
+	_check(states.has(true) and states.has(false), "The gates blink on and off, each a step behind the last")
+	world.set_ghost_slot(3)
+	await _frames(5)
+	var ghost_now: Node3D = world.ghost
+	var trips: Array[int] = []
+	arena.alarm_tripped.connect(func(slot: int) -> void: trips.append(slot))
+	# Through gate 0 while it is lit: the alarm, and energy for the ghost.
+	ghost_now.energy = 40.0
+	lasers.cycle_time = 0.1 # Gate 0 at the start of its lit share.
+	_place(0, Vector2(SETTINGS.LASER_GATES_X[0] + 0.9, 17.5))
+	await _frames(3)
+	lasers.cycle_time = 0.1
+	var crossed: bool = await _walk(0, [Vector2(SETTINGS.LASER_GATES_X[0] - 0.9, 17.5)])
+	_check(crossed and trips.size() == 1 and ghost_now.energy > 40.0, "Crossing a lit laser trips the alarm and feeds the ghost (energy %.0f)" % ghost_now.energy)
+	# Back through it while it is dark: nothing.
+	await _frames(int(SETTINGS.LASER_TRIP_GAP * 60) + 5)
+	var before: int = trips.size()
+	_place(0, Vector2(SETTINGS.LASER_GATES_X[0] - 0.9, 17.5))
+	await _frames(3)
+	lasers.cycle_time = SETTINGS.LASER_PERIOD * (SETTINGS.LASER_ON_SHARE + 0.05) # Gate 0 just gone dark.
+	crossed = await _walk(0, [Vector2(SETTINGS.LASER_GATES_X[0] + 0.9, 17.5)])
+	_check(crossed and trips.size() == before, "Crossing while the gate is dark sets nothing off")
+	world.set_ghost_slot(-1)
+	await _clear_props()
+
+	# --- Swap the Fakes ---
+	arena._spawn_fakes_task()
+	await _frames(20)
+	var task: Node = arena.generator
+	var replicas: Array = get_tree().get_nodes_in_group("task_batteries")
+	_check(task != null and task.TASK_NAME == "Fakes" and replicas.size() == 3 and task.hud_text() == "Fakes 0/3", "Swap the Fakes: three replicas wait by the van")
+	var stray: Node = replicas[0]
+	stray.global_position = Vector3(15, 0.5, 11.5)
+	_check(not task.try_deliver(stray), "A fake dropped anywhere else does not count")
+	world.set_ghost_slot(3)
+	await _frames(5)
+	for index: int in range(replicas.size()):
+		var replica: RigidBody3D = replicas[index]
+		replica.global_position = SETTINGS.FAKE_PLINTH_SPOTS[index] + Vector3.UP * (replica.item_size.y / 2.0 + 0.05)
+		replica.linear_velocity = Vector3.ZERO
+		await _frames(2)
+		task.try_deliver(replica)
+	await _frames(5)
+	_check(task.powered and task.hud_text() == "Fakes swapped" and world.ghost.generator_powered, "All three fakes swapped: the cameras see nothing missing and Bahadur is slowed")
+	world.set_ghost_slot(-1)
+	await _clear_props()
+
 	# --- The moon rock floats ---
 	var rock := _museum_loot("moon_rock", Vector2(15, 11.5), 0.0)
 	var stone := _museum_loot("golden_mask", Vector2(16, 13.5), 0.0)

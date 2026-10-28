@@ -88,6 +88,12 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
   charge) and the revolving door (always turning; SPIN knocks down movers inside; the skull leaves by the laser
   hall). The ghost may possess every kind of prop in a Museum match. `core/museum_check.gd` passes 46 assertions
   (its walking routes now go through the laser hall); all 19 suites pass, 1,322 assertions.
+- [x] Museum stage C (decision 133, 2026-10-28): the laser hall's three blinking gates (a lit crossing trips the alarm
+  and feeds the ghost; award HUMAN ALARM CLOCK) and Swap the Fakes (three replicas from the van onto three plinths;
+  all three slow Bahadur). `core/museum_check.gd` passes 53 assertions; all 19 suites pass, 1,329 assertions
+  (`stick_check` failed once in its phone-joining setup with a slot index error and passed on two reruns: flaky,
+  worth a look). Museum still to do: bots and a balance run, the ALARM bar and shutters, the smaller personality
+  items, intro panels.
 - [ ] Gust of Wind and Lights Out
 - [x] Mover and ghost character models integrated (brought forward; visual acceptance pending)
 - [x] Party camera and Mansion wall fade implemented (human acceptance pending)

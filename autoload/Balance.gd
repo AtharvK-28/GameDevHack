@@ -119,6 +119,7 @@ const SHOUT_PIXEL_SIZE: float = 0.03 # Big enough to read from across the room a
 const AWARDS: Array[Dictionary] = [
 	{"stat": "overboard", "title": "MAN OVERBOARD", "detail": "%d× in the sea", "least": 1},
 	{"stat": "caught", "title": "CAUGHT RED-HANDED", "detail": "%d× in the torch beam", "least": 1},
+	{"stat": "alarms", "title": "HUMAN ALARM CLOCK", "detail": "tripped %d lasers", "least": 1},
 	{"stat": "smashed", "title": "BUTTERFINGERS", "detail": "%s smashed", "least": 500, "money": true},
 	{"stat": "tumbles", "title": "FLOOR INSPECTOR", "detail": "fell over %d times", "least": 2},
 	{"stat": "wrecked", "title": "MENACE", "detail": "%s wrecked", "least": 1, "money": true},
@@ -378,7 +379,7 @@ const GHOST_GOAL_POINTS: float = 50.0 # The ghost, for shattering the round's de
 const GOAL_CAREFUL_SHARE: int = 90 # Percent of its value the two-person item must still have when delivered.
 const GOAL_SEED_OFFSET: int = 4243 # Separates the goal pick from the round's other seeded picks.
 const RESULT_STAR_SIZE: float = 30.0 # Pixels per star on the round end, at the 1152 × 648 base.
-const GOAL_TASK_TEXTS: Dictionary = {"Lanterns": "Light all the lanterns", "Generator": "Power the generator"}
+const GOAL_TASK_TEXTS: Dictionary = {"Lanterns": "Light all the lanterns", "Generator": "Power the generator", "Fakes": "Swap all the fakes"}
 const LOST_ITEM_Y: float = -10.0 # Metres below the arena; permanently lost.
 const MATCH_SPAWN_POINTS: Array[Vector2] = [
 	Vector2(-4.5, -10.5), Vector2(4.5, -10.5), Vector2(-4.5, -6.5),
@@ -1179,6 +1180,35 @@ const REVOLVE_SPIN_SECONDS: float = 1.5
 const REVOLVE_COOLDOWN: float = 6.0
 const REVOLVE_KNOCK_SPEED: float = 3.0
 const REVOLVE_WHOOSH_DB: float = -4.0
+# --- The laser hall (decision 133) ---
+const LASER_GATES_X: Array[float] = [4.0, 6.5, 9.0] # Three gates across the laser hall, west of its lobby door.
+const LASER_HALL_Z := Vector2(15.2, 19.8) # The beams run wall to wall across the hall.
+const LASER_HEIGHTS: Array[float] = [0.35, 0.85, 1.35] # Metres: three beams per gate.
+const LASER_PERIOD: float = 2.6 # Seconds for one on-off cycle.
+const LASER_ON_SHARE: float = 0.6 # Share of the cycle a gate is lit.
+const LASER_STAGGER: float = 0.85 # Seconds each gate runs behind the one before, so a gap rolls down the hall.
+const LASER_TRIP_WIDTH: float = 0.35 # Metres either side of a gate within which a mover breaks its beams.
+const LASER_TRIP_GAP: float = 1.5 # Seconds before the same mover can trip the same gate again.
+const LASER_ALARM_ENERGY: float = 20.0 # Energy the ghost gains when the alarm goes off.
+const LASER_COLOUR := Color("ff2a2a")
+const LASER_GLOW: float = 3.0
+const LASER_RADIUS: float = 0.035 # Metres; thick enough to read from the party camera.
+const LASER_FLASH_ENERGY: float = 2.5
+const LASER_FLASH_SECONDS: float = 1.2
+const LASER_ALARM_DB: float = -6.0
+
+# --- Swap the Fakes (decision 133) ---
+const REPLICA_COUNT: int = 3
+const REPLICA_SIZES: Array[Vector3] = [Vector3(0.7, 0.45, 0.45), Vector3(0.45, 0.6, 0.35), Vector3(0.4, 0.18, 0.2)] # Cardboard skull, plaster bust, painted brick.
+const REPLICA_SPOTS: Array[Vector3] = [Vector3(5.6, 0.0, 25.6), Vector3(6.8, 0.0, 25.6), Vector3(8.0, 0.0, 25.6)] # By the van, where the crew unloaded them.
+const FAKE_PLINTH_SPOTS: Array[Vector3] = [Vector3(12.3, 0.0, 2.3), Vector3(7.2, 0.0, 12.0), Vector3(5.0, 0.0, 4.4)] # The skeleton's neck, the Art Gallery, Egypt.
+const FAKE_ZONE_SIZE := Vector3(1.4, 2.2, 1.4) # Metres; a replica's centre must be inside on release.
+const FAKE_LABEL_HEIGHT: float = 2.0
+const REPLICA_CARDBOARD := Color("b98a52")
+const REPLICA_PLASTER := Color("ece6da")
+const REPLICA_BRICK := Color("9c4a32")
+const REPLICA_INK := Color("1d1a17")
+const REPLICA_LABEL_COLOUR := Color("ffa95e")
 const SKELETON_GAP: float = 1.05 # Metres of clear floor between the skull's back and the vertebrae, for its carrier.
 const SKELETON_BONE := Color("e2d6b8")
 const SKELETON_STEEL := Color("3a3f45")
