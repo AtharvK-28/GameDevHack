@@ -75,6 +75,9 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - [x] Museum look (decision 129, 2026-10-28): spotlit exhibits in dim galleries, marble, gallery paint, ropes, plaques,
   name plates, EXIT signs, runner, desk, UFO, gold case, dock markings and the classical facade. Museum, layout,
   catalog and UI checks pass; 131 fps average at 1080p on the Radeon 780M.
+- [x] Museum outside and van sign (decision 130, 2026-10-28): a city block at night round the museum (forecourt,
+  fountain, street, lamps, parked cars, flags, trees, lit skyline) and a two-line van sign that fits the panel.
+  Museum check passes (28); 125 fps average at 1080p.
 - [ ] Gust of Wind and Lights Out
 - [x] Mover and ghost character models integrated (brought forward; visual acceptance pending)
 - [x] Party camera and Mansion wall fade implemented (human acceptance pending)

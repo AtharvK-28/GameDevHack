@@ -30,6 +30,9 @@ const SURFACES: Dictionary = {
 	"gallery_red": {"tile": 2.0, "roughness": 0.9},
 	"gallery_navy": {"tile": 2.0, "roughness": 0.9},
 	"gallery_sand": {"tile": 2.0, "roughness": 0.9},
+	"stone_cream": {"tile": 2.0, "roughness": 0.85}, # The Museum's outside walls.
+	"asphalt": {"tile": 2.0, "roughness": 0.95},
+	"paving": {"tile": 2.0, "roughness": 0.85},
 }
 
 # --- Setup ---
@@ -53,6 +56,9 @@ func _initialize() -> void:
 		"gallery_red": _paint(Color("6e1f24"), Color("80292e"), 62),
 		"gallery_navy": _paint(Color("1d2a4a"), Color("27365c"), 63),
 		"gallery_sand": _paint(Color("b98f55"), Color("caa36a"), 64),
+		"stone_cream": _blocks(Color("cfc3a8"), Color("8a7f6a"), 65),
+		"asphalt": _asphalt(),
+		"paving": _paving(),
 	}
 	for surface: String in images:
 		var image: Image = images[surface]
@@ -66,6 +72,8 @@ func _initialize() -> void:
 		"portrait_lady": _portrait(Color("3d1f2b"), Color("6b3a4a"), false),
 		"portrait_lord": _portrait(Color("1f2d26"), Color("3f5a4a"), true),
 		"cobweb": _cobweb(),
+		"city_windows": _city_windows(false),
+		"city_windows_lit": _city_windows(true),
 	}
 	for name: String in decor:
 		var image: Image = decor[name]
@@ -277,7 +285,89 @@ func _paint(base: Color, light: Color, seed_value: int) -> Image:
 	return image
 
 
+func _blocks(base: Color, mortar: Color, seed_value: int) -> Image:
+	# Dressed stone blocks, 25 cm rows staggered by half a block, with thin mortar: a civic building's outside.
+	var mottle: PackedFloat32Array = _noise_grid(24, seed_value)
+	var random := RandomNumberGenerator.new()
+	random.seed = seed_value
+	var tones: Array[float] = []
+	for block: int in range(32):
+		tones.append(random.randf_range(-0.05, 0.05))
+	var image := _blank()
+	for y: int in range(SIZE):
+		var row: int = floori(y / 32.0)
+		for x: int in range(SIZE):
+			var shifted: int = posmod(x + (32 if row % 2 == 1 else 0), SIZE)
+			var tone: float = tones[row * 4 + floori(shifted / 64.0)] + (_sample(mottle, 24, x, y) - 0.5) * 0.06
+			var colour: Color = base.lightened(maxf(tone, 0.0)).darkened(maxf(-tone, 0.0))
+			if y % 32 < 2 or shifted % 64 < 2:
+				colour = mortar
+			image.set_pixel(x, y, colour)
+	return image
+
+
+func _asphalt() -> Image:
+	# Dark road surface with fine light and dark grit.
+	var mottle: PackedFloat32Array = _noise_grid(16, 71)
+	var random := RandomNumberGenerator.new()
+	random.seed = 72
+	var image := _blank()
+	for y: int in range(SIZE):
+		for x: int in range(SIZE):
+			var grit: float = random.randf()
+			var colour: Color = Color("33363b").lerp(Color("2a2c30"), _sample(mottle, 16, x, y))
+			if grit > 0.97:
+				colour = colour.lightened(0.18)
+			elif grit < 0.03:
+				colour = colour.darkened(0.25)
+			image.set_pixel(x, y, colour)
+	return image
+
+
+func _paving() -> Image:
+	# Light square paving slabs of 50 cm with dark joints, for the forecourt and pavements.
+	var mottle: PackedFloat32Array = _noise_grid(20, 81)
+	var random := RandomNumberGenerator.new()
+	random.seed = 82
+	var tones: Array[float] = []
+	for slab: int in range(16):
+		tones.append(random.randf_range(-0.04, 0.04))
+	var image := _blank()
+	for y: int in range(SIZE):
+		for x: int in range(SIZE):
+			var tone: float = tones[floori(y / 64.0) * 4 + floori(x / 64.0)] + (_sample(mottle, 20, x, y) - 0.5) * 0.05
+			var colour: Color = Color("a39e95").lightened(maxf(tone, 0.0)).darkened(maxf(-tone, 0.0))
+			if x % 64 < 2 or y % 64 < 2:
+				colour = Color("6b675f")
+			image.set_pixel(x, y, colour)
+	return image
+
+
 # --- Decor images ---
+func _city_windows(lit_only: bool) -> Image:
+	# The Museum's night skyline: a dark facade with a 4 × 4 grid of windows, about half lit warm or cold. With
+	# lit_only, the same windows' glow mask (black elsewhere) for the material's emission.
+	var random := RandomNumberGenerator.new()
+	random.seed = 91
+	var glow: Array[Color] = []
+	for cell: int in range(16):
+		var roll: float = random.randf()
+		glow.append(Color("ffcf7a") if roll < 0.3 else (Color("d6e4ff") if roll < 0.45 else Color.BLACK))
+	var image := _blank()
+	for y: int in range(SIZE):
+		for x: int in range(SIZE):
+			var cell: int = floori(y / 64.0) * 4 + floori(x / 64.0)
+			var inside: bool = x % 64 >= 14 and x % 64 < 50 and y % 64 >= 10 and y % 64 < 52
+			var colour: Color = Color.BLACK if lit_only else Color("2b2f3a").darkened(float(cell % 3) * 0.06)
+			if inside:
+				if glow[cell] != Color.BLACK:
+					colour = glow[cell]
+				elif not lit_only:
+					colour = Color("161a22")
+			image.set_pixel(x, y, colour)
+	return image
+
+
 func _portrait(dark: Color, light: Color, top_hat: bool) -> Image:
 	# A gilt frame around a dim painted background and a black silhouette bust (a bun, or a top hat).
 	var width: int = 128

@@ -27,14 +27,21 @@ func _ready() -> void:
 	add_child(shape)
 
 	for side: float in [-1.0, 1.0]:
-		var sign := Label3D.new()
-		sign.text = Balance.VAN_SIGN
-		sign.font = load(Balance.COMIC_FONT_PATH)
-		sign.font_size = Balance.VAN_SIGN_FONT_SIZE
-		sign.pixel_size = Balance.VAN_SIGN_PIXEL_SIZE
-		sign.modulate = Balance.VAN_SIGN_COLOUR
-		sign.outline_modulate = Balance.COMIC_INK
-		sign.outline_size = Balance.VAN_SIGN_OUTLINE
-		sign.position = Vector3(size.x * 0.45, size.y * 0.55, side * (size.z / 2.0 + 0.02))
-		sign.rotation.y = 0.0 if side > 0.0 else PI
-		add_child(sign)
+		_lettering(Balance.VAN_SIGN_TITLE, Balance.VAN_SIGN_COLOUR, size, Balance.VAN_SIGN_TITLE_WIDTH, Balance.VAN_SIGN_TITLE_HEIGHT, side)
+		_lettering(Balance.VAN_SIGN_SUBTITLE, Balance.VAN_SIGN_SUBTITLE_COLOUR, size, Balance.VAN_SIGN_SUBTITLE_WIDTH, Balance.VAN_SIGN_SUBTITLE_HEIGHT, side)
+
+
+# One line of the side sign, measured with its font and scaled so it spans the given share of the van's length.
+func _lettering(text: String, colour: Color, size: Vector3, width_share: float, height_share: float, side: float) -> void:
+	var sign := Label3D.new()
+	sign.text = text
+	sign.font = load(Balance.COMIC_FONT_PATH)
+	sign.font_size = Balance.VAN_SIGN_FONT_SIZE
+	var pixels: float = sign.font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, Balance.VAN_SIGN_FONT_SIZE).x
+	sign.pixel_size = size.x * width_share / pixels
+	sign.modulate = colour
+	sign.outline_modulate = Balance.COMIC_INK
+	sign.outline_size = Balance.VAN_SIGN_OUTLINE
+	sign.position = Vector3(size.x * Balance.VAN_SIGN_PANEL_CENTRE, size.y * height_share, side * size.z / 2.0 * Balance.VAN_SIGN_INSET)
+	sign.rotation.y = 0.0 if side > 0.0 else PI
+	add_child(sign)
