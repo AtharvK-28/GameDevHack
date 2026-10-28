@@ -709,8 +709,8 @@ and saved with the other options; `core/dev_tools.gd` (added to the match world 
   carries `stand_in`, and it readies up again whenever the lobby returns. **New join code** removes them.
 - **Keyboard.** `InputRouter` lets the keyboard drive the selected slot when a stand-in holds it (1–4 to switch;
   Ctrl+number never switches). Real phones keep priority.
-- **Bots (decision 121).** `core/bot_crew.gd` plays every other stand-in through its real socket, on the Ghost Ship
-  and the Old Mansion (route maps in `core/bot_routes.gd`). Mover bots fetch the best loot for the walk, carry the
+- **Bots (decision 121).** `core/bot_crew.gd` plays every other stand-in through its real socket, on the Ghost Ship,
+  the Old Mansion and the Museum (route maps in `core/bot_routes.gd`; on the Museum they go in and out by the laser hall and wait for lit lasers). Mover bots fetch the best loot for the walk, carry the
   two-person item in pairs and brace for hauntings and waves; the ghost bot haunts, curses, steals and shoves.
   **Ctrl+B** turns them off, and stand-ins nobody drives then stand still. Pairs give up on a stalled item, and a
   wedged carrier puts its item down, so a round never stalls.

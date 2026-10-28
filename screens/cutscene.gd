@@ -82,7 +82,7 @@ func _refresh() -> void:
 	elif not showing and playing:
 		_stop_sound()
 		playing = false
-	visible = showing
+	visible = Game.phase == "intro" # Read again: starting an empty intro may already have moved on.
 
 
 func _start() -> void:
@@ -111,7 +111,7 @@ func _panels() -> Array[Dictionary]:
 func _show_panel(index: int) -> void:
 	var panels: Array[Dictionary] = _panels()
 	if index >= panels.size():
-		_finish()
+		_finish.call_deferred() # Never inside the phase change that started the intro (an arena with no panels).
 		return
 	panel_index = index
 	panel_time = 0.0

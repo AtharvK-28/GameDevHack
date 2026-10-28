@@ -57,6 +57,30 @@ func is_on(index: int) -> bool:
 	return phase < Balance.LASER_ON_SHARE
 
 
+func dark_for(index: int) -> float:
+	# Seconds the gate stays dark from now; 0 while it is lit.
+	if is_on(index):
+		return 0.0
+	var phase: float = fposmod(cycle_time - index * Balance.LASER_STAGGER, Balance.LASER_PERIOD)
+	return Balance.LASER_PERIOD - phase
+
+
+func should_wait(at: Vector3, stick: Vector2) -> bool:
+	# For the bots: true while the gate just ahead of a mover is lit, or about to light while the mover is still a step
+	# away; once close to a dark gate, they commit and cross.
+	if at.z < Balance.LASER_HALL_Z.x or at.z > Balance.LASER_HALL_Z.y or absf(stick.x) < 0.2:
+		return false
+	for index: int in gates.size():
+		var ahead: float = (gates[index].x - at.x) * signf(stick.x)
+		if ahead <= Balance.LASER_TRIP_WIDTH or ahead > Balance.LASER_WAIT_DISTANCE:
+			continue # Behind, already crossing, or still far off.
+		if is_on(index) and ahead > Balance.LASER_STOP_MARGIN:
+			return true # Stop short, so the slow-down never carries a mover into the beams.
+		if ahead > Balance.LASER_COMMIT_DISTANCE and dark_for(index) < Balance.LASER_SAFE_WINDOW:
+			return true # About to light, and too far to make it.
+	return false
+
+
 func _physics_process(delta: float) -> void:
 	cycle_time += delta
 	flash_left = maxf(0.0, flash_left - delta)

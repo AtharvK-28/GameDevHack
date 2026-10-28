@@ -132,6 +132,8 @@ func _update_bot(bot: Bot, delta: float) -> void:
 			_bot_fetch(bot, delta)
 		"carry":
 			_bot_carry(bot, delta)
+	if host.arena.has_method("should_wait") and host.arena.should_wait(bot.mover.global_position, phone.stick):
+		phone.stick = Vector2.ZERO # A hazard ahead, like a lit laser: wait for the gap.
 	if bot.mode != "pair" and is_instance_valid(bot.mover.held_item) and bot.mover.held_item == pair_item:
 		phone.buttons["grab"] = false # Nobody drags the two-person item alone.
 
@@ -379,6 +381,16 @@ func _steer_pair() -> void:
 		var place: Vector2 = centre + direction * half_length * (1.0 if index == front else -1.0)
 		var stick: Vector2 = direction * speed + (place - handles[index]) * Balance.BOT_PAIR_ALIGN_GAIN
 		bot.phone.stick = stick.limit_length(Balance.BOT_PAIR_STICK)
+	# Both holders wait together when either has a hazard ahead, so the item is never pulled apart.
+	if host.arena.has_method("should_wait"):
+		var wait: bool = false
+		for bot: Bot in bots:
+			if bot.mode == "pair" and pair_item.is_held_by(bot.mover) and host.arena.should_wait(bot.mover.global_position, bot.phone.stick):
+				wait = true
+		if wait:
+			for bot: Bot in bots:
+				if bot.mode == "pair" and pair_item.is_held_by(bot.mover) and bot.phone.slot != InputRouter.selected_slot:
+					bot.phone.stick = Vector2.ZERO
 
 
 # --- Walking ---

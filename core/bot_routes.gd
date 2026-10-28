@@ -57,4 +57,41 @@ const ROUTES: Dictionary = {
 		"pair_stands": [Vector3(21.7, 0.7, 8.8), Vector3(25.4, 0.7, 8.2)], # The chest's west and east ends.
 		"plank_lanes": true, # Two lanes over the gangplank, so movers pass instead of meeting nose to nose.
 	},
+	"res://arenas/Museum.tscn": {
+		# One floor. Bots go in and out by the laser hall, never the revolving door, and cross the lasers as they find them.
+		"nodes": {
+			"e_west": Vector3(3.0, 0.0, 3.6), "e_centre": Vector3(5.0, 0.0, 5.0), "e_east": Vector3(7.4, 0.0, 4.2),
+			"e_door_art": Vector3(5.0, 0.0, 7.0), "e_door_rot": Vector3(9.0, 0.0, 4.3),
+			"r_west": Vector3(11.0, 0.0, 4.3), "r_centre": Vector3(13.8, 0.0, 5.0), "r_east": Vector3(19.0, 0.0, 4.3),
+			"r_door_hall": Vector3(15.0, 0.0, 7.0),
+			"j_west": Vector3(21.0, 0.0, 4.3), "j_centre": Vector3(24.5, 0.0, 5.2), "j_door_space": Vector3(25.0, 0.0, 7.2),
+			"a_door_egypt": Vector3(5.0, 0.0, 9.0), "a_west": Vector3(2.6, 0.0, 11.5), "a_centre": Vector3(5.0, 0.0, 11.5),
+			"a_east": Vector3(9.0, 0.0, 11.5),
+			"g_west": Vector3(11.2, 0.0, 11.5), "g_north": Vector3(15.0, 0.0, 9.2), "g_centre": Vector3(15.0, 0.0, 11.5),
+			"g_south": Vector3(15.0, 0.0, 13.8), "g_east": Vector3(18.8, 0.0, 11.5),
+			"s_west": Vector3(21.0, 0.0, 11.5), "s_centre": Vector3(24.6, 0.0, 10.2), "s_door_jur": Vector3(25.0, 0.0, 9.0),
+			"s_door_lobby": Vector3(25.0, 0.0, 14.2),
+			"l_space": Vector3(25.0, 0.0, 16.4), "l_east": Vector3(21.0, 0.0, 17.3), "l_hall": Vector3(15.0, 0.0, 17.3),
+			"l_west": Vector3(13.0, 0.0, 17.3),
+			"h_east": Vector3(10.5, 0.0, 17.3), "h_mid": Vector3(6.5, 0.0, 17.3), "h_west": Vector3(2.1, 0.0, 17.3),
+			"h_exit": Vector3(2.1, 0.0, 19.6), "truck": Vector3(2.6, 0.0, 21.4),
+		},
+		"edges": [
+			["e_west", "e_centre"], ["e_centre", "e_east"], ["e_centre", "e_door_art"], ["e_east", "e_door_rot"],
+			["e_door_rot", "r_west"], ["r_west", "r_centre"], ["r_centre", "r_door_hall"], ["r_centre", "r_east"],
+			["r_east", "j_west"], ["j_west", "j_centre"], ["j_centre", "j_door_space"], ["e_door_art", "a_door_egypt"],
+			["a_door_egypt", "a_centre"], ["a_west", "a_centre"], ["a_centre", "a_east"], ["a_east", "g_west"],
+			["g_west", "g_centre"], ["g_north", "g_centre"], ["g_north", "r_door_hall"], ["g_centre", "g_east"],
+			["g_centre", "g_south"], ["g_east", "s_west"], ["s_west", "s_centre"], ["s_centre", "s_door_jur"],
+			["s_door_jur", "j_door_space"], ["s_centre", "s_door_lobby"], ["s_door_lobby", "l_space"], ["l_space", "l_east"],
+			["l_east", "l_hall"], ["l_hall", "g_south"], ["l_hall", "l_west"], ["l_west", "h_east"], ["h_east", "h_mid"],
+			["h_mid", "h_west"], ["h_west", "h_exit"], ["h_exit", "truck"],
+		],
+		"delivery": Vector3(2.6, 0.0, 22.0), # At the van's tailgate.
+		"pair_path": [
+			Vector2(12.3, 5.8), Vector2(15.0, 6.0), Vector2(15.0, 11.5), Vector2(15.0, 17.3), Vector2(9.0, 17.3),
+			Vector2(2.1, 17.3), Vector2(2.1, 21.6),
+		],
+		"pair_stands": [Vector3(10.6, 0.0, 2.3), Vector3(14.0, 0.0, 2.3)], # The skull's west and east ends, on its bracket.
+	},
 }

@@ -1,10 +1,10 @@
 # Plays seeded bot rounds on each arena and reports how they went, to compare balance changes on the same rounds.
 # Three developer-mode stand-ins play every round (core/bot_crew.gd): one ghost, two movers. Bots play worse than
 # people, so read the numbers as a direction, not as the win rate a crew will see.
-# Run:  godot --headless --path . --script res://tools/balance_sim.gd -- --rounds=10 --speed=3
+# Run:  godot --headless --path . --script res://tools/balance_sim.gd -- --rounds=10 --speed=3 [--arena=Museum]
 extends "res://core/match_check.gd"
 
-const ARENAS: Array[String] = ["res://arenas/Ship.tscn", "res://arenas/Mansion.tscn"]
+const ARENAS: Array[String] = ["res://arenas/Ship.tscn", "res://arenas/Mansion.tscn", "res://arenas/Museum.tscn"]
 const ROUND_TIMEOUT: float = 400.0 # Real seconds for one round, with room for a slow machine.
 const FIRST_SEED: int = 100 # Round n plays seed FIRST_SEED + n on every run.
 
@@ -24,7 +24,13 @@ func _run() -> void:
 			rounds = int(argument.trim_prefix("--rounds="))
 		elif argument.begins_with("--speed="):
 			speed = float(argument.trim_prefix("--speed="))
+	var only: String = ""
+	for argument: String in OS.get_cmdline_user_args():
+		if argument.begins_with("--arena="):
+			only = argument.trim_prefix("--arena=") # e.g. Museum: just that arena.
 	for arena_path: String in ARENAS:
+		if not only.is_empty() and not arena_path.get_file().begins_with(only):
+			continue
 		await _play_arena(arena_path)
 	quit(0)
 
@@ -48,7 +54,8 @@ func _play_arena(arena_path: String) -> void:
 		seed(FIRST_SEED + index) # The match draws its round seed from the global generator.
 		game.start_match()
 		await _wait(0.2)
-		await _key(KEY_ESCAPE)
+		if game.phase == "intro":
+			await _key(KEY_ESCAPE) # Skip the arena's story; the Museum has none yet.
 		await _wait_for_phase("live")
 		name = playground.arena.ARENA_NAME
 		game.normal_speed = speed

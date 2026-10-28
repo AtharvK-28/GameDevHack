@@ -1196,6 +1196,10 @@ const LASER_RADIUS: float = 0.035 # Metres; thick enough to read from the party 
 const LASER_FLASH_ENERGY: float = 2.5
 const LASER_FLASH_SECONDS: float = 1.2
 const LASER_ALARM_DB: float = -6.0
+const LASER_WAIT_DISTANCE: float = 1.3 # Bots: metres before a gate where they wait for it to go dark,
+const LASER_SAFE_WINDOW: float = 0.45 # and the seconds of dark left below which they hold back,
+const LASER_COMMIT_DISTANCE: float = 0.8 # unless they are already this close: then they go.
+const LASER_STOP_MARGIN: float = 0.6 # Bots stop this far before a lit gate; any closer and they press on through.
 
 # --- Swap the Fakes (decision 133) ---
 const REPLICA_COUNT: int = 3

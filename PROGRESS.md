@@ -94,6 +94,11 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
   (`stick_check` failed once in its phone-joining setup with a slot index error and passed on two reruns: flaky,
   worth a look). Museum still to do: bots and a balance run, the ALARM bar and shutters, the smaller personality
   items, intro panels.
+- [x] Museum bots (decision 134, 2026-10-28): a route map (in and out by the laser hall), the skull pair's path, and
+  bots that wait for lit lasers. Balance sim, 4 seeded rounds at x3 on the Museum: movers won 0 of 4, banked 41%,
+  lost 19% (target 60% for two movers); the skull was delivered in every round. Bots still trip lasers often, mostly
+  the skull pair: with its carriers it is ~3.4 m long against gates 2.5 m apart (decision for the user). Fixed: an
+  arena with no intro left the intro screen over the round. All 19 suites pass, 1,329 assertions.
 - [ ] Gust of Wind and Lights Out
 - [x] Mover and ghost character models integrated (brought forward; visual acceptance pending)
 - [x] Party camera and Mansion wall fade implemented (human acceptance pending)

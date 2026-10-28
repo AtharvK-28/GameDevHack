@@ -124,6 +124,12 @@ func _build_mood() -> void:
 		add_child(lamp)
 
 
+# --- For the bots ---
+func should_wait(at: Vector3, stick: Vector2) -> bool:
+	# A mover heading for a lit laser (or one about to light) should wait for the gap.
+	return $MuseumLasers.should_wait(at, stick)
+
+
 # --- Lights out (JAAGTE RAHO!) ---
 func _collect_gallery_lights() -> void:
 	ambient_energy = $WorldEnvironment.environment.ambient_light_energy
