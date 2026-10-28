@@ -23,6 +23,7 @@ func run() -> int:
 	world.arena_scene = load("res://arenas/Museum.tscn")
 	get_tree().root.add_child(world)
 	arena = world.arena
+	arena.get_node("MuseumAlarm").enabled = false # On only for its own section below.
 	await _frames(120)
 
 	# --- The loot pool ---
@@ -32,7 +33,7 @@ func run() -> int:
 	for item: Loot in items:
 		total += item.initial_value
 		skulls += int(item.weight_class == SETTINGS.TWO_PERSON)
-	_check(items.size() == 19 and total == 101700 and skulls == 1, "The full Museum has 15 exhibits and 4 gift-shop souvenirs worth ₹1,01,700, with one T-Rex skull (%d, ₹%d)" % [items.size(), total])
+	_check(items.size() == 20 and total == 106700 and skulls == 1, "The full Museum has 16 exhibits and 4 gift-shop souvenirs worth ₹1,06,700, with one T-Rex skull (%d, ₹%d)" % [items.size(), total])
 	var souvenirs: Array = items.filter(func(item: Loot) -> bool: return &"museum_gift" in item.catalog_item.pools)
 	_check(souvenirs.size() == 4 and souvenirs.all(func(item: Loot) -> bool: return item.global_position.y > 0.9), "The gift shop's four souvenirs sit on its counter")
 	for item: Loot in items:
@@ -267,6 +268,39 @@ func run() -> int:
 	await _frames(int((SETTINGS.MUMMY_WAIT + 3.0) * 60))
 	_check(hand.global_position.distance_to(hand_home) < 2.2, "Put down away from home, the mummy's hand crawls back (%.1f m left)" % hand.global_position.distance_to(hand_home))
 	world.set_ghost_slot(-1)
+	await _clear_props()
+
+	# --- The ALARM and lockdown ---
+	var alarm: Node = arena.get_node("MuseumAlarm")
+	alarm.enabled = true
+	arena.raise_alarm(0.0, -1, 60.0)
+	_check(is_equal_approx(alarm.level, 60.0) and alarm.state == "", "Alarms fill the ALARM bar (60%)")
+	arena.raise_alarm(0.0, -1, 60.0)
+	_check(alarm.state == "warning", "A full bar: police lights and a countdown to lockdown")
+	await _frames(int(SETTINGS.ALARM_WARNING * 60) + 10)
+	_check(alarm.state == "lockdown" and alarm.shutters.size() == 3, "Then three shutters drop over the back galleries' doorways")
+	_place(0, Vector2(15.0, 9.5))
+	await _frames(5)
+	var shut_out: bool = await _walk(0, [Vector2(15.0, 6.5)])
+	_check(not shut_out and world.movers[0].global_position.z > SETTINGS.ALARM_SHUTTER_Z, "A shutter blocks the way into the rotunda")
+	_set_input(0, Vector2.ZERO)
+	await _frames(int(SETTINGS.ALARM_LOCKDOWN * 60) + 10)
+	_check(alarm.state == "" and alarm.shutters.is_empty() and alarm.level == 0.0, "After the lockdown the shutters rise and the bar resets")
+	await _clear_props()
+
+	# --- The dinosaur egg ---
+	var egg := _museum_loot("dino_egg", Vector2(15, 11.5), 0.0) as DinoEgg
+	await _frames(20)
+	egg._lose_value(egg.value)
+	await _frames(10)
+	var babies: Array = get_tree().get_nodes_in_group("loot").filter(func(item: Node) -> bool: return item is BabyRaptor)
+	_check(babies.size() == 1, "The egg breaks and a baby raptor hatches")
+	if babies.size() == 1:
+		var baby: Loot = babies[0]
+		var start: Vector3 = baby.global_position
+		_place(0, Vector2(start.x + 1.2, start.z))
+		await _frames(50)
+		_check(baby.global_position.distance_to(start) > 0.8, "Come near the baby raptor and it runs (%.1f m)" % baby.global_position.distance_to(start))
 	await _clear_props()
 
 	# --- The moon rock floats ---

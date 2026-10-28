@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="CatalogItem" load_steps=4 format=3]
+[ext_resource type="Script" path="res://props/catalog/catalog_item.gd" id="1"]
+[ext_resource type="PackedScene" path="res://props/catalog/built/museum_dino_egg.tscn" id="2"]
+[ext_resource type="Script" path="res://props/dino_egg.gd" id="3"]
+[resource]
+script = ExtResource("1")
+id = &"museum_dino_egg"
+display_name = "Dinosaur egg"
+model = ExtResource("2")
+value = 5000
+weight_class = 0
+fragility = 3
+count = 1
+two_person_handles = false
+throwable = true
+footprint = Vector3(0.4, 0.44, 0.4)
+spot_roles = Array[StringName]([&"egg"])
+pools = Array[StringName]([&"museum"])
+rolls = false
+loot_script = ExtResource("3")

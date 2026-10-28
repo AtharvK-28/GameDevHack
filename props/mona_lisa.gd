@@ -18,5 +18,5 @@ func apply_impact(speed: float, was_thrown: bool = false) -> void:
 		Sfx.play("scream", 1.0, Balance.MONA_SCREAM_DB)
 		var arena: Node = get_parent()
 		if arena.has_method("raise_alarm"):
-			arena.raise_alarm(Balance.MONA_ALARM, last_carrier_slot)
+			arena.raise_alarm(Balance.MONA_ALARM, last_carrier_slot, Balance.ALARM_SCREAM)
 	super(speed, was_thrown)

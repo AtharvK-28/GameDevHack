@@ -844,6 +844,17 @@
 				"yaw": 0
 			},
 			{
+				"id": "jurassic-egg",
+				"role": "egg",
+				"at": [
+					23.2,
+					6.9
+				],
+				"floor": 0.9,
+				"size": "S",
+				"yaw": 0
+			},
+			{
 				"id": "egypt-elephant",
 				"role": "elephant",
 				"at": [

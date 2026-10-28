@@ -126,8 +126,10 @@ func _build_mood() -> void:
 
 
 # --- The alarm ---
-func raise_alarm(energy: float, slot: int) -> void:
-	# Something gave the crew away (a scream, a laser): the ghost gains energy, and the round counts who did it.
+func raise_alarm(energy: float, slot: int, alarm: float = Balance.ALARM_LASER) -> void:
+	# Something gave the crew away (a scream, a laser, the torch beam): the ghost gains energy, the ALARM bar fills
+	# (decision 137), and the round counts who did it.
+	$MuseumAlarm.add(alarm)
 	for ghost: Node in get_tree().get_nodes_in_group("ghosts"):
 		if ghost.get("arena") == self:
 			ghost.energy = minf(Balance.ENERGY_MAX, ghost.energy + energy)

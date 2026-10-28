@@ -85,6 +85,8 @@ func running(delta: float) -> void:
 			var arena: Node = _arena()
 			if arena != null and arena.has_signal("caught_in_beam"):
 				arena.caught_in_beam.emit(mover.slot)
+			if arena != null and arena.has_method("raise_alarm"):
+				arena.raise_alarm(0.0, -1, Balance.ALARM_CATCH)
 
 
 func end() -> void:

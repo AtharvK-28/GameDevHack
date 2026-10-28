@@ -106,6 +106,10 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
   goat"), the mummy's hand crawls home, the gift shop. Fixed: "Nobody gets caught in the beam" counted as missed.
   `core/museum_check.gd` passes 61 assertions; all 19 suites pass, 1,337 assertions. Next: the ALARM bar and
   lockdown shutters, the dinosaur egg, display cases.
+- [x] Museum extras batch 2 (decision 137, 2026-10-28): the ALARM bar (lasers, screams, beam catches) with police
+  lights and a 20 s lockdown of the back galleries, and the dinosaur egg that hatches a runaway baby raptor.
+  `core/museum_check.gd` passes 69 assertions; all 19 suites pass, 1,345 assertions. Museum left: display cases,
+  phone camera feeds, intro panels; and a human playtest.
 - [ ] Gust of Wind and Lights Out
 - [x] Mover and ghost character models integrated (brought forward; visual acceptance pending)
 - [x] Party camera and Mansion wall fade implemented (human acceptance pending)

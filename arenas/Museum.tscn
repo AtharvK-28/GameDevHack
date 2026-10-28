@@ -1,10 +1,11 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://arenas/museum.gd" id="1"]
 [ext_resource type="Script" path="res://arenas/dressing/museum_dressing.gd" id="2"]
 [ext_resource type="Script" path="res://arenas/dressing/museum_look.gd" id="3"]
 [ext_resource type="Script" path="res://arenas/dressing/museum_environment.gd" id="4"]
 [ext_resource type="Script" path="res://arenas/dressing/museum_lasers.gd" id="5"]
+[ext_resource type="Script" path="res://arenas/dressing/museum_alarm.gd" id="6"]
 
 [node name="Museum" type="Node3D"]
 script = ExtResource("1")
@@ -20,3 +21,6 @@ script = ExtResource("4")
 
 [node name="MuseumLasers" type="Node3D" parent="."]
 script = ExtResource("5")
+
+[node name="MuseumAlarm" type="Node3D" parent="."]
+script = ExtResource("6")

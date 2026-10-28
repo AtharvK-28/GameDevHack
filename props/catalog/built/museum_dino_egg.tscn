@@ -1,0 +1,130 @@
+[gd_scene load_steps=15 format=3]
+
+[sub_resource type="StandardMaterial3D" id="mat0"]
+albedo_color = Color(0.5412, 0.4157, 0.2353, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="CylinderMesh" id="mesh0"]
+top_radius = 0.2
+bottom_radius = 0.22
+height = 0.08
+radial_segments = 10
+rings = 1
+material = SubResource("mat0")
+
+[sub_resource type="StandardMaterial3D" id="mat1"]
+albedo_color = Color(0.9137, 0.8745, 0.7765, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="SphereMesh" id="mesh1"]
+radius = 0.14
+height = 0.28
+radial_segments = 12
+rings = 6
+material = SubResource("mat1")
+
+[sub_resource type="StandardMaterial3D" id="mat2"]
+albedo_color = Color(0.5608, 0.6039, 0.3686, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="SphereMesh" id="mesh2"]
+radius = 0.028
+height = 0.056
+radial_segments = 12
+rings = 6
+material = SubResource("mat2")
+
+[sub_resource type="StandardMaterial3D" id="mat3"]
+albedo_color = Color(0.5608, 0.6039, 0.3686, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="SphereMesh" id="mesh3"]
+radius = 0.028
+height = 0.056
+radial_segments = 12
+rings = 6
+material = SubResource("mat3")
+
+[sub_resource type="StandardMaterial3D" id="mat4"]
+albedo_color = Color(0.5608, 0.6039, 0.3686, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="SphereMesh" id="mesh4"]
+radius = 0.028
+height = 0.056
+radial_segments = 12
+rings = 6
+material = SubResource("mat4")
+
+[sub_resource type="StandardMaterial3D" id="mat5"]
+albedo_color = Color(0.5608, 0.6039, 0.3686, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="SphereMesh" id="mesh5"]
+radius = 0.028
+height = 0.056
+radial_segments = 12
+rings = 6
+material = SubResource("mat5")
+
+[sub_resource type="StandardMaterial3D" id="mat6"]
+albedo_color = Color(0.5608, 0.6039, 0.3686, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="SphereMesh" id="mesh6"]
+radius = 0.028
+height = 0.056
+radial_segments = 12
+rings = 6
+material = SubResource("mat6")
+
+[node name="dino_egg" type="Node3D"]
+
+[node name="nest" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh0")
+position = Vector3(0, 0.04, 0)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="shell" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh1")
+position = Vector3(0, 0.2, 0)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1.35, 1)
+
+[node name="spot0" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh2")
+position = Vector3(0.1, 0.22, 0.08)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="spot1" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh3")
+position = Vector3(-0.09, 0.28, 0.07)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="spot2" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh4")
+position = Vector3(0.02, 0.14, -0.13)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="spot3" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh5")
+position = Vector3(-0.11, 0.17, -0.05)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="spot4" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh6")
+position = Vector3(0.06, 0.32, -0.06)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)

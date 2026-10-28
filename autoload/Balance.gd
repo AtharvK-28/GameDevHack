@@ -1225,6 +1225,31 @@ const MUMMY_HOME_RADIUS: float = 0.4 # until it is this close to where it was ta
 const MUMMY_COLOUR := Color("c9b98f")
 const GIFT_SHOP_COUNTER := Vector3(28.4, 0.0, 16.5)
 const GIFT_SHOP_SPOTS: Array[Vector3] = [Vector3(27.5, 0.95, 16.5), Vector3(28.1, 0.95, 16.5), Vector3(28.7, 0.95, 16.5), Vector3(29.3, 0.95, 16.5)]
+# --- The ALARM and lockdown (decision 137) ---
+const ALARM_LASER: float = 25.0 # Share of the ALARM bar each source fills: a tripped laser,
+const ALARM_SCREAM: float = 15.0 # Mona Lisa's cousin's scream,
+const ALARM_CATCH: float = 20.0 # and a mover caught in the torch beam.
+const ALARM_WARNING: float = 10.0 # Seconds from a full bar to the shutters ("police on the way").
+const ALARM_LOCKDOWN: float = 20.0 # Seconds the shutters stay down; then the bar resets.
+const ALARM_SHUTTER_DOORS: Array[Vector2] = [Vector2(3.7, 6.3), Vector2(13.5, 16.5), Vector2(23.7, 26.3)] # x spans of the back galleries' doorways,
+const ALARM_SHUTTER_Z: float = 8.0 # all on this wall.
+const ALARM_SHUTTER_HEIGHT: float = 2.8
+const ALARM_SHUTTER_DROP: float = 1.0 # Seconds the shutter takes to fall, for the look.
+const ALARM_POLICE_LIGHTS: Array[Vector3] = [Vector3(8.0, 2.5, 30.0), Vector3(22.0, 2.5, 30.0), Vector3(35.0, 2.0, 31.7)] # Flashing outside, and on the parked police car.
+const ALARM_POLICE_RANGE: float = 14.0
+const ALARM_POLICE_ENERGY: float = 3.0
+const ALARM_POLICE_BLUE := Color("2f6bff")
+const ALARM_FLASH_RATE: float = 4.0 # Red-blue swaps a second.
+const ALARM_METER_FONT_SIZE: int = 40
+const ALARM_METER_MARGIN: int = 24
+const ALARM_BANNER_DROP: int = 70 # Pixels below the haunting banner.
+
+# --- The dinosaur egg (decision 137) ---
+const BABY_HEIGHT: float = 0.6 # Metres: the hatchling.
+const BABY_SCARE_DISTANCE: float = 2.5 # A mover this close sets it running,
+const BABY_SPEED: float = 3.0 # this fast,
+const BABY_DASH_SECONDS: float = 0.8 # for this long,
+const BABY_REST: float = 0.7 # then it pauses before it can run again.
 const SKELETON_GAP: float = 1.05 # Metres of clear floor between the skull's back and the vertebrae, for its carrier.
 const SKELETON_BONE := Color("e2d6b8")
 const SKELETON_STEEL := Color("3a3f45")

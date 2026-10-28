@@ -162,7 +162,7 @@ License: CC0 1.0. The Space Gallery's astronaut, the genuine alien, the rover, t
 
 ### Models from Poly Pizza (`assets/models/museum/polypizza/`)
 Source: [poly.pizza](https://poly.pizza), each page marked CC0 1.0.  
-- Quaternius: T-Rex (the animatronic), Triceratops, Stegosaurus, Parasaurolophus, Apatosaurus (Animated Lowpoly Dinosaurs), pedestals, columns, bench, planet, mineral, crown, gold ingots, golden armour, celtic shield, astronaut, torch.  
+- Quaternius: T-Rex (the animatronic), Velociraptor (the baby raptor), Triceratops, Stegosaurus, Parasaurolophus, Apatosaurus (Animated Lowpoly Dinosaurs), pedestals, columns, bench, planet, mineral, crown, gold ingots, golden armour, celtic shield, astronaut, torch.  
 - CreativeTrio: painting, globe.  
 - iPoly3D: crystals (the crystal sculpture).  
 - Kay Lousberg: plaque.  
