@@ -385,7 +385,7 @@ func _steer_pair() -> void:
 	if host.arena.has_method("should_wait"):
 		var wait: bool = false
 		for bot: Bot in bots:
-			if bot.mode == "pair" and pair_item.is_held_by(bot.mover) and host.arena.should_wait(bot.mover.global_position, bot.phone.stick):
+			if bot.mode == "pair" and pair_item.is_held_by(bot.mover) and host.arena.should_wait(bot.mover.global_position, direction):
 				wait = true
 		if wait:
 			for bot: Bot in bots:

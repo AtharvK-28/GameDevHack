@@ -182,7 +182,7 @@ func run() -> int:
 
 	# --- The laser hall ---
 	var lasers: Node = arena.get_node("MuseumLasers")
-	_check(lasers.gates.size() == 3, "Three laser gates cross the laser hall")
+	_check(lasers.gates.size() == 2 and SETTINGS.LASER_GATES_X[1] - SETTINGS.LASER_GATES_X[0] >= 4.5, "Two laser gates cross the laser hall, 4.5 m apart")
 	var states: Array[bool] = []
 	for step: int in range(12):
 		lasers.cycle_time = step * SETTINGS.LASER_PERIOD / 12.0

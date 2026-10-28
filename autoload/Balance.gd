@@ -1181,7 +1181,7 @@ const REVOLVE_COOLDOWN: float = 6.0
 const REVOLVE_KNOCK_SPEED: float = 3.0
 const REVOLVE_WHOOSH_DB: float = -4.0
 # --- The laser hall (decision 133) ---
-const LASER_GATES_X: Array[float] = [4.0, 6.5, 9.0] # Three gates across the laser hall, west of its lobby door.
+const LASER_GATES_X: Array[float] = [4.0, 8.5] # Two gates 4.5 m apart (decision 135): room for the skull and its carriers between them.
 const LASER_HALL_Z := Vector2(15.2, 19.8) # The beams run wall to wall across the hall.
 const LASER_HEIGHTS: Array[float] = [0.35, 0.85, 1.35] # Metres: three beams per gate.
 const LASER_PERIOD: float = 2.6 # Seconds for one on-off cycle.
@@ -1196,9 +1196,7 @@ const LASER_RADIUS: float = 0.035 # Metres; thick enough to read from the party 
 const LASER_FLASH_ENERGY: float = 2.5
 const LASER_FLASH_SECONDS: float = 1.2
 const LASER_ALARM_DB: float = -6.0
-const LASER_WAIT_DISTANCE: float = 1.3 # Bots: metres before a gate where they wait for it to go dark,
-const LASER_SAFE_WINDOW: float = 0.45 # and the seconds of dark left below which they hold back,
-const LASER_COMMIT_DISTANCE: float = 0.8 # unless they are already this close: then they go.
+const LASER_WAIT_DISTANCE: float = 0.95 # Bots: metres before a gate within which they wait for it to go dark (closer than a dark gap's walk),
 const LASER_STOP_MARGIN: float = 0.6 # Bots stop this far before a lit gate; any closer and they press on through.
 
 # --- Swap the Fakes (decision 133) ---

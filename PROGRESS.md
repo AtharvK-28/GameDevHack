@@ -99,6 +99,9 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
   lost 19% (target 60% for two movers); the skull was delivered in every round. Bots still trip lasers often, mostly
   the skull pair: with its carriers it is ~3.4 m long against gates 2.5 m apart (decision for the user). Fixed: an
   arena with no intro left the intro screen over the round. All 19 suites pass, 1,329 assertions.
+- [x] Two laser gates, 4.5 m apart (decision 135, 2026-10-28), so the skull pair can stop between them; bots wait
+  while the gate ahead is lit. Bot rounds on the Museum vary a lot on the same seeds (21-45% banked), so its
+  balance needs a human playtest. All 19 suites pass, 1,329 assertions.
 - [ ] Gust of Wind and Lights Out
 - [x] Mover and ghost character models integrated (brought forward; visual acceptance pending)
 - [x] Party camera and Mansion wall fade implemented (human acceptance pending)

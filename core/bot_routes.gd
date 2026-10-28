@@ -89,8 +89,9 @@ const ROUTES: Dictionary = {
 		],
 		"delivery": Vector3(2.6, 0.0, 22.0), # At the van's tailgate.
 		"pair_path": [
-			Vector2(12.3, 5.8), Vector2(15.0, 6.0), Vector2(15.0, 11.5), Vector2(15.0, 17.3), Vector2(9.0, 17.3),
-			Vector2(2.1, 17.3), Vector2(2.1, 21.6),
+			# In the laser hall the pair stops between the gates (6.25), never beside one.
+			Vector2(12.3, 5.8), Vector2(15.0, 6.0), Vector2(15.0, 11.5), Vector2(15.0, 17.3), Vector2(10.8, 17.3),
+			Vector2(6.25, 17.3), Vector2(2.1, 17.3), Vector2(2.1, 21.6),
 		],
 		"pair_stands": [Vector3(10.6, 0.0, 2.3), Vector3(14.0, 0.0, 2.3)], # The skull's west and east ends, on its bracket.
 	},
