@@ -32,6 +32,9 @@ var curse_cooldown_left: float = 0.0
 var curse_target: Loot
 var generator_powered: bool = false
 var curse_cooldown_duration: float = Balance.CURSE_COOLDOWN
+var hex_cooldown_left: float = 0.0
+var hex_cooldown_duration: float = Balance.HEX_COOLDOWN
+var hex_target: CharacterBody3D # The mover HEX would scramble (decision 142).
 
 # --- Setup ---
 func _ready() -> void:
@@ -64,6 +67,7 @@ func _physics_process(delta: float) -> void:
 	opening_left = maxf(0.0, opening_left - delta)
 	shared_lock_left = maxf(0.0, shared_lock_left - delta)
 	curse_cooldown_left = maxf(0.0, curse_cooldown_left - delta)
+	hex_cooldown_left = maxf(0.0, hex_cooldown_left - delta)
 	var input: InputRouter.PlayerInput = InputRouter.for_slot(slot)
 	freeze_left = maxf(0.0, freeze_left - delta)
 	lockout_left = maxf(0.0, lockout_left - delta)
@@ -81,6 +85,8 @@ func _physics_process(delta: float) -> void:
 		for index: int in range(hauntings.size()):
 			if input.pressed.get("haunt%d" % (index + 1), false):
 				_try_haunting(index)
+		if demo_rules and input.pressed.get("haunt2", false):
+			_try_hex() # In a match the second haunting button is HEX, not Slime.
 		if input.pressed.get("haunt3", false):
 			_try_curse()
 	_update_energy(delta)
@@ -94,6 +100,7 @@ func _physics_process(delta: float) -> void:
 	_update_height()
 	_update_target()
 	_update_curse_target()
+	_update_hex_target()
 	_update_trail(delta)
 
 
@@ -115,6 +122,8 @@ func apply_generator_power() -> void:
 		haunting.cooldown_left *= Balance.GENERATOR_COOLDOWN_RATIO
 	curse_cooldown_duration *= Balance.GENERATOR_COOLDOWN_RATIO
 	curse_cooldown_left *= Balance.GENERATOR_COOLDOWN_RATIO
+	hex_cooldown_duration *= Balance.GENERATOR_COOLDOWN_RATIO
+	hex_cooldown_left *= Balance.GENERATOR_COOLDOWN_RATIO
 	print("Ghost weakened: longer cooldowns, slower regeneration and wisp movement")
 
 
@@ -301,6 +310,38 @@ func _try_curse() -> void:
 	_update_curse_target()
 
 
+# --- The Haunted Controller (decision 142) ---
+func _update_hex_target() -> void:
+	# The nearest mover in play within HEX_RANGE who is not already hexed.
+	hex_target = null
+	if not demo_rules:
+		return
+	var best: float = Balance.HEX_RANGE
+	for mover: Node in get_tree().get_nodes_in_group("movers"):
+		if not mover.in_play or mover.is_hexed():
+			continue
+		var distance: float = Vector2(mover.global_position.x - global_position.x, mover.global_position.z - global_position.z).length()
+		if distance < best:
+			best = distance
+			hex_target = mover
+
+
+func can_hex() -> bool:
+	return demo_rules and not is_frozen() and not is_instance_valid(possessing) and opening_left <= 0.0 and shared_lock_left <= 0.0 and hex_cooldown_left <= 0.0 and energy >= Balance.HEX_COST and is_instance_valid(hex_target)
+
+
+func _try_hex() -> void:
+	if not can_hex():
+		return
+	energy -= Balance.HEX_COST
+	hex_target.hex()
+	model.play_cast()
+	hex_cooldown_left = hex_cooldown_duration
+	shared_lock_left = Balance.HAUNT_SHARED_LOCK
+	print("Ghost hexed Player %d's phone" % (hex_target.slot + 1))
+	_update_hex_target()
+
+
 # --- Phone feedback ---
 func hud() -> Dictionary:
 	# What the ghost's phone shows; ok mirrors the checks above, so greying matches what the host accepts.
@@ -325,10 +366,14 @@ func hud() -> Dictionary:
 	message.generatorPowered = generator_powered
 	message.ok.haunt3 = can_curse()
 	message.simple = demo_rules
+	if demo_rules: # The second haunting button is HEX.
+		message.costs.haunt2 = Balance.HEX_COST
+		message.cd.haunt2 = hex_cooldown_left / hex_cooldown_duration
+		message.ok.haunt2 = can_hex()
 	message.target = curse_target.item_name if is_instance_valid(curse_target) else ""
-	message.seconds = {"opening": ceilf(opening_left), "shared": ceilf(shared_lock_left), "possess": ceilf(lockout_left), "haunt1": ceilf(hauntings[0].cooldown_left), "haunt3": ceilf(curse_cooldown_left)}
+	message.seconds = {"opening": ceilf(opening_left), "shared": ceilf(shared_lock_left), "possess": ceilf(lockout_left), "haunt1": ceilf(hauntings[0].cooldown_left), "haunt2": ceilf(hex_cooldown_left), "haunt3": ceilf(curse_cooldown_left)}
 	message.reasons = {}
-	for button: String in ["possess", "action", "haunt1", "haunt3"]:
+	for button: String in ["possess", "action", "haunt1", "haunt2", "haunt3"]:
 		message.reasons[button] = _button_reason(button)
 	return message
 
@@ -352,16 +397,20 @@ func _button_reason(button: String) -> String:
 		return "Opening protection: %ds" % ceili(opening_left)
 	if demo_rules and shared_lock_left > 0.0:
 		return "Haunting lock: %ds" % ceili(shared_lock_left)
-	var cooldown: float = curse_cooldown_left if button == "haunt3" else hauntings[0].cooldown_left
+	var cooldowns: Dictionary = {"haunt2": hex_cooldown_left, "haunt3": curse_cooldown_left}
+	var cooldown: float = cooldowns.get(button, hauntings[0].cooldown_left)
 	if cooldown > 0.0:
 		return "Cooldown: %ds" % ceili(cooldown)
-	if button == "haunt3" and is_instance_valid(possessing):
+	if button in ["haunt2", "haunt3"] and is_instance_valid(possessing):
 		return "Leave prop first"
-	var required: int = Balance.CURSE_COST if button == "haunt3" else hauntings[0].cost
+	var costs: Dictionary = {"haunt2": Balance.HEX_COST, "haunt3": Balance.CURSE_COST}
+	var required: int = costs.get(button, hauntings[0].cost)
 	if energy < required:
 		return "Need %d energy" % required
 	if button == "haunt3" and not is_instance_valid(curse_target):
 		return "Move near uncursed loot"
+	if button == "haunt2" and not is_instance_valid(hex_target):
+		return "Fly near a mover"
 	return "Ready"
 
 

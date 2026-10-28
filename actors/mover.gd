@@ -21,6 +21,9 @@ var tumble_time_left: float = 0.0
 var name_label := Label3D.new()
 var shout_left: float = 0.0 # Cooldown before the next shout.
 var boost_left: float = 0.0 # Seconds of the audience's speed boost left.
+var hex_state: String = "" # The ghost's HEX (decision 142): "warn" (the phone cracks), "on" (stick mirrored), or "".
+var hex_left: float = 0.0
+var hex_still: float = 0.0 # Seconds the hexed mover has let go of the stick.
 var hold_point: Marker3D
 var model: MoverModel
 var shove := Vector3.ZERO # Fading push from bumping into another mover.
@@ -67,6 +70,10 @@ func _physics_process(delta: float) -> void:
 		held_item = null
 
 	stick = player_input.direction
+	_update_hex(delta)
+	if hex_state == "on":
+		var screen: Vector2 = InputRouter.world_to_stick(stick)
+		stick = InputRouter.stick_to_world(Vector2(-screen.x, screen.y)) # Mirrored left to right.
 	bracing = player_input.buttons.get("brace", false)
 	if bracing or is_tumbling():
 		stick = Vector2.ZERO
@@ -168,6 +175,7 @@ func is_moving() -> bool:
 
 # --- The ghost's slot ---
 func set_in_play(active: bool) -> void:
+	end_hex()
 	# While this player is the ghost, the mover leaves the board: no collisions, input, hauntings or tumbles.
 	if not active:
 		_let_go()
@@ -188,6 +196,7 @@ func set_in_play(active: bool) -> void:
 
 
 func reset_for_round(location: Vector3, playing: bool) -> void:
+	end_hex()
 	# Hands empty, standing up, facing the house, at a fresh spot; out of play if this player is not a mover.
 	set_in_play(false)
 	position = location
@@ -304,20 +313,79 @@ func wash(direction: Vector3, distance: float) -> void:
 
 
 
+# --- The Haunted Controller (decision 142) ---
+func hex() -> void:
+	# The ghost scrambles this mover's phone: it cracks and flickers for HEX_WARNING, then for HEX_SECONDS the stick is
+	# mirrored and GRAB and THROW swap places on the screen. Letting go of the stick for HEX_BREAK_SECONDS breaks it.
+	if hex_state != "" or not in_play:
+		return
+	hex_state = "warn"
+	hex_left = Balance.HEX_WARNING
+	hex_still = 0.0
+	_tell_hex()
+	var player := Net.player_for_slot(slot)
+	if not player.is_empty():
+		Net.send_to_player(player, {"type": "buzz", "ms": Balance.HEX_BUZZ_MS})
+	_letter("HEXED!", Balance.HEX_COLOUR, Balance.COMIC_INK)
+	Sfx.play("theremin", 1.3, -6.0)
+
+
+func is_hexed() -> bool:
+	return hex_state != ""
+
+
+func _update_hex(delta: float) -> void:
+	if hex_state == "":
+		return
+	hex_left -= delta
+	if hex_state == "warn":
+		if hex_left <= 0.0:
+			hex_state = "on"
+			hex_left = Balance.HEX_SECONDS
+			_tell_hex()
+		return
+	hex_still = hex_still + delta if stick.length() < Balance.HEX_STILL_STICK else 0.0
+	if hex_still >= Balance.HEX_BREAK_SECONDS:
+		_letter("SHOOK IT OFF!", Color.WHITE, Balance.HEX_COLOUR.darkened(0.5))
+		end_hex()
+	elif hex_left <= 0.0:
+		end_hex()
+
+
+func end_hex() -> void:
+	if hex_state == "":
+		return
+	hex_state = ""
+	_tell_hex()
+
+
+func _tell_hex() -> void:
+	var player := Net.player_for_slot(slot)
+	if not player.is_empty():
+		Net.send_to_player(player, {"type": "hex", "state": hex_state if hex_state != "" else "off"})
+
+
 # --- Shouts ---
 func shout(words: String) -> bool:
 	# Pops the words over this mover's head in comic lettering, unless they shouted a moment ago.
 	if shout_left > 0.0 or not in_play:
 		return false
 	shout_left = Balance.SHOUT_COOLDOWN
+	_letter(words, Color.WHITE, Color(Balance.PLAYER_COLOURS[slot]).darkened(0.55)) # Tinted toward who shouted.
+	Sfx.play("grab", 1.4, -8.0) # A small chirp so heads turn.
+	return true
+
+
+func _letter(words: String, fill: Color, outline: Color) -> void:
+	# Comic lettering that punches in over this mover's head and fades.
 	var bubble := Label3D.new()
 	bubble.text = words
 	bubble.font = load(Balance.COMIC_FONT_PATH)
 	bubble.font_size = Balance.PRICE_FONT_SIZE
 	bubble.pixel_size = Balance.SHOUT_PIXEL_SIZE
-	bubble.modulate = Color.WHITE
+	bubble.modulate = fill
 	bubble.outline_size = Balance.VALUE_POPUP_OUTLINE
-	bubble.outline_modulate = Color(Balance.PLAYER_COLOURS[slot]).darkened(0.55) # Tinted toward who shouted.
+	bubble.outline_modulate = outline
 	bubble.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	bubble.no_depth_test = true
 	bubble.position.y = name_label.position.y + Balance.SHOUT_HEIGHT
@@ -329,8 +397,6 @@ func shout(words: String) -> bool:
 	fade.tween_interval(Balance.SHOUT_LIFETIME * 0.6)
 	fade.tween_property(bubble, "modulate:a", 0.0, Balance.SHOUT_LIFETIME * 0.4)
 	fade.tween_callback(bubble.queue_free)
-	Sfx.play("grab", 1.4, -8.0) # A small chirp so heads turn.
-	return true
 
 
 # --- Bumping (goofy physics) ---

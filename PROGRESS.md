@@ -131,6 +131,10 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - [x] Museum developer shortcuts (decision 141, 2026-10-28): Ctrl+2 drives the ALARM (full, lockdown, over),
   Ctrl+4 switches the lasers, and the overlay shows the Museum's state. `core/museum_check.gd` passes 86 assertions,
   `core/dev_mode_check.gd` 32.
+- [x] The Haunted Controller (decision 142, 2026-10-28): the ghost's HEX cracks a mover's phone, mirrors their stick and
+  swaps GRAB and THROW for 4 s; letting go of the stick breaks it. Phone rendered hexed, warned and as the ghost (five
+  buttons). New suite `core/crazy_check.gd`, 11 assertions; `ui_check` 206, `ghost_check` 128, `match_check` 66 and
+  `plumbing_check` 73 still pass.
 - [ ] Gust of Wind and Lights Out
 - [x] Mover and ghost character models integrated (brought forward; visual acceptance pending)
 - [x] Party camera and Mansion wall fade implemented (human acceptance pending)

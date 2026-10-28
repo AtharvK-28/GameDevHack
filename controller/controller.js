@@ -196,6 +196,14 @@ function handleMessage(message) {
     case "buzz":
       if (navigator.vibrate && Number.isFinite(message.ms)) navigator.vibrate(message.ms);
       break;
+    case "hex": {
+      // The ghost's HEX (decision 142): the screen cracks and flickers, then GRAB and THROW swap places until it ends.
+      const state = activeRole === "mover" ? String(message.state) : "off";
+      document.body.classList.toggle("hex-warn", state === "warn");
+      document.body.classList.toggle("hexed", state === "on");
+      elements["hex-text"].textContent = state === "on" ? "HEXED! Let go of the stick to shake it off" : "HEXED!";
+      break;
+    }
     case "cam": {
       // Museum CCTV: this mover is on camera (decision 138).
       const onCamera = Boolean(message.on) && activeRole === "mover";
@@ -218,6 +226,7 @@ const HAUNT_LABELS = { "Old Mansion": "SHAKE", "Ghost Ship": "WIND", "Museum of 
 
 function showRole(message) {
   releaseInputs();
+  document.body.classList.remove("hex-warn", "hexed");
   setGhostNear(0);
   elements.shouts.hidden = message.role === "ghost";
   elements["control-note"].hidden = message.role !== "ghost";
@@ -434,10 +443,10 @@ function renderGhostHud(message) {
   elements["action-label"].textContent = possessing ? message.action : "ACTION";
   elements["action-cost"].textContent = noteFor("action", message, possessing ? costLabel(costs.action) : "possess first");
   elements["haunt1-cost"].textContent = noteFor("haunt1", message, costLabel(costs.haunt1));
-  elements["haunt2-cost"].textContent = costLabel(costs.haunt2);
+  elements["haunt2-cost"].textContent = simple ? noteFor("haunt2", message, costLabel(costs.haunt2)) : costLabel(costs.haunt2);
   elements["haunt3-cost"].textContent = noteFor("haunt3", message, costLabel(costs.haunt3));
-  // The demo ghost has Curse instead of Slime.
-  elements["haunt2-button"].hidden = simple;
+  // A match ghost has HEX and Curse instead of Slime (decision 142).
+  elements["haunt2-label"].textContent = simple ? "HEX" : "SLIME";
   elements["haunt3-button"].hidden = !simple;
   elements["ghost-status"].hidden = !simple;
   elements["ghost-status"].textContent = statusLine(message);

@@ -1305,6 +1305,16 @@ const CLOCK_CHIME_REST: float = 3.0 # at most once in this many seconds.
 const CLOCK_CHIME_ENERGY: float = 10.0 # Energy each chime gives the ghost.
 const CLOCK_COLOUR := Color("ffd76a")
 const CLOCK_CHIME_DB: float = -4.0
+# --- The Haunted Controller (decision 142) ---
+const HEX_COST: int = 35
+const HEX_COOLDOWN: float = 20.0
+const HEX_RANGE: float = 6.0 # Metres (flat): the ghost hexes the nearest mover this close.
+const HEX_WARNING: float = 1.0 # Seconds the phone cracks and flickers first,
+const HEX_SECONDS: float = 4.0 # then this long with the stick mirrored and GRAB and THROW swapped,
+const HEX_BREAK_SECONDS: float = 0.5 # unless the mover lets go of the stick this long.
+const HEX_STILL_STICK: float = 0.1 # Stick below this counts as let go.
+const HEX_COLOUR := Color("b06cff")
+const HEX_BUZZ_MS: int = 250
 const SKELETON_GAP: float = 1.05 # Metres of clear floor between the skull's back and the vertebrae, for its carrier.
 const SKELETON_BONE := Color("e2d6b8")
 const SKELETON_STEEL := Color("3a3f45")

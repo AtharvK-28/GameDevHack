@@ -12,6 +12,10 @@
 </head>
 <body>
   <div id="ghost-glow" aria-hidden="true"></div>
+  <div id="hex-overlay" class="hex-overlay" aria-hidden="true">
+    <svg viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M62 0 L55 18 L66 27 L51 44 L58 52 L44 70 L50 78 L41 100 M55 18 L38 22 L27 15 M51 44 L72 49 L86 43 L100 47 M44 70 L28 66 L14 74 L0 70 M66 27 L80 22 M58 52 L66 63 L78 66"/></svg>
+    <strong id="hex-text">HEXED!</strong>
+  </div>
   <div id="rec-overlay" class="rec-overlay" hidden><span class="rec-dot"></span> REC · YOU'RE ON CAMERA</div>
   <main id="app">
     <header class="topbar">
@@ -72,7 +76,7 @@
           <button class="action" type="button" data-button="possess"><strong id="possess-label">POSSESS</strong><small id="possess-note">fly into a prop</small></button>
           <button class="action" type="button" data-button="action"><strong id="action-label">ACTION</strong><small id="action-cost">possess first</small></button>
           <button class="action" type="button" data-button="haunt1"><strong id="haunt-label">SHAKE</strong><small id="haunt1-cost"></small></button>
-          <button id="haunt2-button" class="action" type="button" data-button="haunt2"><strong>SLIME</strong><small id="haunt2-cost"></small></button>
+          <button id="haunt2-button" class="action hex" type="button" data-button="haunt2"><strong id="haunt2-label">SLIME</strong><small id="haunt2-cost"></small></button>
           <button id="haunt3-button" class="action curse" type="button" data-button="haunt3" hidden><strong>CURSE</strong><small id="haunt3-cost"></small></button>
         </div>
       </div>

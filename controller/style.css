@@ -186,3 +186,21 @@ body.audience #rotate-overlay { display: none !important; } /* Watching works up
 .rec-overlay[hidden] { display: none; }
 .rec-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #ff2a2a; margin-right: 6px; animation: rec-blink 1s steps(2, start) infinite; }
 @keyframes rec-blink { to { visibility: hidden; } }
+
+/* The Haunted Controller (decision 142): cracks and a purple flicker, then GRAB and THROW trade places. */
+.hex-overlay { position: fixed; inset: 0; z-index: 55; pointer-events: none; display: none; }
+.hex-overlay svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.hex-overlay path { fill: none; stroke: #fff; vector-effect: non-scaling-stroke; stroke-width: 3px; filter: drop-shadow(0 0 2px #3b1a66); }
+.hex-overlay strong { position: absolute; left: 50%; top: 8px; transform: translateX(-50%); padding: 4px 14px; border-radius: 999px; background: #b06cff; color: #fff; font-size: 15px; font-weight: 900; white-space: nowrap; }
+body.hex-warn .hex-overlay, body.hexed .hex-overlay { display: block; }
+body.hex-warn .hex-overlay { animation: hex-flicker .12s steps(2, start) infinite; background: rgba(176, 108, 255, .25); }
+body.hexed .hex-overlay { background: rgba(176, 108, 255, .12); }
+@keyframes hex-flicker { to { opacity: .35; } }
+body.hexed #mover-buttons .throw { grid-column: 1 / -1; order: 1; }
+body.hexed #mover-buttons .grab { grid-column: auto; order: 2; }
+body.hexed #mover-buttons .brace { order: 3; }
+.ghost-buttons { grid-template-rows: none; grid-auto-rows: 1fr; }
+.ghost-buttons .action.curse { grid-column: 1 / -1; } /* Five buttons in a match: CURSE takes the last row. */
+.ghost-buttons .action.hex { background: #d9c2ff; }
+.ghost-buttons .action.hex.unavailable { background: #c9d3c4; }
+@media (prefers-reduced-motion: reduce) { body.hex-warn .hex-overlay { animation: none; } }
