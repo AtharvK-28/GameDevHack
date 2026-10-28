@@ -120,6 +120,7 @@ const AWARDS: Array[Dictionary] = [
 	{"stat": "overboard", "title": "MAN OVERBOARD", "detail": "%d× in the sea", "least": 1},
 	{"stat": "caught", "title": "CAUGHT RED-HANDED", "detail": "%d× in the torch beam", "least": 1},
 	{"stat": "alarms", "title": "HUMAN ALARM CLOCK", "detail": "tripped %d lasers", "least": 1},
+	{"stat": "chimes", "title": "GRANDFATHER'S ALARM", "detail": "rang the clock %d×", "least": 1},
 	{"stat": "smashed", "title": "BUTTERFINGERS", "detail": "%s smashed", "least": 500, "money": true},
 	{"stat": "tumbles", "title": "FLOOR INSPECTOR", "detail": "fell over %d times", "least": 2},
 	{"stat": "wrecked", "title": "MENACE", "detail": "%s wrecked", "least": 1, "money": true},
@@ -1158,7 +1159,6 @@ const SKULL_TOOTH_POP: float = 2.4 # and upward.
 const SKULL_TOOTH_LIFETIME: float = 6.0 # Seconds a loose tooth lies on the floor.
 const SKULL_TOOTH_DB: float = -10.0
 const SKULL_NECK: Vector3 = Vector3(12.3, 0.95, 2.3) # Where the skull rests on the skeleton's neck (x, height, z).
-const FULL_POSSESSION_ARENAS: Array[String] = ["Ghost Ship", "Museum of Mostly Real Things"] # In a match, the ghost may possess every kind of prop here; elsewhere only sliders.
 
 # --- Bahadur's toys (decision 132) ---
 const ANIMATRONIC_SIZE := Vector3(2.0, 2.3, 2.0) # The T-Rex's collider, square so turning never snags it.
@@ -1280,6 +1280,31 @@ const CAMERA_ALARM_REST: float = 4.0 # at most once per mover in this many secon
 const MUSEUM_CITY_CALL_INTERVAL := Vector2(14.0, 30.0) # Seconds between calls, at random in this range.
 const MUSEUM_SIREN_DB: float = -20.0
 const MUSEUM_HORN_DB: float = -26.0
+# --- The Mansion's personalities (decision 140) ---
+const CAT_WARN_SECONDS: float = 1.0 # Running this long with the cat box brings the MRRROW? warning,
+const CAT_ESCAPE_SECONDS: float = 1.5 # and this much longer, the cat leaps out.
+const CAT_STARTLE_SPEED: float = 2.0 # m/s: a knock above this makes it leap out too.
+const CAT_BOX_SHARE: float = 0.1 # Share of the value the empty box keeps; the cat takes the rest.
+const CAT_DASH_MEOW_CHANCE: float = 0.4 # Chance the escaped cat meows as it dashes off.
+const CAT_COLOUR := Color("f0a050")
+const CAT_MEOW_DB: float = -5.0
+const FISH_SPILL_RATE: float = 0.06 # Share of its value the fish tank spills a second while carried at a run,
+const FISH_TANK_FLOOR_SHARE: float = 0.3 # down to this share: the empty tank.
+const FISH_SLOSH_GAP: float = 0.8 # Seconds between SLOSH! popups.
+const FISH_WATER_MIN: float = 0.15 # How low the water drains (share of full).
+const FISH_COLOUR := Color("6cc3ff")
+const FISH_SLOSH_DB: float = -6.0
+const DOLL_WAIT: float = 3.0 # Seconds put down before the cursed doll walks home,
+const DOLL_WALK_SPEED: float = 0.7 # at this many metres a second.
+const DOLL_WADDLE_RATE: float = 2.5 # Side-to-side sways a second.
+const DOLL_WADDLE_ANGLE: float = 9.0 # Degrees.
+const DOLL_COLOUR := Color("d9a6c8")
+const DOLL_GIGGLE_DB: float = -6.0
+const CLOCK_CHIME_SPEED: float = 1.2 # m/s: a knock above this makes the grandfather clock chime,
+const CLOCK_CHIME_REST: float = 3.0 # at most once in this many seconds.
+const CLOCK_CHIME_ENERGY: float = 10.0 # Energy each chime gives the ghost.
+const CLOCK_COLOUR := Color("ffd76a")
+const CLOCK_CHIME_DB: float = -4.0
 const SKELETON_GAP: float = 1.05 # Metres of clear floor between the skull's back and the vertebrae, for its carrier.
 const SKELETON_BONE := Color("e2d6b8")
 const SKELETON_STEEL := Color("3a3f45")

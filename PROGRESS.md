@@ -120,6 +120,14 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
   horns; the ghost's phone button reads JAAGTE RAHO on the Museum (was SHAKE); the guide covers all three maps and
   its role text fits (it was clipped). `core/museum_check.gd` passes 80 assertions, `core/ui_check.gd` 206 (rendered
   and inspected); all 19 suites pass, 1,358 assertions.
+- [x] Step 2 (decision 140, 2026-10-28): the Mansion upgrade. The ghost may possess every furniture kind in every
+  arena's matches (the slider-only rule is gone); the cat in a box, the fish tank and the cursed doll; the
+  grandfather clock chimes; the goal "Don't wake Seth-ji" and the award GRANDFATHER'S ALARM. Models rendered and
+  inspected. New suite `core/mansion_check.gd`, 34 assertions; all 20 suites pass, 1,400 assertions.
+  `tools/balance_sim.gd` on the Mansion (10 seeded rounds, x3): before, movers won 3 of 10 (58% banked); with the
+  new loot but slider-only possession, 6 of 10 (59%); as built, with full possession, 2 of 10 (38%). The loot is
+  neutral; the ghost's door, chandelier, armour and rug make the bot crew much weaker (on one seed the bot pair
+  could not hold the piano after the ghost shoved the clock and yanked the rug). Needs a human playtest to judge.
 - [ ] Gust of Wind and Lights Out
 - [x] Mover and ghost character models integrated (brought forward; visual acceptance pending)
 - [x] Party camera and Mansion wall fade implemented (human acceptance pending)

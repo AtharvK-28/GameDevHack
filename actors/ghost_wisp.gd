@@ -23,7 +23,7 @@ var trail: CPUParticles3D # Ghost-green puffs left behind while moving, also whi
 var last_position := Vector3.ZERO
 var material := StandardMaterial3D.new()
 var bounds: Rect2 = Balance.GHOST_BOUNDS # The x/z area the wisp may roam; set from the arena.
-var demo_rules: bool = false # Archived harnesses retain all five furniture actions and slime.
+var demo_rules: bool = false # Match rules: match energy, the opening grace and Curse. Every arena allows all five furniture kinds.
 var arena: Node3D # Optional arena floor query; the greybox keeps its original flat flight height.
 var mover_count: int = 1
 var opening_left: float = 0.0
@@ -210,8 +210,6 @@ func _update_target() -> void:
 		var best_score: float = INF
 		for node: Node in get_tree().get_nodes_in_group("possessables"):
 			if node is Possessable and node.can_be_possessed():
-				if demo_rules and node.kind != Possessable.Kind.SLIDER and not (is_instance_valid(arena) and arena.ARENA_NAME in Balance.FULL_POSSESSION_ARENAS):
-					continue
 				var score: float = _reach_score(node)
 				if score < best_score:
 					best = node

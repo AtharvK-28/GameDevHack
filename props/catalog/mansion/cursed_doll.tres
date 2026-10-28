@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="CatalogItem" load_steps=4 format=3]
+[ext_resource type="Script" path="res://props/catalog/catalog_item.gd" id="1"]
+[ext_resource type="PackedScene" path="res://props/catalog/built/mansion_doll.tscn" id="2"]
+[ext_resource type="Script" path="res://props/cursed_doll.gd" id="3"]
+[resource]
+script = ExtResource("1")
+id = &"cursed_doll"
+display_name = "Cursed doll"
+model = ExtResource("2")
+value = 3000
+weight_class = 0
+fragility = 2
+count = 1
+two_person_handles = false
+throwable = true
+footprint = Vector3(0.27, 0.48, 0.27)
+spot_roles = Array[StringName]([&"table", &"seat"])
+pools = Array[StringName]([&"mansion"])
+rolls = false
+every_round = true
+loot_script = ExtResource("3")

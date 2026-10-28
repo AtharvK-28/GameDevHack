@@ -1,0 +1,203 @@
+[gd_scene load_steps=27 format=3]
+
+[sub_resource type="StandardMaterial3D" id="mat0"]
+albedo_color = Color(0.3529, 0.2275, 0.1412, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="BoxMesh" id="mesh0"]
+size = Vector3(0.6, 0.06, 0.34)
+material = SubResource("mat0")
+
+[sub_resource type="StandardMaterial3D" id="mat1"]
+albedo_color = Color(0.3529, 0.2275, 0.1412, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="BoxMesh" id="mesh1"]
+size = Vector3(0.6, 0.04, 0.34)
+material = SubResource("mat1")
+
+[sub_resource type="StandardMaterial3D" id="mat2"]
+albedo_color = Color(0.7255, 0.6627, 0.5412, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="BoxMesh" id="mesh2"]
+size = Vector3(0.56, 0.04, 0.3)
+material = SubResource("mat2")
+
+[sub_resource type="StandardMaterial3D" id="mat3"]
+albedo_color = Color(0.2471, 0.5608, 0.8392, 0.4)
+roughness = 0.1
+metallic = 0.0
+transparency = 1
+
+[sub_resource type="BoxMesh" id="mesh3"]
+size = Vector3(0.56, 0.26, 0.3)
+material = SubResource("mat3")
+
+[sub_resource type="StandardMaterial3D" id="mat4"]
+albedo_color = Color(1.0000, 0.6039, 0.1020, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="BoxMesh" id="mesh4"]
+size = Vector3(0.11, 0.06, 0.04)
+material = SubResource("mat4")
+
+[sub_resource type="StandardMaterial3D" id="mat5"]
+albedo_color = Color(1.0000, 0.4157, 0.0627, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="PrismMesh" id="mesh5"]
+size = Vector3(0.04, 0.04, 0.02)
+material = SubResource("mat5")
+
+[sub_resource type="StandardMaterial3D" id="mat6"]
+albedo_color = Color(0.1059, 0.1059, 0.1216, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="BoxMesh" id="mesh6"]
+size = Vector3(0.01, 0.01, 0.032)
+material = SubResource("mat6")
+
+[sub_resource type="StandardMaterial3D" id="mat7"]
+albedo_color = Color(1.0000, 0.6039, 0.1020, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="BoxMesh" id="mesh7"]
+size = Vector3(0.11, 0.06, 0.04)
+material = SubResource("mat7")
+
+[sub_resource type="StandardMaterial3D" id="mat8"]
+albedo_color = Color(1.0000, 0.4157, 0.0627, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="PrismMesh" id="mesh8"]
+size = Vector3(0.04, 0.04, 0.02)
+material = SubResource("mat8")
+
+[sub_resource type="StandardMaterial3D" id="mat9"]
+albedo_color = Color(0.1059, 0.1059, 0.1216, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="BoxMesh" id="mesh9"]
+size = Vector3(0.01, 0.01, 0.032)
+material = SubResource("mat9")
+
+[sub_resource type="StandardMaterial3D" id="mat10"]
+albedo_color = Color(0.2471, 0.6392, 0.3529, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="BoxMesh" id="mesh10"]
+size = Vector3(0.025, 0.16, 0.025)
+material = SubResource("mat10")
+
+[sub_resource type="StandardMaterial3D" id="mat11"]
+albedo_color = Color(0.2471, 0.6392, 0.3529, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="BoxMesh" id="mesh11"]
+size = Vector3(0.025, 0.12, 0.025)
+material = SubResource("mat11")
+
+[sub_resource type="StandardMaterial3D" id="mat12"]
+albedo_color = Color(0.8745, 0.9529, 1.0000, 0.12)
+roughness = 0.05
+metallic = 0.0
+transparency = 1
+
+[sub_resource type="BoxMesh" id="mesh12"]
+size = Vector3(0.6, 0.32, 0.34)
+material = SubResource("mat12")
+
+[node name="fish_tank" type="Node3D"]
+
+[node name="stand" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh0")
+position = Vector3(0, 0.03, 0)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="lid" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh1")
+position = Vector3(0, 0.42, 0)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="gravel" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh2")
+position = Vector3(0, 0.08, 0)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="Water" type="Node3D" parent="."]
+position = Vector3(0, 0.1, 0)
+
+[node name="water" type="MeshInstance3D" parent="Water"]
+mesh = SubResource("mesh3")
+position = Vector3(0, 0.13, 0)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="fish_0" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh4")
+position = Vector3(-0.12, 0.2, 0.02)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="tail_0" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh5")
+position = Vector3(-0.195, 0.2, 0.02)
+rotation = Vector3(0, 0, 1.57)
+scale = Vector3(1, 1, 1)
+
+[node name="fish_eye_0" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh6")
+position = Vector3(-0.095, 0.20800000000000002, 0.02)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="fish_1" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh7")
+position = Vector3(0.1, 0.27, -0.030000000000000002)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="tail_1" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh8")
+position = Vector3(0.02500000000000001, 0.27, -0.030000000000000002)
+rotation = Vector3(0, 0, 1.57)
+scale = Vector3(1, 1, 1)
+
+[node name="fish_eye_1" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh9")
+position = Vector3(0.125, 0.278, -0.030000000000000002)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="weed_0" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh10")
+position = Vector3(-0.22, 0.18, -0.08)
+rotation = Vector3(0, 0, 0.15)
+scale = Vector3(1, 1, 1)
+
+[node name="weed_1" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh11")
+position = Vector3(0.2, 0.16, -0.08)
+rotation = Vector3(0, 0, -0.15)
+scale = Vector3(1, 1, 1)
+
+[node name="glass" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh12")
+position = Vector3(0, 0.22, 0)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)

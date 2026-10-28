@@ -49,6 +49,7 @@ func _ready() -> void:
 		"goat": _goat(), "whoosh": _whoosh(), "rumble": _rumble(), "crackle": _crackle(), "organ": _organ(),
 		"boing": _boing(), "theremin": _theremin(), "trombone": _trombone(), "ship_bell": _ship_bell(), "wave_crash": _wave_crash(),
 		"squawk": _squawk(), "whistle": _whistle(), "roar": _roar(), "scream": _scream(), "siren": _siren(),
+		"meow": _meow(), "slosh": _slosh(), "chime": _chime(), "giggle": _giggle(),
 	}
 	for sound: String in FILE_SOUNDS:
 		var variants: Array[AudioStream] = []
@@ -241,6 +242,70 @@ func _siren() -> AudioStreamWAV:
 		var tone: float = sin(phase) * 0.8 + sin(phase * 2.0) * 0.2
 		soft = soft * 0.6 + tone * 0.4 # Distance takes the edge off.
 		samples[index] = soft * sin(PI * time / 6.0) * 0.3
+	return _stream(samples, RATE, false)
+
+
+func _meow() -> AudioStreamWAV:
+	# The Mansion's cat: a nasal "mi-aow" that rises, holds and falls, with a little vibrato.
+	var count: int = int(RATE * 0.6)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	var phase: float = 0.0
+	for index: int in range(count):
+		var time: float = float(index) / RATE
+		var shape: float = sin(PI * time / 0.6)
+		phase += TAU * (480.0 + 340.0 * shape - 120.0 * maxf(0.0, time - 0.35) + 12.0 * sin(TAU * 7.0 * time)) / RATE
+		var voice: float = sin(phase) * 0.5 + sin(phase * 2.0) * 0.3 * shape + sin(phase * 3.0) * 0.2
+		samples[index] = voice * minf(1.0, time * 30.0) * minf(1.0, (0.6 - time) * 8.0) * 0.32
+	return _stream(samples, RATE, false)
+
+
+func _slosh() -> AudioStreamWAV:
+	# The fish tank: two slaps of water, low rushing noise that surges and drains.
+	var count: int = int(RATE * 0.7)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	var water: float = 0.0
+	for index: int in range(count):
+		var time: float = float(index) / RATE
+		water = water * 0.92 + noise.randf_range(-1.0, 1.0) * 0.08
+		var surge: float = exp(-pow((time - 0.12) / 0.07, 2.0)) + 0.7 * exp(-pow((time - 0.42) / 0.09, 2.0))
+		samples[index] = water * surge * (1.0 + 0.5 * sin(TAU * 18.0 * time)) * 2.2
+	return _stream(samples, RATE, false)
+
+
+func _chime() -> AudioStreamWAV:
+	# The grandfather clock: two deep bongs, a few inharmonic partials ringing down at their own rates.
+	var count: int = int(RATE * 2.6)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	for index: int in range(count):
+		var time: float = float(index) / RATE
+		var value: float = 0.0
+		for strike: float in [0.0, 0.9]:
+			var since: float = time - strike
+			if since < 0.0:
+				continue
+			for partial: Vector2 in [Vector2(1.0, 1.6), Vector2(2.0, 2.4), Vector2(2.76, 3.2), Vector2(4.1, 4.5), Vector2(5.4, 6.0)]:
+				value += sin(TAU * 196.0 * partial.x * since) * exp(-partial.y * since) / partial.x
+		samples[index] = value * 0.22
+	return _stream(samples, RATE, false)
+
+
+func _giggle() -> AudioStreamWAV:
+	# The cursed doll: "hee hee hee", three thin breathy notes, each a little lower, with a creepy tremble.
+	var count: int = int(RATE * 0.75)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	var phase: float = 0.0
+	for index: int in range(count):
+		var time: float = float(index) / RATE
+		var note: int = mini(int(time / 0.25), 2)
+		var local: float = time - note * 0.25
+		var on: float = sin(PI * clampf(local / 0.16, 0.0, 1.0)) if local < 0.16 else 0.0
+		phase += TAU * (1180.0 - note * 90.0 - local * 400.0 + 25.0 * sin(TAU * 13.0 * time)) / RATE
+		var voice: float = sin(phase) * 0.7 + sin(phase * 2.0) * 0.15 + noise.randf_range(-1.0, 1.0) * 0.15
+		samples[index] = voice * on * 0.22
 	return _stream(samples, RATE, false)
 
 

@@ -124,6 +124,8 @@ func _begin_round(restarting: bool) -> void:
 		host.arena.alarm_tripped.connect(_on_alarm_tripped)
 	if host.arena.has_signal("caught_in_beam") and not host.arena.caught_in_beam.is_connected(_on_caught_in_beam):
 		host.arena.caught_in_beam.connect(_on_caught_in_beam)
+	if host.arena.has_signal("clock_chimed") and not host.arena.clock_chimed.is_connected(_on_clock_chimed):
+		host.arena.clock_chimed.connect(_on_clock_chimed)
 	goals.start(host.arena, get_tree().get_nodes_in_group("loot"), round_seed)
 	host.arena.truck.delivered.connect(_on_delivered)
 	host.arena.truck.delivery_notice.connect(_delivery_notice)
@@ -179,6 +181,13 @@ func _on_caught_in_beam(slot: int) -> void:
 	add_stat(slot, "caught", 1)
 	if phase == "live":
 		goals.on_caught()
+
+
+func _on_clock_chimed(slot: int) -> void:
+	if slot >= 0:
+		add_stat(slot, "chimes", 1)
+	if phase == "live":
+		goals.on_chimed()
 
 
 func _on_delivered(value: int, carrier_slots: Array[int]) -> void:

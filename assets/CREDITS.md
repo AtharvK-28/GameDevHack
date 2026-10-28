@@ -168,6 +168,10 @@ Source: [poly.pizza](https://poly.pizza), each page marked CC0 1.0.
 - Kay Lousberg: plaque.  
 - hat_my_guy: UFO.  
 
+### The Mansion's personality loot
+The cat in a box, the cat, the fish tank and the cursed doll are built from Godot's primitive meshes
+(`props/catalog/built/mansion_*.tscn`); the meow, slosh, clock chime and giggle are synthesized in `autoload/Sfx.gd`.
+
 ### Crouch jumping in your walls (the Museum's round music)
 Author: Fupi
 Source: [OpenGameArt: Crouch jumping in your walls](https://opengameart.org/node/159864)

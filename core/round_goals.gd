@@ -36,6 +36,8 @@ func start(round_arena: Node3D, loot: Array[Node], round_seed: int) -> void:
 		if item is MuseumGoat:
 			goat_id = item.get_instance_id()
 			choices.append({"id": "goat", "text": "Rescue the goat"})
+		if item is GrandfatherClock:
+			choices.append({"id": "quiet", "text": "Don't wake Seth-ji (no clock chimes)"})
 	if is_instance_valid(arena.get("generator")):
 		choices.append({"id": "task", "text": Balance.GOAL_TASK_TEXTS.get(arena.generator.TASK_NAME, "Finish the task")})
 	var picker := RandomNumberGenerator.new()
@@ -68,6 +70,11 @@ func on_caught() -> void:
 		_settle(goal, false)
 
 
+func on_chimed() -> void:
+	if goal.get("id") == "quiet":
+		_settle(goal, false)
+
+
 func on_delivered(item_id: int, value: int, initial_value: int) -> void:
 	if goal.get("id") == "goat" and item_id == goat_id:
 		_settle(goal, true)
@@ -88,7 +95,7 @@ func finish() -> void:
 	# The round is over: goals nobody broke are met, and goals nobody reached are missed.
 	update()
 	if goal.get("state") == "open":
-		_settle(goal, goal.id in ["no_shatter", "dry", "unseen"]) # Goals nobody broke are met.
+		_settle(goal, goal.id in ["no_shatter", "dry", "unseen", "quiet"]) # Goals nobody broke are met.
 	if ghost_goal.get("state") == "open":
 		_settle(ghost_goal, false)
 

@@ -15,6 +15,8 @@ const ARENA_NAME: String = "Old Mansion"
 const SIGNATURE_HAUNTING := preload("res://hauntings/HouseShake.gd")
 const GHOST_AVATAR := preload("res://actors/ghost_model.gd")
 
+signal clock_chimed(slot: int) # The grandfather clock chimed; slot is the mover who knocked it, or -1.
+
 # --- Round settings, set by Main before the arena enters the tree ---
 var demo_mode: bool = false
 var player_count: int = 2
@@ -179,11 +181,21 @@ func _spawn_loot() -> void:
 		var item: CatalogItem = placement.item
 		var spot: Dictionary = placement.spot
 		var loot: RigidBody3D = LOOT_SCENE.instantiate()
+		if item.loot_script != null:
+			loot.set_script(item.loot_script) # Before catalog_item: swapping the script resets its properties.
 		loot.catalog_item = item
 		loot.position = ArenaBuilder.point_of(spot, item.footprint.y / 2.0 + Balance.LOOT_SPAWN_CLEARANCE)
 		# "lean" tips the top back toward the wall behind, so a painting rests against it.
 		loot.rotation = Vector3(-deg_to_rad(spot.get("lean", 0.0)), deg_to_rad(spot.get("yaw", 0.0)), 0.0)
 		add_child(loot)
+
+
+func clock_chime(energy: float, slot: int) -> void:
+	# The grandfather clock chimed (decision 140): Seth-ji stirs, a little stronger, and the round counts who did it.
+	for ghost: Node in get_tree().get_nodes_in_group("ghosts"):
+		if ghost.get("arena") == self:
+			ghost.energy = minf(Balance.ENERGY_MAX, ghost.energy + energy)
+	clock_chimed.emit(slot)
 
 
 func _spawn(scene: PackedScene, location: Vector3) -> void:

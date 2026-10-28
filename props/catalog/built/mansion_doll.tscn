@@ -1,0 +1,295 @@
+[gd_scene load_steps=37 format=3]
+
+[sub_resource type="StandardMaterial3D" id="mat0"]
+albedo_color = Color(0.4784, 0.1843, 0.2902, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="CylinderMesh" id="mesh0"]
+top_radius = 0.05
+bottom_radius = 0.13
+height = 0.2
+radial_segments = 10
+rings = 1
+material = SubResource("mat0")
+
+[sub_resource type="StandardMaterial3D" id="mat1"]
+albedo_color = Color(0.9373, 0.9020, 0.8471, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="CylinderMesh" id="mesh1"]
+top_radius = 0.135
+bottom_radius = 0.135
+height = 0.02
+radial_segments = 10
+rings = 1
+material = SubResource("mat1")
+
+[sub_resource type="StandardMaterial3D" id="mat2"]
+albedo_color = Color(0.3059, 0.1098, 0.1882, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="BoxMesh" id="mesh2"]
+size = Vector3(0.1, 0.1, 0.07)
+material = SubResource("mat2")
+
+[sub_resource type="StandardMaterial3D" id="mat3"]
+albedo_color = Color(0.9373, 0.9020, 0.8471, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="BoxMesh" id="mesh3"]
+size = Vector3(0.11, 0.025, 0.08)
+material = SubResource("mat3")
+
+[sub_resource type="StandardMaterial3D" id="mat4"]
+albedo_color = Color(0.9529, 0.9020, 0.8627, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="BoxMesh" id="mesh4"]
+size = Vector3(0.03, 0.11, 0.03)
+material = SubResource("mat4")
+
+[sub_resource type="StandardMaterial3D" id="mat5"]
+albedo_color = Color(0.1216, 0.1020, 0.1020, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="BoxMesh" id="mesh5"]
+size = Vector3(0.035, 0.025, 0.05)
+material = SubResource("mat5")
+
+[sub_resource type="StandardMaterial3D" id="mat6"]
+albedo_color = Color(0.9529, 0.9020, 0.8627, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="BoxMesh" id="mesh6"]
+size = Vector3(0.03, 0.11, 0.03)
+material = SubResource("mat6")
+
+[sub_resource type="StandardMaterial3D" id="mat7"]
+albedo_color = Color(0.1216, 0.1020, 0.1020, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="BoxMesh" id="mesh7"]
+size = Vector3(0.035, 0.025, 0.05)
+material = SubResource("mat7")
+
+[sub_resource type="StandardMaterial3D" id="mat8"]
+albedo_color = Color(0.9529, 0.9020, 0.8627, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="SphereMesh" id="mesh8"]
+radius = 0.07
+height = 0.14
+radial_segments = 12
+rings = 6
+material = SubResource("mat8")
+
+[sub_resource type="StandardMaterial3D" id="mat9"]
+albedo_color = Color(0.2275, 0.1412, 0.0863, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="SphereMesh" id="mesh9"]
+radius = 0.074
+height = 0.148
+radial_segments = 12
+rings = 6
+material = SubResource("mat9")
+
+[sub_resource type="StandardMaterial3D" id="mat10"]
+albedo_color = Color(0.2275, 0.1412, 0.0863, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="CylinderMesh" id="mesh10"]
+top_radius = 0.018
+bottom_radius = 0.022
+height = 0.1
+radial_segments = 10
+rings = 1
+material = SubResource("mat10")
+
+[sub_resource type="StandardMaterial3D" id="mat11"]
+albedo_color = Color(0.1059, 0.1059, 0.1216, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="BoxMesh" id="mesh11"]
+size = Vector3(0.022, 0.022, 0.01)
+material = SubResource("mat11")
+
+[sub_resource type="StandardMaterial3D" id="mat12"]
+albedo_color = Color(0.9098, 0.6510, 0.6275, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="BoxMesh" id="mesh12"]
+size = Vector3(0.02, 0.012, 0.008)
+material = SubResource("mat12")
+
+[sub_resource type="StandardMaterial3D" id="mat13"]
+albedo_color = Color(0.2275, 0.1412, 0.0863, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="CylinderMesh" id="mesh13"]
+top_radius = 0.018
+bottom_radius = 0.022
+height = 0.1
+radial_segments = 10
+rings = 1
+material = SubResource("mat13")
+
+[sub_resource type="StandardMaterial3D" id="mat14"]
+albedo_color = Color(0.1059, 0.1059, 0.1216, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="BoxMesh" id="mesh14"]
+size = Vector3(0.022, 0.022, 0.01)
+material = SubResource("mat14")
+
+[sub_resource type="StandardMaterial3D" id="mat15"]
+albedo_color = Color(0.9098, 0.6510, 0.6275, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="BoxMesh" id="mesh15"]
+size = Vector3(0.02, 0.012, 0.008)
+material = SubResource("mat15")
+
+[sub_resource type="StandardMaterial3D" id="mat16"]
+albedo_color = Color(0.6902, 0.1882, 0.2275, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="BoxMesh" id="mesh16"]
+size = Vector3(0.03, 0.008, 0.008)
+material = SubResource("mat16")
+
+[sub_resource type="StandardMaterial3D" id="mat17"]
+albedo_color = Color(0.4784, 0.1843, 0.2902, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="BoxMesh" id="mesh17"]
+size = Vector3(0.06, 0.03, 0.03)
+material = SubResource("mat17")
+
+[node name="doll" type="Node3D"]
+
+[node name="skirt" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh0")
+position = Vector3(0, 0.12, 0)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="hem" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh1")
+position = Vector3(0, 0.03, 0)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="bodice" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh2")
+position = Vector3(0, 0.26, 0)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="collar" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh3")
+position = Vector3(0, 0.31, 0)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="arm_-1" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh4")
+position = Vector3(-0.07, 0.24, 0.01)
+rotation = Vector3(0, 0, -0.2)
+scale = Vector3(1, 1, 1)
+
+[node name="shoe_-1" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh5")
+position = Vector3(-0.035, 0.012, 0.03)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="arm_1" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh6")
+position = Vector3(0.07, 0.24, 0.01)
+rotation = Vector3(0, 0, 0.2)
+scale = Vector3(1, 1, 1)
+
+[node name="shoe_1" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh7")
+position = Vector3(0.035, 0.012, 0.03)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="head" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh8")
+position = Vector3(0, 0.39, 0)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="hair" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh9")
+position = Vector3(0, 0.405, -0.015)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1.0, 0.9, 1.0)
+
+[node name="ringlet_-1" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh10")
+position = Vector3(-0.065, 0.35, -0.01)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="eye_-1" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh11")
+position = Vector3(-0.025, 0.4, 0.066)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="cheek_-1" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh12")
+position = Vector3(-0.04, 0.375, 0.062)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="ringlet_1" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh13")
+position = Vector3(0.065, 0.35, -0.01)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="eye_1" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh14")
+position = Vector3(0.025, 0.4, 0.066)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="cheek_1" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh15")
+position = Vector3(0.04, 0.375, 0.062)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="mouth" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh16")
+position = Vector3(0, 0.36, 0.068)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="bow" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh17")
+position = Vector3(0, 0.465, -0.02)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)

@@ -48,7 +48,7 @@ The core design covers every compulsory requirement; the three-arena submission 
 
 ## Current demo scope — approved Phase 5
 
-The current demo uses the supplied Old Mansion layout and mover character assets; the greybox remains the regression harness. Build a complete match before art or extra abilities. The arena/ability catalog below includes later work; only possession/SHOVE, House Shake and Curse are enabled in the demo. Existing door, chandelier, hopper, rug and slime code is retained for regression tests. Awards, expanded loot, cinematic zoom and slow motion are deferred. Room progress is included in the approved UI pass.
+The current demo uses the supplied Old Mansion layout and mover character assets; the greybox remains the regression harness. Build a complete match before art or extra abilities. The arena/ability catalog below includes later work; possession of every furniture kind (decision 140), each arena's signature haunting and Curse are enabled in matches. Ecto Slime is retained for regression tests only. Awards, expanded loot, cinematic zoom and slow motion are deferred. Room progress is included in the approved UI pass.
 
 - **Curse:** the free wisp targets nearby unbanked loot, including held loot, using the same 1.2 m aim-assisted footprint reach as POSSESS and a visible target highlight. C / haunt3 costs 30 energy, cooldown 15 s. The object glows for 6 s and carrying/dragging speed is multiplied by 0.7, including both holders. Dropping or transferring does not remove the curse; the mover is free of the slowdown when no longer carrying it. No stacking, no spring or lift-height changes.
 - **Haunting limits:** 8 s opening protection from live start; 4 s shared lock after a cast; individual cooldowns start at cast. House Shake works while possessing; Curse is wisp-only. Phone UI explains all refusals and displays remaining seconds, including exorcism, cooldown, opening protection, shared lock, insufficient energy and missing targets. A mover holding cursed loot sees its remaining duration.
@@ -209,7 +209,7 @@ Three single-floor, roofless houses, each with its own layout, signature hauntin
 | --- | --- | --- | --- | --- | --- |
 | Old Mansion | Grand piano | 1 | 20,000 | Two-person | 2 |
 | Old Mansion | Bookcase | 1 | 4,000 | Heavy | 1 |
-| Old Mansion | Grandfather clock | 1 | 8,000 | Heavy | 2 |
+| Old Mansion | Grandfather clock (chimes when knocked, decision 140) | 1 | 8,000 | Heavy | 2 |
 | Old Mansion | Oil painting | 2 | 6,000 | Light | 1 |
 | Old Mansion | Old TV | 2 | 5,000 | Medium | 3 |
 | Old Mansion | Antique vase | 4 | 3,000 | Light | 3 |
@@ -219,6 +219,9 @@ Three single-floor, roofless houses, each with its own layout, signature hauntin
 | Old Mansion | Coat stand | 1 | 1,500 | Medium | 2 |
 | Old Mansion | Table lamp | 1 | 1,500 | Light | 3 |
 | Old Mansion | Teddy bear | 1 | 1,000 | Light | 1 |
+| Old Mansion | Cat in a box (every round; the cat leaps out if you run with it) | 1 | 4,000 | Medium | 1 |
+| Old Mansion | Fish tank (spills value if you run with it) | 1 | 5,000 | Medium | 3 |
+| Old Mansion | Cursed doll (every round; walks back home if put down) | 1 | 3,000 | Light | 2 |
 | Ghost Ship | Treasure chest | 1 | 18,000 | Two-person | 1 |
 | Ghost Ship | Ship-in-a-bottle | 3 | 5,000 | Light | 3 |
 | Ghost Ship | Brass telescope | 2 | 4,000 | Light | 2 |
@@ -255,7 +258,7 @@ Each round has a clear team result: the movers either hit the quota or they don'
 | Mover | 1 point per ₹100 you bank; two-person items split evenly. +100 each if the quota is met. +25 per star and +50 for the bonus goal. |
 | Ghost | 1 point per ₹100 destroyed (damage, shattering, overboard). +150 if the quota fails. +50 for shattering the dearest item. |
 
-**Medals and bonus goals (decision 123).** Movers earn 1 star at the target, 2 at target +15% and 3 at target +30% (never above 100%), none on a loss. Each round also sets one bonus goal from the round seed, among those the arena allows: Nothing shatters; Deliver the two-person item with 90% of its value; Nobody goes overboard (Ship); the arena task (Light all the lanterns / Power the generator). It pays even on a loss. The ghost's counter-goal is to shatter the round's dearest item. Goals show on the role reveal, the HUD truck card and the round end (with a STARS tile); phones show them at the reveal and the result.
+**Medals and bonus goals (decision 123).** Movers earn 1 star at the target, 2 at target +15% and 3 at target +30% (never above 100%), none on a loss. Each round also sets one bonus goal from the round seed, among those the arena allows: Nothing shatters; Deliver the two-person item with 90% of its value; Nobody goes overboard (Ship); Nobody gets caught in the beam and Rescue the goat (Museum); Don't wake Seth-ji (no clock chimes) when the grandfather clock is in the round (Mansion, decision 140); the arena task (Light all the lanterns / Power the generator / Swap all the fakes). It pays even on a loss. The ghost's counter-goal is to shatter the round's dearest item. Goals show on the role reveal, the HUD truck card and the round end (with a STARS tile); phones show them at the reveal and the result.
 
 **Rounds per match.** Every player is the ghost the same number of times, so totals stay fair: 2 players play 4 rounds, 3 players play 3, and 4 players play 4. The demo repeats Mansion; later arenas cycle Mansion → Ship → Museum.
 
@@ -282,7 +285,7 @@ Each round has a clear team result: the movers either hit the quota or they don'
 
 **Big-smash punch-in (decision 118).** A hit costing ₹5,000+, or a ₹10,000+ item shattering, slows the match to 30% for 0.6 s while the camera eases in on it (SMASH_* in Balance). At most once every 4 s.
 
-**Awards (decision 116).** After every round, and for the whole match on the final standings, each player can earn one funny award: MAN OVERBOARD, BUTTERFINGERS, FLOOR INSPECTOR, MENACE or PACK MULE (Balance.AWARDS, checked in that order, each to the leader without one). Phones show their own.
+**Awards (decision 116).** After every round, and for the whole match on the final standings, each player can earn one funny award: MAN OVERBOARD, CAUGHT RED-HANDED, HUMAN ALARM CLOCK, GRANDFATHER'S ALARM (rang the Mansion's clock most, decision 140), BUTTERFINGERS, FLOOR INSPECTOR, MENACE or PACK MULE (Balance.AWARDS, checked in that order, each to the leader without one). Phones show their own.
 
 ## Camera, visuals and audio
 
