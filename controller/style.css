@@ -204,3 +204,7 @@ body.hexed #mover-buttons .brace { order: 3; }
 .ghost-buttons .action.hex { background: #d9c2ff; }
 .ghost-buttons .action.hex.unavailable { background: #c9d3c4; }
 @media (prefers-reduced-motion: reduce) { body.hex-warn .hex-overlay { animation: none; } }
+
+/* Throw your teammate (decision 143): the lifted mover's banner. */
+.lift-banner { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); z-index: 60; pointer-events: none; padding: 6px 14px; border-radius: 999px; background: #ffd166; color: var(--ink); font-weight: 900; font-size: 14px; border: 2px solid var(--ink); white-space: nowrap; }
+.lift-banner[hidden] { display: none; }

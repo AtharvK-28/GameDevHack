@@ -225,6 +225,18 @@ func run() -> int:
 	lasers.cycle_time = SETTINGS.LASER_PERIOD * (SETTINGS.LASER_ON_SHARE + 0.05) # Gate 0 just gone dark.
 	crossed = await _walk(0, [Vector2(SETTINGS.LASER_GATES_X[0] + 0.9, 17.5)])
 	_check(crossed and trips.size() == before, "Crossing while the gate is dark sets nothing off")
+	# Thrown over a lit gate, feet above the top beam (decision 143): nothing; standing in it: the alarm.
+	await _frames(int(SETTINGS.LASER_TRIP_GAP * 60) + 5)
+	before = trips.size()
+	lasers.cycle_time = 0.1
+	var flier: CharacterBody3D = world.movers[0]
+	flier.global_position = Vector3(SETTINGS.LASER_GATES_X[0], SETTINGS.LASER_HEIGHTS[-1] + SETTINGS.CAPSULE_HEIGHT / 2.0 + 0.3, 17.5)
+	flier.velocity = Vector3.ZERO
+	await _frames(2)
+	_check(trips.size() == before, "A mover flying over a lit gate, feet above the top beam, does not trip it")
+	_place(0, Vector2(SETTINGS.LASER_GATES_X[0], 17.5))
+	await _frames(3)
+	_check(trips.size() == before + 1, "Standing in the same lit gate does")
 	world.set_ghost_slot(-1)
 	await _clear_props()
 

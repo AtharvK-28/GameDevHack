@@ -91,6 +91,8 @@ func _physics_process(delta: float) -> void:
 				continue
 			if mover.global_position.z < Balance.LASER_HALL_Z.x or mover.global_position.z > Balance.LASER_HALL_Z.y:
 				continue
+			if mover.global_position.y - Balance.CAPSULE_HEIGHT / 2.0 > Balance.LASER_HEIGHTS[-1] + Balance.LASER_RADIUS:
+				continue # Thrown or lifted over the top beam (decision 143).
 			var key: String = "%d:%d" % [mover.slot, index]
 			if cooldowns.get(key, 0.0) > 0.0:
 				continue

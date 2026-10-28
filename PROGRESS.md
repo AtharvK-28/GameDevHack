@@ -135,6 +135,9 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
   swaps GRAB and THROW for 4 s; letting go of the stick breaks it. Phone rendered hexed, warned and as the ghost (five
   buttons). New suite `core/crazy_check.gd`, 11 assertions; `ui_check` 206, `ghost_check` 128, `match_check` 66 and
   `plumbing_check` 73 still pass.
+- [x] Throw your teammate (decision 143, 2026-10-28): lift an empty-handed teammate with GRAB, THROW them about 5.5 m
+  (over a lit laser gate, or overboard), let go to set them down, BRACE to wriggle free. Rendered lifted and mid-air.
+  `core/crazy_check.gd` 20 assertions; `core/museum_check.gd` 88; all 21 suites pass, 1,429 assertions.
 - [ ] Gust of Wind and Lights Out
 - [x] Mover and ghost character models integrated (brought forward; visual acceptance pending)
 - [x] Party camera and Mansion wall fade implemented (human acceptance pending)

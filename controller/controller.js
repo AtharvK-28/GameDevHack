@@ -196,6 +196,10 @@ function handleMessage(message) {
     case "buzz":
       if (navigator.vibrate && Number.isFinite(message.ms)) navigator.vibrate(message.ms);
       break;
+    case "lifted":
+      // A teammate holds this mover overhead (decision 143).
+      elements["lift-banner"].hidden = !(Boolean(message.on) && activeRole === "mover");
+      break;
     case "hex": {
       // The ghost's HEX (decision 142): the screen cracks and flickers, then GRAB and THROW swap places until it ends.
       const state = activeRole === "mover" ? String(message.state) : "off";
@@ -227,6 +231,7 @@ const HAUNT_LABELS = { "Old Mansion": "SHAKE", "Ghost Ship": "WIND", "Museum of 
 function showRole(message) {
   releaseInputs();
   document.body.classList.remove("hex-warn", "hexed");
+  elements["lift-banner"].hidden = true;
   setGhostNear(0);
   elements.shouts.hidden = message.role === "ghost";
   elements["control-note"].hidden = message.role !== "ghost";

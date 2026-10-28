@@ -24,6 +24,11 @@ var boost_left: float = 0.0 # Seconds of the audience's speed boost left.
 var hex_state: String = "" # The ghost's HEX (decision 142): "warn" (the phone cracks), "on" (stick mirrored), or "".
 var hex_left: float = 0.0
 var hex_still: float = 0.0 # Seconds the hexed mover has let go of the stick.
+var lifting: CharacterBody3D # A teammate this mover holds overhead (decision 143).
+var lifted_by: CharacterBody3D # The teammate holding this mover overhead.
+var thrower: CharacterBody3D # Who threw this mover, until they untangle.
+var flying: bool = false # Thrown, until landing.
+var flight_time: float = 0.0
 var hold_point: Marker3D
 var model: MoverModel
 var shove := Vector3.ZERO # Fading push from bumping into another mover.
@@ -75,6 +80,15 @@ func _physics_process(delta: float) -> void:
 		var screen: Vector2 = InputRouter.world_to_stick(stick)
 		stick = InputRouter.stick_to_world(Vector2(-screen.x, screen.y)) # Mirrored left to right.
 	bracing = player_input.buttons.get("brace", false)
+	if is_instance_valid(lifted_by):
+		_ride(player_input)
+		return
+	if flying:
+		_fly(delta)
+		return
+	if is_instance_valid(thrower):
+		flight_time += delta
+		_untangle()
 	if bracing or is_tumbling():
 		stick = Vector2.ZERO
 	if is_tumbling():
@@ -104,7 +118,11 @@ func _physics_process(delta: float) -> void:
 		if fall_speed > Balance.FX_LAND_SPEED:
 			Fx.burst(_feet(), Fx.Kind.DUST, get_parent())
 	_check_bumps(before_slide, delta)
+	_finish_frame(delta)
 
+
+func _finish_frame(delta: float) -> void:
+	# Every frame, whatever the mover is doing: stay in bounds, keep the name tag current and animate.
 	position.x = clampf(position.x, bounds.position.x + Balance.CAPSULE_RADIUS, bounds.end.x - Balance.CAPSULE_RADIUS)
 	position.z = clampf(position.z, bounds.position.y + Balance.CAPSULE_RADIUS, bounds.end.y - Balance.CAPSULE_RADIUS)
 	var player := Net.player_for_slot(slot)
@@ -116,6 +134,8 @@ func _physics_process(delta: float) -> void:
 
 func movement_speed() -> float:
 	var boost: float = Balance.VOTE_SPEED_BOOST if boost_left > 0.0 else 1.0
+	if is_instance_valid(lifting):
+		return Balance.MOVER_SPEED * Balance.TEAMMATE_CARRY_SPEED * boost
 	if is_instance_valid(held_item):
 		return Balance.MOVER_SPEED * Balance.CARRY_SPEEDS[held_item.weight_class] * held_item.carry_speed_ratio() * boost
 	return Balance.MOVER_SPEED * boost
@@ -175,8 +195,9 @@ func is_moving() -> bool:
 
 # --- The ghost's slot ---
 func set_in_play(active: bool) -> void:
-	end_hex()
 	# While this player is the ghost, the mover leaves the board: no collisions, input, hauntings or tumbles.
+	end_hex()
+	_clear_lift()
 	if not active:
 		_let_go()
 		tumble_time_left = 0.0
@@ -196,8 +217,9 @@ func set_in_play(active: bool) -> void:
 
 
 func reset_for_round(location: Vector3, playing: bool) -> void:
-	end_hex()
 	# Hands empty, standing up, facing the house, at a fresh spot; out of play if this player is not a mover.
+	end_hex()
+	_clear_lift()
 	set_in_play(false)
 	position = location
 	facing = Vector3.FORWARD
@@ -232,6 +254,10 @@ func _handle_carry_input(input: InputRouter.PlayerInput) -> void:
 			Sfx.varied("whoosh", Balance.SFX_WHOOSH_DB)
 			grab_released = false # Holding GRAB must not catch the item just thrown.
 		return
+	if is_instance_valid(lifting):
+		if input.pressed.get("throw", false):
+			_throw_teammate()
+		return
 	if not is_instance_valid(held_item) and grab_released:
 		var candidate := _nearest_carryable()
 		if candidate != null and candidate.try_grab(self, hold_point, slot):
@@ -239,9 +265,15 @@ func _handle_carry_input(input: InputRouter.PlayerInput) -> void:
 			model.play_grab()
 			Sfx.varied("grab", Balance.SFX_GRAB_DB)
 			model.squish(Balance.SQUASH_GRAB)
+		elif candidate == null and input.pressed.get("grab", false):
+			var teammate := _nearest_teammate() # Only a fresh press with no loot in reach lifts a teammate.
+			if teammate != null:
+				_lift(teammate)
 
 
 func _let_go() -> void:
+	if is_instance_valid(lifting):
+		drop_teammate()
 	if is_instance_valid(held_item):
 		var item: Carryable = held_item
 		item.release(Vector3.ZERO, self)
@@ -284,16 +316,16 @@ func _feet() -> Vector3:
 	return global_position + Vector3.DOWN * Balance.CAPSULE_HEIGHT / 2.0
 
 
-func tumble(_push: Vector3 = Vector3.ZERO) -> void:
-	# Drop whatever we hold and lie still for TUMBLE_DURATION; the model falls and gets up in that time.
+func tumble(_push: Vector3 = Vector3.ZERO, duration: float = Balance.TUMBLE_DURATION) -> void:
+	# Drop whatever we hold and lie still for the duration; the model falls and gets up in that time.
 	if is_tumbling():
 		return
 	_let_go()
 	grab_released = false # Getting up must not instantly re-grab.
-	tumble_time_left = Balance.TUMBLE_DURATION
+	tumble_time_left = duration
 	velocity = Vector3.ZERO
 	shove = Vector3.ZERO
-	model.play_tumble(Balance.TUMBLE_DURATION)
+	model.play_tumble(duration)
 	Fx.burst(_feet(), Fx.Kind.DUST, get_parent(), 1.8)
 	Sfx.varied("boing", Balance.SFX_BOING_DB)
 	tumbled.emit(slot)
@@ -363,6 +395,139 @@ func _tell_hex() -> void:
 	var player := Net.player_for_slot(slot)
 	if not player.is_empty():
 		Net.send_to_player(player, {"type": "hex", "state": hex_state if hex_state != "" else "off"})
+
+
+# --- Throw your teammate (decision 143) ---
+func _nearest_teammate() -> CharacterBody3D:
+	# An empty-handed teammate standing in front of us, in grabbing reach.
+	var nearest: CharacterBody3D
+	var nearest_distance: float = Balance.GRAB_RANGE
+	for other: Node in get_tree().get_nodes_in_group("movers"):
+		if other == self or not other.in_play or is_instance_valid(other.held_item) or other.is_tumbling() or other.flying:
+			continue
+		if is_instance_valid(other.lifted_by) or is_instance_valid(other.lifting):
+			continue
+		var offset: Vector3 = other.global_position - global_position
+		var horizontal := Vector3(offset.x, 0.0, offset.z)
+		if horizontal.length() > nearest_distance or horizontal.normalized().dot(facing) < cos(deg_to_rad(Balance.GRAB_HALF_ANGLE)):
+			continue
+		var query := PhysicsRayQueryParameters3D.create(global_position, other.global_position, Balance.WORLD_LAYER)
+		if not get_world_3d().direct_space_state.intersect_ray(query).is_empty():
+			continue
+		nearest = other
+		nearest_distance = horizontal.length()
+	return nearest
+
+
+func _lift(teammate: CharacterBody3D) -> void:
+	lifting = teammate
+	teammate.lifted_by = self
+	teammate.velocity = Vector3.ZERO
+	add_collision_exception_with(teammate)
+	teammate.add_collision_exception_with(self)
+	grab_released = false
+	model.play_grab()
+	model.squish(Balance.SQUASH_GRAB)
+	Sfx.varied("grab", Balance.SFX_GRAB_DB)
+	teammate._letter("UP YOU GO!", Balance.TEAMMATE_COLOUR, Balance.COMIC_INK)
+	teammate._tell_lifted(true)
+	print("Player %d lifted Player %d" % [slot + 1, teammate.slot + 1])
+
+
+func drop_teammate() -> void:
+	# Puts the lifted teammate down on their feet just in front, short of any wall.
+	var teammate: CharacterBody3D = lifting
+	if not is_instance_valid(teammate):
+		return
+	lifting = null
+	teammate.lifted_by = null
+	var spot: Vector3 = global_position + facing * Balance.TEAMMATE_SET_DOWN
+	var query := PhysicsRayQueryParameters3D.create(global_position, spot + facing * Balance.CAPSULE_RADIUS, Balance.WORLD_LAYER)
+	var hit: Dictionary = get_world_3d().direct_space_state.intersect_ray(query)
+	if not hit.is_empty():
+		spot = global_position # No room in front: they slide down behind the carrier's back instead.
+		spot -= facing * Balance.TEAMMATE_SET_DOWN
+	teammate.global_position = spot
+	teammate.model.rotation.x = 0.0
+	teammate.thrower = self # Untangles a moment later, like a throw.
+	teammate.flight_time = 0.0
+	teammate._tell_lifted(false)
+
+
+func _throw_teammate() -> void:
+	var teammate: CharacterBody3D = lifting
+	lifting = null
+	teammate.lifted_by = null
+	teammate.launch(facing * Balance.TEAMMATE_THROW_SPEED + Vector3.UP * Balance.TEAMMATE_THROW_LIFT, self)
+	model.play_throw()
+	model.squish(Balance.SQUASH_THROW)
+	Sfx.varied("whoosh", Balance.SFX_WHOOSH_DB)
+	grab_released = false
+	print("Player %d threw Player %d" % [slot + 1, teammate.slot + 1])
+
+
+func launch(launch_velocity: Vector3, by: CharacterBody3D) -> void:
+	flying = true
+	flight_time = 0.0
+	thrower = by
+	velocity = launch_velocity
+	_tell_lifted(false)
+	_letter("WHEEE!", Balance.TEAMMATE_COLOUR, Balance.COMIC_INK)
+
+
+func _ride(input: InputRouter.PlayerInput) -> void:
+	# Held overhead: ride on the carrier's hands, lying back; BRACE wriggles free.
+	# The model tips back about its feet, so the rider sits a little forward to lie centred across the carrier's hands.
+	global_position = lifted_by.global_position + Vector3.UP * Balance.TEAMMATE_LIFT_HEIGHT + lifted_by.facing * Balance.TEAMMATE_RIDE_FORWARD
+	velocity = Vector3.ZERO
+	stick = Vector2.ZERO # Kicking in the air is not moving: hauntings that catch movers leave a lifted one alone.
+	facing = lifted_by.facing
+	model.rotation.x = -deg_to_rad(Balance.TEAMMATE_TILT)
+	if input.pressed.get("brace", false):
+		_letter("WRIGGLE!", Balance.TEAMMATE_COLOUR, Balance.COMIC_INK)
+		lifted_by.drop_teammate()
+	_finish_frame(get_physics_process_delta_time())
+
+
+func _fly(delta: float) -> void:
+	# Thrown: a ballistic arc, tipped back, until the feet find a floor; then a short tumble.
+	flight_time += delta
+	stick = Vector2.ZERO
+	model.rotation.x = -deg_to_rad(Balance.TEAMMATE_TILT) * clampf(1.0 - flight_time * 2.0, 0.3, 1.0)
+	velocity.y -= Balance.GRAVITY * delta
+	move_and_slide()
+	_untangle()
+	if flight_time > 0.1 and is_on_floor():
+		flying = false
+		model.rotation.x = 0.0
+		model.squish(Balance.SQUASH_LAND)
+		Fx.burst(_feet(), Fx.Kind.DUST, get_parent(), 1.5)
+		tumble(Vector3.ZERO, Balance.TEAMMATE_LAND_TUMBLE)
+	_finish_frame(delta)
+
+
+func _untangle() -> void:
+	# Thrown or put down, the two collide again once they are apart.
+	if is_instance_valid(thrower) and flight_time >= Balance.TEAMMATE_UNTANGLE:
+		remove_collision_exception_with(thrower)
+		thrower.remove_collision_exception_with(self)
+		thrower = null
+
+
+func _clear_lift() -> void:
+	if is_instance_valid(lifting):
+		drop_teammate()
+	if is_instance_valid(lifted_by):
+		lifted_by.drop_teammate()
+	flying = false
+	if model != null:
+		model.rotation.x = 0.0
+
+
+func _tell_lifted(on: bool) -> void:
+	var player := Net.player_for_slot(slot)
+	if not player.is_empty():
+		Net.send_to_player(player, {"type": "lifted", "on": on})
 
 
 # --- Shouts ---
@@ -467,6 +632,8 @@ func _update_model(delta: float) -> void:
 
 
 func _carry_pose() -> MoverModel.Carry:
+	if is_instance_valid(lifting):
+		return MoverModel.Carry.HEAVY
 	if not is_instance_valid(held_item):
 		return MoverModel.Carry.NONE
 	if held_item.weight_class == Balance.TWO_PERSON:

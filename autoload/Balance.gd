@@ -1315,6 +1315,17 @@ const HEX_BREAK_SECONDS: float = 0.5 # unless the mover lets go of the stick thi
 const HEX_STILL_STICK: float = 0.1 # Stick below this counts as let go.
 const HEX_COLOUR := Color("b06cff")
 const HEX_BUZZ_MS: int = 250
+# --- Throw your teammate (decision 143) ---
+const TEAMMATE_LIFT_HEIGHT: float = 1.45 # Metres the lifted mover's centre rides above the carrier's.
+const TEAMMATE_TILT: float = 75.0 # Degrees the lifted mover tips back, lying across the carrier's hands.
+const TEAMMATE_RIDE_FORWARD: float = 0.75 # Metres forward of the carrier, so the tipped-back body lies centred.
+const TEAMMATE_CARRY_SPEED: float = 0.8 # Share of walking speed while lifting a teammate (a medium item's).
+const TEAMMATE_THROW_SPEED: float = 6.0 # m/s forward,
+const TEAMMATE_THROW_LIFT: float = 3.0 # and up.
+const TEAMMATE_SET_DOWN: float = 0.9 # Metres in front of the carrier where a teammate is put down.
+const TEAMMATE_LAND_TUMBLE: float = 0.8 # Seconds a thrown mover lies down after landing.
+const TEAMMATE_UNTANGLE: float = 0.25 # Seconds after the throw before the two collide again.
+const TEAMMATE_COLOUR := Color("ffd166")
 const SKELETON_GAP: float = 1.05 # Metres of clear floor between the skull's back and the vertebrae, for its carrier.
 const SKELETON_BONE := Color("e2d6b8")
 const SKELETON_STEEL := Color("3a3f45")

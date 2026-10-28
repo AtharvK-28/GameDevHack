@@ -20,7 +20,7 @@ func _ready() -> void:
 	var roles := HBoxContainer.new()
 	roles.add_theme_constant_override("separation", Balance.UI_PANEL_MARGIN * 2)
 	panel.add_child(roles)
-	roles.add_child(_role("MOVERS", "Stick to move. Hold GRAB to carry; release in the delivery zone to bank. Bumps lose value. THROW light loot. Two movers lift the piano, chest or skull.\nSHAKE: stop or BRACE. WIND: BRACE. JAAGTE RAHO: freeze in the beam.\nMuseum cases: hold GRAB to unlock, THROW to smash (loud)."))
+	roles.add_child(_role("MOVERS", "Stick to move. Hold GRAB to carry; release in the delivery zone to bank. Bumps lose value. THROW light loot. Two movers lift the piano, chest or skull. GRAB an empty-handed teammate to lift them, THROW to toss them.\nSHAKE: stop or BRACE. WIND: BRACE. JAAGTE RAHO: freeze in the beam.\nMuseum cases: hold GRAB to unlock, THROW to smash (loud)."))
 	roles.add_child(_role("GHOST", "Fly through walls. POSSESS loose loot or furniture, steer, then SHOVE. LEAVE to refill energy.\nThe big button is the map's haunting: SHAKE, WIND or JAAGTE RAHO (steer the torch). CURSE slows carriers. HEX scrambles a mover's phone.\nFurniture too: SLAM doors, DROP chandeliers, STOMP armour, YANK rugs."))
 	column.add_child(_label("Movers win by banking 55-65% (by crew size) in time. Lose too much and the ghost wins.", &"BodyLabel"))
 	column.add_child(_label("Optional tasks weaken the ghost: batteries to the generator, oil cans to the lanterns, fakes to the plinths.\nJoin on the same Wi-Fi, scan QR, enter a name and tap Ready (2+ phones).", &"MutedLabel"))
