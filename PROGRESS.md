@@ -78,6 +78,12 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - [x] Museum outside and van sign (decision 130, 2026-10-28): a city block at night round the museum (forecourt,
   fountain, street, lamps, parked cars, flags, trees, lit skyline) and a two-line van sign that fits the panel.
   Museum check passes (28); 125 fps average at 1080p.
+- [x] Museum stage B (decision 131, 2026-10-28): the skull on a headless T-Rex skeleton's neck, losing teeth as it
+  loses value and clacking its jaw; Bahadur the watchman as the ghost; JAAGTE RAHO! (lights out, a torch beam that
+  follows the ghost, HALT! for movers who move in it, statue labels for those who brace), the bonus goal "Nobody gets
+  caught in the beam" and the award CAUGHT RED-HANDED. `core/museum_check.gd` now passes 39 assertions; all 19
+  suites pass, 1,315 assertions. Next: stage C (blinking lasers, swap the fakes), then the revolving door and the
+  animatronic T-Rex.
 - [ ] Gust of Wind and Lights Out
 - [x] Mover and ghost character models integrated (brought forward; visual acceptance pending)
 - [x] Party camera and Mansion wall fade implemented (human acceptance pending)

@@ -120,6 +120,8 @@ func _begin_round(restarting: bool) -> void:
 			add_stat(slot, "overboard", 1)
 			if phase == "live":
 				goals.on_overboard())
+	if host.arena.has_signal("caught_in_beam") and not host.arena.caught_in_beam.is_connected(_on_caught_in_beam):
+		host.arena.caught_in_beam.connect(_on_caught_in_beam)
 	goals.start(host.arena, get_tree().get_nodes_in_group("loot"), round_seed)
 	host.arena.truck.delivered.connect(_on_delivered)
 	host.arena.truck.delivery_notice.connect(_delivery_notice)
@@ -165,6 +167,12 @@ func _evaluate_round() -> void:
 	elif seconds_left <= 0.0 or unresolved == 0:
 		var won: bool = banked_value * 100 >= starting_value * delivery_percent()
 		_finish_round(won, "Time is up." if seconds_left <= 0.0 else "All items are accounted for.")
+
+
+func _on_caught_in_beam(slot: int) -> void:
+	add_stat(slot, "caught", 1)
+	if phase == "live":
+		goals.on_caught()
 
 
 func _on_delivered(value: int, carrier_slots: Array[int]) -> void:

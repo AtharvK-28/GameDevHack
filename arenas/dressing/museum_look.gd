@@ -14,7 +14,7 @@ const PLAQUES: Array[Array] = [
 	["ASTRONAUT\nReal suit. Fake moon.", Vector2(22.4, 13.4), 0.0],
 	["UFO\nRecovered. Do not ask.", Vector2(24.6, 13.6), 0.0],
 	["MONA LISA'S COUSIN\nSmiles less.", Vector2(8.9, 10.4), -60.0],
-	["GOLD\nDefinitely real.", Vector2(12.6, 2.4), 0.0],
+	["GOLD\nDefinitely real.", Vector2(17.2, 6.9), 0.0],
 ]
 # Name plates beside doorways: text, centre (x, height, z), which way it faces (yaw in degrees).
 const NAME_PLATES: Array[Array] = [
@@ -30,6 +30,7 @@ const NAME_PLATES: Array[Array] = [
 const EXIT_SIGNS: Array[Vector3] = [Vector3(2.1, 2.55, 19.75), Vector3(26.5, 2.55, 19.75)]
 # Velvet ropes: centre (x, z) and half size (x, z) of the roped-off rectangle.
 const ROPES: Array[Array] = [
+	[Vector2(16.85, 2.3), Vector2(2.6, 0.95)],
 	[Vector2(23.8, 2.4), Vector2(1.9, 1.3)],
 	[Vector2(27.6, 2.6), Vector2(1.2, 1.4)],
 	[Vector2(24.2, 12.0), Vector2(2.5, 1.0)],
@@ -73,7 +74,7 @@ func _spotlights() -> void:
 	for exhibit: Array in get_parent().get_node("MuseumDressing").EXHIBITS:
 		if not String(exhibit[0]).contains("column") and not String(exhibit[0]).contains("bench"):
 			targets.append(exhibit[1])
-	targets.append_array([Vector2(1.0, 5.6), Vector2(12.6, 1.4), Vector2(9.5, 9.1), Vector2(9.5, 14.0)])
+	targets.append_array([Vector2(1.0, 5.6), Vector2(18.4, 6.4), Vector2(9.5, 9.1), Vector2(9.5, 14.0), Vector2(16.0, 2.3), Vector2(17.6, 2.3)])
 	for target: Vector2 in targets:
 		var lamp := SpotLight3D.new()
 		lamp.position = Vector3(target.x, Balance.MUSEUM_SPOT_HEIGHT, target.y)
@@ -249,12 +250,12 @@ func _ufo() -> void:
 
 func _gold_case() -> void:
 	# Gold ingots in a glass case on a dark marble plinth in the rotunda's corner.
-	_box(Vector3(0.9, 0.8, 0.7), Vector3(12.6, 0.4, 1.4), load("res://assets/materials/surfaces/marble_dark.tres"))
-	MuseumKit.place(self, POLY % "gold_ingots", Vector3(12.6, 0.8, 1.4), 0.35)
+	_box(Vector3(0.9, 0.8, 0.7), Vector3(18.4, 0.4, 6.4), load("res://assets/materials/surfaces/marble_dark.tres"))
+	MuseumKit.place(self, POLY % "gold_ingots", Vector3(18.4, 0.8, 6.4), 0.35)
 	var glass := _flat(Color(0.75, 0.9, 1.0, 0.25))
 	glass.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	_box(Vector3(0.86, 0.6, 0.66), Vector3(12.6, 1.1, 1.4), glass)
-	MuseumKit.solid(self, "GoldCase", Vector3(12.6, 0.7, 1.4), Vector3(0.9, 1.4, 0.7))
+	_box(Vector3(0.86, 0.6, 0.66), Vector3(18.4, 1.1, 6.4), glass)
+	MuseumKit.solid(self, "GoldCase", Vector3(18.4, 0.7, 6.4), Vector3(0.9, 1.4, 0.7))
 
 
 # --- The facade, on the camera side ---

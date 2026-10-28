@@ -118,6 +118,7 @@ const SHOUT_PIXEL_SIZE: float = 0.03 # Big enough to read from across the room a
 # player with the most of its stat (at least "least") who has no award yet, so nobody collects two.
 const AWARDS: Array[Dictionary] = [
 	{"stat": "overboard", "title": "MAN OVERBOARD", "detail": "%d× in the sea", "least": 1},
+	{"stat": "caught", "title": "CAUGHT RED-HANDED", "detail": "%d× in the torch beam", "least": 1},
 	{"stat": "smashed", "title": "BUTTERFINGERS", "detail": "%s smashed", "least": 500, "money": true},
 	{"stat": "tumbles", "title": "FLOOR INSPECTOR", "detail": "fell over %d times", "least": 2},
 	{"stat": "wrecked", "title": "MENACE", "detail": "%s wrecked", "least": 1, "money": true},
@@ -1007,6 +1008,8 @@ const LOADING_TIPS: Array[String] = [
 	"Ghost: possess a rum barrel and ROLL it down the steps.",
 	"Wave coming? Hold BRACE on the gangplank or get washed overboard.",
 	"Walk the Captain's parrot. Run with it and it flies off.",
+	"JAAGTE RAHO! In the Museum, freeze (hold BRACE) when Bahadur's torch finds you.",
+	"The moon rock floats when you throw it. The meteorite is tiny, and very heavy.",
 	"A thrown vase can knock a mover flat.",
 ]
 
@@ -1088,7 +1091,6 @@ const MUSEUM_LIGHT_COLOUR := Color("dfe8ff")
 const MUSEUM_OUTSIDE_LIGHT_COLOUR := Color("ffcf8a") # Sodium lamp over the loading dock.
 const MUSEUM_LIGHT_ENERGY: float = 0.75 # Dim on purpose: the exhibit spotlights do the work.
 const MUSEUM_LIGHT_REACH: float = 0.95 # Light range as a share of the room's longer side.
-const MUSEUM_SKULL_PLINTH := Vector2(2.6, 1.3) # Metres (x, z) under the T-Rex skull.
 const MUSEUM_PEDESTAL_WIDTH: float = 0.7 # Collider of each pedestal under small exhibits.
 const MUSEUM_EXHIBIT_COLLIDER: float = 0.8 # Share of an exhibit's bounds that blocks movers.
 const MUSEUM_BONE_PAD: float = 0.06 # Animated models: bone bounds grown by this share of their size.
@@ -1143,7 +1145,58 @@ const MUSEUM_CAR_HEIGHT: float = 2.0
 const MUSEUM_PLINTH_BAND: float = 0.45 # Dark stone band round the outside walls, metres high.
 const MUSEUM_SKYLINE_GLOW: float = 1.6 # Lit windows' emission in the skyline.
 const MUSEUM_SKYLINE_TILE: float = 6.0 # Metres per 4 × 4 block of skyline windows.
-const MOON_ROCK_GRAVITY: float = 0.25 # Share of normal gravity while a thrown moon rock is in the air.
+const MOON_ROCK_GRAVITY: float = 0.25
+
+# --- The T-Rex skull (decision 131): lost value shows as lost teeth ---
+const SKULL_CLACK_SPEED: float = 0.3 # m/s the skull must travel in two hands for its jaw to clack.
+const SKULL_CLACK_RATE: float = 2.2 # Clacks a second.
+const SKULL_JAW_OPEN: float = 0.3 # Radians the jaw drops at its widest.
+const SKULL_TOOTH_KICK: float = 1.6 # m/s a knocked-out tooth flies sideways,
+const SKULL_TOOTH_POP: float = 2.4 # and upward.
+const SKULL_TOOTH_LIFETIME: float = 6.0 # Seconds a loose tooth lies on the floor.
+const SKULL_TOOTH_DB: float = -10.0
+const SKULL_NECK: Vector3 = Vector3(12.3, 0.95, 2.3) # Where the skull rests on the skeleton's neck (x, height, z).
+const SKELETON_GAP: float = 1.05 # Metres of clear floor between the skull's back and the vertebrae, for its carrier.
+const SKELETON_BONE := Color("e2d6b8")
+const SKELETON_STEEL := Color("3a3f45")
+const SKELETON_PLAQUE: String = "T-REX\nPlease do not touch"
+const SKELETON_PLAQUE_HEADLESS: String = "T-REX\n(skull removed for cleaning)"
+
+# --- Bahadur, the Museum's ghost (decision 131) ---
+const WATCHMAN_TAIL_COLOUR := Color("6f7f74")
+const WATCHMAN_KHAKI := Color("b9a46a")
+const WATCHMAN_BELT := Color("5a3a22")
+const WATCHMAN_BRASS := Color("d9b84a")
+const WATCHMAN_CORD := Color("a23a2e")
+const WATCHMAN_DARK := Color("2f2a24")
+const WATCHMAN_SKIN := Color("b98a5e")
+const WATCHMAN_LATHI := Color("c9a25a")
+const WATCHMAN_TORCH := Color("fff2b0")
+const WATCHMAN_MOUSTACHE := Color("231a14")
+const WATCHMAN_CAP := Color("6e6340")
+
+# --- JAAGTE RAHO!, the Museum's haunting (decision 128) ---
+const JAAGTE_COST: int = 50
+const JAAGTE_COOLDOWN: float = 25.0
+const JAAGTE_WARNING: float = 1.5 # The whistle, while the lights go down.
+const JAAGTE_DURATION: float = 7.0 # Seconds of darkness and torch beam.
+const JAAGTE_BEAM_RADIUS: float = 2.0 # Metres: the beam's circle on the floor, centred on the ghost.
+const JAAGTE_BEAM_HEIGHT: float = 4.0
+const JAAGTE_BEAM_COLOUR := Color("fff1b8")
+const JAAGTE_BEAM_ENERGY: float = 14.0
+const JAAGTE_POOL_ALPHA: float = 0.22
+const JAAGTE_CATCH_GAP: float = 2.5 # Seconds before the beam can catch the same mover again.
+const JAAGTE_FADE_TIME: float = 0.8 # Seconds for the galleries to go dark, and to come back.
+const JAAGTE_LIGHT_LEFT: float = 0.08 # Share of gallery light left in the dark.
+const JAAGTE_MOON_LEFT: float = 0.12
+const JAAGTE_EXPOSURE_LEFT: float = 0.55 # Share of the camera exposure in the dark; the torch beam still reads bright.
+const JAAGTE_WHISTLE_DB: float = -4.0
+const JAAGTE_BANNER_COLOUR := Color("ffd23f")
+const JAAGTE_STATUE_LABEL: String = "Untitled (Mover), 2026
+Oil on overalls"
+const JAAGTE_STATUE_COLOUR := Color("f2e6c8")
+const JAAGTE_POPUP_HEIGHT: float = 2.1 # Metres above a mover where HALT! or the statue label appears.
+const JAAGTE_POPUP_SECONDS: float = 1.6 # Share of normal gravity while a thrown moon rock is in the air.
 const VAN_LENGTH: float = 4.5 # Metres, like the farm truck.
 const VAN_SIGN_TITLE: String = "SASTA SHIFTERS"
 const VAN_SIGN_SUBTITLE: String = "Museum Maintenance (Totally)"

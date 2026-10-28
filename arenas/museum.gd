@@ -10,8 +10,10 @@ const LOOT_SCENE := preload("res://props/Loot.tscn")
 
 # --- Arena identity ---
 const ARENA_NAME: String = "Museum of Mostly Real Things"
-const SIGNATURE_HAUNTING := preload("res://hauntings/HouseShake.gd") # Until Bahadur's JAAGTE RAHO! (Museum stage B).
-const GHOST_AVATAR := preload("res://actors/ghost_model.gd") # Until Bahadur's own model (Museum stage B).
+const SIGNATURE_HAUNTING := preload("res://hauntings/JaagteRaho.gd")
+const GHOST_AVATAR := preload("res://actors/ghost_watchman_model.gd") # Bahadur, the night watchman.
+
+signal caught_in_beam(slot: int) # A mover moved in Bahadur's torch beam; the round's goals and awards count it.
 
 # --- Round settings, set by Main before the arena enters the tree ---
 var demo_mode: bool = false
@@ -21,6 +23,8 @@ var spawn_seed: int = 0
 var layout: Dictionary
 var truck: Area3D
 var generator: Node3D # The swap-the-fakes task arrives in Museum stage C.
+var gallery_lights: Dictionary = {} # Light -> its full energy; JAAGTE RAHO! dims these, never the street or the van.
+var ambient_energy: float = 0.0
 
 # --- Setup ---
 func _ready() -> void:
@@ -28,6 +32,7 @@ func _ready() -> void:
 	truck = ArenaBuilder.build(self, layout)
 	_build_mood()
 	_spawn_loot()
+	_collect_gallery_lights.call_deferred() # After the dressing has hung its spotlights.
 
 
 # --- Arena interface (shared with the other arenas) ---
@@ -110,6 +115,26 @@ func _build_mood() -> void:
 		lamp.omni_range = maxf(rect.size.x, rect.size.y) * Balance.MUSEUM_LIGHT_REACH
 		lamp.shadow_enabled = false
 		add_child(lamp)
+
+
+# --- Lights out (JAAGTE RAHO!) ---
+func _collect_gallery_lights() -> void:
+	ambient_energy = $WorldEnvironment.environment.ambient_light_energy
+	for light: Light3D in find_children("*", "Light3D", true, false):
+		if light is DirectionalLight3D or get_node("MuseumEnvironment").is_ancestor_of(light) or light.name == "Light-room-loading-dock" or light.name == "Light-room-forecourt":
+			continue
+		gallery_lights[light] = light.light_energy
+
+
+func set_darkness(amount: float) -> void:
+	# 0 is the museum as normal, 1 is lights out: the galleries keep only a trace of light, and so does the sky.
+	var keep: float = lerpf(1.0, Balance.JAAGTE_LIGHT_LEFT, amount)
+	for light: Light3D in gallery_lights:
+		if is_instance_valid(light):
+			light.light_energy = gallery_lights[light] * keep
+	$WorldEnvironment.environment.ambient_light_energy = ambient_energy * keep
+	$Moonlight.light_energy = Balance.MUSEUM_MOON_ENERGY * lerpf(1.0, Balance.JAAGTE_MOON_LEFT, amount)
+	$WorldEnvironment.environment.tonemap_exposure = Balance.MOOD_EXPOSURE * lerpf(1.0, Balance.JAAGTE_EXPOSURE_LEFT, amount)
 
 
 # --- Spawning ---

@@ -43,7 +43,7 @@ func _ready() -> void:
 		"thunder": _thunder(), "owl": _owl(), "howl": _howl(), "caw": _caw(),
 		"goat": _goat(), "whoosh": _whoosh(), "rumble": _rumble(), "crackle": _crackle(), "organ": _organ(),
 		"boing": _boing(), "theremin": _theremin(), "trombone": _trombone(), "ship_bell": _ship_bell(), "wave_crash": _wave_crash(),
-		"squawk": _squawk(),
+		"squawk": _squawk(), "whistle": _whistle(),
 	}
 	for sound: String in FILE_SOUNDS:
 		var variants: Array[AudioStream] = []
@@ -258,6 +258,24 @@ func _squawk() -> AudioStreamWAV:
 		var envelope: float = minf(1.0, local * 80.0) * exp(-local * (7.0 if second else 14.0))
 		var tone: float = clampf(sin(phase) * 3.0, -1.0, 1.0) # Clipped sine: a reedy buzz.
 		samples[index] = (tone * 0.7 + noise.randf_range(-1.0, 1.0) * 0.3) * envelope * 0.35
+	return _stream(samples, RATE, false)
+
+
+func _whistle() -> AudioStreamWAV:
+	# Bahadur's pea whistle: a shrill tone trilled by the rolling pea, in a short blast and a long one.
+	var count: int = int(RATE * 1.0)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	var phase: float = 0.0
+	for index: int in range(count):
+		var time: float = float(index) / RATE
+		var on: bool = time < 0.22 or (time > 0.32 and time < 0.95)
+		var local: float = time if time < 0.22 else time - 0.32
+		var length: float = 0.22 if time < 0.22 else 0.63
+		phase += TAU * (2850.0 + 90.0 * sin(TAU * 31.0 * time)) / RATE
+		var trill: float = 0.6 + 0.4 * sin(TAU * 31.0 * time)
+		var envelope: float = minf(1.0, local * 60.0) * minf(1.0, (length - local) * 25.0) if on else 0.0
+		samples[index] = (sin(phase) * 0.85 + noise.randf_range(-1.0, 1.0) * 0.15) * trill * maxf(envelope, 0.0) * 0.3
 	return _stream(samples, RATE, false)
 
 

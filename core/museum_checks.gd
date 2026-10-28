@@ -12,7 +12,7 @@ const GALLERIES: Dictionary = {
 }
 # The skull's way out: down from the rotunda, across the lobby, along the laser hall and out of its door to the van.
 # The first leg slides it straight off the plinth before the pair turns it, so nobody swings into the plinth.
-const SKULL_ROUTE: Array[Vector2] = [Vector2(15, 5.8), Vector2(15, 11.5), Vector2(15, 17.3), Vector2(9, 17.3), Vector2(2.1, 17.3), Vector2(2.1, 21.4)]
+const SKULL_ROUTE: Array[Vector2] = [Vector2(12.3, 5.8), Vector2(15, 6.0), Vector2(15, 11.5), Vector2(15, 17.3), Vector2(9, 17.3), Vector2(2.1, 17.3), Vector2(2.1, 21.4)]
 
 func run() -> int:
 	router = get_tree().root.get_node("InputRouter")
@@ -44,6 +44,11 @@ func run() -> int:
 		var heavy: int = pick.filter(func(placement: Dictionary) -> bool: return placement.item.weight_class == SETTINGS.HEAVY).size()
 		_check(pick.size() == SETTINGS.LOOT_COUNTS[players - 2] and two_person == 1 and heavy <= SETTINGS.HEAVY_LOOT_LIMITS[players - 2], "A seeded %d-player round has %d items and one skull" % [players, SETTINGS.LOOT_COUNTS[players - 2]])
 	_check(world.camera.arena_yaw == SETTINGS.MUSEUM_CAMERA_YAW, "The Museum gets its own camera angle")
+	var neck: Vector3 = SETTINGS.SKULL_NECK
+	var on_neck: Array = items.filter(func(item: Node) -> bool: return item is TRexSkull and Vector2(item.global_position.x - neck.x, item.global_position.z - neck.z).length() < 0.3)
+	_check(on_neck.size() == 1 and absf(on_neck[0].global_position.y - on_neck[0].item_size.y / 2.0 - neck.y) < 0.2, "The T-Rex skull starts on the skeleton's neck bracket")
+	var dressing: Node = arena.get_node("MuseumDressing")
+	_check(arena.get_node("MuseumDressing/TRexSkeleton") != null and dressing.skull_plaque.text == SETTINGS.SKELETON_PLAQUE, "The skeleton stands in the rotunda, its plaque saying do not touch")
 	_check(arena.truck != null and arena.get_node_or_null("Van") != null, "The van is parked at the loading dock with its delivery zone")
 	await _clear_props()
 
@@ -57,10 +62,10 @@ func run() -> int:
 		_check(reached and arena.room_at(mover.global_position) == room, "A mover walks from the van into the %s" % room)
 
 	# --- The skull through the laser hall to the van ---
-	var skull := _museum_loot("skull", Vector2(15, 3.6), 0.5)
+	var skull := _museum_loot("skull", Vector2(SETTINGS.SKULL_NECK.x, SETTINGS.SKULL_NECK.z), SETTINGS.SKULL_NECK.y)
 	await _frames(30)
 	for slot: int in [0, 1]:
-		_place(slot, Vector2(15 + (-1.7 if slot == 0 else 1.7), 3.6))
+		_place(slot, Vector2(SETTINGS.SKULL_NECK.x + (-1.65 if slot == 0 else 1.65), SETTINGS.SKULL_NECK.z))
 		var mover: CharacterBody3D = world.movers[slot]
 		mover.facing = Vector3.RIGHT if slot == 0 else Vector3.LEFT
 		mover._update_hold_point()
@@ -68,7 +73,7 @@ func run() -> int:
 		mover.held_item = skull
 		_set_input(slot, Vector2.ZERO, true)
 	await _frames(60)
-	_check(skull.holder_count() == 2, "Two movers lift the T-Rex skull off its plinth")
+	_check(skull.holder_count() == 2, "Two movers lift the T-Rex skull off the skeleton's neck")
 	var route_ok: bool = true
 	for target: Vector2 in SKULL_ROUTE:
 		route_ok = await _carry_skull(skull, target, target != SKULL_ROUTE[0])
@@ -76,6 +81,8 @@ func run() -> int:
 			print("Skull stopped at ", skull.position if is_instance_valid(skull) else "freed", " aiming for ", target)
 			break
 	_check(route_ok, "Two movers carry the skull down the hall, through the laser hall and out of its door")
+	await _frames(40)
+	_check(arena.get_node("MuseumDressing").skull_plaque.text == SETTINGS.SKELETON_PLAQUE_HEADLESS, "With the skull gone, the plaque reads: skull removed for cleaning")
 	if route_ok:
 		var banked: int = arena.truck.banked_items
 		for slot: int in [0, 1]:
@@ -84,6 +91,57 @@ func run() -> int:
 		_check(arena.truck.banked_items == banked + 1, "The skull banks at the van")
 	for slot: int in [0, 1]:
 		_set_input(slot, Vector2.ZERO, false)
+	await _clear_props()
+
+	# --- Lost value shows as lost teeth ---
+	var damaged := _museum_loot("skull", Vector2(15, 11.5), 0.0) as TRexSkull
+	await _frames(20)
+	_check(damaged.teeth.size() == 10, "The skull has ten teeth")
+	damaged._lose_value(damaged.initial_value / 2)
+	await _frames(5)
+	var hidden: int = damaged.teeth.filter(func(tooth: Node3D) -> bool: return not tooth.visible).size()
+	_check(hidden == 5 and damaged.lost_teeth == 5, "Losing half its value knocks out half its teeth (%d)" % hidden)
+	damaged.queue_free()
+	await _clear_props()
+
+	# --- Bahadur and JAAGTE RAHO! ---
+	world.set_ghost_slot(3)
+	var ghost: Node3D = world.ghost
+	await _frames(10)
+	var watchmen: Array = ghost.find_children("*", "Node3D", true, false).filter(func(node: Node) -> bool: return node is GhostWatchmanModel)
+	_check(watchmen.size() == 1, "The Museum's ghost is Bahadur, the night watchman")
+	var haunting: Node = ghost.hauntings[0]
+	_check(haunting is JaagteRaho and haunting.cost == SETTINGS.JAAGTE_COST and haunting.cooldown == SETTINGS.JAAGTE_COOLDOWN, "The Museum's haunting is JAAGTE RAHO! (cost %d, cooldown %.0f s)" % [SETTINGS.JAAGTE_COST, SETTINGS.JAAGTE_COOLDOWN])
+	ghost.global_position = Vector3(15, ghost.global_position.y, 11.5)
+	var walker: CharacterBody3D = world.movers[0]
+	var statue: CharacterBody3D = world.movers[1]
+	_place(0, Vector2(14.0, 11.5))
+	_place(1, Vector2(16.0, 12.0))
+	var mask := _museum_loot("golden_mask", Vector2(14.0, 12.1), 0.0)
+	await _frames(10)
+	_set_input(0, Vector2.ZERO, true)
+	mask.try_grab(walker, walker.hold_point, 0)
+	walker.held_item = mask
+	_set_input(1, Vector2.ZERO, false, true)
+	var caught: Array[int] = []
+	arena.caught_in_beam.connect(func(slot: int) -> void: caught.append(slot))
+	var lamp: Light3D = arena.gallery_lights.keys()[0]
+	var full: float = arena.gallery_lights[lamp]
+	haunting.trigger(ghost)
+	await _frames(int(SETTINGS.JAAGTE_WARNING * 60) + 20)
+	_check(lamp.light_energy < full * 0.5, "The whistle blows and the galleries go dark")
+	# Walk in circles inside the beam, carrying the mask.
+	for frame: int in range(60):
+		_set_input(0, Vector2(cos(frame * 0.2), sin(frame * 0.2)) * 0.6, true)
+		_set_input(1, Vector2.ZERO, false, true)
+		await get_tree().physics_frame
+	_check(walker.is_tumbling() and walker.held_item == null and 0 in caught, "Moving in the torch beam: HALT!, the mover drops the mask and tumbles")
+	_check(not statue.is_tumbling() and 1 not in caught, "Holding BRACE in the beam: frozen like a statue, not caught")
+	_set_input(0, Vector2.ZERO)
+	_set_input(1, Vector2.ZERO)
+	await _frames(int((SETTINGS.JAAGTE_DURATION + SETTINGS.JAAGTE_FADE_TIME) * 60) + 30)
+	_check(not haunting.is_active() and is_equal_approx(lamp.light_energy, full), "After the run the lights come back up")
+	world.set_ghost_slot(-1)
 	await _clear_props()
 
 	# --- The moon rock floats ---

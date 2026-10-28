@@ -29,6 +29,8 @@ func start(round_arena: Node3D, loot: Array[Node], round_seed: int) -> void:
 		choices.append({"id": "careful", "text": "Deliver the %s with %d%% of its value" % [pair_name, Balance.GOAL_CAREFUL_SHARE]})
 	if arena.has_signal("overboard"):
 		choices.append({"id": "dry", "text": "Nobody goes overboard"})
+	if arena.has_signal("caught_in_beam"):
+		choices.append({"id": "unseen", "text": "Nobody gets caught in the beam"})
 	if is_instance_valid(arena.get("generator")):
 		choices.append({"id": "task", "text": Balance.GOAL_TASK_TEXTS.get(arena.generator.TASK_NAME, "Finish the task")})
 	var picker := RandomNumberGenerator.new()
@@ -53,6 +55,11 @@ func on_shattered(item: Node) -> void:
 
 func on_overboard() -> void:
 	if goal.get("id") == "dry":
+		_settle(goal, false)
+
+
+func on_caught() -> void:
+	if goal.get("id") == "unseen":
 		_settle(goal, false)
 
 

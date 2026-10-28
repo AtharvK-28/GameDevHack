@@ -649,12 +649,12 @@
 				"id": "rotunda-skull",
 				"role": "skull",
 				"at": [
-					15,
-					3.6
+					12.3,
+					2.3
 				],
-				"floor": 0.5,
+				"floor": 0.95,
 				"size": "XL",
-				"yaw": 0
+				"yaw": 180
 			},
 			{
 				"id": "egypt-1",
