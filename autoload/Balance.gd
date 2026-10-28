@@ -1250,6 +1250,31 @@ const BABY_SCARE_DISTANCE: float = 2.5 # A mover this close sets it running,
 const BABY_SPEED: float = 3.0 # this fast,
 const BABY_DASH_SECONDS: float = 0.8 # for this long,
 const BABY_REST: float = 0.7 # then it pauses before it can run again.
+# --- Display cases and security cameras (decision 138) ---
+const CASE_ROLES: Array[StringName] = [&"egypt", &"space"] # Pedestals whose exhibits sit under glass.
+const CASE_SIZE := Vector3(0.75, 0.75, 0.75)
+const CASE_GLASS := Color(0.75, 0.9, 1.0, 0.22)
+const CASE_REACH: float = 1.2 # Metres from a case within which GRAB picks its lock and THROW smashes it.
+const CASE_UNLOCK_SECONDS: float = 2.0 # GRAB held this long opens it quietly.
+const CASE_PROGRESS_DECAY: float = 0.5 # Picking progress lost per second while nobody holds GRAB.
+const CASE_SMASH_ENERGY: float = 10.0 # Energy a smashed case gives the ghost,
+const ALARM_CASE: float = 25.0 # and how much of the ALARM bar it fills.
+const CASE_SMASH_SOUND_VALUE: int = 6000 # Rupees whose smash the breaking glass sounds like.
+const CASE_CLICK_DB: float = -8.0
+# CCTV: name, where the camera hangs, the floor point it faces, and the gallery it watches (x, z, width, depth).
+const CAMERAS: Array[Array] = [
+	["Egypt", Vector3(0.45, 2.6, 0.45), Vector2(5.0, 4.5), Rect2(0, 0, 10, 8)],
+	["Art", Vector3(0.45, 2.6, 14.55), Vector2(5.0, 11.5), Rect2(0, 8, 10, 7)],
+	["Space", Vector3(29.55, 2.6, 14.55), Vector2(25.0, 11.5), Rect2(20, 8, 10, 7)],
+]
+const CAMERA_RANGE: float = 9.0
+const CAMERA_HALF_ANGLE: float = 20.0 # Degrees either side of where it points.
+const CAMERA_SWEEP: float = 35.0 # Degrees either side of its gallery's centre,
+const CAMERA_PERIOD: float = 8.0 # once there and back in this many seconds.
+const CAMERA_TILT: float = 14.0 # Degrees the cone tips down, for the look.
+const CAMERA_CONE_ALPHA: float = 0.07
+const ALARM_CAMERA: float = 6.0 # ALARM a camera adds when it spots someone,
+const CAMERA_ALARM_REST: float = 4.0 # at most once per mover in this many seconds.
 const SKELETON_GAP: float = 1.05 # Metres of clear floor between the skull's back and the vertebrae, for its carrier.
 const SKELETON_BONE := Color("e2d6b8")
 const SKELETON_STEEL := Color("3a3f45")

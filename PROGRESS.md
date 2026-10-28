@@ -108,8 +108,12 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
   lockdown shutters, the dinosaur egg, display cases.
 - [x] Museum extras batch 2 (decision 137, 2026-10-28): the ALARM bar (lasers, screams, beam catches) with police
   lights and a 20 s lockdown of the back galleries, and the dinosaur egg that hatches a runaway baby raptor.
-  `core/museum_check.gd` passes 69 assertions; all 19 suites pass, 1,345 assertions. Museum left: display cases,
-  phone camera feeds, intro panels; and a human playtest.
+  `core/museum_check.gd` passes 69 assertions; all 19 suites pass, 1,345 assertions.
+- [x] Display cases and security cameras (decision 138, 2026-10-28): exhibits in Egypt and Space under glass (hold
+  GRAB to unlock, THROW to smash), three sweeping CCTV cameras, a REC banner on a spotted mover's phone and a CCTV
+  line on the ghost's. Phone page rendered with a simulated `cam` message. `core/museum_check.gd` passes 76
+  assertions; all 19 suites pass, 1,352 assertions. Museum left: intro panels (with the story) and a human
+  playtest, which should also judge the ALARM numbers.
 - [ ] Gust of Wind and Lights Out
 - [x] Mover and ghost character models integrated (brought forward; visual acceptance pending)
 - [x] Party camera and Mansion wall fade implemented (human acceptance pending)

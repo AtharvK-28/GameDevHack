@@ -7,6 +7,7 @@ extends Node3D
 # --- Scene resources ---
 const LAYOUT_PATH: String = "res://arenas/layouts/museum_layout.json"
 const LOOT_SCENE := preload("res://props/Loot.tscn")
+const CASE_SCRIPT := preload("res://arenas/dressing/display_case.gd")
 const FAKES_SCENE := preload("res://props/tasks/fake_plinths.tscn")
 const REPLICA_SCENE := preload("res://props/tasks/replica.tscn")
 const FURNITURE := {"animatronic": preload("res://props/Animatronic.tscn"), "revolving_door": preload("res://props/RevolvingDoor.tscn")}
@@ -229,3 +230,8 @@ func _spawn_loot() -> void:
 		loot.position = ArenaBuilder.point_of(spot, item.footprint.y / 2.0 + Balance.LOOT_SPAWN_CLEARANCE)
 		loot.rotation.y = deg_to_rad(spot.get("yaw", 0.0))
 		add_child(loot)
+		if StringName(spot.role) in Balance.CASE_ROLES:
+			var case: Node3D = CASE_SCRIPT.new() # Glass over this exhibit (decision 138).
+			case.setup(loot)
+			case.position = ArenaBuilder.point_of(spot, 0.0)
+			add_child(case)

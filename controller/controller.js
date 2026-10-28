@@ -196,6 +196,20 @@ function handleMessage(message) {
     case "buzz":
       if (navigator.vibrate && Number.isFinite(message.ms)) navigator.vibrate(message.ms);
       break;
+    case "cam": {
+      // Museum CCTV: this mover is on camera (decision 138).
+      const onCamera = Boolean(message.on) && activeRole === "mover";
+      if (onCamera && elements["rec-overlay"].hidden && navigator.vibrate) navigator.vibrate(80);
+      elements["rec-overlay"].hidden = !onCamera;
+      break;
+    }
+    case "cams": {
+      // Museum CCTV, on the ghost's phone: who each camera sees.
+      const seen = Array.isArray(message.seen) ? message.seen : [];
+      elements["cctv-status"].textContent = seen.length ? "CCTV: " + seen.map(entry => `${entry.where}: ${entry.name}`).join(" · ") : "";
+      elements["cctv-status"].hidden = activeRole !== "ghost" || seen.length === 0;
+      break;
+    }
   }
 }
 

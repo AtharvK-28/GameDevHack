@@ -71,7 +71,7 @@ func try_grab(mover: CharacterBody3D, target: Node3D, slot: int) -> bool:
 
 
 func is_spent() -> bool:
-	return flying # The ghost cannot possess it in the air.
+	return flying or super() # The ghost cannot possess it in the air.
 
 
 # --- What hurts other loot makes it fly ---

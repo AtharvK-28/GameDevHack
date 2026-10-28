@@ -33,6 +33,7 @@ var model: Node3D # A catalog item's model, when there is one.
 var model_meshes: Array[MeshInstance3D] = []
 var curse_overlay: StandardMaterial3D
 var delivery_slots: Array[int] = [] # Last two-person team; retained while its last holder releases.
+var case: Node3D # A Museum display case over it, or null; while it is shut, nobody can take the item.
 
 # --- Setup ---
 func _ready() -> void:
@@ -154,6 +155,14 @@ func curse() -> void:
 	print("Cursed %s for %.0f seconds" % [item_name, curse_left])
 
 
+func in_closed_case() -> bool:
+	return is_instance_valid(case) and case.closed
+
+
+func is_spent() -> bool:
+	return in_closed_case() # The ghost cannot possess an exhibit behind glass.
+
+
 func holder_count() -> int:
 	var count: int = 0
 	for mover: CharacterBody3D in handle_holders:
@@ -175,6 +184,8 @@ func is_held_by(mover: CharacterBody3D) -> bool:
 
 
 func grab_point_for(mover: CharacterBody3D) -> Vector3:
+	if in_closed_case():
+		return Vector3.INF
 	if weight_class != Balance.TWO_PERSON:
 		return super(mover)
 	var index: int = _free_handle_nearest(mover.global_position)
@@ -182,6 +193,8 @@ func grab_point_for(mover: CharacterBody3D) -> Vector3:
 
 
 func try_grab(mover: CharacterBody3D, target: Node3D, slot: int) -> bool:
+	if in_closed_case():
+		return false
 	if weight_class != Balance.TWO_PERSON:
 		return super(mover, target, slot)
 	var index: int = _free_handle_nearest(mover.global_position)

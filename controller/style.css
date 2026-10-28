@@ -180,3 +180,9 @@ body[data-ghost-near="3"] #ghost-glow { --glow-size: 80px; --glow-spread: 18px; 
   #audience h1 { font-size: clamp(28px, 6vw, 56px); }
 }
 body.audience #rotate-overlay { display: none !important; } /* Watching works upright; only players need landscape. */
+
+/* Museum CCTV (decision 138): a mover on camera sees a red REC banner. */
+.rec-overlay { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 60; pointer-events: none; padding: 6px 14px; border-radius: 999px; background: rgba(20, 0, 0, .78); color: #ff4d4d; font-weight: 900; font-size: 14px; letter-spacing: .04em; border: 2px solid #ff2a2a; }
+.rec-overlay[hidden] { display: none; }
+.rec-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #ff2a2a; margin-right: 6px; animation: rec-blink 1s steps(2, start) infinite; }
+@keyframes rec-blink { to { visibility: hidden; } }

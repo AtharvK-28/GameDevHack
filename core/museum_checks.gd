@@ -303,6 +303,56 @@ func run() -> int:
 		_check(baby.global_position.distance_to(start) > 0.8, "Come near the baby raptor and it runs (%.1f m)" % baby.global_position.distance_to(start))
 	await _clear_props()
 
+	# --- Display cases ---
+	var case_script: Script = load("res://arenas/dressing/display_case.gd")
+	var cased: Array[Loot] = []
+	for index: int in range(2):
+		var exhibit := _museum_loot("golden_mask", Vector2(13.0 + index * 4.0, 11.5), 0.0)
+		var glass: Node3D = case_script.new()
+		glass.setup(exhibit)
+		glass.position = Vector3(13.0 + index * 4.0, 0.0, 11.5)
+		arena.add_child(glass)
+		cased.append(exhibit)
+	await _frames(20)
+	var picker: CharacterBody3D = world.movers[0]
+	_check(cased[0].in_closed_case() and cased[0].grab_point_for(picker) == Vector3.INF and not cased[0].try_grab(picker, picker.hold_point, 0), "An exhibit behind glass cannot be grabbed")
+	_check(cased[0].is_spent(), "The ghost cannot possess an exhibit behind glass")
+	_place(0, Vector2(13.0, 12.4))
+	await _frames(5)
+	for frame: int in range(int(SETTINGS.CASE_UNLOCK_SECONDS * 60) + 15):
+		_set_input(0, Vector2.ZERO, true)
+		await get_tree().physics_frame
+	_set_input(0, Vector2.ZERO)
+	await _frames(5)
+	_check(not cased[0].in_closed_case() and cased[0].grab_point_for(picker) != Vector3.INF, "Holding GRAB at the case for %.0f s unlocks it quietly" % SETTINGS.CASE_UNLOCK_SECONDS)
+	var alarm_box: Node = arena.get_node("MuseumAlarm")
+	alarm_box.enabled = true
+	var level_before: float = alarm_box.level
+	_place(0, Vector2(17.0, 12.4))
+	await _frames(5)
+	router.snapshots[0].pressed = {"throw": true}
+	await _frames(2)
+	router.snapshots[0].pressed = {}
+	_check(not cased[1].in_closed_case() and alarm_box.level >= level_before + SETTINGS.ALARM_CASE - 0.1, "THROW at a case smashes it at once, and the ALARM bar jumps")
+	alarm_box._open()
+	alarm_box.enabled = false
+	await _clear_props()
+
+	# --- Security cameras ---
+	var cams: Node = arena.get_node("MuseumCameras")
+	_check(cams.cameras.size() == 3, "Three security cameras watch Egypt, the Art Gallery and the Space Gallery")
+	var egypt: Dictionary = cams.cameras[0]
+	var head: Node3D = egypt.head
+	var forward := Vector2(-sin(head.rotation.y), -cos(head.rotation.y))
+	var in_view: Vector2 = Vector2(head.global_position.x, head.global_position.z) + forward * 4.0
+	_place(0, in_view)
+	await _frames(2)
+	_check(cams.sees(world.movers[0]) == "Egypt", "A mover in front of the Egypt camera is spotted")
+	_place(0, Vector2(15.0, 11.5))
+	await _frames(2)
+	_check(cams.sees(world.movers[0]) == "", "A mover in the Grand Hall, out of every camera's gallery, is not")
+	await _clear_props()
+
 	# --- The moon rock floats ---
 	var rock := _museum_loot("moon_rock", Vector2(15, 11.5), 0.0)
 	var stone := _museum_loot("golden_mask", Vector2(16, 13.5), 0.0)
