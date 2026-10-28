@@ -32,8 +32,12 @@ func run() -> int:
 	for item: Loot in items:
 		total += item.initial_value
 		skulls += int(item.weight_class == SETTINGS.TWO_PERSON)
-	_check(items.size() == 12 and total == 88000 and skulls == 1, "The full Museum pool is 12 items worth ₹88,000 with one T-Rex skull (%d, ₹%d)" % [items.size(), total])
+	_check(items.size() == 19 and total == 101700 and skulls == 1, "The full Museum has 15 exhibits and 4 gift-shop souvenirs worth ₹1,01,700, with one T-Rex skull (%d, ₹%d)" % [items.size(), total])
+	var souvenirs: Array = items.filter(func(item: Loot) -> bool: return &"museum_gift" in item.catalog_item.pools)
+	_check(souvenirs.size() == 4 and souvenirs.all(func(item: Loot) -> bool: return item.global_position.y > 0.9), "The gift shop's four souvenirs sit on its counter")
 	for item: Loot in items:
+		if item in souvenirs:
+			continue
 		var spot: Dictionary = _spot_under(item)
 		var resting: float = item.global_position.y - item.item_size.y / 2.0
 		_check(not spot.is_empty() and absf(resting - float(spot.get("floor", 0.0))) < 0.25, "%s rests on its spot (%.2f m, expected %.2f m)" % [item.item_name, resting, float(spot.get("floor", 0.0))])
@@ -43,7 +47,8 @@ func run() -> int:
 		var pick: Array[Dictionary] = Catalog.pick_loot(&"museum", arena.layout.spawns.loot, SETTINGS.LOOT_COUNTS[players - 2], SETTINGS.HEAVY_LOOT_LIMITS[players - 2], random)
 		var two_person: int = pick.filter(func(placement: Dictionary) -> bool: return placement.item.weight_class == SETTINGS.TWO_PERSON).size()
 		var heavy: int = pick.filter(func(placement: Dictionary) -> bool: return placement.item.weight_class == SETTINGS.HEAVY).size()
-		_check(pick.size() == SETTINGS.LOOT_COUNTS[players - 2] and two_person == 1 and heavy <= SETTINGS.HEAVY_LOOT_LIMITS[players - 2], "A seeded %d-player round has %d items and one skull" % [players, SETTINGS.LOOT_COUNTS[players - 2]])
+		var goats: int = pick.filter(func(placement: Dictionary) -> bool: return placement.item.id == &"museum_goat").size()
+		_check(pick.size() == SETTINGS.LOOT_COUNTS[players - 2] and two_person == 1 and goats == 1 and heavy <= SETTINGS.HEAVY_LOOT_LIMITS[players - 2], "A seeded %d-player round has %d items, one skull and the goat" % [players, SETTINGS.LOOT_COUNTS[players - 2]])
 	_check(world.camera.arena_yaw == SETTINGS.MUSEUM_CAMERA_YAW, "The Museum gets its own camera angle")
 	var neck: Vector3 = SETTINGS.SKULL_NECK
 	var on_neck: Array = items.filter(func(item: Node) -> bool: return item is TRexSkull and Vector2(item.global_position.x - neck.x, item.global_position.z - neck.z).length() < 0.3)
@@ -231,6 +236,36 @@ func run() -> int:
 		task.try_deliver(replica)
 	await _frames(5)
 	_check(task.powered and task.hud_text() == "Fakes swapped" and world.ghost.generator_powered, "All three fakes swapped: the cameras see nothing missing and Bahadur is slowed")
+	world.set_ghost_slot(-1)
+	await _clear_props()
+
+	# --- Personalities ---
+	world.set_ghost_slot(3)
+	await _frames(5)
+	var watcher: Node3D = world.ghost
+	var mona := _museum_loot("mona_lisa", Vector2(15, 11.5), 0.0) as MonaLisaCousin
+	var goat := _museum_loot("goat", Vector2(13, 12.5), 0.0) as MuseumGoat
+	var hand := _museum_loot("mummy_hand", Vector2(17, 12.5), 0.0) as MummyHand
+	await _frames(30)
+	var alarms: Array[int] = []
+	arena.alarm_tripped.connect(func(slot: int) -> void: alarms.append(slot))
+	watcher.energy = 30.0
+	mona.last_carrier_slot = 0
+	mona.apply_impact(SETTINGS.MONA_SCREAM_SPEED + 0.5)
+	_check(watcher.energy > 30.0 and alarms.has(0), "Bumped, Mona Lisa's cousin screams: the ghost gains energy and the bumper is counted")
+	var goat_value: int = goat.value
+	goat._lose_value(500)
+	_check(goat.value == goat_value, "A knock only makes the goat bleat: it never loses value")
+	var goals: RefCounted = load("res://core/round_goals.gd").new()
+	goals.start(arena, get_tree().get_nodes_in_group("loot"), 1)
+	goals.goal = {"id": "goat", "text": "Rescue the goat", "state": "open"}
+	goals.on_delivered(goat.get_instance_id(), goat.value, goat.initial_value)
+	_check(goals.goat_id == goat.get_instance_id() and goals.goal.state != "open", "Rescue the goat: banking it settles the bonus goal")
+	var hand_home: Vector3 = hand.global_position
+	hand.global_position = hand_home + Vector3(3.0, 0.2, 0.0)
+	hand.linear_velocity = Vector3.ZERO
+	await _frames(int((SETTINGS.MUMMY_WAIT + 3.0) * 60))
+	_check(hand.global_position.distance_to(hand_home) < 2.2, "Put down away from home, the mummy's hand crawls back (%.1f m left)" % hand.global_position.distance_to(hand_home))
 	world.set_ghost_slot(-1)
 	await _clear_props()
 

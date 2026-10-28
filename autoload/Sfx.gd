@@ -43,7 +43,7 @@ func _ready() -> void:
 		"thunder": _thunder(), "owl": _owl(), "howl": _howl(), "caw": _caw(),
 		"goat": _goat(), "whoosh": _whoosh(), "rumble": _rumble(), "crackle": _crackle(), "organ": _organ(),
 		"boing": _boing(), "theremin": _theremin(), "trombone": _trombone(), "ship_bell": _ship_bell(), "wave_crash": _wave_crash(),
-		"squawk": _squawk(), "whistle": _whistle(), "roar": _roar(),
+		"squawk": _squawk(), "whistle": _whistle(), "roar": _roar(), "scream": _scream(),
 	}
 	for sound: String in FILE_SOUNDS:
 		var variants: Array[AudioStream] = []
@@ -258,6 +258,21 @@ func _squawk() -> AudioStreamWAV:
 		var envelope: float = minf(1.0, local * 80.0) * exp(-local * (7.0 if second else 14.0))
 		var tone: float = clampf(sin(phase) * 3.0, -1.0, 1.0) # Clipped sine: a reedy buzz.
 		samples[index] = (tone * 0.7 + noise.randf_range(-1.0, 1.0) * 0.3) * envelope * 0.35
+	return _stream(samples, RATE, false)
+
+
+func _scream() -> AudioStreamWAV:
+	# Mona Lisa's cousin: a shrill cartoon shriek that rises, wobbles and cracks off.
+	var count: int = int(RATE * 0.9)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	var phase: float = 0.0
+	for index: int in range(count):
+		var time: float = float(index) / RATE
+		phase += TAU * (820.0 + 520.0 * minf(1.0, time * 3.0) + 60.0 * sin(TAU * 11.0 * time)) / RATE
+		var envelope: float = minf(1.0, time * 25.0) * minf(1.0, (0.9 - time) * 4.0)
+		var voice: float = sin(phase) * 0.7 + sin(phase * 2.0) * 0.2 + noise.randf_range(-1.0, 1.0) * 0.1
+		samples[index] = voice * envelope * 0.3
 	return _stream(samples, RATE, false)
 
 

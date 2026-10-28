@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CatalogItem" load_steps=3 format=3]
+[ext_resource type="Script" path="res://props/catalog/catalog_item.gd" id="1"]
+[ext_resource type="PackedScene" path="res://props/catalog/built/museum_plushie.tscn" id="2"]
+[resource]
+script = ExtResource("1")
+id = &"gift_plushie"
+display_name = "T-Rex plushie"
+model = ExtResource("2")
+value = 400
+weight_class = 0
+fragility = 1
+count = 2
+two_person_handles = false
+throwable = true
+footprint = Vector3(0.4, 0.34, 0.24)
+spot_roles = Array[StringName]([&"gift"])
+pools = Array[StringName]([&"museum_gift"])
+rolls = false

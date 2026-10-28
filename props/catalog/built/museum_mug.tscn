@@ -1,0 +1,52 @@
+[gd_scene load_steps=7 format=3]
+
+[sub_resource type="StandardMaterial3D" id="mat0"]
+albedo_color = Color(0.9490, 0.9333, 0.9020, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="CylinderMesh" id="mesh0"]
+top_radius = 0.06
+bottom_radius = 0.055
+height = 0.12
+radial_segments = 10
+rings = 1
+material = SubResource("mat0")
+
+[sub_resource type="StandardMaterial3D" id="mat1"]
+albedo_color = Color(0.7686, 0.2275, 0.2275, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="BoxMesh" id="mesh1"]
+size = Vector3(0.122, 0.04, 0.122)
+material = SubResource("mat1")
+
+[sub_resource type="StandardMaterial3D" id="mat2"]
+albedo_color = Color(0.9490, 0.9333, 0.9020, 1)
+roughness = 0.8
+metallic = 0.0
+
+[sub_resource type="BoxMesh" id="mesh2"]
+size = Vector3(0.02, 0.07, 0.05)
+material = SubResource("mat2")
+
+[node name="mug" type="Node3D"]
+
+[node name="cup" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh0")
+position = Vector3(0, 0.06, 0)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="stripe" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh1")
+position = Vector3(0, 0.07, 0)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)
+
+[node name="handle" type="MeshInstance3D" parent="."]
+mesh = SubResource("mesh2")
+position = Vector3(0.07, 0.065, 0)
+rotation = Vector3(0, 0, 0)
+scale = Vector3(1, 1, 1)

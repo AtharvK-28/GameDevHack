@@ -102,6 +102,10 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - [x] Two laser gates, 4.5 m apart (decision 135, 2026-10-28), so the skull pair can stop between them; bots wait
   while the gate ahead is lit. Bot rounds on the Museum vary a lot on the same seeds (21-45% banked), so its
   balance needs a human playtest. All 19 suites pass, 1,329 assertions.
+- [x] Museum extras batch 1 (decision 136, 2026-10-28): Mona Lisa's cousin screams, the goat (goal "Rescue the
+  goat"), the mummy's hand crawls home, the gift shop. Fixed: "Nobody gets caught in the beam" counted as missed.
+  `core/museum_check.gd` passes 61 assertions; all 19 suites pass, 1,337 assertions. Next: the ALARM bar and
+  lockdown shutters, the dinosaur egg, display cases.
 - [ ] Gust of Wind and Lights Out
 - [x] Mover and ghost character models integrated (brought forward; visual acceptance pending)
 - [x] Party camera and Mansion wall fade implemented (human acceptance pending)

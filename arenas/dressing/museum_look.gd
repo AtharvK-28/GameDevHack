@@ -61,6 +61,8 @@ func _ready() -> void:
 	_desk()
 	_ufo()
 	_gold_case()
+	_goat_case()
+	_gift_shop()
 	_facade()
 	_dock()
 
@@ -256,6 +258,29 @@ func _gold_case() -> void:
 	glass.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	_box(Vector3(0.86, 0.6, 0.66), Vector3(18.4, 1.1, 6.4), glass)
 	MuseumKit.solid(self, "GoldCase", Vector3(18.4, 0.7, 6.4), Vector3(0.9, 1.4, 0.7))
+
+
+func _goat_case() -> void:
+	# The goat on loan, in a glass case (the glass is for show: movers reach straight in).
+	var at := Vector3(18.0, 0.0, 9.6)
+	_box(Vector3(1.1, 0.08, 0.7), at + Vector3.UP * 0.04, load("res://assets/materials/surfaces/marble_dark.tres"))
+	var glass := _flat(Color(0.75, 0.9, 1.0, 0.18))
+	glass.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	_box(Vector3(1.05, 1.1, 0.65), at + Vector3.UP * 0.63, glass)
+	_plaque("GOAT, 2026\n(on loan)", Vector2(18.0, 10.3), 0.0)
+
+
+func _gift_shop() -> void:
+	# A counter of souvenirs in the lobby's east corner, with a sign.
+	var counter: Vector3 = Balance.GIFT_SHOP_COUNTER
+	_box(Vector3(2.6, 0.9, 0.8), counter + Vector3.UP * 0.45, load("res://assets/materials/surfaces/trim_walnut.tres"))
+	_box(Vector3(2.7, 0.05, 0.9), counter + Vector3.UP * 0.92, load("res://assets/materials/surfaces/marble_dark.tres"))
+	MuseumKit.solid(self, "GiftCounter", counter + Vector3.UP * 0.45, Vector3(2.7, 0.9, 0.9))
+	var sign := _text("GIFT SHOP\nEverything must go!", Balance.MUSEUM_PLATE_FONT_SIZE, Balance.MUSEUM_SIGN_COLOUR)
+	sign.position = counter + Vector3(0, 2.1, 0)
+	sign.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
+	sign.outline_size = 10
+	add_child(sign)
 
 
 # --- The facade, on the camera side ---

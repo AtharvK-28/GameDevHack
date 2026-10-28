@@ -115,9 +115,6 @@ func _trip(mover: Node3D) -> void:
 	tween.tween_property(popup, "modulate:a", 0.0, 0.4)
 	tween.tween_callback(popup.queue_free)
 	var arena: Node = get_parent()
-	for ghost: Node in get_tree().get_nodes_in_group("ghosts"):
-		if ghost.get("arena") == arena:
-			ghost.energy = minf(Balance.ENERGY_MAX, ghost.energy + Balance.LASER_ALARM_ENERGY)
-	if arena.has_signal("alarm_tripped"):
-		arena.alarm_tripped.emit(mover.slot)
+	if arena.has_method("raise_alarm"):
+		arena.raise_alarm(Balance.LASER_ALARM_ENERGY, mover.slot)
 	print("Player %d tripped a laser" % (mover.slot + 1))

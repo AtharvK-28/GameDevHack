@@ -36,6 +36,7 @@ func _ready() -> void:
 	truck = ArenaBuilder.build(self, layout)
 	_build_mood()
 	_spawn_loot()
+	_spawn_gift_shop()
 	_spawn_furniture()
 	if demo_mode:
 		_spawn_fakes_task()
@@ -122,6 +123,32 @@ func _build_mood() -> void:
 		lamp.omni_range = maxf(rect.size.x, rect.size.y) * Balance.MUSEUM_LIGHT_REACH
 		lamp.shadow_enabled = false
 		add_child(lamp)
+
+
+# --- The alarm ---
+func raise_alarm(energy: float, slot: int) -> void:
+	# Something gave the crew away (a scream, a laser): the ghost gains energy, and the round counts who did it.
+	for ghost: Node in get_tree().get_nodes_in_group("ghosts"):
+		if ghost.get("arena") == self:
+			ghost.energy = minf(Balance.ENERGY_MAX, ghost.energy + energy)
+	if slot >= 0:
+		alarm_tripped.emit(slot)
+
+
+# --- The gift shop ---
+func _spawn_gift_shop() -> void:
+	# Cheap souvenirs on the counter by the lobby, in every round: quick, low-value pickups near the exit.
+	var spots: Array = Balance.GIFT_SHOP_SPOTS
+	var index: int = 0
+	for item: CatalogItem in Catalog.items(&"museum_gift", CatalogItem.Category.LOOT):
+		for copy: int in range(item.count):
+			if index >= spots.size():
+				return
+			var loot: RigidBody3D = LOOT_SCENE.instantiate()
+			loot.catalog_item = item
+			loot.position = spots[index] + Vector3.UP * (item.footprint.y / 2.0 + Balance.LOOT_SPAWN_CLEARANCE)
+			add_child(loot)
+			index += 1
 
 
 # --- For the bots ---

@@ -4,6 +4,7 @@
 extends RefCounted
 
 # --- State ---
+var goat_id: int = 0 # The Museum's goat, for "Rescue the goat".
 var goal: Dictionary = {} # {"id", "text", "state": "open" | "met" | "failed"}
 var ghost_goal: Dictionary = {}
 var pair_item_id: int = 0 # The two-person item, for the careful-delivery goal.
@@ -31,6 +32,10 @@ func start(round_arena: Node3D, loot: Array[Node], round_seed: int) -> void:
 		choices.append({"id": "dry", "text": "Nobody goes overboard"})
 	if arena.has_signal("caught_in_beam"):
 		choices.append({"id": "unseen", "text": "Nobody gets caught in the beam"})
+	for item: Node in loot:
+		if item is MuseumGoat:
+			goat_id = item.get_instance_id()
+			choices.append({"id": "goat", "text": "Rescue the goat"})
 	if is_instance_valid(arena.get("generator")):
 		choices.append({"id": "task", "text": Balance.GOAL_TASK_TEXTS.get(arena.generator.TASK_NAME, "Finish the task")})
 	var picker := RandomNumberGenerator.new()
@@ -64,6 +69,8 @@ func on_caught() -> void:
 
 
 func on_delivered(item_id: int, value: int, initial_value: int) -> void:
+	if goal.get("id") == "goat" and item_id == goat_id:
+		_settle(goal, true)
 	if goal.get("id") == "careful" and item_id == pair_item_id:
 		_settle(goal, value * 100 >= initial_value * Balance.GOAL_CAREFUL_SHARE)
 	if item_id == dearest_id:
@@ -81,7 +88,7 @@ func finish() -> void:
 	# The round is over: goals nobody broke are met, and goals nobody reached are missed.
 	update()
 	if goal.get("state") == "open":
-		_settle(goal, goal.id in ["no_shatter", "dry"])
+		_settle(goal, goal.id in ["no_shatter", "dry", "unseen"]) # Goals nobody broke are met.
 	if ghost_goal.get("state") == "open":
 		_settle(ghost_goal, false)
 

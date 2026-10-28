@@ -822,6 +822,28 @@
 				"yaw": 0
 			},
 			{
+				"id": "art-easel",
+				"role": "painting",
+				"at": [
+					7.2,
+					8.7
+				],
+				"floor": 0,
+				"size": "M",
+				"yaw": 0
+			},
+			{
+				"id": "hall-goat",
+				"role": "goat",
+				"at": [
+					18.0,
+					9.6
+				],
+				"floor": 0,
+				"size": "M",
+				"yaw": 0
+			},
+			{
 				"id": "egypt-elephant",
 				"role": "elephant",
 				"at": [
