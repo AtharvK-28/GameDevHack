@@ -36,6 +36,8 @@ func _run() -> void:
 	await _review("home")
 	menu.get_node("%GuideButton").pressed.emit()
 	await _review("guide")
+	for text: Node in menu.sub_menu.find_children("*", "RichTextLabel", true, false):
+		_check(text.get_content_height() <= text.size.y + 1.0, "guide: the %s column's text fits its panel" % text.text.get_slice("[/b]", 0).trim_prefix("[b]"))
 	_check(menu.sub_menu != null and not menu.get_node("%MenuContainer").visible, "Guide hides title buttons")
 	_cancel()
 	await _wait()

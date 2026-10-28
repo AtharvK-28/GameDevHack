@@ -20,10 +20,10 @@ func _ready() -> void:
 	var roles := HBoxContainer.new()
 	roles.add_theme_constant_override("separation", Balance.UI_PANEL_MARGIN * 2)
 	panel.add_child(roles)
-	roles.add_child(_role("MOVERS", "Stick to move. Hold GRAB to carry; release in the marked delivery zone to bank. Bumps lose value. THROW light loot only.\nTwo movers carry the piano or chest; dragging loses value.\nSHAKE: stop or BRACE. WIND: BRACE or walk across/against it."))
-	roles.add_child(_role("GHOST", "Fly through walls. POSSESS loose loot or the sofa, steer, then SHOVE. LEAVE to refill energy.\nSHAKE tumbles moving movers. CURSE slows carriers. Buttons show costs and cooldowns.\nMansion: slider actions only. Ship: SLAM, DROP, STOMP and YANK are enabled too."))
+	roles.add_child(_role("MOVERS", "Stick to move. Hold GRAB to carry; release in the delivery zone to bank. Bumps lose value. THROW light loot. Two movers lift the piano, chest or skull.\nSHAKE: stop or BRACE. WIND: BRACE. JAAGTE RAHO: freeze in the beam.\nMuseum cases: hold GRAB to unlock, THROW to smash (loud)."))
+	roles.add_child(_role("GHOST", "Fly through walls. POSSESS loose loot or furniture, steer, then SHOVE. LEAVE to refill energy.\nThe big button is the map's haunting: SHAKE, WIND or JAAGTE RAHO (steer the torch). CURSE slows carriers.\nMansion: sliders only. Ship, Museum: SLAM, DROP, STOMP, YANK too."))
 	column.add_child(_label("Movers win by banking 55-65% (by crew size) in time. Lose too much and the ghost wins.", &"BodyLabel"))
-	column.add_child(_label("Mansion optional task: deliver 3 batteries to the cyan generator for brighter lights and a weaker ghost for the round.\nJoin on the same Wi-Fi, scan QR, enter a name and tap Ready (2+ phones).", &"MutedLabel"))
+	column.add_child(_label("Optional tasks weaken the ghost: batteries to the generator, oil cans to the lanterns, fakes to the plinths.\nJoin on the same Wi-Fi, scan QR, enter a name and tap Ready (2+ phones).", &"MutedLabel"))
 
 	var back := Button.new()
 	back.text = "Back"
@@ -54,4 +54,6 @@ func _role(title: String, body: String) -> RichTextLabel:
 	text.bbcode_enabled = true
 	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	text.text = "[b]" + title + "[/b]\n" + body
+	for size: StringName in [&"normal_font_size", &"bold_font_size"]:
+		text.add_theme_font_size_override(size, Balance.GUIDE_ROLE_FONT_SIZE)
 	return text

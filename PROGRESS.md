@@ -114,6 +114,12 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
   line on the ghost's. Phone page rendered with a simulated `cam` message. `core/museum_check.gd` passes 76
   assertions; all 19 suites pass, 1,352 assertions. Museum left: intro panels (with the story) and a human
   playtest, which should also judge the ALARM numbers.
+- [x] Playtest went fine (user, 2026-10-28). Audit of the three maps done; order approved: (1) Museum fixes and
+  sound, (2) the Mansion upgrade, (3) expo safety, (4) Ship bots and Museum dev tools, (5) crazy ideas.
+- [x] Step 1 (decision 139, 2026-10-28): the Museum's own round music and city night ambience with far sirens and
+  horns; the ghost's phone button reads JAAGTE RAHO on the Museum (was SHAKE); the guide covers all three maps and
+  its role text fits (it was clipped). `core/museum_check.gd` passes 80 assertions, `core/ui_check.gd` 206 (rendered
+  and inspected); all 19 suites pass, 1,358 assertions.
 - [ ] Gust of Wind and Lights Out
 - [x] Mover and ghost character models integrated (brought forward; visual acceptance pending)
 - [x] Party camera and Mansion wall fade implemented (human acceptance pending)

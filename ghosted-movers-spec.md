@@ -659,6 +659,8 @@ Gangplank waves (decisions 109 and 113): in live play, every 17-23 s (seeded) a 
 
 Ship audio (decision 110): the tug rings a ship's bell on delivery, rounds play a CC0 sea shanty ("A sailor's chant", Thimras), and the hull creaks at each end of the roll, over the existing sea, creak, rope, gull and foghorn ambience.
 
+Museum audio (decision 139): rounds play a CC0 spy loop ("Crouch jumping in your walls", Fupi), over a synthesized city night (traffic rumble, passing cars, lamp hum) with a far siren or a car horn every 14 to 30 s. An arena picks its round music with `MUSIC_TRACK` and its night bed with `AMBIENT_BED`; without them it gets the Mansion's spooky waltz and wind-and-crickets bed.
+
 Fog banks (decision 111): every 25-40 s a faint bank of soft puffs (at most 16% opacity each) rolls across the ship from stern to bow at 1.6 m/s; cosmetic only.
 
 At the fixed water plane (-1.6 m), loot is lost once through the normal loss/scoring path. A mover releases their own held item/handle, leaves play for 2 s, then returns empty-handed to a clear tug spawn. Rescue pauses with simulation and resets with the round. Camera, physics and HUD do not follow a hidden rescuing mover. No extra money penalty. Colliders never bob.

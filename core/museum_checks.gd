@@ -68,6 +68,17 @@ func run() -> int:
 	_check(trex != null and trex.get_node("Possessable").kind == Possessable.Kind.SLIDER, "The animatronic T-Rex stands in the Jurassic Hall, possessable like the sofa")
 	_check(door != null and door.get_node("Possessable").kind == Possessable.Kind.DOOR and door.get_node("Possessable").action_label() == "SPIN", "The revolving door turns in the lobby's doorway; its ACTION is SPIN")
 	_check(SETTINGS.MUSEUM_CAMERA_YAW != 0.0 and arena.ARENA_NAME in SETTINGS.FULL_POSSESSION_ARENAS, "In a Museum match the ghost may possess the door as well as sliders")
+	var sfx: Node = get_tree().root.get_node("Sfx")
+	_check(arena.MUSIC_TRACK == "round_museum" and ResourceLoader.exists(sfx.MUSIC_TRACKS[arena.MUSIC_TRACK]), "The Museum has its own round music")
+	var host_was: Node3D = Game.host
+	Game.host = world
+	sfx.start_ambient()
+	_check(sfx.ambient.playing and sfx.ambient.stream == sfx.city_bed and sfx.city_bed.loop_mode == AudioStreamWAV.LOOP_FORWARD, "The Museum's night sounds like a city, not the Mansion's crickets")
+	sfx.stop_ambient()
+	Game.host = host_was
+	_check(sfx.sounds.has("siren") and ResourceLoader.exists(arena.get_node("MuseumEnvironment").HORN), "A siren wails far off or a car honks now and then")
+	var phone_script: String = FileAccess.get_file_as_string("res://controller/controller.js")
+	_check(phone_script.contains('"%s": "JAAGTE RAHO"' % arena.ARENA_NAME), "The ghost's phone names the Museum's haunting JAAGTE RAHO, not SHAKE")
 	var turned: float = door.get_node("Wings").rotation.y
 	await _frames(60)
 	_check(absf(door.get_node("Wings").rotation.y - turned) > deg_to_rad(SETTINGS.REVOLVE_IDLE_SPEED * 0.5), "The door's wings turn slowly on their own")

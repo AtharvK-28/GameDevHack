@@ -16,6 +16,8 @@ const FURNITURE := {"animatronic": preload("res://props/Animatronic.tscn"), "rev
 const ARENA_NAME: String = "Museum of Mostly Real Things"
 const SIGNATURE_HAUNTING := preload("res://hauntings/JaagteRaho.gd")
 const GHOST_AVATAR := preload("res://actors/ghost_watchman_model.gd") # Bahadur, the night watchman.
+const MUSIC_TRACK: String = "round_museum" # A sneaky heist loop (Sfx).
+const AMBIENT_BED: String = "city" # Traffic and lamp hum instead of the Mansion's crickets (Sfx).
 
 signal caught_in_beam(slot: int) # A mover moved in Bahadur's torch beam; the round's goals and awards count it.
 signal alarm_tripped(slot: int) # A mover crossed a lit laser in the laser hall.

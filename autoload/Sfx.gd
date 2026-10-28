@@ -1,5 +1,5 @@
 # Small procedural sounds, all on the SFX bus: the banking chime, and the Mansion's night (a looping bed of wind
-# and crickets, plus thunder, an owl, a distant howl and crows), and the intro cutscene's goat, whoosh, rumble,
+# and crickets, plus thunder, an owl, a distant howl and crows), the Museum's city night (traffic and a far siren), and the intro cutscene's goat, whoosh, rumble,
 # walkie crackle and organ chord, the boing, theremin and sad trombone, plus Kenney CC0 sound files (thuds, glass,
 # coins, creaks, ticks, jingles) and the round music. The synthesized ones are made here at start-up, so
 # there are no sound files to license; full sound design belongs to the polish phase.
@@ -11,6 +11,9 @@ const AMBIENT_SECONDS: float = 8.0 # Length of the looping night bed.
 const WIND_SMOOTHING: float = 0.985 # 0 to 1: higher is a deeper, softer wind.
 const CRICKET_PITCH: float = 4300.0 # Hz.
 const CRICKET_CHIRPS_PER_SECOND: float = 2.6
+const CITY_SECONDS: float = 12.0 # Length of the looping city bed.
+const CITY_CARS: Array[Vector2] = [Vector2(3.0, 1.0), Vector2(8.5, 0.55)] # Cars passing: second in the loop, loudness.
+const CITY_FADE: float = 0.5 # Seconds crossfaded at the loop point.
 
 # --- Sound files (res://assets/audio/sfx/, Kenney CC0): name → variant count; "name_1.ogg" … when more than one ---
 const SFX_FOLDER: String = "res://assets/audio/sfx/"
@@ -20,13 +23,15 @@ const FILE_SOUNDS: Dictionary = {
 }
 const MUSIC_TRACKS: Dictionary = {
 	"lobby": "res://assets/audio/cutscene/music_cozy.ogg", "round": "res://assets/audio/cutscene/music_spooky.ogg",
-	"round_ship": "res://assets/audio/ship/music_shanty.ogg",
+	"round_ship": "res://assets/audio/ship/music_shanty.ogg", "round_museum": "res://assets/audio/museum/music_heist.ogg",
 }
 
 # --- Audio state ---
 var bank_sound: AudioStreamWAV
 var sounds: Dictionary = {} # Night sounds by name.
 var ambient := AudioStreamPlayer.new()
+var night_bed: AudioStreamWAV
+var city_bed: AudioStreamWAV # Built the first time an arena asks for it (a third of a second).
 var noise := RandomNumberGenerator.new()
 var files: Dictionary = {} # Name → Array of AudioStream variants.
 var music := AudioStreamPlayer.new()
@@ -43,7 +48,7 @@ func _ready() -> void:
 		"thunder": _thunder(), "owl": _owl(), "howl": _howl(), "caw": _caw(),
 		"goat": _goat(), "whoosh": _whoosh(), "rumble": _rumble(), "crackle": _crackle(), "organ": _organ(),
 		"boing": _boing(), "theremin": _theremin(), "trombone": _trombone(), "ship_bell": _ship_bell(), "wave_crash": _wave_crash(),
-		"squawk": _squawk(), "whistle": _whistle(), "roar": _roar(), "scream": _scream(),
+		"squawk": _squawk(), "whistle": _whistle(), "roar": _roar(), "scream": _scream(), "siren": _siren(),
 	}
 	for sound: String in FILE_SOUNDS:
 		var variants: Array[AudioStream] = []
@@ -53,7 +58,8 @@ func _ready() -> void:
 		files[sound] = variants
 	music.bus = &"Music"
 	add_child(music)
-	ambient.stream = _night_bed()
+	night_bed = _night_bed()
+	ambient.stream = night_bed
 	ambient.bus = &"SFX"
 	ambient.volume_db = Balance.AMBIENT_VOLUME_DB
 	add_child(ambient)
@@ -148,8 +154,16 @@ func _set_music(track: String, volume_db: float) -> void:
 
 
 func start_ambient() -> void:
-	if not ambient.playing:
-		ambient.play()
+	# An arena may bring its own bed (the Museum's city night); otherwise the Mansion's wind and crickets.
+	var arena: Node = Game.host.get("arena") if is_instance_valid(Game.host) else null
+	var bed: Variant = arena.get("AMBIENT_BED") if is_instance_valid(arena) else null
+	if bed == "city" and city_bed == null:
+		city_bed = _city_bed()
+	var stream: AudioStreamWAV = city_bed if bed == "city" else night_bed
+	if ambient.playing and ambient.stream == stream:
+		return
+	ambient.stream = stream
+	ambient.play()
 
 
 func stop_ambient() -> void:
@@ -185,6 +199,49 @@ func _night_bed() -> AudioStreamWAV:
 		var chirp: float = sin(TAU * CRICKET_PITCH * time) * (0.05 if chirp_phase < 0.12 and int(time * 40.0) % 2 == 0 else 0.0)
 		samples[index] = wind * 6.0 * swell + chirp
 	return _stream(samples, RATE, true)
+
+
+func _city_bed() -> AudioStreamWAV:
+	# The Museum's city at night: a low traffic rumble, two cars swishing past at different distances, and the faint
+	# hum of the street lamps. The last half second is crossfaded into the start, so the loop point is seamless.
+	var count: int = int(RATE * CITY_SECONDS)
+	var fade: int = int(RATE * CITY_FADE)
+	var samples := PackedFloat32Array()
+	samples.resize(count + fade)
+	var rumble: float = 0.0
+	var tyres: float = 0.0
+	var tyres_slow: float = 0.0
+	for index: int in range(count + fade):
+		var time: float = float(index) / RATE
+		rumble = rumble * 0.98 + noise.randf_range(-1.0, 1.0) * 0.02
+		tyres = tyres * 0.75 + noise.randf_range(-1.0, 1.0) * 0.25
+		tyres_slow = tyres_slow * 0.97 + tyres * 0.03
+		var passing: float = 0.0
+		for car: Vector2 in CITY_CARS:
+			passing += car.y * exp(-pow(fmod(time - car.x + CITY_SECONDS * 1.5, CITY_SECONDS) - CITY_SECONDS * 0.5, 2.0) / 1.4)
+		var hum: float = (sin(TAU * 100.0 * time) + 0.4 * sin(TAU * 200.0 * time)) * 0.006
+		samples[index] = rumble * (3.0 + 2.0 * passing) + (tyres - tyres_slow) * 0.35 * passing + hum
+	for index: int in range(fade):
+		var mix: float = float(index) / fade
+		samples[index] = samples[index] * mix + samples[count + index] * (1.0 - mix)
+	samples.resize(count)
+	return _stream(samples, RATE, true)
+
+
+func _siren() -> AudioStreamWAV:
+	# A police siren far across the city: a slow wail that swells as it nears a few streets away and fades again.
+	var count: int = int(RATE * 6.0)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	var phase: float = 0.0
+	var soft: float = 0.0
+	for index: int in range(count):
+		var time: float = float(index) / RATE
+		phase += TAU * (640.0 + 330.0 * (0.5 - 0.5 * cos(TAU * time / 2.4))) / RATE
+		var tone: float = sin(phase) * 0.8 + sin(phase * 2.0) * 0.2
+		soft = soft * 0.6 + tone * 0.4 # Distance takes the edge off.
+		samples[index] = soft * sin(PI * time / 6.0) * 0.3
+	return _stream(samples, RATE, false)
 
 
 func _thunder() -> AudioStreamWAV:

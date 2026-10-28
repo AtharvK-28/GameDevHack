@@ -213,6 +213,9 @@ function handleMessage(message) {
   }
 }
 
+// Each arena's signature haunting, by the arena name the host sends with the role.
+const HAUNT_LABELS = { "Old Mansion": "SHAKE", "Ghost Ship": "WIND", "Museum of Mostly Real Things": "JAAGTE RAHO" };
+
 function showRole(message) {
   releaseInputs();
   setGhostNear(0);
@@ -227,7 +230,7 @@ function showRole(message) {
   elements["held-label"].textContent = "Carry it to the truck. Don't break it.";
   elements["held-label"].hidden = isGhost;
   elements.energy.hidden = !isGhost;
-  elements["haunt-label"].textContent = message.arena === "Ghost Ship" ? "WIND" : message.arena === "Abandoned Museum" ? "LIGHTS OUT" : "SHAKE";
+  elements["haunt-label"].textContent = HAUNT_LABELS[message.arena] || "SHAKE";
   elements["curse-note"].hidden = true;
   for (const button of ghostButtons) {
     button.classList.remove("unavailable");

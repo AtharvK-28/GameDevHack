@@ -751,6 +751,7 @@ const FURNITURE_COLOURS: Array[Color] = [Color("a87a4f"), Color("9aa3ad")]
 const GHOST_PANEL_WIDTH: float = 240.0 # Pixels; the ghost energy bar shown to everyone.
 const HUD_FONT_SIZE: int = 20
 const HUD_SMALL_FONT_SIZE: int = 15
+const GUIDE_ROLE_FONT_SIZE: int = 16 # The How to play screen's MOVERS and GHOST columns.
 
 # --- Temporary banking sound settings ---
 const BANK_SAMPLE_RATE: int = 22050
@@ -1275,6 +1276,10 @@ const CAMERA_TILT: float = 14.0 # Degrees the cone tips down, for the look.
 const CAMERA_CONE_ALPHA: float = 0.07
 const ALARM_CAMERA: float = 6.0 # ALARM a camera adds when it spots someone,
 const CAMERA_ALARM_REST: float = 4.0 # at most once per mover in this many seconds.
+# The Museum's street sounds (decision 139): a far siren or a car horn every so often.
+const MUSEUM_CITY_CALL_INTERVAL := Vector2(14.0, 30.0) # Seconds between calls, at random in this range.
+const MUSEUM_SIREN_DB: float = -20.0
+const MUSEUM_HORN_DB: float = -26.0
 const SKELETON_GAP: float = 1.05 # Metres of clear floor between the skull's back and the vertebrae, for its carrier.
 const SKELETON_BONE := Color("e2d6b8")
 const SKELETON_STEEL := Color("3a3f45")

@@ -4,6 +4,7 @@
 # and a paved path round the sides and back; a stone plinth band round the building and a cornice on its far walls;
 # and a skyline of lit office blocks behind and beside it, with water tanks on the roofs. Only things a mover can
 # reach collide (the fountain, benches, sign, hedges, trees and cars); the skyline sits outside the movers' bounds.
+# Now and then a siren wails far off or a car honks down the street.
 extends Node3D
 
 const TOWN: String = "res://assets/models/decor/town/%s.glb"
@@ -11,6 +12,7 @@ const ROADS: String = "res://assets/models/decor/roads/%s.glb"
 const NATURE: String = "res://assets/models/decor/nature/%s.glb"
 const CARS: String = "res://assets/models/vehicles/kenney/%s.glb"
 const POLY: String = "res://assets/models/museum/polypizza/%s.glb"
+const HORN: String = "res://assets/audio/cutscene/horn.ogg"
 
 const STREET_X := Vector2(-40.0, 70.0) # Where the street and pavements run, west to east.
 const PAVEMENT_Z := Vector2(28.0, 30.5) # Front pavement, between the forecourt and the kerb.
@@ -35,6 +37,7 @@ const BLOCKS: Array[Array] = [
 ]
 
 var paint := {}
+var call_left: float = 0.0
 
 func _ready() -> void:
 	_ground()
@@ -46,9 +49,33 @@ func _ready() -> void:
 	_cars()
 	_building_trim()
 	_skyline()
+	call_left = randf_range(Balance.MUSEUM_CITY_CALL_INTERVAL.x, Balance.MUSEUM_CITY_CALL_INTERVAL.y)
 
 
-# --- Ground: paths round the building, pavements, kerbs and the street ---
+func _exit_tree() -> void:
+	Sfx.stop_ambient()
+
+
+# --- Street sounds: a far siren or a car horn now and then ---
+func _process(delta: float) -> void:
+	call_left -= delta
+	if call_left > 0.0:
+		return
+	call_left = randf_range(Balance.MUSEUM_CITY_CALL_INTERVAL.x, Balance.MUSEUM_CITY_CALL_INTERVAL.y)
+	if randi() % 3:
+		Sfx.play("siren", randf_range(0.92, 1.06), Balance.MUSEUM_SIREN_DB)
+	else:
+		var horn := AudioStreamPlayer.new()
+		horn.stream = load(HORN)
+		horn.pitch_scale = randf_range(0.85, 1.1)
+		horn.volume_db = Balance.MUSEUM_HORN_DB
+		horn.bus = &"SFX"
+		add_child(horn)
+		horn.finished.connect(horn.queue_free)
+		horn.play()
+
+
+# --- Ground:paths round the building, pavements, kerbs and the street ---
 func _ground() -> void:
 	var paving: Material = _surface("paving")
 	_slab(Rect2(-2.5, -2.5, 35.0, 2.5), paving) # Path behind the building.
