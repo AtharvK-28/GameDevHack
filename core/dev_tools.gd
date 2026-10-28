@@ -2,7 +2,8 @@
 # F10 in the lobby adds a ready stand-in phone: a real WebSocket client, so the match runs exactly as with phones.
 # Bots play the stand-ins (decision 121, core/bot_crew.gd) except the one the keyboard drives (1–4 to switch).
 # F9 opens the phone page in the laptop's browser, F3 shows the debug overlay, F5 and F6 change the round speed,
-# and Ctrl keys fire the match's events on demand.
+# and Ctrl keys fire the match's events on demand (Ctrl+2 and Ctrl+4 are the Ship's wave and fog, or the Museum's
+# ALARM and lasers, decision 141).
 extends CanvasLayer
 
 const Style := preload("res://screens/screen_style.gd")
@@ -12,7 +13,7 @@ const SHORTCUTS: Dictionary = {
 	KEY_1: "haunting", KEY_2: "wave", KEY_3: "smash", KEY_4: "fog", KEY_5: "vote",
 	KEY_W: "win", KEY_L: "loss", KEY_T: "time", KEY_N: "last", KEY_B: "bots", KEY_G: "cheat",
 }
-const KEYS_TEXT: String = "Ctrl+1 haunting · Ctrl+2 wave · Ctrl+3 smash · Ctrl+4 fog · Ctrl+5 vote · Ctrl+T +30 s\nCtrl+W/L win/lose · Ctrl+N next round is the last · Ctrl+B bots · Ctrl+G ghost cheat · F5/F6 speed"
+const KEYS_TEXT: String = "Ctrl+1 haunting · Ctrl+2 wave/ALARM · Ctrl+3 smash · Ctrl+4 fog/lasers · Ctrl+5 vote · Ctrl+T +30 s\nCtrl+W/L win/lose · Ctrl+N next round is the last · Ctrl+B bots · Ctrl+G ghost cheat · F5/F6 speed"
 
 # --- State ---
 var host: Node3D # Main.
@@ -162,8 +163,10 @@ func run_shortcut(action: String) -> void:
 			if arena.has_method("start_wave"):
 				arena.start_wave(Vector3.RIGHT if randf() < 0.5 else Vector3.LEFT)
 				note("Wave!")
+			elif arena.has_node("MuseumAlarm"):
+				note(museum_alarm(arena))
 			else:
-				note("Waves are on the Ghost Ship")
+				note("Waves are on the Ghost Ship; the ALARM is in the Museum")
 		"smash":
 			var item: Node3D = _dearest_item()
 			if item == null:
@@ -178,8 +181,10 @@ func run_shortcut(action: String) -> void:
 			if sky != null:
 				sky.roll_fog_bank()
 				note("Fog bank")
+			elif arena.has_node("MuseumLasers"):
+				note(museum_lasers(arena))
 			else:
-				note("Fog banks are on the Ghost Ship")
+				note("Fog banks are on the Ghost Ship; lasers are in the Museum")
 		"vote":
 			if host.audience_vote.open:
 				note("A vote is already open")
@@ -195,6 +200,45 @@ func run_shortcut(action: String) -> void:
 		"time":
 			Game.seconds_left += Balance.DEV_EXTRA_SECONDS
 			note("+%d s" % Balance.DEV_EXTRA_SECONDS)
+
+
+func museum_alarm(arena: Node3D) -> String:
+	# Ctrl+2 on the Museum: a full ALARM bar starts the police countdown; pressed again it skips to the lockdown, and
+	# during the lockdown it lifts the shutters.
+	var alarm: Node = arena.get_node("MuseumAlarm")
+	match alarm.state:
+		"":
+			alarm.enabled = true
+			alarm.add(100.0)
+			return "ALARM full: police on the way"
+		"warning":
+			alarm._close()
+			return "Lockdown now"
+		_:
+			alarm._open()
+			return "Lockdown over"
+
+
+func museum_lasers(arena: Node3D) -> String:
+	# Ctrl+4 on the Museum: the laser hall's gates off, or back on.
+	var lasers: Node = arena.get_node("MuseumLasers")
+	lasers.enabled = not lasers.enabled
+	return "Lasers %s" % ("on" if lasers.enabled else "off")
+
+
+func museum_line(arena: Node3D) -> String:
+	# The overlay's Museum line: the ALARM, the lasers, who each camera sees and how many glass cases are still shut.
+	var alarm: Node = arena.get_node("MuseumAlarm")
+	var state: String = "" if alarm.state == "" else (" · police in %.0f s" if alarm.state == "warning" else " · LOCKDOWN %.0f s") % alarm.left
+	var seen: PackedStringArray = []
+	var cameras: Node = arena.get_node("MuseumCameras")
+	for slot: int in cameras.spotted:
+		if cameras.spotted[slot] != "":
+			seen.append("%s P%d" % [cameras.spotted[slot], slot + 1])
+	var cases: Array = arena.get_children().filter(func(node: Node) -> bool: return node.get_script() == arena.CASE_SCRIPT)
+	var shut: int = cases.filter(func(node: Node) -> bool: return node.closed).size()
+	return "Museum · ALARM %d%%%s · lasers %s · CCTV %s · cases %d/%d shut" % [roundi(alarm.level), state, "on" if arena.get_node("MuseumLasers").enabled else "off",
+		", ".join(seen) if not seen.is_empty() else "nobody", shut, cases.size()]
 
 
 func _dearest_item() -> Node3D:
@@ -285,6 +329,8 @@ func overlay_lines() -> PackedStringArray:
 			fog = "rolling" if is_instance_valid(sky.fog_bank) else "in %.0f s" % sky.fog_left
 		var tilt: Vector3 = arena.rig.rotation_degrees
 		lines.append("Ship · wave %s · fog %s · roll %+.1f° pitch %+.1f° rise %+.2f m" % [wave, fog, tilt.x, tilt.z, arena.rig.position.y])
+	if arena.has_node("MuseumAlarm"):
+		lines.append(museum_line(arena))
 	if Game.starting_value > 0:
 		lines.append("Loot · banked %s of %s target · lost %s of %s limit" % [Loot.rupees(Game.banked_value), Loot.rupees(Game.target_value()), Loot.rupees(Game.lost_value), Loot.rupees(Game.loss_limit())])
 	var stats: PackedStringArray = []

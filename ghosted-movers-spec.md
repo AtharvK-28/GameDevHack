@@ -724,8 +724,8 @@ and saved with the other options; `core/dev_tools.gd` (added to the match world 
 - **Overlay.** **F3** toggles a debug panel in the bottom-left corner: FPS and phase, the driven slot and role, the
   ghost's energy, possession and cooldowns, each mover's ghost-near level and held item, the Ship's wave, fog, roll,
   pitch and rise, banked and lost loot against the target and limit, the round's award stats and the audience vote.
-- **Shortcuts (live play).** Ctrl+1 the arena haunting free (cooldown untouched), Ctrl+2 a wave (Ship), Ctrl+3 a big
-  smash on the dearest item, Ctrl+4 a fog bank (Ship), Ctrl+5 an audience vote, Ctrl+W / Ctrl+L end the round as a
+- **Shortcuts (live play).** Ctrl+1 the arena haunting free (cooldown untouched), Ctrl+2 a wave (Ship) or the ALARM (Museum: full, then lockdown, then over; decision 141), Ctrl+3 a big
+  smash on the dearest item, Ctrl+4 a fog bank (Ship) or the lasers off and on (Museum), Ctrl+5 an audience vote, Ctrl+W / Ctrl+L end the round as a
   win or a loss, Ctrl+T +30 s, Ctrl+N end the round as a win and make the next one the last. In any phase: Ctrl+B
   bots, Ctrl+G ghost cheat (full energy, no cooldowns or locks), F5 / F6 round speed ×0.25 to ×4 (`Game.normal_speed`;
   big smashes slow from it and return to it; the screens between rounds stay at ×1). Each answers with a short note.

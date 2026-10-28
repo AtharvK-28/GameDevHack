@@ -5,6 +5,7 @@
 extends Node3D
 
 var gates: Array[Dictionary] = [] # {x, beams: Array[MeshInstance3D], on}
+var enabled: bool = true # Developer mode can switch the gates off (Ctrl+4).
 var cycle_time: float = 0.0 # Checks may set this to put the gates in a known state.
 var cooldowns: Dictionary = {} # "slot:gate" -> seconds before that mover can trip that gate again.
 var flash := OmniLight3D.new()
@@ -53,6 +54,8 @@ func _ready() -> void:
 
 func is_on(index: int) -> bool:
 	# Each gate is lit for LASER_ON_SHARE of the cycle, the next gate a step behind, so a gap rolls down the hall.
+	if not enabled:
+		return false
 	var phase: float = fposmod(cycle_time - index * Balance.LASER_STAGGER, Balance.LASER_PERIOD) / Balance.LASER_PERIOD
 	return phase < Balance.LASER_ON_SHARE
 

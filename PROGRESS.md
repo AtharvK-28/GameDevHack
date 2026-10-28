@@ -128,6 +128,9 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
   new loot but slider-only possession, 6 of 10 (59%); as built, with full possession, 2 of 10 (38%). The loot is
   neutral; the ghost's door, chandelier, armour and rug make the bot crew much weaker (on one seed the bot pair
   could not hold the piano after the ghost shoved the clock and yanked the rug). Needs a human playtest to judge.
+- [x] Museum developer shortcuts (decision 141, 2026-10-28): Ctrl+2 drives the ALARM (full, lockdown, over),
+  Ctrl+4 switches the lasers, and the overlay shows the Museum's state. `core/museum_check.gd` passes 86 assertions,
+  `core/dev_mode_check.gd` 32.
 - [ ] Gust of Wind and Lights Out
 - [x] Mover and ghost character models integrated (brought forward; visual acceptance pending)
 - [x] Party camera and Mansion wall fade implemented (human acceptance pending)

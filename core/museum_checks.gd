@@ -363,6 +363,25 @@ func run() -> int:
 	_check(cams.sees(world.movers[0]) == "", "A mover in the Grand Hall, out of every camera's gallery, is not")
 	await _clear_props()
 
+	# --- Developer shortcuts (decision 141) ---
+	var dev: CanvasLayer = load("res://core/dev_tools.gd").new() # Main makes one only for matches.
+	dev.host = world
+	world.add_child(dev)
+	var sirens: Node = arena.get_node("MuseumAlarm")
+	_check(dev.museum_alarm(arena) == "ALARM full: police on the way" and sirens.state == "warning", "Developer Ctrl+2 fills the ALARM: the police are on the way")
+	_check(dev.museum_line(arena).contains("police in"), "The overlay shows the police countdown")
+	dev.museum_alarm(arena)
+	_check(sirens.state == "lockdown" and sirens.shutters.size() == 3 and dev.museum_line(arena).contains("LOCKDOWN"), "Ctrl+2 again skips to the lockdown")
+	dev.museum_alarm(arena)
+	_check(sirens.state == "" and sirens.shutters.is_empty(), "Ctrl+2 during the lockdown lifts the shutters")
+	sirens.enabled = false
+	var gates: Node = arena.get_node("MuseumLasers")
+	_check(dev.museum_lasers(arena) == "Lasers off" and not gates.is_on(0) and not gates.is_on(1) and dev.museum_line(arena).contains("lasers off"), "Developer Ctrl+4 switches the lasers off")
+	dev.museum_lasers(arena)
+	_check(gates.enabled, "and back on")
+	_check(dev.museum_line(arena).contains("cases") and dev.museum_line(arena).contains("CCTV"), "The overlay's Museum line lists the cameras and the glass cases")
+	dev.queue_free()
+
 	# --- The moon rock floats ---
 	var rock := _museum_loot("moon_rock", Vector2(15, 11.5), 0.0)
 	var stone := _museum_loot("golden_mask", Vector2(16, 13.5), 0.0)
