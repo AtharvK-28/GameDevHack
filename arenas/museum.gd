@@ -7,6 +7,7 @@ extends Node3D
 # --- Scene resources ---
 const LAYOUT_PATH: String = "res://arenas/layouts/museum_layout.json"
 const LOOT_SCENE := preload("res://props/Loot.tscn")
+const FURNITURE := {"animatronic": preload("res://props/Animatronic.tscn"), "revolving_door": preload("res://props/RevolvingDoor.tscn")}
 
 # --- Arena identity ---
 const ARENA_NAME: String = "Museum of Mostly Real Things"
@@ -32,6 +33,7 @@ func _ready() -> void:
 	truck = ArenaBuilder.build(self, layout)
 	_build_mood()
 	_spawn_loot()
+	_spawn_furniture()
 	_collect_gallery_lights.call_deferred() # After the dressing has hung its spotlights.
 
 
@@ -138,6 +140,15 @@ func set_darkness(amount: float) -> void:
 
 
 # --- Spawning ---
+func _spawn_furniture() -> void:
+	# Bahadur's toys: the animatronic T-Rex in the Jurassic Hall and the revolving door in the lobby's doorway.
+	for spot: Dictionary in layout.furniture:
+		var prop: Node3D = FURNITURE[spot.kind].instantiate()
+		var height: float = Balance.ANIMATRONIC_SIZE.y / 2.0 if spot.kind == "animatronic" else 0.0
+		prop.position = ArenaBuilder.point_of(spot, height)
+		add_child(prop)
+
+
 func _spawn_loot() -> void:
 	# The round's loot from the catalog's museum pool, each on a spot that suits it (a mask in Egypt, a crystal in
 	# the Jurassic Hall): 6/9/12 items with exactly one skull in a match; outside one, the whole pool.

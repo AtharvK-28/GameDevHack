@@ -84,6 +84,10 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
   caught in the beam" and the award CAUGHT RED-HANDED. `core/museum_check.gd` now passes 39 assertions; all 19
   suites pass, 1,315 assertions. Next: stage C (blinking lasers, swap the fakes), then the revolving door and the
   animatronic T-Rex.
+- [x] Bahadur's toys (decision 132, 2026-10-28): the animatronic T-Rex (possessed, it walks; SHOVE is a roaring
+  charge) and the revolving door (always turning; SPIN knocks down movers inside; the skull leaves by the laser
+  hall). The ghost may possess every kind of prop in a Museum match. `core/museum_check.gd` passes 46 assertions
+  (its walking routes now go through the laser hall); all 19 suites pass, 1,322 assertions.
 - [ ] Gust of Wind and Lights Out
 - [x] Mover and ghost character models integrated (brought forward; visual acceptance pending)
 - [x] Party camera and Mansion wall fade implemented (human acceptance pending)

@@ -1,8 +1,9 @@
 # The Museum check's body (run by core/museum_check.gd), on the Ship check's world and movement helpers.
 extends "res://core/ship_checks.gd"
 
-# Walks from the van into each gallery: the long way round through the lobby's front door and the grand hall.
-const LOBBY: Array[Vector2] = [Vector2(8, 22.6), Vector2(26.5, 22.6), Vector2(26.5, 17.5), Vector2(15, 17.5), Vector2(15, 11.5)]
+# Walks from the van into each gallery: in through the laser hall's door, across the lobby and up the grand hall
+# (the lobby's front door is the revolving door, tested on its own).
+const LOBBY: Array[Vector2] = [Vector2(4.5, 21.6), Vector2(2.1, 21.4), Vector2(2.1, 17.3), Vector2(9, 17.3), Vector2(15, 17.3), Vector2(15, 11.5)]
 const GALLERIES: Dictionary = {
 	"Rotunda": [Vector2(15, 6.5)],
 	"Art Gallery": [Vector2(12, 11.5), Vector2(6, 11.5)],
@@ -50,6 +51,41 @@ func run() -> int:
 	var dressing: Node = arena.get_node("MuseumDressing")
 	_check(arena.get_node("MuseumDressing/TRexSkeleton") != null and dressing.skull_plaque.text == SETTINGS.SKELETON_PLAQUE, "The skeleton stands in the rotunda, its plaque saying do not touch")
 	_check(arena.truck != null and arena.get_node_or_null("Van") != null, "The van is parked at the loading dock with its delivery zone")
+	# --- Bahadur's toys ---
+	var trex: RigidBody3D = null
+	var door: Node3D = null
+	for node: Node in arena.get_children():
+		if node.scene_file_path.ends_with("Animatronic.tscn"):
+			trex = node
+		elif node.scene_file_path.ends_with("RevolvingDoor.tscn"):
+			door = node
+	_check(trex != null and trex.get_node("Possessable").kind == Possessable.Kind.SLIDER, "The animatronic T-Rex stands in the Jurassic Hall, possessable like the sofa")
+	_check(door != null and door.get_node("Possessable").kind == Possessable.Kind.DOOR and door.get_node("Possessable").action_label() == "SPIN", "The revolving door turns in the lobby's doorway; its ACTION is SPIN")
+	_check(SETTINGS.MUSEUM_CAMERA_YAW != 0.0 and arena.ARENA_NAME in SETTINGS.FULL_POSSESSION_ARENAS, "In a Museum match the ghost may possess the door as well as sliders")
+	var turned: float = door.get_node("Wings").rotation.y
+	await _frames(60)
+	_check(absf(door.get_node("Wings").rotation.y - turned) > deg_to_rad(SETTINGS.REVOLVE_IDLE_SPEED * 0.5), "The door's wings turn slowly on their own")
+	world.set_ghost_slot(3)
+	await _frames(5)
+	var bahadur: Node3D = world.ghost
+	var from: Vector3 = trex.global_position
+	bahadur.possess(trex.get_node("Possessable"))
+	for frame: int in range(70):
+		_set_input(3, Vector2(-1, 0))
+		await get_tree().physics_frame
+	_set_input(3, Vector2.ZERO)
+	_check(trex.global_position.distance_to(from) > 1.0 and String(trex.player.current_animation).ends_with("_Walk"), "Bahadur walks the T-Rex across the hall (%.1f m) and it plays its walk" % trex.global_position.distance_to(from))
+	trex.get_node("Possessable").act(Vector2(-1, 0))
+	await _frames(3)
+	_check(String(trex.player.current_animation).ends_with("_Attack"), "SHOVE: the T-Rex charges with its attack and a roar")
+	bahadur.leave()
+	world.set_ghost_slot(-1)
+	await _frames(5)
+	_place(0, Vector2(26.5, 20.6))
+	await _frames(5)
+	door.act()
+	await _frames(10)
+	_check(world.movers[0].is_tumbling() and not door.can_act(), "SPIN: the door whips round and knocks down the mover inside, then needs a rest")
 	await _clear_props()
 
 	# --- Every gallery is reachable from the van ---

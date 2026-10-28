@@ -158,6 +158,8 @@ func set_highlighted(value: bool) -> void:
 
 # --- Stick and ACTION ---
 func action_label() -> String:
+	if prop.has_method("action_label"):
+		return prop.action_label() # A prop with its own ACTION names it, like the revolving door's SPIN.
 	return Balance.ROLL_LABEL if _rolls() else Balance.ACTION_LABELS[kind]
 
 

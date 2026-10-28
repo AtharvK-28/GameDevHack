@@ -43,7 +43,7 @@ func _ready() -> void:
 		"thunder": _thunder(), "owl": _owl(), "howl": _howl(), "caw": _caw(),
 		"goat": _goat(), "whoosh": _whoosh(), "rumble": _rumble(), "crackle": _crackle(), "organ": _organ(),
 		"boing": _boing(), "theremin": _theremin(), "trombone": _trombone(), "ship_bell": _ship_bell(), "wave_crash": _wave_crash(),
-		"squawk": _squawk(), "whistle": _whistle(),
+		"squawk": _squawk(), "whistle": _whistle(), "roar": _roar(),
 	}
 	for sound: String in FILE_SOUNDS:
 		var variants: Array[AudioStream] = []
@@ -258,6 +258,24 @@ func _squawk() -> AudioStreamWAV:
 		var envelope: float = minf(1.0, local * 80.0) * exp(-local * (7.0 if second else 14.0))
 		var tone: float = clampf(sin(phase) * 3.0, -1.0, 1.0) # Clipped sine: a reedy buzz.
 		samples[index] = (tone * 0.7 + noise.randf_range(-1.0, 1.0) * 0.3) * envelope * 0.35
+	return _stream(samples, RATE, false)
+
+
+func _roar() -> AudioStreamWAV:
+	# The animatronic T-Rex: a low, gravelly roar that swells and falls, with a mechanical whirr under it.
+	var count: int = int(RATE * 1.4)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	var phase: float = 0.0
+	var smooth: float = 0.0
+	for index: int in range(count):
+		var time: float = float(index) / RATE
+		phase += TAU * (95.0 - 35.0 * time + 12.0 * sin(TAU * 9.0 * time)) / RATE
+		var envelope: float = minf(1.0, time * 6.0) * minf(1.0, (1.4 - time) * 2.5)
+		smooth = smooth * 0.82 + noise.randf_range(-1.0, 1.0) * 0.18 # Low-passed noise: the gravel in the throat.
+		var growl: float = clampf(sin(phase) * 2.2, -1.0, 1.0) * 0.55 + smooth * 1.6
+		var whirr: float = sin(TAU * 440.0 * time) * 0.04 * minf(1.0, time * 10.0)
+		samples[index] = (growl * envelope + whirr) * 0.45
 	return _stream(samples, RATE, false)
 
 

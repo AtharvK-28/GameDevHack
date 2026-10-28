@@ -778,17 +778,6 @@
 				"yaw": 0
 			},
 			{
-				"id": "jurassic-3",
-				"role": "crystal",
-				"at": [
-					28.4,
-					6.8
-				],
-				"floor": 0.9,
-				"size": "M",
-				"yaw": 0
-			},
-			{
 				"id": "space-1",
 				"role": "space",
 				"at": [
@@ -845,6 +834,24 @@
 			}
 		]
 	},
+	"furniture": [
+		{
+			"kind": "animatronic",
+			"at": [
+				28.0,
+				6.0
+			],
+			"floor": 0
+		},
+		{
+			"kind": "revolving_door",
+			"at": [
+				26.5,
+				20.0
+			],
+			"floor": 0
+		}
+	],
 	"camera_bounds": [
 		1,
 		1,
