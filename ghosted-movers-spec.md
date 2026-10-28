@@ -285,6 +285,8 @@ Each round has a clear team result: the movers either hit the quota or they don'
 
 **Big-smash punch-in (decision 118).** A hit costing ₹5,000+, or a ₹10,000+ item shattering, slows the match to 30% for 0.6 s while the camera eases in on it (SMASH_* in Balance). At most once every 4 s.
 
+**Disaster Cam (decision 144).** `core/disaster_cam.gd` records the last 8 s of live play (bodies, ghost, movers with their animation, the Ship's rig, sounds, bursts and popups). The round's worst disaster (losses within 2 s, at least ₹2,000 or a shatter) becomes a clip from 4 s before its biggest hit to 2 s after, with visual copies of its bodies. `screens/disaster_replay.gd` plays it letterboxed before the round-end page: a rewind, the build-up, 0.3× slow motion round the hit, the item, the loss and who to blame. The final results open with the match's worst three when there are two or more. Enter or Space skips. Numbers are `DISASTER_CAM_*`.
+
 **Awards (decision 116).** After every round, and for the whole match on the final standings, each player can earn one funny award: MAN OVERBOARD, CAUGHT RED-HANDED, HUMAN ALARM CLOCK, GRANDFATHER'S ALARM (rang the Mansion's clock most, decision 140), BUTTERFINGERS, FLOOR INSPECTOR, MENACE or PACK MULE (Balance.AWARDS, checked in that order, each to the leader without one). Phones show their own.
 
 ## Camera, visuals and audio
@@ -473,6 +475,7 @@ ghosted-movers/
 ├── core/
 │   ├── InputRouter.gd    # phone / keyboard / gamepad → one PlayerInput per slot
 │   ├── qr_code.gd        # QR encoder for the lobby's join link (byte mode, level M, versions 1–6)
+│   ├── disaster_cam.gd   # Disaster Cam's recorder: the last seconds of play and the round's worst disaster as a clip
 │   └── *_check.gd        # headless checks: plumbing, carrying, team carry, ghost, match
 ├── screens/              # each shows itself in its Game phase and keeps running while the world is paused
 │   ├── screen_style.gd   # the comic look for the host screens: panels, captions, bubbles, stamps, chips, keycaps, figures
@@ -480,6 +483,7 @@ ghosted-movers/
 │   ├── RoleReveal.tscn   # splash page: Seth-ji names the ghost player, crew line-up, stamped 3 s countdown
 │   ├── RoundEnd.tscn     # DELIVERED!/GHOSTED! stamp, reason, stat tiles, counting points; Enter next, R restart, L lobby
 │   ├── Results.tscn      # podium for the top three with a crown (awards deferred)
+│   ├── disaster_replay.gd # Disaster Cam: the worst disaster replayed before the round end; the worst three before the results
 │   ├── Cutscene.tscn     # intro story panels with music and sound cues; Enter next, Esc skip
 │   └── HUD.tscn          # timer, delivered vs target, lost vs limit, bonus goal, ghost energy, pause overlay
 ├── actors/

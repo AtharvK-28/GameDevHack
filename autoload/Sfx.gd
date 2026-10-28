@@ -49,7 +49,7 @@ func _ready() -> void:
 		"goat": _goat(), "whoosh": _whoosh(), "rumble": _rumble(), "crackle": _crackle(), "organ": _organ(),
 		"boing": _boing(), "theremin": _theremin(), "trombone": _trombone(), "ship_bell": _ship_bell(), "wave_crash": _wave_crash(),
 		"squawk": _squawk(), "whistle": _whistle(), "roar": _roar(), "scream": _scream(), "siren": _siren(),
-		"meow": _meow(), "slosh": _slosh(), "chime": _chime(), "giggle": _giggle(),
+		"meow": _meow(), "slosh": _slosh(), "chime": _chime(), "giggle": _giggle(), "rewind": _rewind(),
 	}
 	for sound: String in FILE_SOUNDS:
 		var variants: Array[AudioStream] = []
@@ -74,6 +74,7 @@ func play(sound: String, pitch: float = 1.0, volume_db: float = 0.0) -> void:
 		stream = files[sound].pick_random()
 	if stream == null:
 		return
+	DisasterCam.note_sound(sound, pitch, volume_db)
 	var player := AudioStreamPlayer.new()
 	player.stream = stream
 	player.pitch_scale = pitch
@@ -135,9 +136,18 @@ func _on_phase(phase: String) -> void:
 			_set_music(track if track is String else "round", Balance.MUSIC_ROUND_DB)
 		"result":
 			_set_music("", 0.0)
-			play("win" if Game.result.get("moversWon", false) else "lose", 1.0, Balance.SFX_JINGLE_DB)
+			if Game.replay.is_empty(): # Otherwise the Disaster Cam replay plays it as the page shows.
+				phase_jingle(phase)
 		"final":
-			play("final", 1.0, Balance.SFX_JINGLE_DB)
+			if Game.replay.is_empty():
+				phase_jingle(phase)
+
+
+func phase_jingle(phase: String) -> void:
+	if phase == "result":
+		play("win" if Game.result.get("moversWon", false) else "lose", 1.0, Balance.SFX_JINGLE_DB)
+	elif phase == "final":
+		play("final", 1.0, Balance.SFX_JINGLE_DB)
 
 
 func _set_music(track: String, volume_db: float) -> void:
@@ -449,6 +459,23 @@ func _goat() -> AudioStreamWAV:
 		var envelope: float = minf(1.0, time * 30.0) * minf(1.0, (0.9 - time) * 6.0)
 		smooth = smooth * 0.6 + (fmod(phase / TAU, 1.0) * 2.0 - 1.0) * 0.4 # Softened sawtooth.
 		samples[index] = smooth * pulse * envelope * 0.4
+	return _stream(samples, RATE, false)
+
+
+func _rewind() -> AudioStreamWAV:
+	# A tape rewinding: a fast warbling squeal over hiss, rising as the reel spins up (Disaster Cam, decision 144).
+	var count: int = int(RATE * 0.7)
+	var samples := PackedFloat32Array()
+	samples.resize(count)
+	var phase: float = 0.0
+	var hiss: float = 0.0
+	for index: int in range(count):
+		var time: float = float(index) / RATE
+		var envelope: float = minf(1.0, time / 0.05) * minf(1.0, (0.7 - time) / 0.12)
+		var pitch: float = lerpf(900.0, 2600.0, time / 0.7) * (1.0 + 0.12 * sin(TAU * 23.0 * time))
+		phase += TAU * pitch / RATE
+		hiss = hiss * 0.6 + noise.randf_range(-1.0, 1.0) * 0.4
+		samples[index] = (sin(phase) * 0.35 + hiss * 0.25) * envelope
 	return _stream(samples, RATE, false)
 
 

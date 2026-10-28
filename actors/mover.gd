@@ -555,7 +555,9 @@ func _letter(words: String, fill: Color, outline: Color) -> void:
 	bubble.no_depth_test = true
 	bubble.position.y = name_label.position.y + Balance.SHOUT_HEIGHT
 	bubble.scale = Vector3.ONE * Balance.VALUE_POPUP_PUNCH
+	bubble.add_to_group("popups")
 	add_child(bubble)
+	DisasterCam.note_label(bubble, self)
 	var punch := bubble.create_tween()
 	punch.tween_property(bubble, "scale", Vector3.ONE, Balance.VALUE_POPUP_PUNCH_TIME).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	var fade := bubble.create_tween()

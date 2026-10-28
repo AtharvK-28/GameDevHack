@@ -13,6 +13,7 @@ const MANSION_SCENE := preload("res://arenas/Mansion.tscn")
 const GREYBOX_SCENE := preload("res://arenas/Greybox.tscn")
 const WINDOW_KEYS := preload("res://core/window_keys.gd")
 const DEV_TOOLS := preload("res://core/dev_tools.gd")
+const DISASTER_REPLAY := preload("res://screens/disaster_replay.gd")
 const WIPE_PHASES: Array[String] = ["lobby", "intro", "reveal", "result", "final"]
 const SCREEN_SCENES: Array[PackedScene] = [
 	preload("res://screens/HUD.tscn"), preload("res://screens/Lobby.tscn"), preload("res://screens/RoleReveal.tscn"),
@@ -22,6 +23,7 @@ const SCREEN_SCENES: Array[PackedScene] = [
 var camera: Camera3D
 var audience_vote: AudienceVote # Runs the audience's votes during live play.
 var dev_tools: CanvasLayer # Developer mode: stand-in phones, the debug overlay and event shortcuts.
+var disaster_cam: DisasterCam # Records the round's worst disaster for the replay (decision 144).
 var status_label: Label # Harness overlay only; the match uses the screens instead.
 var ghost_panel: PanelContainer
 var ghost_label: Label
@@ -61,6 +63,10 @@ func _ready() -> void:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 		_build_match_screens()
 		Game.attach(self)
+		disaster_cam = DisasterCam.new()
+		disaster_cam.name = "DisasterCam"
+		disaster_cam.host = self
+		add_child(disaster_cam)
 		dev_tools = DEV_TOOLS.new()
 		dev_tools.host = self
 		add_child(dev_tools)
@@ -363,6 +369,7 @@ func _build_match_screens() -> void:
 	add_child(canvas)
 	for scene: PackedScene in SCREEN_SCENES:
 		canvas.add_child(scene.instantiate())
+	canvas.add_child(DISASTER_REPLAY.new()) # Over the screens: it plays before the round-end page shows.
 	Game.changed.connect(_wipe_on_new_screen)
 
 

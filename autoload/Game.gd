@@ -36,6 +36,7 @@ var goals: RefCounted = ROUND_GOALS.new() # This round's stars and bonus goals (
 var smash_ready_at: int = 0 # Ticks (ms) before another big-smash punch-in may play.
 var slow_until: int = 0 # Ticks (ms) when the current punch-in's slow motion ends.
 var normal_speed: float = 1.0 # Live play's game speed; developer mode changes it (decision 121).
+var replay: Array[Dictionary] = [] # Disaster Cam clips to show before this result page (decision 144); empty once shown.
 
 # --- Setup ---
 func _ready() -> void:
@@ -69,6 +70,7 @@ func start_match() -> void:
 	round_index = 0
 	scores.clear()
 	match_stats.clear()
+	_disaster_cam_call("forget_match")
 	for slot: int in participants:
 		scores[slot] = 0.0
 	Net.accept_new_players = false
@@ -224,6 +226,7 @@ func _finish_round(movers_won: bool, reason: String) -> void:
 	add_stat(ghost_slot, "wrecked", lost_value)
 	result = {"moversWon": movers_won, "reason": reason, "banked": banked_value, "starting": starting_value, "lost": lost_value, "awards": awards_for(round_stats),
 		"stars": stars, "goal": goals.goal.duplicate(), "ghostGoal": goals.ghost_goal.duplicate()}
+	replay.assign(_disaster_cam_call("finish_round", []))
 	_set_phase("result")
 	for slot: int in participants:
 		Net.send_to_player(Net.player_for_slot(slot), {"type": "result", "moversWon": movers_won, "points": round_points, "stars": stars,
@@ -248,6 +251,12 @@ func big_smash(point: Vector3) -> void:
 
 func punching_in() -> bool:
 	return Time.get_ticks_msec() < slow_until
+
+
+func _disaster_cam_call(method: String, fallback: Variant = null, arguments: Array = []) -> Variant:
+	# The match's Disaster Cam recorder, when there is one (checks may run a world without it).
+	var recorder: Node = host.get("disaster_cam") if is_instance_valid(host) else null
+	return recorder.callv(method, arguments) if is_instance_valid(recorder) else fallback
 
 
 # --- Awards ---
@@ -321,6 +330,8 @@ func restart_round() -> void:
 	for slot: int in participants:
 		scores[slot] -= round_points.get(slot, 0.0)
 		Net.player_for_slot(slot).points = scores[slot]
+	replay.clear()
+	_disaster_cam_call("forget_round", null, [round_index])
 	_begin_round(true)
 
 
@@ -328,7 +339,9 @@ func next_round() -> void:
 	if phase != "result":
 		return
 	_fold_round_stats() # Only rounds played on count: a restart replays the round instead.
+	replay.clear()
 	if round_index + 1 >= round_count:
+		replay.assign(_disaster_cam_call("reel", []))
 		_set_phase("final")
 		for player: Dictionary in Net.players:
 			Net.send_to_player(player, {"type": "final", "standings": standings(), "awards": awards_for(match_stats)})
@@ -348,6 +361,8 @@ func return_to_lobby() -> void:
 	pause_reason = ""
 	host_paused = false
 	ghost_slot = -1
+	replay.clear()
+	_disaster_cam_call("forget_match")
 	for player: Dictionary in Net.players:
 		player.ready = false
 		player.role = ""

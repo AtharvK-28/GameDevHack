@@ -27,6 +27,7 @@ var pids: Array[String] = []
 var secrets: Array[String] = []
 var next_heartbeat: int = 0
 var fresh_layout: Array = [] # Round 1's seeded layout, before any scenario changes it.
+var skip_replays: bool = true # A host key on a result page first skips any Disaster Cam replay (decision 144).
 
 # --- Setup ---
 func _initialize() -> void:
@@ -382,6 +383,8 @@ func _wait_until(condition: Callable, seconds: float) -> void:
 
 
 func _key(key: Key) -> void:
+	if skip_replays and game.phase in ["result", "final"] and not game.replay.is_empty() and key != KEY_SPACE:
+		await _key(KEY_SPACE)
 	for pressed: bool in [true, false]:
 		var event := InputEventKey.new()
 		event.physical_keycode = key

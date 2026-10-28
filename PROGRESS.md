@@ -138,6 +138,13 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - [x] Throw your teammate (decision 143, 2026-10-28): lift an empty-handed teammate with GRAB, THROW them about 5.5 m
   (over a lit laser gate, or overboard), let go to set them down, BRACE to wriggle free. Rendered lifted and mid-air.
   `core/crazy_check.gd` 20 assertions; `core/museum_check.gd` 88; all 21 suites pass, 1,429 assertions.
+- [x] Disaster Cam (decision 144, 2026-10-28): the round's worst disaster replays letterboxed in slow motion before
+  the round-end page (rewind, build-up, the hit, the blame); the final results open with the match's worst three. Rendered
+  on the Mansion with bots carrying the piano. New suite `core/replay_check.gd`, 18 assertions; all 22 suites pass,
+  1,447 assertions.
+- [ ] Story cutscenes from scratch: `assets/cutscenes/CUTSCENE_BRIEF.md` has the story ("The Malhotra Fortune"), the
+  Gemini prompts for 7 reference sheets and 28 panels (6 more for an optional epilogue). Waiting for the images and the
+  story's approval; then wire them in (new folders, the Museum intro, end-of-match cliffhangers).
 - [ ] Gust of Wind and Lights Out
 - [x] Mover and ghost character models integrated (brought forward; visual acceptance pending)
 - [x] Party camera and Mansion wall fade implemented (human acceptance pending)

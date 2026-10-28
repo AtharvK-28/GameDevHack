@@ -42,7 +42,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 # --- Refresh ---
 func _refresh() -> void:
-	visible = Game.phase == "result"
+	visible = Game.phase == "result" and Game.replay.is_empty() # The Disaster Cam replay plays first.
 	if not visible or Game.result.is_empty():
 		shown = false
 		return

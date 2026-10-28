@@ -12,6 +12,7 @@ static func burst(at: Vector3, kind: Kind, parent: Node, amount_scale: float = 1
 	# A one-shot burst at a world position; it frees itself once its particles are gone.
 	if not is_instance_valid(parent) or not parent.is_inside_tree():
 		return
+	DisasterCam.note_burst(at, kind, amount_scale)
 	var settings: Dictionary = Balance.FX_BURSTS[kind]
 	var particles := _particles(settings.colour, settings.size, settings.lifetime, settings.get("glow", false))
 	particles.one_shot = true

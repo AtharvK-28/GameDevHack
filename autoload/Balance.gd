@@ -957,6 +957,36 @@ const SMASH_SLOWMO_SECONDS: float = 0.6 # Real seconds it lasts.
 const SMASH_PUNCH_DISTANCE: float = 10.0 # Metres the camera eases in to.
 const SMASH_PUNCH_FOCUS: float = 0.65 # How far toward the smash the camera's focus moves, 0 to 1.
 const SMASH_COOLDOWN: float = 4.0 # Real seconds before another punch-in.
+# Disaster Cam (decision 144): the recorder keeps the last few seconds of live play; the round's worst disaster (a
+# cluster of losses worth DISASTER_CAM_MIN_LOSS, or anything shattering) replays before the round-end page, and the
+# match's worst three replay before the final results. Times are game seconds of the recording unless noted.
+const DISASTER_CAM_STEP: int = 2 # Physics frames between recorded frames (30 a second at 60 Hz).
+const DISASTER_CAM_BUFFER: float = 8.0 # Seconds of recording kept.
+const DISASTER_CAM_WINDOW: float = 2.0 # Losses within this long of the first count as one disaster.
+const DISASTER_CAM_MIN_LOSS: int = 2000 # Rupees a disaster must cost to replay, unless something shattered.
+const DISASTER_CAM_LEAD: float = 4.0 # Seconds of build-up before the moment.
+const DISASTER_CAM_TAIL: float = 2.0 # Seconds of aftermath after it.
+const DISASTER_CAM_REEL_LEAD: float = 1.5 # The final reel's shorter clips.
+const DISASTER_CAM_REEL_TAIL: float = 1.5
+const DISASTER_CAM_REEL_SIZE: int = 3
+const DISASTER_CAM_SLOW: float = 0.3 # Replay speed around the moment.
+const DISASTER_CAM_SLOW_BEFORE: float = 0.4 # Seconds before the moment the slow motion starts.
+const DISASTER_CAM_SLOW_AFTER: float = 0.8
+const DISASTER_CAM_SLOW_PITCH: float = 0.7 # Sounds in slow motion play lower.
+const DISASTER_CAM_REWIND_SECONDS: float = 0.7 # Real seconds of the rewind at the start of each clip.
+const DISASTER_CAM_REWIND_DB: float = -6.0
+const DISASTER_CAM_HOLD: float = 0.8 # Real seconds on the last frame.
+const DISASTER_CAM_FAR: float = 13.0 # Camera distance in metres at the start of a clip, easing to NEAR at its end.
+const DISASTER_CAM_NEAR: float = 7.5
+const DISASTER_CAM_ORBIT: float = 10.0 # Degrees the camera swings either side of the arena's usual angle.
+const DISASTER_CAM_SHAKE: float = 0.6 # Camera trauma at the moment, 0 to 1.
+const DISASTER_CAM_FLASH_ALPHA: float = 0.7 # The white flash at the moment, 0 to 1.
+const DISASTER_CAM_FLASH_TIME: float = 0.35
+const DISASTER_CAM_BAR: float = 0.11 # Letterbox bars, as a share of the screen height each.
+const DISASTER_CAM_BLINK: float = 0.5 # Seconds the REC light is on, then off.
+const DISASTER_CAM_REC_COLOUR := Color("ff4d4d")
+const DISASTER_CAM_NOBODY: String = "NOBODY TOUCHED IT. ALLEGEDLY."
+const DISASTER_CAM_SKIP_SOUNDS: Array[String] = ["tick", "count", "go", "win", "lose", "final"] # Never replayed.
 const SFX_TROMBONE_DB: float = -4.0
 const SFX_COINS_DB: float = -6.0 # The coin jingle under the banking chime.
 const SFX_CREAK_DB: float = -6.0 # Possession: a creak and a theremin swell.

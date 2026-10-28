@@ -357,8 +357,10 @@ func show_popup(message: String, colour: Color) -> void:
 	popup.pixel_size = Balance.VALUE_POPUP_PIXEL_SIZE
 	popup.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	popup.no_depth_test = true
+	popup.add_to_group("popups")
 	get_parent().add_child(popup)
 	popup.global_position = price_label.global_position + Vector3.UP * Balance.VALUE_POPUP_START
+	DisasterCam.note_label(popup)
 	popup.scale = Vector3.ONE * Balance.VALUE_POPUP_PUNCH
 	var punch := popup.create_tween()
 	punch.tween_property(popup, "scale", Vector3.ONE, Balance.VALUE_POPUP_PUNCH_TIME).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
