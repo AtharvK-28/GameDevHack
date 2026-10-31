@@ -146,8 +146,8 @@ static func slam(holder: Control) -> void:
 	tween.tween_property(frame, "modulate:a", 1.0, Balance.COMIC_STAMP_TIME * 0.5)
 
 
-static func bubble(bbcode: String, size: int = Balance.UI_BODY_SIZE) -> VBoxContainer:
-	# A white speech bubble with its tail at the lower left. The text is BBCode: [b]…[/b] is comic lettering and
+static func bubble(bbcode: String, size: int = Balance.UI_BODY_SIZE, tail_right: bool = false) -> VBoxContainer:
+	# A white speech bubble with its tail at the lower left, or lower right. The text is BBCode: [b]…[/b] is comic lettering and
 	# [color=…] colours a name. The text node is the bubble's first child's child: get_child(0).get_child(0).
 	var holder := VBoxContainer.new()
 	holder.add_theme_constant_override("separation", 0)
@@ -173,6 +173,9 @@ static func bubble(bbcode: String, size: int = Balance.UI_BODY_SIZE) -> VBoxCont
 		var left: float = Balance.COMIC_BUBBLE_CORNER + 8.0
 		var top: float = -Balance.COMIC_BORDER - 1.0 # Covers the bubble's bottom border.
 		var points := PackedVector2Array([Vector2(left, top), Vector2(left + Balance.COMIC_TAIL_SIZE.x, top), Vector2(left - 6.0, Balance.COMIC_TAIL_SIZE.y)])
+		if tail_right:
+			for index: int in range(points.size()):
+				points[index].x = tail.size.x - points[index].x
 		tail.draw_colored_polygon(points, Color.WHITE)
 		tail.draw_polyline(PackedVector2Array([points[1], points[2], points[0]]), Balance.COMIC_INK, Balance.COMIC_BORDER, true)
 	)

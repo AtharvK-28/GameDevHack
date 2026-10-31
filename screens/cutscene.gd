@@ -1,6 +1,7 @@
-# Intro cutscene: the arena's story panels (Balance.INTRO_PANELS for the Mansion, SHIP_INTRO_PANELS for the Ship),
-# full screen, each slowly zooming and drifting while its cues play over a music bed and looping beds. Panels may
-# carry lettering (caption, speech bubble, title) drawn over the picture. Shown in the "intro" phase, once per match.
+# Intro cutscene: the arena's story panels (Balance.INTRO_PANELS, SHIP_INTRO_PANELS, MUSEUM_INTRO_PANELS), full
+# screen, each slowly zooming and drifting while its cues play over a music bed and looping beds, with a video panel
+# for each ghost's entrance. Panels may carry lettering (caption, speech bubble, title) drawn over the picture. Shown
+# in the "intro" phase, once per match.
 # Host keys: Enter for the next panel, Esc to skip to the first round.
 extends Control
 
@@ -8,7 +9,7 @@ const Style := preload("res://screens/screen_style.gd")
 const SOUND_FOLDER: String = "res://assets/audio/cutscene/"
 const MUSIC_FILES: Dictionary = {
 	"cozy": SOUND_FOLDER + "music_cozy.ogg", "spooky": SOUND_FOLDER + "music_spooky.ogg",
-	"shanty": "res://assets/audio/ship/music_shanty.ogg",
+	"shanty": "res://assets/audio/ship/music_shanty.ogg", "heist": "res://assets/audio/museum/music_heist.ogg",
 }
 const BED_FILES: Dictionary = {
 	"rain": SOUND_FOLDER + "rain_loop.ogg", "engine": SOUND_FOLDER + "engine_loop.ogg",
@@ -103,9 +104,14 @@ func _finish() -> void:
 # --- Panels ---
 func _panels() -> Array[Dictionary]:
 	if Game.selected_arena == Game.MUSEUM_ARENA:
-		var none: Array[Dictionary] = [] # The Museum's story panels come with the story work; until then, straight to the round.
-		return none
+		return Balance.MUSEUM_INTRO_PANELS
 	return Balance.SHIP_INTRO_PANELS if Game.selected_arena == Game.SHIP_ARENA else Balance.INTRO_PANELS
+
+
+func _folder() -> String:
+	if Game.selected_arena == Game.MUSEUM_ARENA:
+		return Balance.MUSEUM_INTRO_FOLDER
+	return Balance.SHIP_INTRO_FOLDER if Game.selected_arena == Game.SHIP_ARENA else Balance.INTRO_FOLDER
 
 
 func _show_panel(index: int) -> void:
@@ -117,15 +123,11 @@ func _show_panel(index: int) -> void:
 	panel_time = 0.0
 	next_cue = 0
 	var panel: Dictionary = panels[index]
-	var picture := TextureRect.new()
-	var folder: String = Balance.SHIP_INTRO_FOLDER if panels == Balance.SHIP_INTRO_PANELS else Balance.INTRO_FOLDER
-	picture.texture = load(folder + panel.image)
-	picture.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	picture.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	stage.add_child(picture)
-	_animate_panel(picture, panel.hold)
+	_stop_videos()
+	if panel.has("video"):
+		_show_video(panel, index)
+	else:
+		_show_picture(panel)
 	if panel.get("flash", false):
 		flash.modulate.a = 1.0
 		create_tween().tween_property(flash, "modulate:a", 0.0, Balance.INTRO_FLASH_TIME)
@@ -135,6 +137,51 @@ func _show_panel(index: int) -> void:
 		_fade(beds[bed], panel.beds.get(bed, Balance.INTRO_SILENT_DB))
 	_letter(panel)
 	hint_label.text = "%d / %d   ·   Enter: next   ·   Esc: skip" % [index + 1, panels.size()]
+
+
+func _show_picture(panel: Dictionary) -> void:
+	var picture := TextureRect.new()
+	picture.texture = load(_folder() + panel.image)
+	picture.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	picture.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	stage.add_child(picture)
+	if panel.get("held", false):
+		_clear_stage_except(picture) # The video's own last frame: no fade, no drift, nothing to see change.
+	else:
+		_animate_panel(picture, panel.hold)
+
+
+func _show_video(panel: Dictionary, index: int) -> void:
+	var video := VideoStreamPlayer.new()
+	video.stream = load(_folder() + panel.video)
+	video.expand = true
+	var width: float = maxf(size.x, size.y * Balance.INTRO_VIDEO_ASPECT)
+	video.size = Vector2(width, width / Balance.INTRO_VIDEO_ASPECT)
+	video.position = (size - video.size) / 2.0
+	video.volume_db = Balance.INTRO_VIDEO_DB
+	video.bus = &"SFX"
+	video.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	video.finished.connect(func() -> void:
+		if playing and panel_index == index:
+			_show_panel(index + 1))
+	stage.add_child(video)
+	video.play()
+	_clear_stage_except(video)
+
+
+func _clear_stage_except(keep: Control) -> void:
+	for child: Node in stage.get_children():
+		if child != keep:
+			child.queue_free()
+
+
+func _stop_videos() -> void:
+	# Skipped mid-way, a video's sound must not run on under the next panel.
+	for child: Node in stage.get_children():
+		if child is VideoStreamPlayer:
+			child.stop()
 
 
 func _letter(panel: Dictionary) -> void:
@@ -150,7 +197,7 @@ func _letter(panel: Dictionary) -> void:
 		words.fit_content = true
 		words.scroll_active = false
 		words.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		words.custom_minimum_size.x = size.x * 0.62
+		words.custom_minimum_size.x = size.x * panel.get("caption_width", Balance.INTRO_CAPTION_WIDTH)
 		words.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		words.add_theme_color_override("default_color", Balance.COMIC_INK)
 		words.add_theme_font_size_override("normal_font_size", Balance.INTRO_LETTERING_SIZE)
@@ -161,15 +208,19 @@ func _letter(panel: Dictionary) -> void:
 		caption.position = Vector2(size.x * 0.03, size.y * 0.04)
 		lettering.add_child(caption)
 		_pop_in(caption, 0.15)
+		if panel.has("caption_for"): # Out of the way before the ghost arrives.
+			var fade: Tween = caption.create_tween()
+			fade.tween_interval(panel.caption_for)
+			fade.tween_property(caption, "modulate:a", 0.0, Balance.INTRO_FADE_TIME)
 	if panel.has("bubble"):
-		var bubble: VBoxContainer = Style.bubble(panel.bubble.text, Balance.INTRO_LETTERING_SIZE)
+		var bubble: VBoxContainer = Style.bubble(panel.bubble.text, Balance.INTRO_LETTERING_SIZE, panel.bubble.get("tail") == "right")
 		bubble.position = Vector2(size.x * panel.bubble.at.x, size.y * panel.bubble.at.y)
 		lettering.add_child(bubble)
 		_pop_in(bubble, 0.9)
 	if panel.has("title"):
 		var title: Control = Style.stamp(panel.title, Balance.SHIP_GOLD_COLOUR, Balance.COMIC_HEADING_SIZE * 2)
 		var holder := CenterContainer.new()
-		holder.position = Vector2(0.0, size.y * 0.7)
+		holder.position = Vector2(0.0, size.y * panel.get("title_y", 0.7))
 		holder.size = Vector2(size.x, size.y * 0.2)
 		holder.add_child(title)
 		lettering.add_child(holder)
@@ -244,6 +295,7 @@ func _fade(player: AudioStreamPlayer, volume_db: float, seconds: float = Balance
 
 
 func _stop_sound() -> void:
+	_stop_videos()
 	for player: AudioStreamPlayer in music.values() + beds.values():
 		_fade(player, Balance.INTRO_SILENT_DB, Balance.INTRO_END_FADE)
 	music_name = ""

@@ -485,15 +485,15 @@ const TIME_CARD_SIZE := Vector2(250.0, 118.0) # Lobby time cards, one per player
 const TIME_CARD_FIGURE: float = 58.0 # The mover silhouette on a time card.
 const LOBBY_QR_SIZE: float = 190.0 # The QR code on the job sheet.
 const MOVER_SKIN := Color("e8b98a") # Faces on drawn mover figures.
-const REVEAL_GHOST_ART: String = "res://assets/cutscenes/intro/08_seth_ji.jpeg" # Seth-ji, cropped for the reveal.
-const REVEAL_GHOST_CROP := Rect2(448.0, 104.0, 290.0, 330.0) # Pixels of that panel.
+const REVEAL_GHOST_ART: String = "res://assets/cutscenes/mansion/m05_sethji.jpg" # Seth-ji, cropped for the reveal.
+const REVEAL_GHOST_CROP := Rect2(465.0, 5.0, 270.0, 300.0) # Pixels of that panel.
 const REVEAL_PORTRAIT_SIZE := Vector2(190.0, 212.0)
 const REVEAL_FIGURE: float = 78.0 # Line-up figures.
 const REVEAL_MOVE_SECONDS: float = 0.45 # The countdown shows MOVE! for its last this many seconds.
 const RESULT_TILE_WIDTH: float = 170.0 # Round end stat tiles.
 const MENU_TITLE_SIZE: int = 76 # The home menu's comic title.
-const MAP_PREVIEW_ART: String = "res://assets/cutscenes/intro/05_mansion_owner.jpeg" # The Mansion's map card.
-const MAP_PREVIEW_CROP := Rect2(470.0, 40.0, 440.0, 440.0)
+const MAP_PREVIEW_ART: String = "res://assets/cutscenes/mansion/m04_arrival.jpg" # The Mansion's map card.
+const MAP_PREVIEW_CROP := Rect2(400.0, 40.0, 440.0, 440.0)
 const RESULT_FIGURE: float = 40.0 # Role figures on round end rows.
 const RESULT_ROW_WIDTH: float = 360.0
 const COUNT_UP_TIME: float = 0.9 # Seconds round points take to count up.
@@ -853,57 +853,104 @@ const CREATURE_VOLUME_DB: float = -10.0 # Owl, howl, crows.
 const THUNDER_VOLUME_DB: float = -4.0
 
 # --- Intro cutscene ---
-# Plays once per match, between START and the first role reveal. Each panel holds for "hold" seconds; "music" picks
-# the bed ("cozy", "spooky" or "" for none), "beds" sets the looping rain and engine levels in dB (missing = silent),
-# "flash" marks a change between the 3D and comic art, "shake" shakes the panel, and each cue is
-# [seconds into the panel, sound, volume dB]. Sounds are files in res://assets/audio/cutscene/ or Sfx's own.
-const INTRO_FOLDER: String = "res://assets/cutscenes/intro/"
+# The story (decision 145): plays once per match, between START and the first role reveal. Each panel holds for
+# "hold" seconds; "music" picks the bed ("" for none), "beds" sets the looping rain, engine and sea levels in dB
+# (missing = silent), "flash" flashes white, "shake" shakes the panel, and each cue is [seconds into the panel, sound,
+# volume dB]. Sounds are files in res://assets/audio/cutscene/ (or ship/…) or Sfx's own. The pictures carry no words:
+# the game letters each "caption" ("caption_width" as a share of the screen, "caption_for" seconds before it fades),
+# speech "bubble" (at a share of the screen; "tail": "right" points it right) and
+# "title" ("title_y" moves it, as a share of the screen height). A "video" panel plays that file with its own sound and
+# moves on when it ends, with "hold" as a backstop; the "held" panel after it is the video's last frame, shown with no
+# fade or drift so the picture doesn't jump, and carries the ghost's speech bubble.
+const INTRO_FOLDER: String = "res://assets/cutscenes/mansion/"
 const INTRO_PANELS: Array[Dictionary] = [
-	{"image": "01_godown.jpeg", "hold": 6.0, "music": "cozy", "beds": {"rain": -22.0},
-		"cues": [[1.0, "glass_clink_1", -8.0], [2.4, "glass_clink_2", -8.0], [3.9, "glass_clink_1", -10.0]]},
-	{"image": "02_truck_road.jpeg", "hold": 4.0, "music": "cozy", "beds": {"rain": -10.0, "engine": -14.0}, "flash": true,
-		"cues": []},
-	{"image": "03_sasta_shifters.jpeg", "hold": 7.0, "music": "cozy", "beds": {"rain": -12.0, "engine": -12.0},
+	{"image": "m01_godown.jpg", "hold": 7.0, "music": "cozy", "beds": {"rain": -22.0},
+		"caption": "MUMBAI. MONSOON. SASTA SHIFTERS, THE CITY'S CHEAPEST MOVERS, HAVEN'T HAD A JOB IN THREE WEEKS.",
+		"bubble": {"text": "Pack up, team.\nWe've got a [b]CLIENT![/b]", "at": Vector2(0.63, 0.23), "tail": "right"},
+		"cues": [[0.5, "gate_latch", -10.0], [0.8, "gate_creak", -8.0]]},
+	{"image": "m02_vicky_call.jpg", "hold": 6.0, "music": "cozy", "beds": {"rain": -18.0},
+		"caption": "THE CLIENT: VICKY MALHOTRA. GREAT-GRANDSON. \"ENTREPRENEUR\".",
+		"bubble": {"text": "Empty great-grandpa's\nmansion by morning, bro.\nSell [b]everything.[/b]", "at": Vector2(0.64, 0.42)},
+		"cues": [[0.3, "crackle", -10.0]]},
+	{"image": "m03_truck_road.jpg", "hold": 6.0, "music": "cozy", "beds": {"rain": -10.0, "engine": -14.0}, "flash": true,
+		"caption": "MALABAR HILL. THE MALHOTRA MANSION HAS BEEN EMPTY FOR FORTY YEARS.",
+		"bubble": {"text": "Are you [b]sure[/b] this hill\nis on the GPS?!", "at": Vector2(0.47, 0.25)},
 		"cues": [[0.8, "rattle", -6.0], [2.6, "horn", -6.0], [3.0, "horn", -6.0], [3.8, "goat", -8.0]]},
-	{"image": "04_arrival.jpeg", "hold": 6.0, "music": "", "beds": {"rain": -10.0, "engine": -24.0},
-		"cues": [[2.2, "gate_latch", -4.0], [2.5, "gate_creak", -2.0]]},
-	{"image": "05_mansion_owner.jpeg", "hold": 6.0, "music": "spooky", "beds": {"rain": -12.0},
-		"cues": [[0.2, "thunder", -2.0]]},
-	{"image": "06_windshield.jpeg", "hold": 4.0, "music": "spooky", "beds": {"rain": -10.0},
-		"cues": [[0.5, "whoosh", -6.0], [1.3, "splat", -2.0]]},
-	{"image": "07_job_sheet.jpeg", "hold": 7.0, "music": "spooky", "beds": {"rain": -18.0},
-		"cues": [[0.3, "paper_1", -4.0], [1.1, "paper_2", -4.0]]},
-	{"image": "08_seth_ji.jpeg", "hold": 7.0, "music": "spooky", "beds": {"rain": -24.0},
-		"cues": [[0.3, "organ", -6.0]]},
-	{"image": "09_house_shake.jpeg", "hold": 4.0, "music": "spooky", "beds": {"rain": -24.0}, "shake": true,
+	{"image": "m04_arrival.jpg", "hold": 5.0, "music": "", "beds": {"rain": -10.0, "engine": -24.0},
+		"caption": "EMPTY... [b]MOSTLY.[/b]",
+		"cues": [[0.2, "thunder", -2.0], [2.2, "gate_latch", -4.0], [2.5, "gate_creak", -2.0]]},
+	{"video": "m05_sethji.ogv", "hold": 8.4, "music": "", "beds": {"rain": -24.0},
+		"caption": "SETH DHANRAJ MALHOTRA. DIED 1986. [b]NEVER MOVED OUT.[/b]", "caption_width": 0.5, "caption_for": 4.5,
+		"cues": []},
+	{"image": "m05_sethji_end.jpg", "hold": 3.5, "held": true, "music": "spooky", "beds": {"rain": -24.0},
+		"bubble": {"text": "If I can't\nkeep them...\n[b]NOBODY CAN![/b]", "at": Vector2(0.76, 0.05)},
+		"cues": [[0.2, "organ", -6.0]]},
+	{"image": "m06_house_shake.jpg", "hold": 5.0, "music": "spooky", "beds": {"rain": -24.0}, "shake": true,
+		"caption": "HE CAN POSSESS ANYTHING IN THE HOUSE. AND WHEN HE'S REALLY ANGRY...",
+		"bubble": {"text": "[b]BRACE!![/b]", "at": Vector2(0.4, 0.42)},
 		"cues": [[0.0, "rumble", -2.0], [0.7, "crash_wood", -2.0], [1.5, "crash_glass", -4.0]]},
-	{"image": "10_briefing.jpeg", "hold": 10.0, "music": "spooky", "beds": {"rain": -14.0},
-		"cues": [[0.3, "crackle", -8.0], [4.8, "crackle", -8.0], [7.6, "crackle", -8.0]]},
-	{"image": "11_title.jpeg", "hold": 4.0, "music": "", "beds": {"rain": -16.0}, "flash": true,
-		"cues": [[0.0, "title_hit", -2.0], [0.0, "thunder", -6.0], [0.5, "title_pizzicato", -4.0]]},
+	{"image": "m07_title.jpg", "hold": 9.0, "music": "spooky", "beds": {"rain": -14.0}, "flash": true,
+		"caption": "Grab it, carry it, get it in the truck. The piano needs two. House shakes? [b]BRACE.[/b] And remember: you break it, you [b]pay.[/b]",
+		"title": "THE OLD MANSION",
+		"cues": [[0.3, "crackle", -8.0], [1.2, "title_hit", -2.0], [1.2, "thunder", -6.0], [1.7, "title_pizzicato", -4.0]]},
 ]
-# The Ghost Ship's story (decision 114). Pictures are staged renders from tools/make_ship_intro.gd; the cutscene
-# letters each "caption", speech "bubble" (at a share of the screen) and "title" over them, so painted panels can
-# replace the files without code changes. Cues starting "ship/" play from assets/audio/ship/.
 const SHIP_INTRO_FOLDER: String = "res://assets/cutscenes/ship/"
 const SHIP_INTRO_PANELS: Array[Dictionary] = [
-	{"image": "01_the_wreck.jpg", "hold": 7.0, "music": "shanty", "beds": {"sea": -12.0},
-		"caption": "MONTH-END. SETH-JI'S CHEQUE BOUNCED, SO SASTA SHIFTERS TOOK THE ONLY JOB LEFT IN THE PAPER: \"SALVAGE A SHIPWRECK. NO QUESTIONS ASKED.\"",
-		"bubble": {"text": "Since when do we own a [b]BOAT?![/b]", "at": Vector2(0.16, 0.36)},
-		"cues": [[0.4, "ship/foghorn", -8.0], [3.2, "thunder", -8.0]]},
-	{"image": "02_boarding.jpg", "hold": 6.0, "music": "shanty", "beds": {"sea": -10.0},
+	{"image": "s01_previously.jpg", "hold": 6.0, "music": "cozy", "beds": {"rain": -22.0},
+		"caption": "PREVIOUSLY... VICKY'S CHEQUE [b]BOUNCED.[/b]",
+		"bubble": {"text": "If he won't pay us...\nhis great-grandpa's\n[b]gold[/b] will.", "at": Vector2(0.71, 0.03)},
+		"cues": [[0.4, "paper_1", -4.0], [2.2, "goat", -8.0]]},
+	{"image": "s02_the_chart.jpg", "hold": 6.0, "music": "shanty", "beds": {"sea": -14.0},
+		"caption": "THE DIARY SAID THE SAGAR RANI SANK IN 1946. THE FISHERMEN SAID SOMETHING ELSE.",
+		"bubble": {"text": "Since when do we\nown a [b]BOAT?![/b]", "at": Vector2(0.5, 0.2)},
+		"cues": [[0.4, "ship/foghorn", -10.0], [2.5, "paper_2", -6.0]]},
+	{"image": "s03_the_wreck.jpg", "hold": 6.0, "music": "shanty", "beds": {"sea": -12.0},
 		"caption": "THE WRECK WASN'T ON THE SEABED. IT WAS FLOATING. ROCKING. AND COMPLETELY EMPTY...",
-		"bubble": {"text": "In and out. Five minutes.\nWhat could [b]possibly[/b] go wrong?", "at": Vector2(0.47, 0.3)},
+		"cues": [[0.4, "ship/foghorn", -8.0], [3.2, "thunder", -8.0]]},
+	{"image": "s04_boarding.jpg", "hold": 5.0, "music": "shanty", "beds": {"sea": -10.0},
+		"bubble": {"text": "In and out. Five minutes.\nWhat could [b]possibly[/b] go wrong?", "at": Vector2(0.4, 0.1)},
 		"cues": [[0.6, "creak", -6.0], [2.6, "ship/rope", -8.0]]},
-	{"image": "03_the_captain.jpg", "hold": 7.0, "music": "", "beds": {"sea": -18.0}, "flash": true, "shake": true,
-		"caption": "NARRATOR: The captain went down with his ship. He did [b]not[/b] stay down.",
-		"bubble": {"text": "[b]ARRR![/b] Every doubloon on\nthis deck is [b]MINE![/b]", "at": Vector2(0.6, 0.18)},
-		"cues": [[0.0, "thunder", -2.0], [0.3, "theremin", -6.0], [1.2, "organ", -8.0]]},
-	{"image": "04_the_job.jpg", "hold": 8.0, "music": "shanty", "beds": {"sea": -12.0}, "flash": true,
+	{"video": "s05_captain.ogv", "hold": 11.0, "music": "", "beds": {"sea": -24.0},
+		"caption": "CAPTAIN KAALA DAANT STOLE THE FORTUNE IN 1946. THE SEA TOOK HIM. [b]NOT THE GOLD.[/b]", "caption_width": 0.5, "caption_for": 3.4,
+		"cues": []},
+	{"image": "s05_captain_end.jpg", "hold": 3.5, "held": true, "music": "shanty", "beds": {"sea": -18.0},
+		"bubble": {"text": "[b]ARRR![/b] Every\ndoubloon on this\ndeck is [b]MINE![/b]", "at": Vector2(0.75, 0.06)},
+		"cues": [[0.2, "organ", -8.0]]},
+	{"image": "s06_title.jpg", "hold": 8.0, "music": "shanty", "beds": {"sea": -12.0}, "flash": true,
 		"caption": "Haul the loot to the tug. Brace for waves. Light the lanterns. And mind the barrels!",
 		"title": "THE GHOST SHIP",
-		"cues": [[0.0, "wave_crash", -4.0], [0.6, "title_hit", -4.0]]},
+		"cues": [[0.0, "wave_crash", -4.0], [1.2, "title_hit", -4.0]]},
 ]
+const MUSEUM_INTRO_FOLDER: String = "res://assets/cutscenes/museum/"
+const MUSEUM_INTRO_PANELS: Array[Dictionary] = [
+	{"image": "u01_shipwrecked.jpg", "hold": 6.0, "music": "", "beds": {"sea": -12.0},
+		"caption": "PREVIOUSLY... WE LOST THE GOLD. AND THE TUG. [b]AND THE SPARE TYRE.[/b]",
+		"cues": [[1.5, "goat", -10.0]]},
+	{"image": "u02_the_paper.jpg", "hold": 7.0, "music": "cozy", "beds": {},
+		"caption": "\"VICKY MALHOTRA DONATES FAMILY FORTUNE TO CITY MUSEUM. 'FOUND IT MYSELF!'\"",
+		"bubble": {"text": "That's [b]OUR[/b] treasure!!", "at": Vector2(0.42, 0.26)},
+		"cues": [[0.3, "paper_1", -4.0], [1.2, "paper_2", -4.0]]},
+	{"image": "u03_the_plan.jpg", "hold": 7.0, "music": "heist", "beds": {},
+		"caption": "TECHNICALLY, STILL A MOVING JOB.",
+		"bubble": {"text": "We're not robbers. We're movers.\nWe just... [b]move it.[/b] At night.", "at": Vector2(0.5, 0.14)},
+		"cues": [[0.4, "paper_2", -6.0], [3.5, "glass_clink_1", -10.0]]},
+	{"image": "u04_the_museum.jpg", "hold": 6.0, "music": "heist", "beds": {},
+		"caption": "THE CITY MUSEUM. LASERS. CAMERAS. AND ONE NIGHT WATCHMAN...",
+		"cues": [[2.0, "siren", -14.0]]},
+	{"video": "u05_bahadur.ogv", "hold": 11.0, "music": "", "beds": {},
+		"caption": "BAHADUR GUARDED THIS MUSEUM FOR FORTY YEARS. [b]DEATH DIDN'T CHANGE HIS ROSTER.[/b]", "caption_width": 0.5, "caption_for": 5.0,
+		"cues": []},
+	{"image": "u05_bahadur_end.jpg", "hold": 3.5, "held": true, "music": "heist", "beds": {},
+		"bubble": {"text": "[b]JAAGTE RAHO![/b]", "at": Vector2(0.52, 0.05), "tail": "right"},
+		"cues": [[0.2, "whistle", -8.0]]},
+	{"image": "u06_title.jpg", "hold": 8.0, "music": "heist", "beds": {}, "flash": true,
+		"caption": "Load the van. Freeze when the whistle blows. Swap in the fakes. And don't break anything: we can't afford it.",
+		"title": "THE MUSEUM OF MOSTLY REAL THINGS", "title_y": 0.76,
+		"cues": [[1.2, "title_hit", -4.0]]},
+]
+const INTRO_CAPTION_WIDTH: float = 0.62 # Share of the screen width.
+const INTRO_VIDEO_DB: float = -2.0 # A video panel's own sound.
+const INTRO_VIDEO_ASPECT: float = 16.0 / 9.0 # Videos fill the screen, cropped at its edges on other shapes.
 const INTRO_LETTERING_SIZE: int = 30 # Caption and bubble text on story panels lettered in the game.
 const INTRO_FADE_TIME: float = 0.5 # Seconds each panel takes to fade in over the last.
 const INTRO_ZOOM: float = 1.06 # Each panel slowly grows to this scale while it shows.
