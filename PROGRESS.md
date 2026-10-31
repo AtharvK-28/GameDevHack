@@ -353,7 +353,3 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
   loot riding the motion and a wave lurch without damage (an instant lurch had cost 15,814 rupees), and deck height
   following the tilt. Wave stages and motion rendered and inspected. Tools: `tools/ship_autoplay.gd` plays a scripted
   Ship round (recording paused at the user's request).
-- [x] Git history maintenance (2026-10-27): removed `Co-Authored-By: Claude...` trailers from the 22 commits on `main`
-  where they were added (`9da7eb3..e5e449d`), removing Claude as a collaborator on GitHub. Commit messages, authors,
-  dates and tree hashes preserved intact.
-
