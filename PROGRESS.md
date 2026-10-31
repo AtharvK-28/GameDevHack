@@ -142,9 +142,11 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
   the round-end page (rewind, build-up, the hit, the blame); the final results open with the match's worst three. Rendered
   on the Mansion with bots carrying the piano. New suite `core/replay_check.gd`, 18 assertions; all 22 suites pass,
   1,447 assertions.
-- [ ] Story cutscenes from scratch: `assets/cutscenes/CUTSCENE_BRIEF.md` has the story ("The Malhotra Fortune"), the
-  Gemini prompts for 7 reference sheets and 28 panels (6 more for an optional epilogue). Waiting for the images and the
-  story's approval; then wire them in (new folders, the Museum intro, end-of-match cliffhangers).
+- [x] Story cutscenes (decision 145, 2026-10-31): new intros on all three maps from the team's Gemini art, with a video
+  for each ghost's entrance, a held last frame for the ghost's line, and the Museum's first story. Every panel rendered
+  with its lettering. New suite `core/story_check.gd`, 24 assertions; all 23 suites pass, 1,471 assertions.
+- [ ] End-of-match cliffhangers (Seth-ji's diary, the wave) and the epilogue: art is in `assets/source/cutscenes/`; each
+  needs a hook after the final results.
 - [ ] Gust of Wind and Lights Out
 - [x] Mover and ghost character models integrated (brought forward; visual acceptance pending)
 - [x] Party camera and Mansion wall fade implemented (human acceptance pending)

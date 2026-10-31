@@ -1,7 +1,8 @@
 # Cutscene brief: "The Malhotra Fortune"
 
-A from-scratch set of story panels for all three maps, to be generated with Gemini. Proposal, not yet approved: once
-the story is agreed it goes into `DECISIONS.md` and the spec.
+The story panels for all three maps, generated with Gemini. Approved and in the game (decision 145), except section E
+and the two end-of-match panels (`m08_diary`, `s07_the_wave`), which are not wired in yet. The ghost panels became
+videos, with the same words.
 
 ## How the cutscenes work in the game
 
