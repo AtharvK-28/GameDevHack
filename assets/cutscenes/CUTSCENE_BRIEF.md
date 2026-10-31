@@ -1,8 +1,7 @@
 # Cutscene brief: "The Malhotra Fortune"
 
-The story panels for all three maps, generated with Gemini. Approved and in the game (decision 145), except section E
-and the two end-of-match panels (`m08_diary`, `s07_the_wave`), which are not wired in yet. The ghost panels became
-videos, with the same words.
+The story panels for all three maps, generated with Gemini. All of it is in the game (decisions 145 and 146). The ghost
+panels became videos, with the same words.
 
 ## How the cutscenes work in the game
 
@@ -378,9 +377,9 @@ Chat setup: attach A1, A3, A5, A6, A7.
 
 ---
 
-## E. Epilogue (6 panels, after the Museum match). Optional: needs a small new game feature
+## E. Epilogue (6 panels, after the Museum match)
 
-Chat setup: attach A1, A2, A3, A4, A5, A6, A7. Build these last; the three acts work without them.
+Chat setup: attach A1, A2, A3, A4, A5, A6, A7.
 
 ### e01_dawn.jpg
 

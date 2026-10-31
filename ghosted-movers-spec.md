@@ -54,7 +54,7 @@ The current demo uses the supplied Old Mansion layout and mover character assets
 - **Haunting limits:** 8 s opening protection from live start; 4 s shared lock after a cast; individual cooldowns start at cast. House Shake works while possessing; Curse is wisp-only. Phone UI explains all refusals and displays remaining seconds, including exorcism, cooldown, opening protection, shared lock, insufficient energy and missing targets. A mover holding cursed loot sees its remaining duration.
 - **Seeded setup:** 6/9/12 loot items for 2/3/4 players, exactly one centrepiece, using existing types. Original total is calculated from that spawn. Restart restores the same seed, layout, roles and values. Keep the lone-mover 40% drag rule. New rounds receive a new seed.
 - **Disconnect:** pause the round simulation and timers until all participants reconnect; the host may cancel to the lobby without scoring the unfinished round. Reject new identities during a match; existing participants may rejoin.
-- **Host flow:** lobby/QR → intro cutscene (once per match, about 50 s; Enter next panel, Esc skip) → 3 s role reveal/countdown → 150 s round → round result/restart → next role → final leaderboard. 2 players play 4 rounds, 3 play 3, 4 play 4. The demo uses Mansion for all rounds; additional arenas remain later work.
+- **Host flow:** lobby/QR → intro cutscene (once per match, about 50 s; Enter next panel, Esc skip) → 3 s role reveal/countdown → 150 s round → round result/restart → next role → final leaderboard → the story's ending (Enter; decision 146) → lobby. 2 players play 4 rounds, 3 play 3, 4 play 4. The demo uses Mansion for all rounds; additional arenas remain later work.
 - **Results:** frozen once per attempt; restarting replaces rather than adds that attempt's score. Host controls start, next, restart and return to lobby. Phones display the same current phase and their own role/points after reconnect.
 
 ## Match flow
@@ -449,7 +449,7 @@ Phones talk directly to the Godot game over WebSocket, sending short JSON messag
 - `cd`: `{possess, haunt1, haunt2, haunt3}`, the fraction of each cooldown still left (0–1), for the rings. `possess` is the 5 s lock after an exorcism.
 - `ok`: `{possess, action, haunt1, haunt2, haunt3}`, whether the host would accept that button right now.
 
-**Phase 5 protocol additions.** `match` messages send phase (including `intro` while the cutscene plays, when phones show a "Story time" screen), countdown/time, round counts, delivery target, banked/lost value, result/standings and pause reason. Ghost `hud` adds `reasons` per button, remaining `seconds`, `simple` (demo controls), and `target` for Curse. Mover `hud` adds `cursed` seconds. New identities are refused mid-match. Only the host changes match state.
+**Phase 5 protocol additions.** `match` messages send phase (including `intro` and `outro` while a cutscene plays, when phones show a "Story time" screen), countdown/time, round counts, delivery target, banked/lost value, result/standings and pause reason. Ghost `hud` adds `reasons` per button, remaining `seconds`, `simple` (demo controls), and `target` for Curse. Mover `hud` adds `cursed` seconds. New identities are refused mid-match. Only the host changes match state.
 
 **Rules that prevent bugs**
 
@@ -484,7 +484,7 @@ ghosted-movers/
 │   ├── RoundEnd.tscn     # DELIVERED!/GHOSTED! stamp, reason, stat tiles, counting points; Enter next, R restart, L lobby
 │   ├── Results.tscn      # podium for the top three with a crown (awards deferred)
 │   ├── disaster_replay.gd # Disaster Cam: the worst disaster replayed before the round end; the worst three before the results
-│   ├── Cutscene.tscn     # intro story panels and ghost videos with music and sound cues; Enter next, Esc skip
+│   ├── Cutscene.tscn     # the story: intros, ghost videos and endings, with music and sound cues; Enter next, Esc skip
 │   └── HUD.tscn          # timer, delivered vs target, lost vs limit, bonus goal, ghost energy, pause overlay
 ├── actors/
 │   ├── Mover.tscn        # CharacterBody3D, hold point, carry spring, tumble
@@ -613,7 +613,7 @@ The two risks most likely to sink the demo are the network and physics, not feat
 
 Sasta Shifters are Mumbai's cheapest movers: the players, and Riya, their boss on the walkie-talkie. Every job chases the Malhotra fortune, a chest of gold, without them knowing it. In the Old Mansion, Vicky Malhotra hires them to empty his great-grandfather's house, but Seth-ji never moved out. On the Ghost Ship, Vicky's cheque has bounced, so they go after the fortune Captain Kaala Daant stole in 1946 and sank with. In the Museum of Mostly Real Things they have lost it all, Vicky has donated the gold and taken the credit, and they move it back out at night, past Bahadur the ghost watchman.
 
-Each map's intro (`*_INTRO_PANELS` in `Balance.gd`) is wordless art lettered by the game, with a video for the ghost's entrance followed by its held last frame and speech bubble. Files live in `assets/cutscenes/mansion/`, `ship/` and `museum/`; sources, the prompts' reference sheets and the unused cliffhanger and epilogue art in `assets/source/cutscenes/`. Godot plays only Ogg Theora, so convert new videos with ffmpeg (`-c:v libtheora -c:a libvorbis`).
+After the final results, each map plays its ending (`*_OUTRO_PANELS`, decision 146): Seth-ji's diary points to the *Sagar Rani*; on the way home the Captain rises in a giant wave; after the Museum, the epilogue, where the three ghosts turn up in the truck and Bahadur rules that the gold belongs to whoever carried it. Each map's intro (`*_INTRO_PANELS` in `Balance.gd`) is wordless art lettered by the game, with a video for the ghost's entrance followed by its held last frame and speech bubble. Files live in `assets/cutscenes/mansion/`, `ship/`, `museum/` and `epilogue/`; sources and the prompts' reference sheets in `assets/source/cutscenes/`. Godot plays only Ogg Theora, so convert new videos with ffmpeg (`-c:v libtheora -c:a libvorbis`).
 
 ## Demo script
 

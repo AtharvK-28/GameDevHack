@@ -1,11 +1,13 @@
-# Intro cutscene: the arena's story panels (Balance.INTRO_PANELS, SHIP_INTRO_PANELS, MUSEUM_INTRO_PANELS), full
+# The story cutscenes: each arena's intro (Balance.INTRO_PANELS, SHIP_INTRO_PANELS, MUSEUM_INTRO_PANELS) and, after
+# the final results, its ending (MANSION_OUTRO_PANELS, SHIP_OUTRO_PANELS, MUSEUM_OUTRO_PANELS), full
 # screen, each slowly zooming and drifting while its cues play over a music bed and looping beds, with a video panel
 # for each ghost's entrance. Panels may carry lettering (caption, speech bubble, title) drawn over the picture. Shown
-# in the "intro" phase, once per match.
+# in the "intro" and "outro" phases, once per match.
 # Host keys: Enter for the next panel, Esc to skip to the first round.
 extends Control
 
 const Style := preload("res://screens/screen_style.gd")
+const PHASES: Array[String] = ["intro", "outro"]
 const SOUND_FOLDER: String = "res://assets/audio/cutscene/"
 const MUSIC_FILES: Dictionary = {
 	"cozy": SOUND_FOLDER + "music_cozy.ogg", "spooky": SOUND_FOLDER + "music_spooky.ogg",
@@ -77,13 +79,13 @@ func _process(delta: float) -> void:
 
 # --- Refresh ---
 func _refresh() -> void:
-	var showing: bool = Game.phase == "intro"
+	var showing: bool = Game.phase in PHASES
 	if showing and not playing:
 		_start()
 	elif not showing and playing:
 		_stop_sound()
 		playing = false
-	visible = Game.phase == "intro" # Read again: starting an empty intro may already have moved on.
+	visible = Game.phase in PHASES # Read again: starting an empty intro may already have moved on.
 
 
 func _start() -> void:
@@ -98,11 +100,18 @@ func _finish() -> void:
 	# The last panel ended, or the host skipped: on to the first round.
 	_stop_sound()
 	playing = false
-	Game.finish_intro()
+	if Game.phase == "outro":
+		Game.finish_ending()
+	else:
+		Game.finish_intro()
 
 
 # --- Panels ---
 func _panels() -> Array[Dictionary]:
+	if Game.phase == "outro":
+		if Game.selected_arena == Game.MUSEUM_ARENA:
+			return Balance.MUSEUM_OUTRO_PANELS
+		return Balance.SHIP_OUTRO_PANELS if Game.selected_arena == Game.SHIP_ARENA else Balance.MANSION_OUTRO_PANELS
 	if Game.selected_arena == Game.MUSEUM_ARENA:
 		return Balance.MUSEUM_INTRO_PANELS
 	return Balance.SHIP_INTRO_PANELS if Game.selected_arena == Game.SHIP_ARENA else Balance.INTRO_PANELS
@@ -110,7 +119,7 @@ func _panels() -> Array[Dictionary]:
 
 func _folder() -> String:
 	if Game.selected_arena == Game.MUSEUM_ARENA:
-		return Balance.MUSEUM_INTRO_FOLDER
+		return Balance.MUSEUM_OUTRO_FOLDER if Game.phase == "outro" else Balance.MUSEUM_INTRO_FOLDER
 	return Balance.SHIP_INTRO_FOLDER if Game.selected_arena == Game.SHIP_ARENA else Balance.INTRO_FOLDER
 
 
@@ -150,7 +159,7 @@ func _show_picture(panel: Dictionary) -> void:
 	if panel.get("held", false):
 		_clear_stage_except(picture) # The video's own last frame: no fade, no drift, nothing to see change.
 	else:
-		_animate_panel(picture, panel.hold)
+		_animate_panel(picture, 0.0 if panel.get("still", false) else panel.hold)
 
 
 func _show_video(panel: Dictionary, index: int) -> void:
@@ -205,18 +214,21 @@ func _letter(panel: Dictionary) -> void:
 		words.add_theme_font_override("bold_font", load(Balance.COMIC_FONT_PATH))
 		words.text = panel.caption
 		caption.add_child(words)
-		caption.position = Vector2(size.x * 0.03, size.y * 0.04)
+		caption.position = Vector2(size.x * panel.get("caption_x", 0.03), size.y * 0.04)
 		lettering.add_child(caption)
 		_pop_in(caption, 0.15)
 		if panel.has("caption_for"): # Out of the way before the ghost arrives.
 			var fade: Tween = caption.create_tween()
 			fade.tween_interval(panel.caption_for)
 			fade.tween_property(caption, "modulate:a", 0.0, Balance.INTRO_FADE_TIME)
-	if panel.has("bubble"):
-		var bubble: VBoxContainer = Style.bubble(panel.bubble.text, Balance.INTRO_LETTERING_SIZE, panel.bubble.get("tail") == "right")
-		bubble.position = Vector2(size.x * panel.bubble.at.x, size.y * panel.bubble.at.y)
+	if panel.has("paper"):
+		_letter_paper(panel.paper)
+	var bubbles: Array = panel.get("bubbles", [panel.bubble] if panel.has("bubble") else [])
+	for line: Dictionary in bubbles:
+		var bubble: VBoxContainer = Style.bubble(line.text, Balance.INTRO_LETTERING_SIZE, line.get("tail") == "right")
+		bubble.position = Vector2(size.x * line.at.x, size.y * line.at.y)
 		lettering.add_child(bubble)
-		_pop_in(bubble, 0.9)
+		_pop_in(bubble, line.get("delay", 0.9))
 	if panel.has("title"):
 		var title: Control = Style.stamp(panel.title, Balance.SHIP_GOLD_COLOUR, Balance.COMIC_HEADING_SIZE * 2)
 		var holder := CenterContainer.new()
@@ -227,6 +239,44 @@ func _letter(panel: Dictionary) -> void:
 		_pop_in(holder, 1.2)
 
 
+func _letter_paper(note: Dictionary) -> void:
+	# A page the game writes by hand: the diary, a sticky note, the words on the job sheet's own paper.
+	var page := PanelContainer.new()
+	var style := StyleBoxFlat.new()
+	style.draw_center = note.has("colour")
+	if note.has("colour"):
+		style.bg_color = note.colour
+		style.shadow_color = Color(Balance.COMIC_INK, Balance.COMIC_SHADOW_ALPHA)
+		style.shadow_size = 2
+		style.shadow_offset = Balance.COMIC_SHADOW
+		style.set_content_margin_all(Balance.INTRO_PAPER_MARGIN)
+	page.add_theme_stylebox_override("panel", style)
+	var words := RichTextLabel.new()
+	words.bbcode_enabled = true
+	words.fit_content = true
+	words.scroll_active = false
+	words.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	words.custom_minimum_size.x = size.x * note.width
+	words.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	words.add_theme_color_override("default_color", Balance.INTRO_PAPER_INK)
+	var hand := FontVariation.new()
+	hand.base_font = load(Balance.INTRO_HAND_FONT_PATH)
+	hand.variation_opentype = {TextServerManager.get_primary_interface().name_to_tag("wght"): Balance.INTRO_HAND_WEIGHT}
+	words.add_theme_font_override("normal_font", hand)
+	words.add_theme_font_size_override("normal_font_size", note.size)
+	words.add_theme_font_override("bold_font", load(Balance.COMIC_FONT_PATH))
+	words.add_theme_font_size_override("bold_font_size", roundi(note.size * 1.2))
+	words.text = note.text
+	page.add_child(words)
+	page.position = Vector2(size.x * note.at.x, size.y * note.at.y)
+	page.rotation_degrees = note.get("angle", 0.0)
+	lettering.add_child(page)
+	if note.get("slide", false):
+		page.create_tween().tween_property(page, "position:y", page.position.y, Balance.INTRO_PAPER_SLIDE).from(size.y).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	else:
+		_pop_in(page, note.get("delay", 0.5))
+
+
 func _pop_in(item: Control, delay: float) -> void:
 	item.modulate.a = 0.0
 	var tween: Tween = item.create_tween()
@@ -235,16 +285,17 @@ func _pop_in(item: Control, delay: float) -> void:
 
 
 func _animate_panel(picture: TextureRect, hold: float) -> void:
-	# Fades in over the previous panel, which is freed once covered, then slowly zooms and drifts.
+	# Fades in over the previous panel, which is freed once covered, then slowly zooms and drifts; a hold of 0 stays still.
 	var previous: Array = stage.get_children().filter(func(child: Node) -> bool: return child != picture)
 	var drift: float = size.x * Balance.INTRO_DRIFT * (1.0 if panel_index % 2 == 0 else -1.0)
 	picture.modulate.a = 0.0
-	picture.pivot_offset = size / 2.0
-	picture.position.x = -drift / 2.0
 	var tween: Tween = picture.create_tween().set_parallel()
 	tween.tween_property(picture, "modulate:a", 1.0, Balance.INTRO_FADE_TIME)
-	tween.tween_property(picture, "scale", Vector2.ONE * Balance.INTRO_ZOOM, hold + Balance.INTRO_FADE_TIME).from(Vector2.ONE)
-	tween.tween_property(picture, "position:x", drift / 2.0, hold + Balance.INTRO_FADE_TIME)
+	if hold > 0.0:
+		picture.pivot_offset = size / 2.0
+		picture.position.x = -drift / 2.0
+		tween.tween_property(picture, "scale", Vector2.ONE * Balance.INTRO_ZOOM, hold + Balance.INTRO_FADE_TIME).from(Vector2.ONE)
+		tween.tween_property(picture, "position:x", drift / 2.0, hold + Balance.INTRO_FADE_TIME)
 	var cleanup: Tween = create_tween()
 	cleanup.tween_interval(Balance.INTRO_FADE_TIME)
 	cleanup.tween_callback(func() -> void:

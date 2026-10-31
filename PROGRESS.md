@@ -145,8 +145,9 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - [x] Story cutscenes (decision 145, 2026-10-31): new intros on all three maps from the team's Gemini art, with a video
   for each ghost's entrance, a held last frame for the ghost's line, and the Museum's first story. Every panel rendered
   with its lettering. New suite `core/story_check.gd`, 24 assertions; all 23 suites pass, 1,471 assertions.
-- [ ] End-of-match cliffhangers (Seth-ji's diary, the wave) and the epilogue: art is in `assets/source/cutscenes/`; each
-  needs a hook after the final results.
+- [x] The story's endings (decision 146, 2026-11-01): Enter on the final results plays Seth-ji's diary (Mansion), the wave
+  (Ship) or the six-panel epilogue (Museum), then the lobby. Every panel rendered with its lettering. `core/story_check.gd`
+  43 assertions; all 23 suites pass, 1,493 assertions.
 - [ ] Gust of Wind and Lights Out
 - [x] Mover and ghost character models integrated (brought forward; visual acceptance pending)
 - [x] Party camera and Mansion wall fade implemented (human acceptance pending)

@@ -857,7 +857,8 @@ const THUNDER_VOLUME_DB: float = -4.0
 # "hold" seconds; "music" picks the bed ("" for none), "beds" sets the looping rain, engine and sea levels in dB
 # (missing = silent), "flash" flashes white, "shake" shakes the panel, and each cue is [seconds into the panel, sound,
 # volume dB]. Sounds are files in res://assets/audio/cutscene/ (or ship/…) or Sfx's own. The pictures carry no words:
-# the game letters each "caption" ("caption_width" as a share of the screen, "caption_for" seconds before it fades),
+# the game letters each "caption" ("caption_x" and "caption_width" as shares of the screen, "caption_for" seconds
+# before it fades),
 # speech "bubble" (at a share of the screen; "tail": "right" points it right) and
 # "title" ("title_y" moves it, as a share of the screen height). A "video" panel plays that file with its own sound and
 # moves on when it ends, with "hold" as a backstop; the "held" panel after it is the video's last frame, shown with no
@@ -948,6 +949,51 @@ const MUSEUM_INTRO_PANELS: Array[Dictionary] = [
 		"title": "THE MUSEUM OF MOSTLY REAL THINGS", "title_y": 0.76,
 		"cues": [[1.2, "title_hit", -4.0]]},
 ]
+# What happens after the final results (decision 146): the Mansion's diary, the Ship's wave and the Museum's epilogue.
+# A "paper" is a page the game writes: "text", "at" and "width" (shares of the screen), "size", and optional "angle",
+# "colour" (none writes straight on the picture's own paper), "delay", and "slide" to slide it up from below. "still"
+# holds the picture without zooming, so words on its paper stay put. "bubbles" lists several bubbles, each with a "delay".
+const MANSION_OUTRO_PANELS: Array[Dictionary] = [
+	{"image": "m08_diary.jpg", "hold": 11.0, "still": true, "music": "spooky", "beds": {},
+		"paper": {"text": "14 March 1946.\n\nThe Captain has taken it ALL. Every rupee of the Malhotra fortune, loaded onto his ship, the [u]SAGAR RANI[/u], and gone to sea.\n\nIf you find this, find the ship. The gold is still on board.\n\n— Dhanraj Malhotra (Seth-ji)",
+			"at": Vector2(0.52, 0.07), "width": 0.42, "size": 40, "angle": 1.5, "colour": Color("ecdcae"), "slide": true},
+		"bubble": {"text": "...a ship\n[b]full of gold?[/b]", "at": Vector2(0.27, 0.27), "delay": 5.5},
+		"cues": [[0.3, "paper_1", -4.0], [1.0, "paper_2", -4.0]]},
+]
+const SHIP_OUTRO_PANELS: Array[Dictionary] = [
+	{"image": "s07_the_wave.jpg", "hold": 6.0, "music": "shanty", "beds": {"sea": -10.0},
+		"title": "TO BE CONTINUED...", "title_y": 0.79,
+		"cues": [[0.8, "wave_crash", -2.0], [1.2, "title_hit", -4.0], [2.2, "goat", -8.0]]},
+]
+const MUSEUM_OUTRO_FOLDER: String = "res://assets/cutscenes/epilogue/"
+const MUSEUM_OUTRO_PANELS: Array[Dictionary] = [
+	{"image": "e01_dawn.jpg", "hold": 5.0, "music": "cozy", "beds": {},
+		"bubble": {"text": "We... actually\n[b]did it?[/b]", "at": Vector2(0.28, 0.12)},
+		"cues": [[0.4, "rattle", -10.0]]},
+	{"image": "e02_hitchhikers.jpg", "hold": 7.0, "music": "spooky", "beds": {}, "flash": true,
+		"bubbles": [{"text": "[b]SETH-JI?![/b]\nForty years I waited!", "at": Vector2(0.67, 0.05), "delay": 0.5},
+			{"text": "Bahadur?! You're\n[b]STILL[/b] on duty?", "at": Vector2(0.03, 0.04), "delay": 3.0}],
+		"cues": [[0.0, "theremin", -8.0]]},
+	{"image": "e03_the_verdict.jpg", "hold": 6.0, "music": "", "beds": {},
+		"bubble": {"text": "It belongs... to whoever\n[b]CARRIED[/b] it.", "at": Vector2(0.47, 0.03)},
+		"cues": [[0.2, "whistle", -6.0]]},
+	{"image": "e04_meanwhile.jpg", "hold": 7.0, "music": "cozy", "beds": {},
+		"caption": "MEANWHILE...",
+		"paper": {"text": "Moved by Sasta Shifters.\nTerms and conditions apply.", "at": Vector2(0.06, 0.28), "width": 0.3, "size": 34, "angle": -3.0, "colour": Color("ffe27a"), "delay": 1.0},
+		"cues": [[1.0, "paper_1", -6.0], [3.5, "goat", -8.0]]},
+	{"image": "e05_new_sign.jpg", "hold": 8.0, "music": "cozy", "beds": {"engine": -18.0}, "flash": true,
+		"caption": "SASTA SHIFTERS. WE MOVE ANYTHING*. *GHOSTS INCLUDED FREE.", "caption_x": 0.42, "caption_width": 0.5,
+		"title": "THE END... OF THE BEGINNING?", "title_y": 0.76,
+		"cues": [[0.6, "horn", -8.0], [1.2, "title_hit", -4.0]]},
+	{"image": "e06_next_job.jpg", "hold": 7.0, "still": true, "music": "", "beds": {},
+		"paper": {"text": "[b]NEXT JOB[/b]\n\nClear out a haunted film studio.\n\nFragile: 1 golden trophy.", "at": Vector2(0.53, 0.38), "width": 0.23, "size": 36, "angle": 1.0, "delay": 0.8},
+		"cues": [[0.2, "thunder", -8.0], [0.8, "paper_2", -6.0], [1.2, "organ", -8.0]]},
+]
+const INTRO_HAND_FONT_PATH: String = "res://assets/fonts/caveat_variable.ttf" # Handwriting on the game's papers.
+const INTRO_HAND_WEIGHT: int = 700 # Bold enough to read from across a room.
+const INTRO_PAPER_INK := Color("2b1d14")
+const INTRO_PAPER_MARGIN: int = 26
+const INTRO_PAPER_SLIDE: float = 0.7 # Seconds a page takes to slide up.
 const INTRO_CAPTION_WIDTH: float = 0.62 # Share of the screen width.
 const INTRO_VIDEO_DB: float = -2.0 # A video panel's own sound.
 const INTRO_VIDEO_ASPECT: float = 16.0 / 9.0 # Videos fill the screen, cropped at its edges on other shapes.

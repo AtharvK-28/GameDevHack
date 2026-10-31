@@ -261,7 +261,7 @@ function render() {
     return;
   }
   if (joined && !inMatch) screen = activeRole ? "controls" : "lobby";
-  else if (joined && matchPhase === "intro") screen = "story";
+  else if (joined && ["intro", "outro"].includes(matchPhase)) screen = "story";
   else if (joined && ["setup", "reveal"].includes(matchPhase)) screen = "reveal";
   else if (joined && LIVE_PHASES.includes(matchPhase)) screen = activeRole ? "controls" : "lobby";
   else if (joined && matchPhase === "result") screen = "result";

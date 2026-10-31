@@ -101,6 +101,11 @@ Author: The Baloo 2 Project Authors (Ek Type)
 Source: [github: Baloo2](https://github.com/EkType/Baloo2)  
 License: SIL Open Font License 1.1 (`assets/fonts/baloo2_OFL.txt`). Used on every screen and on the phone page.  
 
+### Caveat
+Author: The Caveat Project Authors  
+Source: [Google Fonts: Caveat](https://github.com/googlefonts/caveat)  
+License: SIL Open Font License 1.1 (`assets/fonts/caveat_OFL.txt`). Handwriting on the story's papers.  
+
 ### Bangers
 Author: The Bangers Project Authors (Vernon Adams)  
 Source: [github: bangers](https://github.com/googlefonts/bangers)  

@@ -14,7 +14,7 @@ const GREYBOX_SCENE := preload("res://arenas/Greybox.tscn")
 const WINDOW_KEYS := preload("res://core/window_keys.gd")
 const DEV_TOOLS := preload("res://core/dev_tools.gd")
 const DISASTER_REPLAY := preload("res://screens/disaster_replay.gd")
-const WIPE_PHASES: Array[String] = ["lobby", "intro", "reveal", "result", "final"]
+const WIPE_PHASES: Array[String] = ["lobby", "intro", "reveal", "result", "final", "outro"]
 const SCREEN_SCENES: Array[PackedScene] = [
 	preload("res://screens/HUD.tscn"), preload("res://screens/Lobby.tscn"), preload("res://screens/RoleReveal.tscn"),
 	preload("res://screens/RoundEnd.tscn"), preload("res://screens/Results.tscn"),

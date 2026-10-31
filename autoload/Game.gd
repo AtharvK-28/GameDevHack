@@ -259,6 +259,18 @@ func _disaster_cam_call(method: String, fallback: Variant = null, arguments: Arr
 	return recorder.callv(method, arguments) if is_instance_valid(recorder) else fallback
 
 
+# --- The story's ending ---
+func play_ending() -> void:
+	# From the final results: the arena's ending plays, then the lobby.
+	if phase == "final" and replay.is_empty():
+		_set_phase("outro")
+
+
+func finish_ending() -> void:
+	if phase == "outro":
+		return_to_lobby()
+
+
 # --- Awards ---
 func add_stat(slot: int, stat: String, amount: int) -> void:
 	if phase != "live" and stat not in ["banked", "wrecked"]:

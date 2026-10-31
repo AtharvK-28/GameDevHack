@@ -1,6 +1,6 @@
 # Checks the story cutscenes (decision 145): every panel of the three intros has its picture or video, each ghost
 # video leads to a held last frame, the lettering stays on screen, a video plays and moves on by itself, and Esc
-# during a video stops it and starts the round.
+# during a video stops it and starts the round. After the final results each map plays its ending (decision 146).
 extends "res://core/match_check.gd"
 
 const VIDEO_SECONDS: float = 7.4 # Seth-ji's video, the shortest.
@@ -17,6 +17,8 @@ func _run() -> void:
 		return
 	for set: Array in [[SETTINGS.INTRO_PANELS, SETTINGS.INTRO_FOLDER, "Mansion"], [SETTINGS.SHIP_INTRO_PANELS, SETTINGS.SHIP_INTRO_FOLDER, "Ship"], [SETTINGS.MUSEUM_INTRO_PANELS, SETTINGS.MUSEUM_INTRO_FOLDER, "Museum"]]:
 		_check_panels(set[0], set[1], set[2])
+	for set: Array in [[SETTINGS.MANSION_OUTRO_PANELS, SETTINGS.INTRO_FOLDER, "Mansion"], [SETTINGS.SHIP_OUTRO_PANELS, SETTINGS.SHIP_INTRO_FOLDER, "Ship"], [SETTINGS.MUSEUM_OUTRO_PANELS, SETTINGS.MUSEUM_OUTRO_FOLDER, "Museum"]]:
+		_check_ending(set[0], set[1], set[2])
 
 	game.selected_arena = "res://arenas/Mansion.tscn"
 	playground = load("res://Main.tscn").instantiate()
@@ -66,6 +68,37 @@ func _run() -> void:
 	await _key(KEY_ESCAPE)
 	await _wait(0.2)
 	_check(game.phase == "reveal" and not video.is_playing(), "Esc during a video stops it and its sound")
+
+	# The Museum's ending: Enter on the final results walks the epilogue, panel by panel, to the lobby.
+	await _ending_from_results()
+	_check(game.phase == "outro" and cutscene._panels() == SETTINGS.MUSEUM_OUTRO_PANELS, "Enter on the final results plays the Museum's epilogue")
+	for index: int in range(SETTINGS.MUSEUM_OUTRO_PANELS.size()):
+		_check(cutscene.panel_index == index, "Epilogue panel %d shows" % (index + 1))
+		await _wait(0.2)
+		_check(_lettering_on_screen(), "Epilogue panel %d's lettering stays on screen" % (index + 1))
+		await _key(KEY_ENTER)
+	await _wait(0.2)
+	_check(game.phase == "lobby", "After the epilogue comes the lobby")
+
+	# The Mansion's diary, and L going straight to the lobby.
+	game.selected_arena = "res://arenas/Mansion.tscn"
+	await _wait(0.5)
+	await _key(KEY_ENTER)
+	await _wait(0.2)
+	await _key(KEY_ESCAPE)
+	await _ending_from_results()
+	await _wait(1.0)
+	_check(game.phase == "outro" and cutscene._panels() == SETTINGS.MANSION_OUTRO_PANELS and _lettering_on_screen(), "The Mansion ends on Seth-ji's diary, on screen")
+	await _key(KEY_ESCAPE)
+	await _wait(0.2)
+	await _key(KEY_ENTER)
+	await _wait(0.2)
+	await _key(KEY_ESCAPE)
+	game._set_phase("final")
+	await _wait(0.2)
+	await _key(KEY_L)
+	await _wait(0.2)
+	_check(game.phase == "lobby", "L on the final results skips the ending")
 	print("STORY CHECK: %s" % ("PASS" if failures == 0 else "%d failures" % failures))
 	quit(0 if failures == 0 else 1)
 
@@ -84,6 +117,21 @@ func _check_panels(panels: Array[Dictionary], folder: String, arena: String) -> 
 	_check(missing.is_empty(), "All %d of the %s's panels have their art %s" % [panels.size(), arena, missing])
 	_check(videos == 1, "The %s has one ghost video" % arena)
 	_check(panels[-1].has("title"), "The %s's story ends on its title" % arena)
+
+
+func _check_ending(panels: Array[Dictionary], folder: String, arena: String) -> void:
+	var missing: Array[String] = []
+	for panel: Dictionary in panels:
+		if not ResourceLoader.exists(folder + panel.image):
+			missing.append(panel.image)
+	_check(not panels.is_empty() and missing.is_empty(), "The %s's ending has its %d panels %s" % [arena, panels.size(), missing])
+
+
+func _ending_from_results() -> void:
+	game._set_phase("final")
+	await _wait(0.2)
+	await _key(KEY_ENTER)
+	await _wait(0.2)
 
 
 func _video_index(panels: Array[Dictionary]) -> int:

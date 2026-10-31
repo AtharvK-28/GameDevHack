@@ -325,7 +325,10 @@ func _check_full_match() -> void:
 	var rows: Array = game.standings()
 	_check(rows.size() == 2 and rows[0].points >= rows[1].points, "Standings are sorted by points")
 	await _key(KEY_ENTER)
-	_check(game.phase == "lobby", "Enter on the final screen returns to the lobby")
+	_check(game.phase == "outro" and _last(0, "match").get("phase") == "outro", "Enter on the final screen plays the story's ending")
+	await _key(KEY_ESCAPE)
+	await _wait(INPUT_SECONDS)
+	_check(game.phase == "lobby", "Esc skips the ending to the lobby")
 
 
 # --- Scenario helpers ---

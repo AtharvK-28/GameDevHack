@@ -1,5 +1,5 @@
 # Final results: a podium for the top three (blocks rise in turn, then the winner is crowned), anyone else listed
-# below, and the way back to the lobby. Enter returns everyone to the lobby.
+# below, then the story's ending (Enter) or straight back to the lobby (L).
 extends Control
 
 const Style := preload("res://screens/screen_style.gd")
@@ -23,9 +23,16 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if visible and Style.pressed_key(event) in [KEY_ENTER, KEY_KP_ENTER, KEY_L]:
-		Game.return_to_lobby()
-		get_viewport().set_input_as_handled()
+	if not visible:
+		return
+	match Style.pressed_key(event):
+		KEY_ENTER, KEY_KP_ENTER:
+			Game.play_ending()
+		KEY_L:
+			Game.return_to_lobby()
+		_:
+			return
+	get_viewport().set_input_as_handled()
 
 
 # --- Refresh ---
@@ -131,7 +138,12 @@ func _build() -> void:
 	others.add_theme_constant_override("separation", Balance.HOST_ROW_GAP)
 	others.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	rows.add_child(others)
-	rows.add_child(Style.action("BACK TO THE LOBBY", "Enter", Game.return_to_lobby))
+	var actions := HBoxContainer.new()
+	actions.alignment = BoxContainer.ALIGNMENT_CENTER
+	actions.add_theme_constant_override("separation", Balance.HOST_ROW_GAP * 3)
+	actions.add_child(Style.action("WHAT HAPPENS NEXT?", "Enter", Game.play_ending))
+	actions.add_child(Style.action("LOBBY", "L", Game.return_to_lobby))
+	rows.add_child(actions)
 	var holder := CenterContainer.new() # Not Style.centre: the podium animates on its own.
 	holder.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE

@@ -127,7 +127,7 @@ func _on_phase(phase: String) -> void:
 	match phase:
 		"lobby":
 			_set_music("lobby", Balance.MUSIC_LOBBY_DB)
-		"intro":
+		"intro", "outro":
 			_set_music("", 0.0) # The cutscene plays its own music.
 		"reveal", "live", "paused":
 			# An arena may bring its own round music (the Ship's shanty); otherwise the spooky waltz.
