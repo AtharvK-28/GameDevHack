@@ -88,7 +88,7 @@ func _process(delta: float) -> void:
 
 
 func _update_harness_overlay() -> void:
-	status_label.text = "GHOSTED MOVERS · BANKED %s\nHold GRAB to carry · release in the green truck zone · THROW light items · the piano needs two\nG passes the ghost role · ghost keys: Q possess · F action · Z shake · X slime\n%s" % [Loot.rupees(arena.truck.banked_value), connection_text]
+	status_label.text = "GHOSTED MOVERS · BANKED %s\nHold GRAB to carry · release in the green truck zone · let go with the stick pushed to throw · the piano needs two\nG passes the ghost role · ghost keys: Q possess · F action · Z shake · X slime\n%s" % [Loot.rupees(arena.truck.banked_value), connection_text]
 	_update_ghost_panel()
 
 

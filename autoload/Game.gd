@@ -17,6 +17,7 @@ var round_index: int = 0
 var round_count: int = 0
 var round_seed: int = 0
 var ghost_slot: int = -1
+var ghost_order: Array[int] = [] # Decision 151: who is the ghost each round, shuffled once a match.
 var seconds_left: float = 0.0
 var reveal_left: float = 0.0
 var starting_value: int = 0
@@ -68,6 +69,7 @@ func start_match() -> void:
 	participants = ready_slots()
 	round_count = Balance.MATCH_ROUNDS[participants.size() - 2]
 	round_index = 0
+	_shuffle_ghost_order()
 	scores.clear()
 	match_stats.clear()
 	_disaster_cam_call("forget_match")
@@ -84,11 +86,22 @@ func finish_intro() -> void:
 	Sfx.start_ambient()
 
 
+func _shuffle_ghost_order() -> void:
+	# Decision 151: the ghost used to be phone 1 in round 1, phone 2 in round 2 and so on, which gave the whole
+	# match away. The turns are shuffled once, at the start of the match, so nobody can predict who is next but
+	# everyone still gets exactly one turn before anyone repeats. Fixed for the match, so a restart keeps the role.
+	ghost_order = participants.duplicate()
+	ghost_order.shuffle()
+	print("Ghost order this match: ", ghost_order)
+
+
 func _begin_round(restarting: bool) -> void:
 	_set_phase("setup")
 	if not restarting:
 		round_seed = randi()
-	ghost_slot = participants[round_index % participants.size()]
+	if ghost_order.is_empty():
+		_shuffle_ghost_order() # Never divide by an empty order, whatever path got us here.
+	ghost_slot = ghost_order[round_index % ghost_order.size()]
 	bank_credit.clear()
 	round_points.clear()
 	round_stats.clear()

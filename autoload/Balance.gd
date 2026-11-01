@@ -222,10 +222,17 @@ const LEAN_DAMPING: float = 6.5 # Lower is bouncier: well below 2 * sqrt(stiffne
 # A mover used to glide along at a fixed height. Now the body rises and rolls in time with its steps, so the crew
 # looks alive even trudging down a corridor. Both are driven by distance walked, so they stay in step at any speed.
 # Skidding needs nothing here: the lean spring above already tips a mover back when it decelerates hard.
-const BOB_HEIGHT: float = 0.05 # Metres the body lifts at the top of a step, at full speed.
-const BOB_RATE: float = 2.1 # Steps per metre walked.
+# Decision 151: BOB_RATE of 2.1 steps per metre meant 9.4 steps a second at full speed, five times a walk, which
+# read as a jitter rather than a stride. Measured straight-line roll was dead symmetric, so there was never a tilt
+# to one side; it was simply too fast. The rate now gives about two steps a second, each mover starts at its own
+# point in the cycle so the crew is not in lockstep, and a slow noise sway keeps it from being a clean metronome.
+const BOB_HEIGHT: float = 0.07 # Metres the body lifts at the top of a step, at full speed.
+const BOB_RATE: float = 0.45 # Steps per metre walked: about two a second at MOVER_SPEED.
 const BOB_CARRY_SCALE: float = 0.45 # Share of the bob kept while carrying: a loaded mover trudges.
-const WADDLE_DEGREES: float = 3.5 # Degrees the body rolls side to side across a step.
+const WADDLE_DEGREES: float = 3.0 # Degrees the body rolls side to side across a step.
+const WOBBLE_NOISE_DEGREES: float = 2.2 # Degrees of slow, aimless sway on top of the stride, so no two steps match.
+const WOBBLE_NOISE_RATE: float = 0.6 # How fast that sway wanders.
+const WOBBLE_IDLE_SHARE: float = 0.35 # Share of the sway a standing mover keeps, so nobody stands perfectly still.
 const SQUASH_STIFFNESS: float = 300.0 # Spring returning a squash or stretch to normal.
 const SQUASH_DAMPING: float = 9.0 # Lower is bouncier.
 const SQUASH_GRAB: float = 0.06 # Fraction of height; positive squashes, negative stretches.
@@ -277,6 +284,10 @@ const LOOT_BOUNCE: float = 0.1
 const LIGHT_LOOT_BOUNCE: float = 0.3 # Light items skitter when dropped (goofy physics).
 const THROW_SPEED: float = 7.0 # Metres per second added in the facing direction.
 const THROW_LIFT: float = 2.0 # Metres per second upwards.
+# Decision 151: the THROW button was unreachable. Carrying pins one thumb on GRAB and the other on the stick, so
+# there was no thumb left to tap with. Letting go of GRAB with the stick pushed now throws the item that way;
+# letting go with the stick centred sets it down gently, as it always did. The button still works for a teammate.
+const THROW_FLICK_STICK: float = 0.45 # Stick tilt, 0 to 1, at which releasing GRAB throws instead of setting down.
 
 # --- Two-person carry settings ---
 const DRAG_SPEED: float = 0.25 # Fraction of mover speed when one handle drags.
@@ -550,9 +561,12 @@ const PODIUM_STAGGER: float = 0.3 # Seconds between blocks.
 const ACTION_LABELS: Array[String] = ["SHOVE", "SLAM", "DROP", "STOMP", "YANK"] # By possessable kind: slider, door, dropper, hopper, rug.
 const ACTION_COSTS: Array[int] = [15, 20, 30, 25, 25] # Energy, by possessable kind.
 const POSSESS_COLOUR := Color("6dff8a")
-const OUTLINE_GROW: float = 0.03 # Metres the outline shell stands off a prop.
-const OUTLINE_IDLE_ALPHA: float = 0.2 # Every possessable prop's faint outline.
-const OUTLINE_TARGET_ALPHA: float = 0.85 # The prop the free wisp would possess.
+# Decision 151: at 20% alpha on a dark, now-desaturated house, the furniture the ghost can take was invisible, so
+# half the ghost's options went unnoticed. The idle outline is firmer, thicker and bright enough to bloom.
+const OUTLINE_GROW: float = 0.05 # Metres the outline shell stands off a prop (was 0.03).
+const OUTLINE_IDLE_ALPHA: float = 0.55 # Every possessable prop's outline (was 0.2).
+const OUTLINE_TARGET_ALPHA: float = 1.0 # The prop the free wisp would possess.
+const OUTLINE_GLOW: float = 1.8 # Multiplies the outline's colour past MOOD_GLOW_THRESHOLD, so it blooms.
 const GLOW_GROW: float = 0.05
 const GLOW_ALPHA_MIN: float = 0.35 # A possessed prop's glow pulses between these.
 const GLOW_ALPHA_MAX: float = 0.6
@@ -561,9 +575,57 @@ const GLOW_PULSE_RATE: float = 2.0 # Pulses per second.
 # --- Loot in reach (decision 149) ---
 # Movers never used to see what they could pick up. Now every grabbable near a player wears a faint shell, and the
 # one item a mover would actually grab wears a bright shell in that player's own colour, pulsing so it reads at once.
-const REACH_OUTLINE_GROW: float = 0.032 # Metres the shell stands off an item.
-const REACH_IDLE_ALPHA: float = 0.22 # Any grabbable with a player nearby: "this is loot".
-const REACH_TARGET_ALPHA: float = 0.95 # The one item this mover's GRAB would take.
+# Decision 150: the shell answered "which one will I grab" but never "where is the loot", because it only showed
+# inside PRICE_SHOW_DISTANCE and at an alpha a projector could not hold. It now has its own wider reach and a much
+# firmer idle rim; the pips below are what makes loot findable across a room.
+const REACH_SHOW_DISTANCE: float = 6.0 # Metres: a player this close puts the faint "this is loot" rim on an item.
+const REACH_OUTLINE_GROW: float = 0.045 # Metres the shell stands off an item (was 0.032).
+const REACH_IDLE_ALPHA: float = 0.5 # Any grabbable with a player nearby: "this is loot" (was 0.22).
+const REACH_TARGET_ALPHA: float = 1.0 # The one item this mover's GRAB would take.
+
+# --- Arena briefing (decision 152) ---
+# The Museum runs eight systems at once and players met them all mid-round. Before the first Museum round the
+# camera pulls back over the real building and labelled arrows point at the things that will catch them out.
+# Positions are in world metres and match the constants they describe: the laser gates sit between LASER_GATES_X
+# at the middle of LASER_HALL_Z, the shutters on ALARM_SHUTTER_Z, the van at the layout's tailgate.
+const BRIEFING_DISTANCE: float = 34.0 # Camera metres back: the whole museum in frame.
+const BRIEFING_STAGGER: float = 0.4 # Seconds between each arrow appearing.
+const BRIEFING_FADE: float = 0.3 # Seconds each arrow takes to appear.
+const BRIEFING_TITLE_SIZE: int = 54
+const BRIEFING_LABEL_SIZE: int = 30
+const BRIEFING_NOTE_SIZE: int = 22
+const BRIEFING_ARROW_HEAD: float = 14.0 # Pixels.
+const BRIEFING_ARROW_WIDTH: float = 3.0
+const BRIEFING_PAD: float = 10.0 # Pixels of padding inside a label's card.
+const BRIEFING_INK := Color("fff3d4")
+const BRIEFING_CARD := Color(0.07, 0.04, 0.11, 0.82)
+const MUSEUM_BRIEFING_MARKS: Array[Dictionary] = [
+	{"at": Vector3(6.25, 0.9, 17.5), "title": "LASER HALL", "note": "The short way out. Cross on the dark beat.", "push": Vector2(-170.0, 90.0)},
+	{"at": Vector3(5.0, 1.1, 4.0), "title": "GLASS CASES", "note": "Hold GRAB to pick the lock, or THROW to smash it: loud.", "push": Vector2(-150.0, -110.0)},
+	{"at": Vector3(15.0, 1.6, 8.0), "title": "SHUTTERS", "note": "Trip the ALARM enough and these three doorways seal.", "push": Vector2(60.0, -130.0)},
+	{"at": Vector3(21.0, 1.0, 17.5), "title": "THE LONG WAY", "note": "No lasers through the lobby, but it costs you time.", "push": Vector2(190.0, 70.0)},
+	{"at": Vector3(2.6, 1.0, 23.0), "title": "THE VAN", "note": "Everything you carry has to end up here.", "push": Vector2(-60.0, 120.0)},
+]
+
+# --- Loot pips (decision 150) ---
+# A small diamond turning above every item a mover could pick up, bright and unshaded so it reads from across the
+# room and over furniture. It is the game's core loop made visible: find loot, learn what it takes to carry it, go.
+# Colour gives the weight class away before you walk over, so "do I need a teammate?" needs no reading. The gold
+# ramp stays clear of every PLAYER_COLOURS hue, so a pip is never mistaken for somebody's aura.
+const PIP_COLOURS: Array[String] = ["#ffe066", "#ffa62b", "#ff6a2b", "#67c8ff"] # Light, medium, heavy, two-person.
+# Sized and brightened against a 1080p projector shot of the Mansion: at 0.19 m and plain colour the pips were
+# there but negligible beside the mover auras, which are 0.62 m rings. They now hold a steady size on screen
+# however far the camera pulls back, and sit above the glow threshold so they bloom out of the dark house.
+const PIP_SIZE: float = 0.34 # Metres across the diamond at PIP_REFERENCE_DISTANCE.
+const PIP_REFERENCE_DISTANCE: float = 13.0 # Metres: the camera distance PIP_SIZE is drawn at.
+const PIP_SCALE_RANGE := Vector2(0.85, 2.0) # Smallest and largest multiplier on PIP_SIZE.
+const PIP_GLOW: float = 1.7 # Multiplies the colour past MOOD_GLOW_THRESHOLD; above about 2 the bloom whitens the hue.
+const PIP_HEIGHT: float = 0.85 # Metres above the item's top, clear of its price tag and most furniture.
+const PIP_SPIN: float = 0.9 # Turns a second, so it catches the eye without strobing.
+const PIP_BOB: float = 0.07 # Metres it rises and falls.
+const PIP_BOB_RATE: float = 1.1 # Bobs a second.
+const PIP_ALPHA: float = 0.95
+const PIP_TWO_PERSON_GAP: float = 0.52 # Metres between a two-person item's two pips; must clear PIP_SIZE or they merge.
 const REACH_IDLE_COLOUR := Color("fff3d4") # Warm paper white, so idle shells read as neutral.
 const REACH_TEAM_COLOUR := Color("ffd166") # A two-person item in reach: it takes two of you.
 const REACH_PULSE_RATE: float = 2.6 # Pulses a second on the item you would grab.
@@ -671,7 +733,9 @@ const PRICE_FONT_SIZE: int = 48
 const PRICE_PIXEL_SIZE: float = 0.006 # World metres per label pixel; small, so tags never crowd the screen.
 const PRICE_OPACITY: float = 0.8 # 0 to 1.
 const PRICE_OUTLINE_SIZE: int = 8 # Pixels of dark outline around the tag's text.
-const PRICE_SHOW_DISTANCE: float = 3.0 # Metres; a tag shows only while a mover or the ghost is this close.
+# Decision 150: 3 m meant you learned an item's worth only once you were on top of it, so value never guided where
+# you walked. At 7 m the prices in a room are part of choosing your next target.
+const PRICE_SHOW_DISTANCE: float = 7.0 # Metres; a tag shows only while a mover or the ghost is this close.
 const PRICE_FADE_TIME: float = 0.2 # Seconds to fade a tag fully in or out.
 const VALUE_POPUP_PIXEL_SIZE: float = 0.009 # Damage and banking popups, a little bigger than tags.
 const VALUE_POPUP_START: float = 0.6 # Metres above the price tag, so the popup never covers it.
@@ -1371,7 +1435,7 @@ const LASER_GATES_X: Array[float] = [4.0, 8.5] # Two gates 4.5 m apart (decision
 const LASER_HALL_Z := Vector2(15.2, 19.8) # The beams run wall to wall across the hall.
 const LASER_HEIGHTS: Array[float] = [0.35, 0.85, 1.35] # Metres: three beams per gate.
 const LASER_PERIOD: float = 2.6 # Seconds for one on-off cycle.
-const LASER_ON_SHARE: float = 0.6 # Share of the cycle a gate is lit.
+const LASER_ON_SHARE: float = 0.45 # Share of the cycle a gate is lit; was 0.6, which left too little dark to cross in.
 const LASER_STAGGER: float = 0.85 # Seconds each gate runs behind the one before, so a gap rolls down the hall.
 const LASER_TRIP_WIDTH: float = 0.35 # Metres either side of a gate within which a mover breaks its beams.
 const LASER_TRIP_GAP: float = 1.5 # Seconds before the same mover can trip the same gate again.
@@ -1412,11 +1476,16 @@ const MUMMY_COLOUR := Color("c9b98f")
 const GIFT_SHOP_COUNTER := Vector3(28.4, 0.0, 16.5)
 const GIFT_SHOP_SPOTS: Array[Vector3] = [Vector3(27.5, 0.95, 16.5), Vector3(28.1, 0.95, 16.5), Vector3(28.7, 0.95, 16.5), Vector3(29.3, 0.95, 16.5)]
 # --- The ALARM and lockdown (decision 137) ---
-const ALARM_LASER: float = 25.0 # Share of the ALARM bar each source fills: a tripped laser,
-const ALARM_SCREAM: float = 15.0 # Mona Lisa's cousin's scream,
-const ALARM_CATCH: float = 20.0 # and a mover caught in the torch beam.
-const ALARM_WARNING: float = 10.0 # Seconds from a full bar to the shutters ("police on the way").
-const ALARM_LOCKDOWN: float = 20.0 # Seconds the shutters stay down; then the bar resets.
+# Decision 152: the bots banked 31% of a 60% quota and won 0 of 10, with the bar filling once or twice every
+# round. Each fill cost 10 s of warning plus 20 s of lockdown with the back galleries sealed, so up to 40% of a
+# round was spent locked out of the loot. Each source now fills less, the lockdown is half as long, there is more
+# time to get clear, and the bar drains while nothing is setting it off, so a careful crew can recover.
+const ALARM_LASER: float = 15.0 # Share of the ALARM bar each source fills: a tripped laser,
+const ALARM_SCREAM: float = 10.0 # Mona Lisa's cousin's scream,
+const ALARM_CATCH: float = 12.0 # and a mover caught in the torch beam.
+const ALARM_DECAY: float = 2.5 # Bar drained per second while no alarm is running: keep quiet and it cools off.
+const ALARM_WARNING: float = 12.0 # Seconds from a full bar to the shutters ("police on the way").
+const ALARM_LOCKDOWN: float = 10.0 # Seconds the shutters stay down; then the bar resets.
 const ALARM_SHUTTER_DOORS: Array[Vector2] = [Vector2(3.7, 6.3), Vector2(13.5, 16.5), Vector2(23.7, 26.3)] # x spans of the back galleries' doorways,
 const ALARM_SHUTTER_Z: float = 8.0 # all on this wall.
 const ALARM_SHUTTER_HEIGHT: float = 2.8
@@ -1441,7 +1510,7 @@ const CASE_ROLES: Array[StringName] = [&"egypt", &"space"] # Pedestals whose exh
 const CASE_SIZE := Vector3(0.75, 0.75, 0.75)
 const CASE_GLASS := Color(0.75, 0.9, 1.0, 0.22)
 const CASE_REACH: float = 1.2 # Metres from a case within which GRAB picks its lock and THROW smashes it.
-const CASE_UNLOCK_SECONDS: float = 2.0 # GRAB held this long opens it quietly.
+const CASE_UNLOCK_SECONDS: float = 1.4 # GRAB held this long opens it quietly; was 2.0.
 const CASE_PROGRESS_DECAY: float = 0.5 # Picking progress lost per second while nobody holds GRAB.
 const CASE_SMASH_ENERGY: float = 10.0 # Energy a smashed case gives the ghost,
 const ALARM_CASE: float = 25.0 # and how much of the ALARM bar it fills.

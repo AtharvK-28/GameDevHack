@@ -29,12 +29,12 @@ func _build_model() -> void:
 	# Rotate the scan's cab-to-tailgate line onto −X, scale it to TRUCK_LENGTH, then move its tailgate to the origin.
 	var scale_factor: float = Balance.TRUCK_LENGTH / Balance.TRUCK_MODEL_LENGTH
 	var turn: float = deg_to_rad(Balance.TRUCK_MODEL_HEADING) - PI
-	var basis := Basis(Vector3.UP, turn).scaled(Vector3.ONE * scale_factor)
-	var origin: Vector3 = -(basis * Balance.TRUCK_MODEL_TAILGATE)
+	var turned := Basis(Vector3.UP, turn).scaled(Vector3.ONE * scale_factor)
+	var origin: Vector3 = -(turned * Balance.TRUCK_MODEL_TAILGATE)
 	origin.y = -Balance.TRUCK_MODEL_FLOOR * scale_factor - Balance.TRUCK_SINK
 	var model := MeshInstance3D.new()
 	model.mesh = load(Balance.TRUCK_MODEL_PATH)
-	model.transform = Transform3D(basis, origin)
+	model.transform = Transform3D(turned, origin)
 	# Repainted Sasta Shifters orange, like the intro's comic truck; the scan's photo only adds shading (STYLE.md).
 	var paint := ShaderMaterial.new()
 	paint.shader = preload("res://assets/shaders/posterize.gdshader")

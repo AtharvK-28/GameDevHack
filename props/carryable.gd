@@ -1,9 +1,11 @@
 # Base for anything a mover can pick up: the spring carry, upright wobble, throws and contact impacts.
 # Goofy physics: the item's look (never its collider) jiggles on impacts, grabs and throws, and light items bounce.
 # Subclasses set item_name, item_size and weight_class before calling super() in _ready(), set visual to the node
-# that jiggles, and call update_jiggle() and update_reach_outline() every frame.
-# The reach shell (decision 149) tells movers what they can pick up: a faint rim on any grabbable with a player
-# nearby, and a bright pulsing rim in the player's own colour on the one item their GRAB would take.
+# that jiggles, and call update_jiggle() and update_pickup_cues() every frame.
+# The pickup cues tell movers where the loot is and what it takes to carry it. A pip (decision 150) turns above
+# every item a mover could pick up, coloured by weight class, doubled when it takes two people; it is visible from
+# anywhere in the room. Closer in, the reach shell (decision 149) puts a faint rim on any grabbable with a player
+# nearby and a bright rim in the player's own colour on the one item their GRAB would take.
 class_name Carryable
 extends RigidBody3D
 
@@ -29,7 +31,10 @@ var jiggle_velocity: float = 0.0
 
 # --- Reach shell state (decision 149) ---
 const SHELL_NAME := "ReachShell"
+const PIP_NAME := "LootPip"
 var reach_outline := StandardMaterial3D.new()
+var pip: Node3D # Turns above the item so movers can find it from across the room (decision 150).
+var pip_material := StandardMaterial3D.new()
 var outline_meshes: Array[MeshInstance3D] = [] # Collected from visual, so every subclass gets the shell for free.
 var reach_slot: int = -1 # The slot whose GRAB would take this item, or -1 for nobody.
 var reach_time: float = 0.0 # Drives the target shell's pulse.
@@ -49,6 +54,7 @@ func _ready() -> void:
 	physics_material_override.friction = Balance.LOOT_FRICTION
 	physics_material_override.bounce = Balance.LIGHT_LOOT_BOUNCE if weight_class == Balance.LIGHT else Balance.LOOT_BOUNCE
 	_build_reach_outline()
+	_build_pip()
 
 
 # --- Physics ---
@@ -226,9 +232,10 @@ func can_be_grabbed() -> bool:
 	return not finished and not haunted and not is_held()
 
 
-func update_reach_outline(delta: float) -> void:
-	# Subclasses call this every frame.
+func update_pickup_cues(delta: float) -> void:
+	# Subclasses call this every frame; it drives both the pip above the item and the shell around it.
 	reach_time += delta
+	_update_pip(delta)
 	var target: bool = reach_slot >= 0 and can_be_grabbed()
 	var shown: bool = target or (can_be_grabbed() and _player_nearby())
 	for shell: MeshInstance3D in shell_meshes:
@@ -256,6 +263,60 @@ func _build_reach_outline() -> void:
 	reach_outline.cull_mode = BaseMaterial3D.CULL_FRONT # Only the shell's far side draws, so it reads as a rim.
 
 
+# --- Loot pip (decision 150) ---
+func _update_pip(delta: float) -> void:
+	if pip == null:
+		return
+	pip.visible = can_be_grabbed() # Banked, shattered, held or haunted items are not looking for a carrier.
+	if not pip.visible:
+		return
+	pip.rotate_y(TAU * Balance.PIP_SPIN * delta)
+	var bob: float = sin(TAU * Balance.PIP_BOB_RATE * reach_time) * Balance.PIP_BOB
+	pip.global_position = global_position + Vector3.UP * (item_size.y / 2.0 + Balance.PIP_HEIGHT + bob)
+	pip.scale = Vector3.ONE * _pip_scale()
+
+
+func _pip_scale() -> float:
+	# Grow the pip with the camera's distance, so it keeps about the same size on screen however far the party
+	# camera has pulled back. A marker you cannot see from the far side of the room is not a marker.
+	var camera: Node3D = get_tree().get_first_node_in_group("party_camera") # Allocates nothing, unlike the array form.
+	if camera == null:
+		return 1.0
+	var distance: float = camera.global_position.distance_to(global_position)
+	return clampf(distance / Balance.PIP_REFERENCE_DISTANCE, Balance.PIP_SCALE_RANGE.x, Balance.PIP_SCALE_RANGE.y)
+
+
+func _build_pip() -> void:
+	# One diamond for an item you can carry alone, two for a two-person item: the count says it takes two of you,
+	# and the colour says how heavy it is, both before anyone walks over.
+	pip_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	pip_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	# Past the glow threshold, so the pip blooms instead of sitting flat against a dark room.
+	var tint := Color(Balance.PIP_COLOURS[weight_class % Balance.PIP_COLOURS.size()])
+	pip_material.albedo_color = Color(tint.r * Balance.PIP_GLOW, tint.g * Balance.PIP_GLOW, tint.b * Balance.PIP_GLOW, Balance.PIP_ALPHA)
+
+	var diamond := SphereMesh.new()
+	diamond.radius = Balance.PIP_SIZE / 2.0
+	diamond.height = Balance.PIP_SIZE * 1.6 # Taller than wide, so it reads as a gem rather than a ball.
+	diamond.radial_segments = 4 # Four sides and two rings make an octahedron: a diamond from every angle.
+	diamond.rings = 2
+
+	pip = Node3D.new()
+	pip.name = PIP_NAME
+	add_child(pip)
+	pip.top_level = true # The item tumbles and spins; its pip stays upright above it.
+	var offsets: Array[float] = [0.0]
+	if weight_class == Balance.TWO_PERSON:
+		offsets = [-Balance.PIP_TWO_PERSON_GAP / 2.0, Balance.PIP_TWO_PERSON_GAP / 2.0]
+	for offset: float in offsets:
+		var gem := MeshInstance3D.new()
+		gem.mesh = diamond
+		gem.material_override = pip_material
+		gem.position.x = offset
+		gem.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		pip.add_child(gem)
+
+
 func _build_shells() -> void:
 	# One shell per visible mesh, parented to it so it follows every jiggle and spin for free. Hidden until a
 	# player is near, so a tidy room costs nothing.
@@ -273,9 +334,9 @@ func _build_shells() -> void:
 
 
 func _player_nearby() -> bool:
-	# The same reach the price tags use, so a tidy room only lights up the loot you have walked over to.
+	# The shell's own reach (decision 150), wider than the old price-tag distance it used to borrow.
 	for player: Node3D in get_tree().get_nodes_in_group("movers"):
-		if player.is_visible_in_tree() and player.global_position.distance_to(global_position) <= Balance.PRICE_SHOW_DISTANCE:
+		if player.is_visible_in_tree() and player.global_position.distance_to(global_position) <= Balance.REACH_SHOW_DISTANCE:
 			return true
 	return false
 

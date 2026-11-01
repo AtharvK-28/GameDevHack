@@ -339,6 +339,10 @@ func _build_materials() -> void:
 		material.grow = true
 	outline.grow_amount = Balance.OUTLINE_GROW
 	outline.cull_mode = BaseMaterial3D.CULL_FRONT # Only the shell's far side shows, as a rim round the prop.
+	# Past the glow threshold, so what the ghost can take reads across a dark room (decision 151). _update_look
+	# only ever changes the alpha, so this brightness stays.
+	var tint: Color = Balance.POSSESS_COLOUR
+	outline.albedo_color = Color(tint.r * Balance.OUTLINE_GLOW, tint.g * Balance.OUTLINE_GLOW, tint.b * Balance.OUTLINE_GLOW, Balance.OUTLINE_IDLE_ALPHA)
 	glow.grow_amount = Balance.GLOW_GROW
 
 

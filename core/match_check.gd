@@ -94,6 +94,13 @@ func _check_lobby() -> void:
 	_check(game.phase == "intro" and game.participants == [0, 1] and game.round_count == 4, "Enter starts a 2-player match of 4 rounds with the intro cutscene")
 	await _wait(SETTLE_SECONDS)
 	_check(_last(1, "match").get("phase") == "intro" and paused and not router.input_enabled, "During the intro the world is paused, phone input is off and phones are told")
+	# Decision 151 shuffles who is the ghost each round. Check the shuffle is a true permutation of the players,
+	# then pin the order so the rest of this suite can still name who is who round by round.
+	game._shuffle_ghost_order()
+	var drawn: Array[int] = game.ghost_order.duplicate()
+	drawn.sort()
+	_check(drawn == game.participants, "The shuffled ghost order holds every player exactly once")
+	game.ghost_order = game.participants.duplicate()
 	await _key(KEY_ESCAPE)
 	_check(game.phase == "reveal", "Esc skips the intro to the round 1 reveal")
 
@@ -266,7 +273,7 @@ func _check_exact_boundary() -> void:
 func _check_restart() -> void:
 	var scores_before: Dictionary = game.scores.duplicate()
 	await _key(KEY_R)
-	_check(game.phase == "reveal" and game.ghost_slot == 0, "R restarts the round with the same roles")
+	_check(game.phase == "reveal" and game.ghost_slot == game.ghost_order[0], "R restarts the round with the same roles")
 	_check(_layout() == fresh_layout, "Restart rebuilds the same seeded layout with original values")
 	_check(roundi(game.scores.get(0, 0.0)) == 0 and roundi(game.scores.get(1, 0.0)) == 0 and scores_before.get(1, 0.0) > 0.0, "Restart replaces the attempt's score instead of adding to it")
 	await _wait_for_phase("live")
@@ -290,8 +297,13 @@ func _check_early_loss() -> void:
 func _check_rotation_and_timeout() -> void:
 	await _key(KEY_ENTER)
 	await _wait(INPUT_SECONDS)
-	_check(game.round_index == 1 and game.ghost_slot == 1, "Enter starts round 2 with the ghost passed to phone 2")
-	_check(_last(0, "role").get("role") == "mover" and _last(1, "role").get("role") == "ghost", "Phones swap roles for round 2")
+	# The ghost order is shuffled once a match (decision 151), so round 2 belongs to whoever is second in it.
+	var round_two_ghost: int = game.ghost_order[1]
+	_check(game.round_index == 1 and game.ghost_slot == round_two_ghost, "Enter starts round 2 with the ghost passed to phone %d" % (round_two_ghost + 1))
+	_check(game.ghost_order.size() == game.participants.size(), "Every player takes exactly one ghost turn before anyone repeats")
+	for slot: int in game.participants:
+		_check(slot in game.ghost_order, "Phone %d has a ghost turn in the order" % (slot + 1))
+	_check(_last(round_two_ghost, "role").get("role") == "ghost" and _last(game.ghost_order[0], "role").get("role") == "mover", "Phones swap roles for round 2")
 	await _wait_for_phase("live")
 	game.seconds_left = 0.3
 	await _wait_for_phase("result")
@@ -329,7 +341,7 @@ func _check_full_match() -> void:
 	await _key(KEY_ESCAPE) # Skip the intro cutscene.
 	for round_number: int in range(4):
 		await _wait_for_phase("live")
-		_check(game.ghost_slot == game.participants[round_number % 2], "Round %d: the ghost is phone %d" % [round_number + 1, game.ghost_slot + 1])
+		_check(game.ghost_slot == game.ghost_order[round_number % game.ghost_order.size()], "Round %d: the ghost is phone %d, as the shuffled order says" % [round_number + 1, game.ghost_slot + 1])
 		game.seconds_left = 0.2
 		await _wait_for_phase("result")
 		await _key(KEY_ENTER)

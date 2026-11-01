@@ -57,6 +57,13 @@ loading_scene_path="res://menus/loading_screens/loading_screen.tscn"
 
 disable_install_audio_busses=true
 
+[debug]
+
+; The codebase divides ints on purpose throughout: halved pixel margins, milliseconds to seconds, and a row
+; index from a flat one. Every site flagged was intentional, so the warning was ~20 lines of noise hiding the
+; warnings worth reading. Delete this line to bring it back.
+gdscript/warnings/integer_division=0
+
 [physics]
 
 3d/physics_engine="Jolt Physics"

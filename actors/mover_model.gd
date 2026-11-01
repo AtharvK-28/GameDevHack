@@ -28,6 +28,8 @@ var lean_velocity := Vector2.ZERO
 var squash: float = 0.0 # Fraction of height; positive is shorter and wider.
 var squash_velocity: float = 0.0
 var step_phase: float = 0.0 # Advances with distance walked; drives the bob and waddle (decision 149).
+var wobble_noise := FastNoiseLite.new() # Slow aimless sway, so the walk is not a clean sine (decision 151).
+var wobble_time: float = 0.0
 
 # --- Setup ---
 func setup(scene: PackedScene, overalls: Color) -> void:
@@ -46,6 +48,9 @@ func setup(scene: PackedScene, overalls: Color) -> void:
 	_tint(overalls)
 	ComicLook.apply(mesh, false) # Banded toon light; the outline is the overlay below.
 	_add_outline()
+	wobble_noise.seed = randi() # Every mover wanders its own way (decision 151).
+	wobble_noise.frequency = 1.0 # Sampled at WOBBLE_NOISE_RATE units a second.
+	wobble_time = randf() * 100.0
 	reset()
 
 
@@ -57,7 +62,7 @@ func reset() -> void:
 	lean_velocity = Vector2.ZERO
 	squash = 0.0
 	squash_velocity = 0.0
-	step_phase = 0.0
+	step_phase = randf() # Start somewhere of our own in the stride, so the crew never walks in lockstep.
 	if body != null:
 		body.position.y = 0.0 # Feet back on the floor, whatever the bob was doing.
 	if carry_reach != null:
@@ -89,15 +94,23 @@ func update_wobble(acceleration: Vector3, speed: float, carrying: bool, delta: f
 
 	# The step phase advances with distance walked, so bob and waddle keep pace with the feet at any speed.
 	step_phase += speed * Balance.BOB_RATE * delta
+	wobble_time += delta
 	var stride: float = clampf(speed / Balance.MOVER_SPEED, 0.0, 1.0)
-	var load: float = Balance.BOB_CARRY_SCALE if carrying else 1.0
-	var step: float = sin(step_phase * PI)
+	var burden: float = Balance.BOB_CARRY_SCALE if carrying else 1.0 # Not "load": that shadows the global load().
+	var step: float = sin(step_phase * TAU)
 	var waddle: float = step * Balance.WADDLE_DEGREES * Balance.GOOFINESS * stride
 
-	var tilt := Basis.from_euler(Vector3(deg_to_rad(lean.x), 0.0, deg_to_rad(lean.y + waddle)))
+	# A slow wander on top of the stride, different for every mover, so nobody walks like a metronome and even a
+	# mover standing still keeps shifting their weight.
+	var sway: float = wobble_time * Balance.WOBBLE_NOISE_RATE
+	var wander: float = Balance.WOBBLE_NOISE_DEGREES * Balance.GOOFINESS * lerpf(Balance.WOBBLE_IDLE_SHARE, 1.0, stride)
+	var roll_wander: float = wobble_noise.get_noise_2d(sway, 0.0) * wander
+	var pitch_wander: float = wobble_noise.get_noise_2d(sway, 50.0) * wander * 0.6
+
+	var tilt := Basis.from_euler(Vector3(deg_to_rad(lean.x + pitch_wander), 0.0, deg_to_rad(lean.y + waddle + roll_wander)))
 	var stretch := Vector3(1.0 + squash / 2.0, 1.0 - squash, 1.0 + squash / 2.0)
 	body.transform.basis = tilt * Basis.from_scale(stretch)
-	body.position.y = absf(step) * Balance.BOB_HEIGHT * Balance.GOOFINESS * load * stride
+	body.position.y = absf(step) * Balance.BOB_HEIGHT * Balance.GOOFINESS * burden * stride
 
 
 func squish(amount: float) -> void:

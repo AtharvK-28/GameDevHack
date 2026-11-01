@@ -61,6 +61,7 @@ func _run() -> void:
 	await _check_spring_settles()
 	await _check_grab_selection()
 	await _check_throwing()
+	await _check_flick_throw()
 	await _check_damage_math()
 	await _check_wall_hits()
 	await _check_resting_contact()
@@ -68,6 +69,7 @@ func _run() -> void:
 	await _check_phone_release_and_hud()
 	await _check_double_grab()
 	await _check_price_tags()
+	await _check_pickup_cues()
 	await _check_movement_feel()
 	await _check_goofy_physics()
 	await _clear_loot()
@@ -183,6 +185,44 @@ func _check_throwing() -> void:
 			_check(_value(item) < item.initial_value, "A thrown vase lands hard and takes damage")
 		else:
 			_check(mover.held_item == item, "THROW cannot launch medium/heavy loot")
+
+
+func _check_flick_throw() -> void:
+	# Decision 151: carrying pins one thumb on GRAB and the other on the stick, so the THROW button was out of
+	# reach. Letting go of GRAB with the stick pushed now throws the item that way; letting go centred sets it down.
+	await _clear_loot()
+	_reset_mover(Vector3(0.0, MOVER_HEIGHT, 0.0), Vector3.FORWARD)
+	var item := _spawn(0, Vector3(0.0, _rest_height(0), -SETTINGS.HOLD_DISTANCE))
+	_key(KEY_SPACE, true)
+	await _wait(SETTLE_SECONDS)
+	_check(mover.held_item == item, "The mover is carrying the vase before the flick")
+
+	_key(KEY_W, true) # Push the stick and let it settle into a walk.
+	await _wait(WALK_SECONDS)
+	var aim := Vector3(mover.stick.x, 0.0, mover.stick.y).normalized()
+	_check(mover.stick.length() >= SETTINGS.THROW_FLICK_STICK, "The stick is pushed past the flick threshold (%.2f)" % mover.stick.length())
+	_key(KEY_SPACE, false) # Let go of GRAB: that is the throw.
+	await _wait(INPUT_SECONDS)
+	_key(KEY_W, false)
+	var flight := Vector3(item.linear_velocity.x, 0.0, item.linear_velocity.z)
+	_check(mover.held_item == null, "Letting go of GRAB with the stick pushed releases the item")
+	_check(flight.length() > 3.0, "The flick throws it properly (%.1f m/s)" % flight.length())
+	_check(aim != Vector3.ZERO and flight.normalized().dot(aim) > 0.8, "It flies where the stick was pointing (dot %.2f)" % flight.normalized().dot(aim))
+	_check(item.linear_velocity.y > 0.0, "The throw lifts it as well as sending it forward")
+
+	# Stick centred: the same release sets the item down instead of hurling it.
+	await _clear_loot()
+	_reset_mover(Vector3(0.0, MOVER_HEIGHT, 0.0), Vector3.FORWARD)
+	var gentle := _spawn(0, Vector3(0.0, _rest_height(0), -SETTINGS.HOLD_DISTANCE))
+	_key(KEY_SPACE, true)
+	await _wait(SETTLE_SECONDS)
+	_check(mover.held_item == gentle, "The mover is carrying the second vase")
+	_key(KEY_SPACE, false)
+	await _wait(INPUT_SECONDS)
+	var dropped := Vector3(gentle.linear_velocity.x, 0.0, gentle.linear_velocity.z)
+	_check(mover.held_item == null and dropped.length() < 1.0, "Letting go with the stick centred sets it down gently (%.2f m/s)" % dropped.length())
+	await _wait(WALK_SECONDS)
+	_check(_value(gentle) == gentle.initial_value, "Setting an item down costs it nothing")
 
 
 func _check_damage_math() -> void:
@@ -387,6 +427,43 @@ func _check_double_grab() -> void:
 	_send(first, {"type": "btn", "b": "grab", "down": false})
 	_send(second, {"type": "btn", "b": "grab", "down": false})
 	await _wait(INPUT_SECONDS)
+
+
+# --- Pickup cues (decision 150) ---
+func _check_pickup_cues() -> void:
+	# A pip turns above every item a mover could pick up: one for a one-person item, two when it takes two, and
+	# coloured by weight class. It goes away the moment the item is in someone's hands or off the board.
+	await _clear_loot()
+	_park_other_movers()
+	_reset_mover(Vector3(0.0, MOVER_HEIGHT, 6.0), Vector3.FORWARD)
+	var vase := _spawn(SETTINGS.LIGHT, Vector3(2.0, _rest_height(SETTINGS.LIGHT), 0.0))
+	var piano := _spawn(SETTINGS.TWO_PERSON, Vector3(-2.0, _rest_height(SETTINGS.TWO_PERSON), 0.0))
+	await _wait(SETTLE_SECONDS)
+
+	_check(vase.pip != null and vase.pip.visible, "A loose item wears a pip, wherever the movers are")
+	_check(vase.pip.get_child_count() == 1, "A one-person item wears a single pip (%d)" % vase.pip.get_child_count())
+	_check(piano.pip.get_child_count() == 2, "A two-person item wears two pips: one each (%d)" % piano.pip.get_child_count())
+	var light_colour := Color(SETTINGS.PIP_COLOURS[SETTINGS.LIGHT])
+	var lit := Color(light_colour.r * SETTINGS.PIP_GLOW, light_colour.g * SETTINGS.PIP_GLOW, light_colour.b * SETTINGS.PIP_GLOW, SETTINGS.PIP_ALPHA)
+	_check(vase.pip_material.albedo_color.is_equal_approx(lit), "The pip takes its weight class's colour, brightened past the glow threshold")
+	_check(vase.pip_material.albedo_color.r > 1.0, "The pip sits above the glow threshold, so it blooms (%.2f)" % vase.pip_material.albedo_color.r)
+	_check(not piano.pip_material.albedo_color.is_equal_approx(vase.pip_material.albedo_color), "A two-person item's pip is a different colour from a light one's")
+	var above: float = vase.pip.global_position.y - vase.global_position.y
+	_check(above > vase.item_size.y / 2.0, "The pip floats above the item it marks (%.2f m up)" % above)
+
+	# In hand, the pip has nothing left to say.
+	_check(vase.try_grab(mover, mover.hold_point, 0), "The test mover picks the vase up")
+	await _wait(0.2)
+	_check(not vase.pip.visible, "A held item's pip goes away")
+	vase.release(Vector3.ZERO, mover)
+	await _wait(0.3)
+	_check(vase.pip.visible, "Putting it down brings the pip back")
+
+	# Off the board for good.
+	piano.retire("SMASH!", SETTINGS.DAMAGE_COLOUR)
+	await _wait(0.2)
+	_check(not is_instance_valid(piano) or not piano.pip.visible, "A retired item takes its pips with it")
+	await _clear_loot()
 
 
 # --- Price tags ---

@@ -303,8 +303,14 @@ func run() -> int:
 	_check(alarm.state == "lockdown" and alarm.shutters.size() == 3, "Then three shutters drop over the back galleries' doorways")
 	_place(0, Vector2(15.0, 9.5))
 	await _frames(5)
-	var shut_out: bool = await _walk(0, [Vector2(15.0, 6.5)])
-	_check(not shut_out and world.movers[0].global_position.z > SETTINGS.ALARM_SHUTTER_Z, "A shutter blocks the way into the rotunda")
+	# Push north into the shuttered doorway for two seconds, well inside the lockdown. _walk's 25 s route timeout
+	# would outlast it now that decision 152 halved the lockdown to 10 s, and the mover would stroll through after
+	# the shutters had already risen.
+	_set_input(0, Vector2(0.0, -1.0))
+	await _frames(120)
+	_set_input(0, Vector2.ZERO)
+	await _frames(5)
+	_check(world.movers[0].global_position.z > SETTINGS.ALARM_SHUTTER_Z and alarm.state == "lockdown", "A shutter blocks the way into the rotunda")
 	_set_input(0, Vector2.ZERO)
 	await _frames(int(SETTINGS.ALARM_LOCKDOWN * 60) + 10)
 	_check(alarm.state == "" and alarm.shutters.is_empty() and alarm.level == 0.0, "After the lockdown the shutters rise and the bar resets")

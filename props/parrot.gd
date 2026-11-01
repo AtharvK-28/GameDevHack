@@ -21,8 +21,8 @@ func _ready() -> void:
 	var arena: Node = get_parent()
 	perches_random.seed = (arena.spawn_seed if "spawn_seed" in arena else 0) + Balance.PARROT_SEED_OFFSET
 	if model != null:
-		for name: String in ["WingLeft", "WingRight"]:
-			var wing: Node3D = model.find_child(name, true, false)
+		for wing_name: String in ["WingLeft", "WingRight"]:
+			var wing: Node3D = model.find_child(wing_name, true, false)
 			if wing != null:
 				wings.append(wing)
 

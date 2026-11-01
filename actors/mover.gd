@@ -142,10 +142,10 @@ func _finish_frame(delta: float) -> void:
 func _label_scale() -> float:
 	# Grow the name tag with the camera's distance, so it stays about the same size on screen however far the
 	# party camera has pulled back (decision 149).
-	var cameras: Array = get_tree().get_nodes_in_group("party_camera")
-	if cameras.is_empty():
+	var camera: Node3D = get_tree().get_first_node_in_group("party_camera")
+	if camera == null:
 		return 1.0
-	var distance: float = cameras[0].global_position.distance_to(global_position)
+	var distance: float = camera.global_position.distance_to(global_position)
 	return clampf(distance / Balance.LABEL_REFERENCE_DISTANCE, Balance.LABEL_SCALE_RANGE.x, Balance.LABEL_SCALE_RANGE.y)
 
 
@@ -261,7 +261,7 @@ func _handle_carry_input(input: InputRouter.PlayerInput) -> void:
 	var grabbing: bool = input.buttons.get("grab", false)
 	if not grabbing:
 		grab_released = true
-		_let_go()
+		_release_or_throw()
 		return
 	if input.pressed.get("throw", false) and is_instance_valid(held_item):
 		if held_item.can_throw():
@@ -287,6 +287,24 @@ func _handle_carry_input(input: InputRouter.PlayerInput) -> void:
 			var teammate := _nearest_teammate() # Only a fresh press with no loot in reach lifts a teammate.
 			if teammate != null:
 				_lift(teammate)
+
+
+func _release_or_throw() -> void:
+	# Letting go of GRAB with the stick pushed throws the item where you are pointing; letting go with the stick
+	# centred sets it down gently (decision 151). Aiming with the stick you are already holding needs no third thumb.
+	var flick: bool = stick.length() >= Balance.THROW_FLICK_STICK
+	if flick and is_instance_valid(held_item) and not is_instance_valid(lifting) and held_item.can_throw():
+		var aim := Vector3(stick.x, 0.0, stick.y).normalized()
+		held_item.release(aim * Balance.THROW_SPEED + Vector3.UP * Balance.THROW_LIFT, self)
+		held_item = null
+		model.play_throw()
+		model.squish(Balance.SQUASH_THROW)
+		Sfx.varied("whoosh", Balance.SFX_WHOOSH_DB)
+		return
+	if flick and is_instance_valid(lifting):
+		_throw_teammate() # The same flick sends a teammate flying.
+		return
+	_let_go()
 
 
 func _let_go() -> void:

@@ -12,6 +12,7 @@ var left: float = 0.0
 var shutters: Array[StaticBody3D] = []
 var police: Array[OmniLight3D] = []
 var flash_time: float = 0.0
+const METER_NOTE: String = "fills up → the back galleries shut"
 var meter := Label.new()
 var banner := Label.new()
 
@@ -26,7 +27,8 @@ func _ready() -> void:
 	meter.add_theme_font_size_override("font_size", Balance.ALARM_METER_FONT_SIZE)
 	meter.add_theme_color_override("font_color", Balance.LASER_COLOUR)
 	meter.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT, Control.PRESET_MODE_MINSIZE, Balance.ALARM_METER_MARGIN)
-	meter.hide()
+	# Shown from the start (decision 152): it used to appear only once a mover had already set it off, so there was
+	# no way to learn what it meant before breaking it.
 	banner.add_theme_font_size_override("font_size", Balance.BANNER_FONT_SIZE)
 	banner.add_theme_color_override("font_color", Balance.LASER_COLOUR)
 	banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -47,7 +49,6 @@ func add(amount: float) -> void:
 	if not enabled or state != "":
 		return # Already coming.
 	level = minf(100.0, level + amount)
-	meter.show()
 	if level >= 100.0:
 		state = "warning"
 		left = Balance.ALARM_WARNING
@@ -57,8 +58,10 @@ func add(amount: float) -> void:
 
 func _process(delta: float) -> void:
 	flash_time += delta
+	if state == "" and level > 0.0:
+		level = maxf(0.0, level - Balance.ALARM_DECAY * delta) # Keep quiet and it cools off (decision 152).
 	var blocks: int = int(level / 10.0)
-	meter.text = "ALARM " + "▮".repeat(blocks) + "▯".repeat(10 - blocks)
+	meter.text = "ALARM %s%s  %s" % ["▮".repeat(blocks), "▯".repeat(10 - blocks), METER_NOTE]
 	var flashing: bool = state != ""
 	for index: int in police.size():
 		var light: OmniLight3D = police[index]
@@ -127,5 +130,4 @@ func _open() -> void:
 	shutters.clear()
 	state = ""
 	level = 0.0
-	meter.hide()
-	print("Lockdown over: the shutters rise")
+	print("Lockdown over: the shutters rise") # The meter stays on screen, empty, so the rule stays legible.

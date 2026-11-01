@@ -65,15 +65,25 @@ func _check_arena(arena_path: String) -> void:
 			print("INFO: %s: a diagonal stick is %.1f degrees off on screen (the tilted camera foreshortens the floor)" % [name, off])
 	_check(worst < MAX_ANGLE, "%s: up, down, left and right move the same way on screen (worst %.1f degrees off)" % [name, worst])
 
-	# And a real walk: pushing up carries the mover up the screen.
+	# And a real walk: pushing up carries the mover up the screen. The camera is held still for the measurement:
+	# decision 151 tightened its follow, so a moving camera cancels most of the travel and what is left measures
+	# the camera as much as the stick. Frozen, both ends project through one transform and the walk is the walk.
+	var following: bool = camera.follow_movers
+	camera.follow_movers = false
+	# Centre the walk in frame as well as freezing it. Off to one side a perspective camera leans everything
+	# toward the vanishing point, and decision 149 brought it closer, which makes that lean stronger; the
+	# direction checks above already measure at the focus for the same reason.
+	camera.focus = Vector3(mover.global_position.x, 0.0, mover.global_position.z)
+	camera.snap()
+	await _wait(INPUT_SECONDS)
 	var from: Vector3 = mover.global_position
 	sticks[index] = router.stick_to_world(Vector2.UP)
 	_send(index, {"type": "in", "x": 0, "y": -1})
 	await _wait(PUSH_SECONDS)
 	sticks[index] = Vector2.ZERO
 	_send(index, {"type": "in", "x": 0, "y": 0})
-	# Both ends through the camera as it is now: it follows the movers, which would hide part of the walk.
 	var moved: Vector2 = camera.unproject_position(mover.global_position) - camera.unproject_position(from)
+	camera.follow_movers = following
 	_check(-moved.y > MIN_PIXELS and absf(moved.x) < -moved.y * MAX_DRIFT, "%s: stick up walks the mover up the screen (%.0f px up, %.0f across)" % [name, -moved.y, absf(moved.x)])
 	await _wait(0.3)
 

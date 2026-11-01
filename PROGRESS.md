@@ -159,6 +159,25 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
   for a distant ghost. Measured on the Mansion: with the ghost 15.9 m from the lone mover the camera sits at 12.0 m
   instead of its old limit, and a ghost brought alongside is framed with the crew again. All 23 suites pass, 1,486
   assertions, no failures. Still to do: 1080p renders of the framing and auras, and a human look at the feel.
+- [x] Loot pips (decision 150, 2026-11-01): a 1080p Mansion render showed decision 149's reach shell could not make
+  loot findable, because it only appeared within 3 m and the loot was indistinguishable from the dressing. A glowing
+  diamond now turns above every item a mover could pick up, coloured by weight class and doubled for a two-person
+  item, scaling with camera distance so it holds its size on screen. The shell gained its own 6 m reach and a much
+  firmer idle rim, and prices show from 7 m instead of 3 m. Sizes, colours and the two-person gap were each tuned
+  against renders rather than guessed. `core/carrying_check.gd` covers the pips with ten assertions.
+- [x] Four playtest fixes (decision 151, 2026-11-01): the ghost order is shuffled once a match instead of running
+  phone 1, 2, 3, 4; the walk's step rate is down from 9.4 to 2 a second with a per-mover phase and noise sway, after
+  a probe measured straight-line roll as dead symmetric and proved there was never a tilt to one side, only a judder;
+  letting go of GRAB with the stick pushed throws the item, because carrying left no thumb free for the THROW button;
+  and the possessable furniture's outline is brighter, thicker and blooms, so the ghost's options are visible.
+  `core/carrying_check.gd` covers the flick both ways, `core/match_check.gd` the shuffled order.
+- [x] Museum softened (decision 152, 2026-11-02): ALARM sources fill less, the lockdown halves to 10 s, lasers give
+  more dark to cross in, cases unlock quicker, and the bar drains while the crew keeps quiet. The meter shows from the
+  start of the round instead of only after the first trip.
+- [ ] **The Museum's difficulty is still unmeasured.** The softening took the ALARM from one or two fills a round to
+  none and the bots still won 0 of 10, banking 29% against a 60% quota. `core/bot_crew.gd` cannot open glass cases, so
+  the Egypt and Space exhibits are unreachable to it and `tools/balance_sim.gd` cannot score this arena. Needs either
+  case-aware bots or a human playtest before any more tuning.
 - [ ] Gust of Wind and Lights Out
 - [x] Mover and ghost character models integrated (brought forward; visual acceptance pending)
 - [x] Party camera and Mansion wall fade implemented (human acceptance pending)
@@ -210,9 +229,13 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - [x] Joystick feel (decision 124): screen-relative stick, changes sent as they happen, follow, tilt^1.3.
   `core/stick_check.gd` pushes up and right from a real phone on both arenas and measures the mover on screen.
 - [ ] Playtest the new balance and stick with people.
-- [ ] Human look at decision 149: is the camera close enough, do the auras and the loot shells read from across a
-  room, and does the phone's buzz feel right? Haptics and feel cannot be checked headlessly. 1080p renders of the
-  new framing and auras are also still to do.
+- [x] 1080p renders of decisions 149 and 150 on the Mansion (`.verification/pickup_look.gd`, output outside the
+  repo): the follow camera settles at 12.0 m where it used to sit near its limit, the auras read, and the pips make
+  every item findable. The probe captures each framing with the pips hidden and shown, so the two can be compared.
+- [ ] Human look at decisions 149 and 150: does the phone's buzz feel right, does the walk read as funky rather than
+  silly, and are the pips the right strength on the projector? Feel and haptics cannot be checked headlessly.
+- [ ] Renders of the pips on the Ship and the Museum; only the Mansion has been looked at. The Museum matters most,
+  since its loot sits in cases and on pedestals.
 
 ## Joining and the venue network (2026-10-27)
 

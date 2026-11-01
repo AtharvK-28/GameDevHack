@@ -77,7 +77,7 @@ func _process(delta: float) -> void:
 			var wanted: Material = curse_overlay if cursed else null
 			if mesh.material_overlay != wanted:
 				mesh.material_overlay = wanted
-	update_reach_outline(delta)
+	update_pickup_cues(delta)
 
 
 func _physics_process(delta: float) -> void:

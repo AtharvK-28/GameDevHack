@@ -60,7 +60,7 @@ func _label_colour() -> Color:
 # --- Carry and delivery ---
 func _process(delta: float) -> void:
 	update_jiggle(delta)
-	update_reach_outline(delta)
+	update_pickup_cues(delta)
 
 
 func _physics_process(_delta: float) -> void:
