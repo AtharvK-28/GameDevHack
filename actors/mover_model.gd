@@ -27,6 +27,7 @@ var lean := Vector2.ZERO # Degrees: x tips the top forward, y tips it toward -X 
 var lean_velocity := Vector2.ZERO
 var squash: float = 0.0 # Fraction of height; positive is shorter and wider.
 var squash_velocity: float = 0.0
+var step_phase: float = 0.0 # Advances with distance walked; drives the bob and waddle (decision 149).
 
 # --- Setup ---
 func setup(scene: PackedScene, overalls: Color) -> void:
@@ -56,6 +57,9 @@ func reset() -> void:
 	lean_velocity = Vector2.ZERO
 	squash = 0.0
 	squash_velocity = 0.0
+	step_phase = 0.0
+	if body != null:
+		body.position.y = 0.0 # Feet back on the floor, whatever the bob was doing.
 	if carry_reach != null:
 		carry_reach.item = null
 	if player != null:
@@ -70,8 +74,9 @@ func face(direction: Vector3) -> void:
 		rotation.y = atan2(direction.x, direction.z)
 
 
-func update_wobble(acceleration: Vector3, delta: float) -> void:
-	# Lean toward the mover's acceleration (in the model's own frame) and let squash spring back to normal.
+func update_wobble(acceleration: Vector3, speed: float, carrying: bool, delta: float) -> void:
+	# Lean toward the mover's acceleration (in the model's own frame), let squash spring back to normal, and bob
+	# and roll in time with the steps (decision 149).
 	if body == null:
 		return
 	var local: Vector3 = acceleration.rotated(Vector3.UP, -rotation.y)
@@ -82,9 +87,17 @@ func update_wobble(acceleration: Vector3, delta: float) -> void:
 	squash_velocity += (-squash * Balance.SQUASH_STIFFNESS - squash_velocity * Balance.SQUASH_DAMPING) * delta
 	squash += squash_velocity * delta
 
-	var tilt := Basis.from_euler(Vector3(deg_to_rad(lean.x), 0.0, deg_to_rad(lean.y)))
+	# The step phase advances with distance walked, so bob and waddle keep pace with the feet at any speed.
+	step_phase += speed * Balance.BOB_RATE * delta
+	var stride: float = clampf(speed / Balance.MOVER_SPEED, 0.0, 1.0)
+	var load: float = Balance.BOB_CARRY_SCALE if carrying else 1.0
+	var step: float = sin(step_phase * PI)
+	var waddle: float = step * Balance.WADDLE_DEGREES * Balance.GOOFINESS * stride
+
+	var tilt := Basis.from_euler(Vector3(deg_to_rad(lean.x), 0.0, deg_to_rad(lean.y + waddle)))
 	var stretch := Vector3(1.0 + squash / 2.0, 1.0 - squash, 1.0 + squash / 2.0)
 	body.transform.basis = tilt * Basis.from_scale(stretch)
+	body.position.y = absf(step) * Balance.BOB_HEIGHT * Balance.GOOFINESS * load * stride
 
 
 func squish(amount: float) -> void:

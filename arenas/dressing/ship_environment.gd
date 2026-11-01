@@ -41,6 +41,7 @@ func _build_mood() -> void:
 	environment.fog_light_color = Balance.SHIP_BACKGROUND
 	environment.fog_depth_begin = Balance.SHIP_FOG_BEGIN
 	environment.fog_depth_end = Balance.SHIP_FOG_END
+	ComicLook.calm_background(environment) # Decision 149.
 	var world := WorldEnvironment.new()
 	world.name = "WorldEnvironment"
 	world.environment = environment

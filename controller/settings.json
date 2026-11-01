@@ -1,4 +1,26 @@
 {
+	"buzz": {
+		"brace": 26,
+		"ghostAction": 22,
+		"grab": 18,
+		"letGo": 10,
+		"refused": [
+			8,
+			40,
+			8
+		],
+		"shout": [
+			14,
+			30,
+			14
+		],
+		"throw": [
+			10,
+			24,
+			30
+		],
+		"ui": 12
+	},
 	"ghostEnergyMax": 100.0,
 	"ghostNearBuzzMs": [
 		30,

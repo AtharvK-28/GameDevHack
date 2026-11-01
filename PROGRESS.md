@@ -2,7 +2,7 @@
 
 The phases follow the spec's 24-hour build plan. A phase is done only when its check passes. AI agents update this file after every task.
 
-**Status:** Phases 0–3 complete. Phase 4 (ghost) passes `core/ghost_check.gd`; its two-phone 1v1 check is still to do. Phase 5 (match flow and demo scope) is built and passes `core/match_check.gd` (60 checks) plus all four earlier checks; the user's 4-player phone test is next. The Mansion layout, furniture catalog, lighting, environment, animated movers, menus and edge HUD are built. Phase 6 remains incomplete: Ship, Museum, their hauntings and human acceptance are pending.
+**Status:** Decision 149's readability and feel pass is in; its suite run and human look are noted below. Phases 0–3 complete. Phase 4 (ghost) passes `core/ghost_check.gd`; its two-phone 1v1 check is still to do. Phase 5 (match flow and demo scope) is built and passes `core/match_check.gd` (60 checks) plus all four earlier checks; the user's 4-player phone test is next. The Mansion layout, furniture catalog, lighting, environment, animated movers, menus and edge HUD are built. Phase 6 remains incomplete: Ship, Museum, their hauntings and human acceptance are pending.
 
 ## Phase 0 · Setup
 
@@ -148,6 +148,13 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - [x] The story's endings (decision 146, 2026-11-01): Enter on the final results plays Seth-ji's diary (Mansion), the wave
   (Ship) or the six-panel epilogue (Museum), then the lobby. Every panel rendered with its lettering. `core/story_check.gd`
   43 assertions; all 23 suites pass, 1,493 assertions.
+- [x] Readability and feel pass (decision 149, 2026-11-01): the loot a mover would grab wears a shell in that
+  player's colour and any grabbable nearby wears a faint one; the ghost no longer drags the camera to its far limit
+  (max 22 m); a coloured ring with a facing chevron sits under each mover and name tags hold their size as the camera
+  pulls back; each arena's grade is desaturated while the playfield's rim and ink go up; movers bob and waddle as they
+  walk; and the phone buzzes for its own taps, with the status strip split in two and the controls wearing the
+  player's colour. The reach shell owns its own meshes because `Loot.tscn`'s `Possessable` child already uses
+  `material_overlay`. No mechanics or protocol changed.
 - [ ] Gust of Wind and Lights Out
 - [x] Mover and ghost character models integrated (brought forward; visual acceptance pending)
 - [x] Party camera and Mansion wall fade implemented (human acceptance pending)
@@ -199,6 +206,9 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - [x] Joystick feel (decision 124): screen-relative stick, changes sent as they happen, follow, tilt^1.3.
   `core/stick_check.gd` pushes up and right from a real phone on both arenas and measures the mover on screen.
 - [ ] Playtest the new balance and stick with people.
+- [ ] Human look at decision 149: is the camera close enough, do the auras and the loot shells read from across a
+  room, and does the phone's buzz feel right? Haptics and feel cannot be checked headlessly. 1080p renders of the
+  new framing and auras are also still to do.
 
 ## Joining and the venue network (2026-10-27)
 

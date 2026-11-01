@@ -32,6 +32,7 @@ let identity = readIdentity(); // { key, pid, secret } from the last welcome in 
 let matchPhase = null; // Null outside a match: the greybox harness shows controls as soon as a role arrives.
 let matchState = {};
 const heldPointers = new Map();
+const canVibrate = typeof navigator.vibrate === "function";
 const SCREENS = ["lobby", "audience", "story", "controls", "reveal", "result", "final"];
 const LIVE_PHASES = ["live", "paused"];
 
@@ -77,10 +78,12 @@ function setupPageEvents() {
       return;
     }
     writeStorage(STORAGE_NAME, playerName);
+    buzz("ui");
     requestDisplay();
     connect();
   });
   elements["ready-button"].addEventListener("click", () => {
+    buzz("ui");
     send({ type: "ready" });
     elements["ready-button"].disabled = true;
     elements["ready-button"].textContent = "READY — WAITING FOR HOST";
@@ -373,6 +376,7 @@ function renderVote(message) {
       button.querySelector("strong").textContent = option.label;
       button.querySelector("small").textContent = option.note;
       button.addEventListener("click", () => {
+        buzz("ui");
         send({ type: "vote", o: index });
         for (const other of options.children) other.classList.toggle("chosen", other === button);
         elements["audience-note"].textContent = "Vote in! You can change it until time's up.";
@@ -391,6 +395,7 @@ function renderVote(message) {
 for (const button of document.querySelectorAll("[data-shout]")) {
   button.addEventListener("pointerdown", event => {
     event.preventDefault();
+    buzz("shout");
     send({ type: "shout", s: Number(button.dataset.shout) });
     button.classList.add("pressed");
     setTimeout(() => button.classList.remove("pressed"), 150);
@@ -496,7 +501,10 @@ function renderRoster(players) {
 function setupJoystick() {
   // follow: a thumb that slides past the edge drags the stick along instead of pinning it (decision 124).
   joystick = nipplejs.create({ zone: elements["joystick-zone"], mode: "dynamic", color: "#183a38", size: settings.joystickSize, multitouch: false, follow: settings.joystickFollow });
-  joystick.on("start", () => elements["joystick-zone"].classList.add("active"));
+  joystick.on("start", () => {
+    elements["joystick-zone"].classList.add("active");
+    buzz("ui"); // A tick when the stick takes hold, so you know your thumb landed in the right half.
+  });
   joystick.on("move", (_event, data) => {
     if (!canPlay()) return;
     const magnitude = Math.hypot(data.vector.x, data.vector.y);
@@ -521,12 +529,17 @@ function setupButtons() {
   for (const button of actionButtons) {
     button.setAttribute("aria-pressed", "false");
     button.addEventListener("pointerdown", event => {
-      if (!canPlay() || button.disabled || heldPointers.has(button)) return;
+      if (!canPlay() || heldPointers.has(button)) return;
+      if (button.disabled || button.classList.contains("unavailable")) {
+        buzz("refused"); // A locked or unaffordable button still answers the thumb, so the tap never feels lost.
+        return;
+      }
       event.preventDefault();
       button.setPointerCapture(event.pointerId);
       heldPointers.set(button, event.pointerId);
       button.classList.add("pressed");
       button.setAttribute("aria-pressed", "true");
+      buzz(buzzForButton(button.dataset.button));
       send({ type: "btn", b: button.dataset.button, down: true });
     });
     for (const eventName of ["pointerup", "pointercancel", "lostpointercapture"]) {
@@ -557,7 +570,16 @@ function releaseButton(button) {
   heldPointers.delete(button);
   button.classList.remove("pressed");
   button.setAttribute("aria-pressed", "false");
+  if (button.dataset.button === "grab") buzz("letGo"); // Putting something down feels different from picking it up.
   send({ type: "btn", b: button.dataset.button, down: false });
+}
+
+function buzzForButton(name) {
+  // Each control gets its own feel, so a thumb learns the buttons without looking down.
+  if (name === "grab") return "grab";
+  if (name === "throw") return "throw";
+  if (name === "brace") return "brace";
+  return "ghostAction"; // Possess, action and the hauntings.
 }
 
 function releaseInputs() {
@@ -600,6 +622,16 @@ function setControlsEnabled(enabled) {
 
 function send(message) {
   if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify(message));
+}
+
+// --- Haptics (decision 149) ---
+// The phone buzzes for its own taps straight away, rather than waiting on the host, so the controls feel alive.
+// Named patterns come from Balance through settings.json. Phones without vibration ignore every call.
+function buzz(name) {
+  if (!canVibrate) return;
+  const pattern = settings?.buzz?.[name];
+  if (pattern === undefined) return;
+  navigator.vibrate(pattern);
 }
 
 // --- Optional browser features and storage ---

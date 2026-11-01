@@ -30,7 +30,6 @@ var curse_left: float = 0.0
 var curse_targeted: bool = false
 var body_material: StandardMaterial3D
 var model: Node3D # A catalog item's model, when there is one.
-var model_meshes: Array[MeshInstance3D] = []
 var curse_overlay: StandardMaterial3D
 var delivery_slots: Array[int] = [] # Last two-person team; retained while its last holder releases.
 var case: Node3D # A Museum display case over it, or null; while it is shut, nobody can take the item.
@@ -74,10 +73,11 @@ func _process(delta: float) -> void:
 	elif model != null:
 		# A catalog model keeps its own colours; a curse glows over it.
 		var cursed: bool = curse_left > 0.0 or curse_targeted
-		for mesh: MeshInstance3D in model_meshes:
+		for mesh: MeshInstance3D in outline_meshes:
 			var wanted: Material = curse_overlay if cursed else null
 			if mesh.material_overlay != wanted:
 				mesh.material_overlay = wanted
+	update_reach_outline(delta)
 
 
 func _physics_process(delta: float) -> void:
@@ -402,8 +402,6 @@ func _build_shape() -> void:
 		set_visual(model)
 		ComicLook.apply(model, true)
 		ComicLook.tint(model, catalog_item.tint)
-		for mesh: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
-			model_meshes.append(mesh)
 		curse_overlay = StandardMaterial3D.new()
 		curse_overlay.albedo_color = Color(Balance.CURSE_COLOUR, 0.55)
 		curse_overlay.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA

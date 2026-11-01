@@ -167,14 +167,35 @@ const CAMERA_TARGET := Vector3(0.0, 0.0, -3.0) # Centre of the greybox between t
 const CAMERA_ANGLE: float = 55.0 # Degrees down from horizontal.
 const CAMERA_YAW: float = -40.0 # Three-quarter view, degrees; negative looks in from the house's left.
 const CAMERA_MIN_DISTANCE: float = 12.0
-const CAMERA_MAX_DISTANCE: float = 26.0
+# Decision 149: was 26, which the camera sat at almost permanently because the ghost counted toward the framing and
+# could be anywhere. The ghost is now only framed while it is near the crew (CAMERA_GHOST_CUSHION), so the distance
+# follows the movers' own spread and the characters read much larger.
+const CAMERA_MAX_DISTANCE: float = 22.0
+const CAMERA_GHOST_CUSHION: float = 6.0 # Metres past the movers' spread within which the ghost is still framed.
 const CAMERA_FOLLOW_RATE: float = 3.0 # Exponential easing per second.
-const CAMERA_FRAME_PADDING: float = 2.5 # Metres around the movers.
-const CAMERA_SAFE_VIEW: float = 0.8 # Fraction of the viewport used for framing.
+const CAMERA_FRAME_PADDING: float = 1.9 # Metres around the movers.
+const CAMERA_SAFE_VIEW: float = 0.88 # Fraction of the viewport used for framing.
 const CAMERA_BOUNDS := Rect2(-6.0, -10.0, 12.0, 15.0) # The x/z area the camera's focus may move within: house and truck.
+# --- Player aura (decision 149) ---
+# A ring in the player's own colour on the floor under each mover, with a chevron for which way they face, so a
+# glance at the big screen answers "which one am I?". It pulses while the mover is down or hexed.
+const AURA_OUTER_RADIUS: float = 0.62 # Metres.
+const AURA_INNER_RADIUS: float = 0.46
+const AURA_HEIGHT: float = 0.05 # Metres above the floor, clear of zone pads.
+const AURA_ALPHA: float = 0.8
+const AURA_CHEVRON_LENGTH: float = 0.34 # Metres the facing chevron reaches past the ring.
+const AURA_CHEVRON_WIDTH: float = 0.3
+const AURA_PULSE_RATE: float = 3.2 # Pulses a second while the mover is down or hexed.
+const AURA_PULSE_DEPTH: float = 0.45 # Share of the alpha the pulse dips.
+const AURA_CARRY_BRIGHTEN: float = 0.2 # Extra alpha while carrying, so loaded movers stand out.
+
 const LABEL_HEIGHT: float = 1.35
 const LABEL_FONT_SIZE: int = 48
 const LABEL_PIXEL_SIZE: float = 0.01 # World metres per label pixel.
+# Name tags used to shrink into nothing as the camera pulled back. They now grow with distance so they hold a
+# near-constant size on screen, measured against the distance LABEL_PIXEL_SIZE was chosen for (decision 149).
+const LABEL_REFERENCE_DISTANCE: float = 16.0 # Metres.
+const LABEL_SCALE_RANGE := Vector2(0.9, 1.7) # Smallest and largest multiplier on LABEL_PIXEL_SIZE.
 const LABEL_OUTLINE: int = 14 # Ink outline on name tags.
 const LABEL_SPREAD_DISTANCE: float = 2.6 # Metres: movers this close stack their name tags (long names are wide).
 const LABEL_STACK_STEP: float = 0.7 # Metres each stacked tag rises.
@@ -192,10 +213,19 @@ const STICK_SEND_RATE: int = 60 # Most stick changes a phone sends a second, sen
 # To tone it back down: set GOOFINESS to 1.0 and the three *_DAMPING values to 12, 14 and 10 (decision 84's mild
 # settings), and LIGHT_LOOT_BOUNCE to 0.2. GOOFINESS 0 turns every effect below off.
 const GOOFINESS: float = 1.8 # Scales every effect below: 0 turns them off, 1 is mild, 2 doubles them.
-const LEAN_MAX: float = 8.0 # Degrees a mover's body tilts into speeding up, stopping and turning.
+const LEAN_MAX: float = 11.0 # Degrees a mover's body tilts into speeding up, stopping and turning (was 8).
 const LEAN_FULL_ACCELERATION: float = 15.0 # Metres per second squared that gives the full lean.
 const LEAN_STIFFNESS: float = 120.0 # Spring pulling the lean to its target, per degree.
-const LEAN_DAMPING: float = 8.0 # Lower is bouncier: well below 2 * sqrt(stiffness), so the lean overshoots and rocks back.
+const LEAN_DAMPING: float = 6.5 # Lower is bouncier: well below 2 * sqrt(stiffness), so the lean overshoots and rocks back.
+
+# --- Walk bob and waddle (decision 149) ---
+# A mover used to glide along at a fixed height. Now the body rises and rolls in time with its steps, so the crew
+# looks alive even trudging down a corridor. Both are driven by distance walked, so they stay in step at any speed.
+# Skidding needs nothing here: the lean spring above already tips a mover back when it decelerates hard.
+const BOB_HEIGHT: float = 0.05 # Metres the body lifts at the top of a step, at full speed.
+const BOB_RATE: float = 2.1 # Steps per metre walked.
+const BOB_CARRY_SCALE: float = 0.45 # Share of the bob kept while carrying: a loaded mover trudges.
+const WADDLE_DEGREES: float = 3.5 # Degrees the body rolls side to side across a step.
 const SQUASH_STIFFNESS: float = 300.0 # Spring returning a squash or stretch to normal.
 const SQUASH_DAMPING: float = 9.0 # Lower is bouncier.
 const SQUASH_GRAB: float = 0.06 # Fraction of height; positive squashes, negative stretches.
@@ -266,6 +296,19 @@ const TUMBLE_HIT_SPEED: float = 4.0 # Metres per second; a thrown prop faster th
 const TUMBLE_DURATION: float = 1.5 # Seconds lying down.
 const TUMBLE_FALL_TIME: float = 0.2 # Seconds of margin the checks allow after the down time.
 const TUMBLE_BUZZ_MS: int = 200
+
+# --- Phone haptics (decision 149) ---
+# Short buzzes the phone fires for itself, the moment a thumb lands, so a tap feels like it did something without
+# waiting for the big screen. Arrays are vibrate patterns (buzz, pause, buzz…) in milliseconds. Phones that do not
+# support vibration, including every iPhone, simply ignore these.
+const BUZZ_GRAB_MS: int = 18 # A firm little catch.
+const BUZZ_LET_GO_MS: int = 10 # Lighter than the grab, so holding and letting go feel different.
+const BUZZ_THROW_MS: Array[int] = [10, 24, 30] # Winds up, then lets fly.
+const BUZZ_BRACE_MS: int = 26 # One solid thud: you are planted.
+const BUZZ_SHOUT_MS: Array[int] = [14, 30, 14]
+const BUZZ_UI_MS: int = 12 # Joining, readying up and voting.
+const BUZZ_GHOST_ACTION_MS: int = 22 # The ghost's own abilities.
+const BUZZ_REFUSED_MS: Array[int] = [8, 40, 8] # A button that is on cooldown or too costly: a double tick.
 
 # --- Mover character model (visual only; from assets/source/mover/MOVER_GUIDE.md) ---
 const MOVER_MODEL_PATH: String = "res://assets/models/mover/mover_%s.glb" # Filled with the shirt colour.
@@ -514,6 +557,17 @@ const GLOW_GROW: float = 0.05
 const GLOW_ALPHA_MIN: float = 0.35 # A possessed prop's glow pulses between these.
 const GLOW_ALPHA_MAX: float = 0.6
 const GLOW_PULSE_RATE: float = 2.0 # Pulses per second.
+
+# --- Loot in reach (decision 149) ---
+# Movers never used to see what they could pick up. Now every grabbable near a player wears a faint shell, and the
+# one item a mover would actually grab wears a bright shell in that player's own colour, pulsing so it reads at once.
+const REACH_OUTLINE_GROW: float = 0.032 # Metres the shell stands off an item.
+const REACH_IDLE_ALPHA: float = 0.22 # Any grabbable with a player nearby: "this is loot".
+const REACH_TARGET_ALPHA: float = 0.95 # The one item this mover's GRAB would take.
+const REACH_IDLE_COLOUR := Color("fff3d4") # Warm paper white, so idle shells read as neutral.
+const REACH_TEAM_COLOUR := Color("ffd166") # A two-person item in reach: it takes two of you.
+const REACH_PULSE_RATE: float = 2.6 # Pulses a second on the item you would grab.
+const REACH_PULSE_DEPTH: float = 0.22 # Share of the target alpha the pulse dips.
 const DRIP_AMOUNT: int = 10
 const DRIP_LIFETIME: float = 0.8
 const DRIP_SIZE: float = 0.06 # Metres across.
@@ -1035,7 +1089,7 @@ const MOOD_CONTRAST: float = 1.04 # Colour adjustment over the AgX tonemap; kept
 const MOOD_SATURATION: float = 1.08
 const MOOD_BRIGHTNESS: float = 1.0
 const OUTLINE_INK := Color("120b1d") # Movers' comic outline.
-const OUTLINE_WIDTH: float = 0.022 # Metres.
+const OUTLINE_WIDTH: float = 0.03 # Metres; thickened with decision 149 so movers read against the dressing (was 0.022).
 
 # --- Sound effects and music (autoload/Sfx.gd) ---
 const SFX_PITCH_JITTER: float = 0.08 # Repeated sounds vary their pitch by up to this share.
@@ -1110,9 +1164,17 @@ const YARD_LIGHT_HEIGHT: float = 5.0 # Metres above the yard.
 const TRUCK_POSTER_LEVELS: float = 4.0 # Shading bands on the repainted truck.
 const TRUCK_PAINT := Color("ff9a3c") # Sasta Shifters orange, as in the intro's comic panels.
 const FLOOR_TINT := Color(1.0, 1.0, 1.0) # Multiplies the wood floors; white keeps the original warm wood (a darker tint read muddy).
-const PROP_OUTLINE_WIDTH: float = 0.03 # Metres: ink outline on loot and possessable furniture.
-const RIM_STRENGTH: float = 0.45 # Rim light on movers, loot and possessable furniture (0 to 1).
+const PROP_OUTLINE_WIDTH: float = 0.038 # Metres: ink outline on loot and possessable furniture (was 0.03).
+const RIM_STRENGTH: float = 0.6 # Rim light on movers, loot and possessable furniture (0 to 1); was 0.45.
 const RIM_TINT: float = 0.4 # 0 is a white rim, 1 takes the object's own colour.
+
+# --- Calm background (decision 149) ---
+# The dressing was loud enough to bury the action. One colour pass pulls the whole picture back, while the
+# playfield keeps its stronger rim and thicker ink above, so characters and loot sit clearly in front of the house.
+# To undo: set LOOK_SATURATION and LOOK_CONTRAST to 1.0, RIM_STRENGTH to 0.45 and the two outline widths back.
+const LOOK_SATURATION: float = 0.84 # Factors on each arena's own grade; 1 leaves it untouched.
+const LOOK_CONTRAST: float = 1.05
+const LOOK_BRIGHTNESS: float = 0.98
 const WINDOW_POOL_REACH: float = 1.1 # Metres a window's light patch reaches out from the wall.
 const WINDOW_POOL_WIDTH: float = 2.0 # The patch's width, as a multiple of the window's.
 const WINDOW_POOL_STRENGTH: float = 0.22 # 0 to 1: how bright the additive patch is.

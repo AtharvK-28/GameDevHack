@@ -19,6 +19,7 @@ var held_item: Carryable
 var grab_released: bool = true
 var tumble_time_left: float = 0.0
 var name_label := Label3D.new()
+var aura: MoverAura # The player's coloured ring on the floor (decision 149).
 var shout_left: float = 0.0 # Cooldown before the next shout.
 var boost_left: float = 0.0 # Seconds of the audience's speed boost left.
 var hex_state: String = "" # The ghost's HEX (decision 142): "warn" (the phone cracks), "on" (stick mirrored), or "".
@@ -31,6 +32,7 @@ var flying: bool = false # Thrown, until landing.
 var flight_time: float = 0.0
 var hold_point: Marker3D
 var model: MoverModel
+var reach_target: Carryable # The item this mover's GRAB would take; it wears this player's colour (decision 149).
 var shove := Vector3.ZERO # Fading push from bumping into another mover.
 var bump_cooldown: float = 0.0
 var last_velocity := Vector3.ZERO
@@ -44,11 +46,12 @@ func _ready() -> void:
 	hold_point = $HoldPoint
 	_build_collider()
 	_build_model()
+	_build_aura()
 	name_label.position.y = Balance.LABEL_HEIGHT
 	name_label.font_size = Balance.LABEL_FONT_SIZE
 	name_label.pixel_size = Balance.LABEL_PIXEL_SIZE
 	name_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	name_label.modulate = Color(Balance.PLAYER_COLOURS[slot]) # The player's colour with an ink outline.
+	name_label.modulate = slot_colour() # The player's colour with an ink outline.
 	name_label.outline_size = Balance.LABEL_OUTLINE
 	name_label.outline_modulate = Balance.COMIC_INK
 	add_child(name_label)
@@ -73,6 +76,7 @@ func _physics_process(delta: float) -> void:
 	var player_input: InputRouter.PlayerInput = InputRouter.for_slot(slot)
 	if is_instance_valid(held_item) and (held_item.finished or not held_item.is_held_by(self)):
 		held_item = null
+	_update_reach_target() # Before any early return below, so a carried or downed mover drops its highlight.
 
 	stick = player_input.direction
 	_update_hex(delta)
@@ -129,7 +133,20 @@ func _finish_frame(delta: float) -> void:
 	var full_name: String = player.get("name", "Unclaimed")
 	name_label.text = full_name if full_name.length() <= Balance.NAME_MAX_CHARS else full_name.left(Balance.NAME_MAX_CHARS - 1) + "…"
 	name_label.position.y = Balance.LABEL_HEIGHT + _label_stack() * Balance.LABEL_STACK_STEP
+	name_label.pixel_size = Balance.LABEL_PIXEL_SIZE * _label_scale()
+	if aura != null:
+		aura.update_aura(facing, is_instance_valid(held_item), is_tumbling() or hex_state != "", delta)
 	_update_model(delta)
+
+
+func _label_scale() -> float:
+	# Grow the name tag with the camera's distance, so it stays about the same size on screen however far the
+	# party camera has pulled back (decision 149).
+	var cameras: Array = get_tree().get_nodes_in_group("party_camera")
+	if cameras.is_empty():
+		return 1.0
+	var distance: float = cameras[0].global_position.distance_to(global_position)
+	return clampf(distance / Balance.LABEL_REFERENCE_DISTANCE, Balance.LABEL_SCALE_RANGE.x, Balance.LABEL_SCALE_RANGE.y)
 
 
 func movement_speed() -> float:
@@ -200,6 +217,7 @@ func set_in_play(active: bool) -> void:
 	_clear_lift()
 	if not active:
 		_let_go()
+		_clear_reach_target() # Processing stops below, so hand back any item we had lit.
 		tumble_time_left = 0.0
 		model.reset()
 		remove_from_group("movers")
@@ -259,7 +277,7 @@ func _handle_carry_input(input: InputRouter.PlayerInput) -> void:
 			_throw_teammate()
 		return
 	if not is_instance_valid(held_item) and grab_released:
-		var candidate := _nearest_carryable()
+		var candidate: Carryable = reach_target if is_instance_valid(reach_target) else null
 		if candidate != null and candidate.try_grab(self, hold_point, slot):
 			held_item = candidate
 			model.play_grab()
@@ -536,7 +554,7 @@ func shout(words: String) -> bool:
 	if shout_left > 0.0 or not in_play:
 		return false
 	shout_left = Balance.SHOUT_COOLDOWN
-	_letter(words, Color.WHITE, Color(Balance.PLAYER_COLOURS[slot]).darkened(0.55)) # Tinted toward who shouted.
+	_letter(words, Color.WHITE, slot_colour().darkened(0.55)) # Tinted toward who shouted.
 	Sfx.play("grab", 1.4, -8.0) # A small chirp so heads turn.
 	return true
 
@@ -597,6 +615,27 @@ func receive_bump(direction: Vector3) -> void:
 
 
 # --- Grab selection ---
+func _update_reach_target() -> void:
+	# One pass a frame picks the item this mover would grab, and that item wears the player's colour. The grab
+	# itself reads the same answer, so what the player sees lit is exactly what they get.
+	var best: Carryable = null
+	if in_play and not is_tumbling() and not is_instance_valid(held_item) and not is_instance_valid(lifted_by) and not flying:
+		best = _nearest_carryable()
+	if best == reach_target:
+		return
+	_clear_reach_target()
+	reach_target = best
+	if best != null:
+		best.mark_in_reach(slot)
+
+
+func _clear_reach_target() -> void:
+	# Only drop the claim if it is still ours; a teammate may have taken the same item since.
+	if is_instance_valid(reach_target) and reach_target.reach_slot == slot:
+		reach_target.mark_in_reach(-1)
+	reach_target = null
+
+
 func _nearest_carryable() -> Carryable:
 	var nearest: Carryable
 	var nearest_distance: float = Balance.GRAB_RANGE
@@ -628,9 +667,10 @@ func _update_model(delta: float) -> void:
 	model.carry_reach.item = held_item if is_instance_valid(held_item) else null
 	model.face(facing)
 	var flat := Vector3(velocity.x, 0.0, velocity.z)
-	model.update_wobble((flat - last_velocity) / delta, delta)
+	var speed: float = Vector2(velocity.x, velocity.z).length()
+	model.update_wobble((flat - last_velocity) / delta, speed, is_instance_valid(held_item), delta)
 	last_velocity = flat
-	model.update_locomotion(Vector2(velocity.x, velocity.z).length(), _carry_pose(), bracing, on_slime() and is_moving())
+	model.update_locomotion(speed, _carry_pose(), bracing, on_slime() and is_moving())
 
 
 func _carry_pose() -> MoverModel.Carry:
@@ -663,8 +703,20 @@ func _build_model() -> void:
 	model = $Model
 	model.position.y = -Balance.CAPSULE_HEIGHT / 2.0
 	model.scale = Vector3.ONE * Balance.MOVER_MODEL_SCALE
-	var scene: PackedScene = load(Balance.MOVER_MODEL_PATH % Balance.MOVER_SHIRTS[slot])
-	model.setup(scene, Color(Balance.PLAYER_COLOURS[slot]))
+	var scene: PackedScene = load(Balance.MOVER_MODEL_PATH % Balance.MOVER_SHIRTS[slot % Balance.MOVER_SHIRTS.size()])
+	model.setup(scene, slot_colour())
+
+
+func _build_aura() -> void:
+	aura = MoverAura.new()
+	aura.name = "Aura"
+	add_child(aura)
+	aura.setup(slot_colour())
+
+
+func slot_colour() -> Color:
+	# Wraps, so adding player slots only needs more colours in Balance, never a change here.
+	return Color(Balance.PLAYER_COLOURS[slot % Balance.PLAYER_COLOURS.size()])
 
 
 # --- Ship wind ---

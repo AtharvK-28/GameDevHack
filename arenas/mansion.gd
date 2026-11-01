@@ -100,6 +100,7 @@ func _build_mood() -> void:
 	environment.adjustment_contrast = Balance.MOOD_CONTRAST
 	environment.adjustment_saturation = Balance.MOOD_SATURATION
 	environment.adjustment_brightness = Balance.MOOD_BRIGHTNESS
+	ComicLook.calm_background(environment) # Keeps the dusk grade but pulls the dressing back (decision 149).
 	environment.glow_enabled = true
 	environment.glow_intensity = Balance.MOOD_GLOW_INTENSITY
 	environment.glow_hdr_threshold = Balance.MOOD_GLOW_THRESHOLD

@@ -52,10 +52,14 @@ input { width: 100%; min-height: 48px; border: 2px solid var(--ink); border-radi
 #roster li { display: flex; justify-content: space-between; padding: 3px 0; }
 
 /* --- Play controls --- */
-.controls { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 10px var(--gap) 0; }
-.player-strip { display: flex; gap: 16px; align-items: center; justify-content: space-between; min-height: 28px; }
-#player-label { border-left: 8px solid var(--player); padding-left: 10px; }
-#held-label { font-size: 13px; }
+.controls { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 10px var(--gap) 0; border-top: 5px solid var(--player); }
+/* Decision 149: who you are and how long is left on one row; what to do right now on the row below, so neither
+   has to compete for the same strip. The player's colour is the same one their ring wears on the big screen. */
+.player-strip { display: flex; gap: 16px; align-items: center; justify-content: space-between; min-height: 32px; }
+.player-chip { flex: none; width: 18px; height: 18px; border-radius: 50%; background: var(--player); border: 2px solid var(--ink); }
+#player-label { flex: 1; font-size: 16px; letter-spacing: -.01em; }
+.objective-strip { display: flex; gap: 12px; align-items: center; min-height: 22px; }
+#held-label { font-size: 14px; font-weight: 800; opacity: .95; }
 .control-layout { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); padding-top: 10px; }
 #joystick-zone { position: relative; border: 2px dashed var(--line); border-radius: 14px; overflow: hidden; touch-action: none; }
 .stick-guide { pointer-events: none; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; }
@@ -63,9 +67,10 @@ input { width: 100%; min-height: 48px; border: 2px solid var(--ink); border-radi
 .stick-guide small { font-size: 12px; }
 #joystick-zone.active .stick-guide { opacity: .2; }
 .buttons { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1.2fr 1fr; gap: var(--gap); }
-.action { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 4px; padding: 8px; }
-.action strong { font-size: clamp(18px, 3vw, 30px); letter-spacing: -.03em; }
-.action small { font-size: 12px; font-weight: 400; }
+.action { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 4px; padding: 8px; transition: transform .09s ease-out; }
+.action strong { font-size: clamp(20px, 3.4vw, 34px); letter-spacing: -.03em; }
+.action small { font-size: 12px; font-weight: 400; opacity: .85; }
+.action.pressed { transform: scale(1.04, .9); } /* The thumb sees the hit as well as feeling it (decision 149). */
 .grab { grid-column: 1 / -1; background: var(--orange); }
 .throw { background: var(--blue); }
 .brace { background: var(--green); }

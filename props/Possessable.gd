@@ -42,7 +42,8 @@ func _attach() -> void:
 	# Outline the prop's own meshes, and sit at their centre so the flashlight aims at the middle of the prop.
 	var bounds := AABB()
 	for child: MeshInstance3D in prop.find_children("*", "MeshInstance3D", true, false):
-		if not child.top_level and child.mesh != null:
+		# A Carryable's reach shells (decision 149) copy these meshes; they are not part of the prop's own look.
+		if not child.top_level and child.mesh != null and child.name != Carryable.SHELL_NAME:
 			var mesh_bounds: AABB = prop.global_transform.affine_inverse() * child.global_transform * child.get_aabb()
 			bounds = mesh_bounds if meshes.is_empty() else bounds.merge(mesh_bounds)
 			meshes.append(child)

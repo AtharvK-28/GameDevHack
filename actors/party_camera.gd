@@ -1,6 +1,7 @@
 # The shared screen's camera: a three-quarter dollhouse view, its angles set in Balance (CAMERA_ANGLE, CAMERA_YAW).
-# With follow_movers on, it eases toward the centre of the movers in play and the ghost, and pulls back far
-# enough to frame them all (12–26 m), clamped to the arena. Shake (trauma² × noise) is only raised by abilities such as House Shake.
+# With follow_movers on, it eases toward the centre of the movers in play and pulls back far enough to frame them
+# all (12–22 m), clamped to the arena; the ghost joins the framing only while it is near the crew. Shake
+# (trauma² × noise) is only raised by abilities such as House Shake.
 # Camera-facing walls (FadeWall) turn see-through while the line from the camera to a player passes through them.
 extends Camera3D
 
@@ -85,22 +86,62 @@ func _player_points() -> Array[Vector3]:
 	return points
 
 
+func _mover_points() -> Array[Vector3]:
+	# Every mover in play. The framing follows these; the ghost only joins when it is already close by.
+	var points: Array[Vector3] = []
+	for mover: Node3D in get_tree().get_nodes_in_group("movers"):
+		points.append(mover.global_position)
+	return points
+
+
+func _ghost_points() -> Array[Vector3]:
+	# Where the wisp is, or the prop it is hiding in.
+	var points: Array[Vector3] = []
+	for ghost: Node3D in get_tree().get_nodes_in_group("ghosts"):
+		points.append(ghost.possessing.global_position if is_instance_valid(ghost.possessing) else ghost.global_position)
+	return points
+
+
+func _centre(points: Array[Vector3]) -> Vector3:
+	var centre := Vector3.ZERO
+	for point: Vector3 in points:
+		centre += point
+	return centre / maxf(1.0, points.size())
+
+
+func _spread(points: Array[Vector3], centre: Vector3) -> float:
+	var spread: float = 0.0
+	for point: Vector3 in points:
+		spread = maxf(spread, Vector2(point.x - centre.x, point.z - centre.z).length())
+	return spread
+
+
 func _framing() -> Array:
-	# [focus point, distance]: the players' centre, pulled back until all of them fit with some padding.
-	var points: Array[Vector3] = _player_points()
+	# [focus point, distance]: the centre of everyone being framed, pulled back until they fit with some padding.
+	# The ghost counts as one of them only while it is within CAMERA_GHOST_CUSHION of the crew; a ghost in a far
+	# corner used to force the whole arena into view and shrink everybody (decision 149).
+	var points: Array[Vector3] = _mover_points()
+	var have_movers: bool = not points.is_empty()
+	if not have_movers:
+		points = _ghost_points() # Ghost-only scenes still frame the ghost.
 	if points.is_empty():
 		var centre_2d: Vector2 = bounds.get_center()
 		var overview: float = (bounds.size.length() / 2.0 + Balance.CAMERA_FRAME_PADDING) / (tan(deg_to_rad(fov / 2.0)) * Balance.CAMERA_SAFE_VIEW)
 		if limit_overview:
 			overview = clampf(overview, Balance.CAMERA_MIN_DISTANCE, Balance.CAMERA_MAX_DISTANCE)
 		return [Vector3(centre_2d.x, 0.0, centre_2d.y), overview]
-	var centre := Vector3.ZERO
-	for point: Vector3 in points:
-		centre += point
-	centre /= points.size()
-	var spread: float = 0.0
-	for point: Vector3 in points:
-		spread = maxf(spread, Vector2(point.x - centre.x, point.z - centre.z).length())
+	# A ghost near the crew is framed like one of them; one prowling a far corner is left out of frame entirely,
+	# rather than dragging the camera back until everybody is too small to tell apart.
+	var crew_centre: Vector3 = _centre(points)
+	var crew_spread: float = _spread(points, crew_centre)
+	if have_movers:
+		for ghost_point: Vector3 in _ghost_points():
+			var reach: float = Vector2(ghost_point.x - crew_centre.x, ghost_point.z - crew_centre.z).length()
+			if reach <= crew_spread + Balance.CAMERA_GHOST_CUSHION:
+				points.append(ghost_point)
+
+	var centre: Vector3 = _centre(points)
+	var spread: float = _spread(points, centre)
 	var half_view: float = tan(deg_to_rad(fov / 2.0)) * Balance.CAMERA_SAFE_VIEW
 	var needed: float = (spread + Balance.CAMERA_FRAME_PADDING) / half_view
 	centre.x = clampf(centre.x, bounds.position.x, bounds.end.x)

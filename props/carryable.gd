@@ -1,7 +1,9 @@
 # Base for anything a mover can pick up: the spring carry, upright wobble, throws and contact impacts.
 # Goofy physics: the item's look (never its collider) jiggles on impacts, grabs and throws, and light items bounce.
 # Subclasses set item_name, item_size and weight_class before calling super() in _ready(), set visual to the node
-# that jiggles, and call update_jiggle() every frame.
+# that jiggles, and call update_jiggle() and update_reach_outline() every frame.
+# The reach shell (decision 149) tells movers what they can pick up: a faint rim on any grabbable with a player
+# nearby, and a bright pulsing rim in the player's own colour on the one item their GRAB would take.
 class_name Carryable
 extends RigidBody3D
 
@@ -25,6 +27,14 @@ var visual_scale := Vector3.ONE
 var jiggle_amount: float = 0.0 # Fraction of size; positive is shorter and wider.
 var jiggle_velocity: float = 0.0
 
+# --- Reach shell state (decision 149) ---
+const SHELL_NAME := "ReachShell"
+var reach_outline := StandardMaterial3D.new()
+var outline_meshes: Array[MeshInstance3D] = [] # Collected from visual, so every subclass gets the shell for free.
+var reach_slot: int = -1 # The slot whose GRAB would take this item, or -1 for nobody.
+var reach_time: float = 0.0 # Drives the target shell's pulse.
+var shell_meshes: Array[MeshInstance3D] = [] # The shell itself, one per visible mesh.
+
 # --- Setup ---
 func _ready() -> void:
 	add_to_group("carryables")
@@ -38,6 +48,7 @@ func _ready() -> void:
 	physics_material_override = PhysicsMaterial.new()
 	physics_material_override.friction = Balance.LOOT_FRICTION
 	physics_material_override.bounce = Balance.LIGHT_LOOT_BOUNCE if weight_class == Balance.LIGHT else Balance.LOOT_BOUNCE
+	_build_reach_outline()
 
 
 # --- Physics ---
@@ -194,6 +205,79 @@ func _detach() -> void:
 func set_visual(node: Node3D) -> void:
 	visual = node
 	visual_scale = node.scale
+	outline_meshes.clear()
+	if node is MeshInstance3D:
+		outline_meshes.append(node)
+	for mesh: MeshInstance3D in node.find_children("*", "MeshInstance3D", true, false):
+		outline_meshes.append(mesh)
+	_build_shells()
+
+
+# --- Reach shell (decision 149) ---
+# The shell is its own set of meshes, one per visible mesh, grown slightly and drawn inside out so only its far
+# side shows as a rim. It cannot use material_overlay: a Possessable child already dresses these same meshes with
+# the ghost's outline and glow, and the two would overwrite each other every frame.
+func mark_in_reach(slot: int) -> void:
+	# Called by the mover whose GRAB would take this item; -1 clears it.
+	reach_slot = slot
+
+
+func can_be_grabbed() -> bool:
+	return not finished and not haunted and not is_held()
+
+
+func update_reach_outline(delta: float) -> void:
+	# Subclasses call this every frame.
+	reach_time += delta
+	var target: bool = reach_slot >= 0 and can_be_grabbed()
+	var shown: bool = target or (can_be_grabbed() and _player_nearby())
+	for shell: MeshInstance3D in shell_meshes:
+		shell.visible = shown
+	if not shown:
+		return
+
+	# Faint and neutral means "this is loot"; bright and in your colour means "your GRAB takes this one". A
+	# two-person item uses one shared colour instead, so "it takes two of you" reads without reading anything.
+	var colour: Color = Balance.REACH_IDLE_COLOUR
+	var alpha: float = Balance.REACH_IDLE_ALPHA
+	if target:
+		colour = Balance.REACH_TEAM_COLOUR if weight_class == Balance.TWO_PERSON else Color(Balance.PLAYER_COLOURS[reach_slot % Balance.PLAYER_COLOURS.size()])
+		var pulse: float = 0.5 + 0.5 * sin(TAU * Balance.REACH_PULSE_RATE * reach_time)
+		alpha = Balance.REACH_TARGET_ALPHA * (1.0 - Balance.REACH_PULSE_DEPTH * pulse)
+	reach_outline.albedo_color = Color(colour, alpha)
+
+
+func _build_reach_outline() -> void:
+	reach_outline.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	reach_outline.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	reach_outline.albedo_color = Color(Balance.REACH_IDLE_COLOUR, Balance.REACH_IDLE_ALPHA)
+	reach_outline.grow = true
+	reach_outline.grow_amount = Balance.REACH_OUTLINE_GROW
+	reach_outline.cull_mode = BaseMaterial3D.CULL_FRONT # Only the shell's far side draws, so it reads as a rim.
+
+
+func _build_shells() -> void:
+	# One shell per visible mesh, parented to it so it follows every jiggle and spin for free. Hidden until a
+	# player is near, so a tidy room costs nothing.
+	for mesh: MeshInstance3D in outline_meshes:
+		if mesh.mesh == null:
+			continue
+		var shell := MeshInstance3D.new()
+		shell.name = SHELL_NAME # Possessable skips these when it collects the prop's own meshes.
+		shell.mesh = mesh.mesh
+		shell.material_override = reach_outline
+		shell.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		shell.visible = false
+		mesh.add_child(shell)
+		shell_meshes.append(shell)
+
+
+func _player_nearby() -> bool:
+	# The same reach the price tags use, so a tidy room only lights up the loot you have walked over to.
+	for player: Node3D in get_tree().get_nodes_in_group("movers"):
+		if player.is_visible_in_tree() and player.global_position.distance_to(global_position) <= Balance.PRICE_SHOW_DISTANCE:
+			return true
+	return false
 
 
 func jiggle(amount: float) -> void:

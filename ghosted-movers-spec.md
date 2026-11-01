@@ -89,9 +89,11 @@ Movers have one job: get value onto the truck. Every control is about carrying w
 | Input | Action |
 | --- | --- |
 | Joystick | Move. Base speed 4.5 m/s, reduced by what you carry. Up on the stick is up on the big screen, whatever the camera's angle (decision 124). Speed follows tilt^1.3 (half tilt is about 40% of full speed); walking eases in over about 0.3 s and stops in about 0.15 s; bracing stops at once. |
-| GRAB (hold) | Pick up the nearest item in front of you. Let go to drop it. |
+| GRAB (hold) | Pick up the nearest item in front of you — the one wearing your colour's shell on the big screen (decision 149). Let go to drop it. |
 | THROW (tap while holding) | Throw a light item. Fast, but it lands hard and takes damage. Medium and heavy loot cannot be thrown. |
 | BRACE (hold) | Plant your feet. You can't move, but shake and wind can't knock you over. |
+
+**The phone's layout (decision 149).** Who you are and how long is left sit on one row; what to do right now sits on the row below, so neither competes for the same strip. The controls carry your player colour as a top bar and a chip beside your name, the same colour as your ring on the big screen, so the phone in your hand matches the character on screen.
 
 **Carrying**
 
@@ -296,7 +298,7 @@ The game is judged on a projector from across a room. Everything must read insta
 **Dollhouse camera**
 
 - A `Camera3D` angled 55° down and 40° sideways (yaw −40°, looking in from the left of the house), into roofless rooms. The match starts fullscreen; F11 toggles a window. Smooth follow/framing is part of Phase 5.
-- It follows the centre point of all movers and the ghost (the wisp, or the prop it possesses). Its distance scales with how spread out they are (12 m to 26 m) and eases smoothly, so it never snaps.
+- It follows the centre point of the movers in play. Its distance scales with how spread out they are (12 m to 22 m) and eases smoothly, so it never snaps. The ghost (the wisp, or the prop it possesses) joins the framing only while it is within 6 m of the crew's spread, so a ghost prowling a far corner cannot pin the camera at its far limit and shrink everyone (decision 149).
 - It is clamped to the arena bounds, so it never shows the void.
 - **Shake** uses trauma (shake = trauma² × noise) for abilities such as House Shake only. Ordinary impacts, tumbles and shattering never shake the camera.
 - **Cinematic punch-in and slow motion are deferred.** Keep normal camera motion smooth.
@@ -310,9 +312,13 @@ The game is judged on a projector from across a room. Everything must read insta
 
 - One consistent low-poly style. Movers use the team's own character model (`assets/models/mover/`); props and arenas should match it, using CC0 packs such as Kenney Furniture Kit and KayKit where they fit. Don't mix styles. The Old Mansion uses Kenney kits only, with decor colours muted so they never look like loot; surface textures are the project's own (`tools/make_surface_textures.gd`); every source is listed in `assets/CREDITS.md`.
 - Movers: chunky characters with overalls and cap in their slot's colour and a contrasting shirt, with a name tag overhead. The model is scaled to the 1.6 m capsule; it only shows the mover's state and never changes gameplay. A visual arm-reach modifier brings the hands toward held loot without moving the item, spring target or collider.
+- **Player aura (decision 149):** a ring on the floor under each mover in that player's colour, with a chevron showing which way they face. It brightens while they carry something and throbs while they are down or hexed, so "which one am I?" and "who needs help?" both answer at a glance. Name tags grow with the camera's distance so they hold a steady size on screen instead of shrinking as it pulls back.
+- **The walk (decision 149):** the body bobs and rolls side to side in time with its steps, paced by distance walked so it stays in step at any speed and eases off under a load. Leaning into acceleration, braking and turning is the same lean spring as before, turned up.
 - Every item has a small price tag above it that shows only while a mover or the ghost is within 3 m, fading in and out over 0.2 s, and always while it is carried. It ticks down and turns red as value drops. Damage and banking popups always show, a little bigger than the tags.
+- **What you can pick up (decision 149):** every grabbable wears a faint shell while a player is within that same 3 m, and the one item a mover's GRAB would take wears a bright pulsing shell in that player's own colour. A two-person item uses one shared colour instead, so "it takes two of you" reads without reading anything. The mover picks its target once a frame and the grab reuses that same answer, so what is lit is always what you get; a curse on an item outranks the shell.
 - Ghost: a translucent bedsheet wisp with trailing particles. Possessed props get a green glow, an outline shader and dripping ectoplasm.
 - Comic punch (decision 91): movers wear a dark ink outline; the dusk grade adds contrast and saturation; quick particle bursts mark landings, tumbles, one-handle dragging, CRASH (sparks), SMASH (shards), KA-CHING (sparkles) and possession (green puffs), and the wisp leaves a ghost-green trail.
+- **Playfield in front of the house (decision 149):** each arena's grade is multiplied by a desaturating pass (`ComicLook.calm_background()`), while the playfield's own rim light and ink outlines go up. The dressing stays readable but stops competing with the action. All of it is `LOOK_*`, `RIM_*` and the outline widths in `Balance.gd`, so it tunes in one place.
 - `WorldEnvironment`: glow (bloom), filmic tonemapping, depth fog in the museum. The Mobile renderer has no SSAO or volumetric fog, so fake contact shadows with darker texture bases or blob shadows under items.
 
 **On-screen HUD**
@@ -388,7 +394,8 @@ One web page with three screens (lobby, Mover, Ghost). The host decides which sc
 - `touch-action: none` and no pinch-zoom. The page never scrolls.
 - Fullscreen on first tap. Lock to landscape where supported (Android Chrome). On iOS, show a "rotate your phone" overlay instead.
 - Request the Wake Lock API when available. Plain LAN HTTP is not a secure context, so otherwise show guidance to increase the phone's screen timeout for the demo.
-- `navigator.vibrate` on damage and tumbles. This works on Android only and is a bonus.
+- `navigator.vibrate` on damage and tumbles, sent by the host as `{"type": "buzz", "ms": n}`.
+- **The phone's own haptics (decision 149):** a phone also buzzes for its own taps straight away, without waiting on the host, so the controls feel alive on a busy network. One pattern per control: grab, letting go (lighter), throw, brace, shout, a ghost ability, a tick when the stick takes hold or a lobby button is tapped, and a double tick when a locked or unaffordable button is pressed. The patterns are `BUZZ_*` in `Balance.gd`, reaching the phone through `settings.json`. Vibration is Android-only; iPhones ignore every call, which is why nothing depends on it — each buzz accompanies something already visible.
 
 ## Technical architecture
 
@@ -656,7 +663,7 @@ Close codes: 4001 auth timeout, 4002 new lobby, 4003 denied credentials, 4008 ra
 
 ## Ghost Ship implementation (decision 100)
 
-`arenas/layouts/ship_layout.json` and `ship_layout.svg` define the deck plan fitted to Kenney's ship-pirate-large (decision 107): the model is scaled 2.5x in plan and 1x in height with its bow toward +x and main deck at 0. Main deck about 10 x 8.8 m inside the rails, with an open hatch frame; stern castle +1.2 m reached by two 3.5 m side steps (decision 112); forecastle +0.7 m tapering to the bow, reached by two 2 m side steps, with a locker and foremast as obstacles. No cargo hold. The 2.2 x 3.6 m unrailed gangplank leaves the model's waist port for the 8 x 5 m salvage tug, whose 4 x 3 m amber delivery area is release-only. Static floors use separate slabs (one polygon for the bow); barriers and obstacles collide but draw nothing, because the model draws the rails. Water has no ground collider. Ship uses camera yaw -20 degrees, pitch 55 and framing 12-26 m.
+`arenas/layouts/ship_layout.json` and `ship_layout.svg` define the deck plan fitted to Kenney's ship-pirate-large (decision 107): the model is scaled 2.5x in plan and 1x in height with its bow toward +x and main deck at 0. Main deck about 10 x 8.8 m inside the rails, with an open hatch frame; stern castle +1.2 m reached by two 3.5 m side steps (decision 112); forecastle +0.7 m tapering to the bow, reached by two 2 m side steps, with a locker and foremast as obstacles. No cargo hold. The 2.2 x 3.6 m unrailed gangplank leaves the model's waist port for the 8 x 5 m salvage tug, whose 4 x 3 m amber delivery area is release-only. Static floors use separate slabs (one polygon for the bow); barriers and obstacles collide but draw nothing, because the model draws the rails. Water has no ground collider. Ship uses camera yaw -20 degrees, pitch 55 and framing 12-22 m (decision 149).
 
 The Ship catalog contains 19 items worth 78500 rupees: chest 18000 (two-person, fragility 1); the Captain's parrot 4000 (light, placed in every round, never loses value; see below); 3 ships-in-bottles 5000 (light, 3); 2 telescopes 4000 (medium, 2); portrait 7000 (medium, 1); 4 rolling rum barrels 3000 (medium, 1); 2 compasses 2000 (light, 2); 2 chalices 1500 (light, 2); bell 3500 (heavy, 1); sextant 2500 (light, 2); chart tube 1500 (light, 1). Existing 6/9/12 seeded match picks and heavy limits apply, with exactly one chest and the parrot. Spawn roles and S/M/XL sizes live in the layout.
 

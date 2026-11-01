@@ -91,6 +91,7 @@ func _build_mood() -> void:
 	environment.ambient_light_energy = Balance.MUSEUM_AMBIENT_ENERGY
 	environment.tonemap_mode = Environment.TONE_MAPPER_AGX
 	environment.tonemap_exposure = Balance.MOOD_EXPOSURE
+	ComicLook.calm_background(environment) # Decision 149.
 	environment.glow_enabled = true
 	environment.glow_intensity = Balance.MOOD_GLOW_INTENSITY
 	environment.glow_hdr_threshold = Balance.MOOD_GLOW_THRESHOLD

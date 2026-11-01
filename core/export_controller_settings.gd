@@ -17,6 +17,16 @@ func _initialize() -> void:
 		"ghostEnergyMax": SETTINGS.ENERGY_MAX,
 		"ghostNearBuzzMs": SETTINGS.GHOST_NEAR_BUZZ_MS,
 		"ghostNearPulseMs": SETTINGS.GHOST_NEAR_PULSE_MS,
+		"buzz": { # The phone's own haptics (decision 149).
+			"grab": SETTINGS.BUZZ_GRAB_MS,
+			"letGo": SETTINGS.BUZZ_LET_GO_MS,
+			"throw": SETTINGS.BUZZ_THROW_MS,
+			"brace": SETTINGS.BUZZ_BRACE_MS,
+			"shout": SETTINGS.BUZZ_SHOUT_MS,
+			"ui": SETTINGS.BUZZ_UI_MS,
+			"ghostAction": SETTINGS.BUZZ_GHOST_ACTION_MS,
+			"refused": SETTINGS.BUZZ_REFUSED_MS,
+		},
 	}
 	var file := FileAccess.open("res://controller/settings.json", FileAccess.WRITE)
 	if file == null:

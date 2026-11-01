@@ -21,6 +21,16 @@ static func apply(root: Node, outline: bool) -> void:
 				mesh.set_surface_override_material(index, _comic(source, outline))
 
 
+static func calm_background(environment: Environment) -> void:
+	# Pulls an arena's colour back (decision 149), so the dressing stops competing with the action; the playfield
+	# keeps the stronger rim and ink that apply() gives it and so reads in front of the house. The factors multiply
+	# into whatever grade the arena already set, so each arena keeps its own mood. Call after setting that grade.
+	environment.adjustment_enabled = true
+	environment.adjustment_saturation *= Balance.LOOK_SATURATION
+	environment.adjustment_contrast *= Balance.LOOK_CONTRAST
+	environment.adjustment_brightness *= Balance.LOOK_BRIGHTNESS
+
+
 static func tint(root: Node, colour: Color) -> void:
 	# Multiplies every surface's albedo by colour. Called after apply(), whose materials are already copies.
 	if colour == Color.WHITE:
