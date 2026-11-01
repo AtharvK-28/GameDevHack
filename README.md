@@ -38,6 +38,16 @@ Each Mansion round places three heavy batteries at three distinct locations chos
 
 All three deliveries power the generator for the rest of the round: brighter ambient/moon light, 50% longer haunting cooldowns, 50% slower energy regeneration and 25% slower free-wisp movement. Possession and SHOVE stay available at their existing strength. Restart restores the same battery locations and clears the task; the next round selects new seeded locations. The HUD and phone report progress.
 
+## Build the exported game
+
+The preset in `export_presets.cfg` makes one self-contained file, `build/GhostedMovers.exe` (Windows). Install Godot's 4.7 export templates first (Editor → Manage Export Templates), then run:
+
+```
+godot --headless --path . --export-release "Windows Desktop" build/GhostedMovers.exe
+```
+
+Double-click the result on the demo laptop and allow it through the firewall on private networks the first time. On Linux or macOS, add a preset for that platform in Project → Export.
+
 ## Run the greybox harness
 
 The Phase 4 sandbox, with every ghost ability and the G key, is still available: select the root node of `Main.tscn`, untick **Match Mode** in the Inspector, and run. Tick it again before committing. The checks below use the harness automatically.
