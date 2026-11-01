@@ -21,7 +21,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	result_left = maxf(0.0, result_left - delta)
-	if Game.phase != "live" or Net.audience_count() == 0:
+	if Game.phase != "live" or Game.getaway or Net.audience_count() == 0:
 		return
 	if open:
 		left -= delta

@@ -148,6 +148,10 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - [x] The story's endings (decision 146, 2026-11-01): Enter on the final results plays Seth-ji's diary (Mansion), the wave
   (Ship) or the six-panel epilogue (Museum), then the lobby. Every panel rendered with its lettering. `core/story_check.gd`
   43 assertions; all 23 suites pass, 1,493 assertions.
+- [x] The Getaway, demo cut (decision 147, 2026-11-01), on branch `getaway`: the 60 s playable finale after a Museum match,
+  with Seth-ji's vases, the Captain's waves, Bahadur's searchlight and GOLD SAVED. Rendered at each stage. With idle
+  stand-ins 12–69% of the gold survives. New suite `core/getaway_check.gd`, 19 assertions; all 24 suites pass, 1,513
+  assertions. Needs a human playtest before it merges to `main`.
 - [ ] Gust of Wind and Lights Out
 - [x] Mover and ghost character models integrated (brought forward; visual acceptance pending)
 - [x] Party camera and Mansion wall fade implemented (human acceptance pending)

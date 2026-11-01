@@ -197,7 +197,7 @@ func _process(delta: float) -> void:
 		return
 	var elapsed: float = 1.0 / Balance.HUD_RATE - refresh_left
 	refresh_left = 1.0 / Balance.HUD_RATE
-	visible = Game.phase in ["live", "paused"]
+	visible = Game.phase in ["live", "paused"] and not (Game.getaway and Game.phase == "live") # The Getaway draws its own.
 	if Game.phase != previous_phase:
 		if Game.phase == "reveal":
 			toast_entries.clear()
@@ -336,6 +336,10 @@ func _clear(parent: Node) -> void:
 		child.queue_free()
 
 func _unhandled_input(event: InputEvent) -> void:
+	if Game.getaway and Game.phase == "live" and Style.pressed_key(event) == KEY_ESCAPE:
+		Game.finish_getaway(true)
+		get_viewport().set_input_as_handled()
+		return
 	if Game.phase in ["live", "reveal"] and Style.pressed_key(event) == KEY_ESCAPE:
 		Game.pause_by_host()
 		pause_menu = load("res://menus/windows/pause_menu.tscn").instantiate()

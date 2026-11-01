@@ -71,7 +71,10 @@ func _run() -> void:
 
 	# The Museum's ending: Enter on the final results walks the epilogue, panel by panel, to the lobby.
 	await _ending_from_results()
-	_check(game.phase == "outro" and cutscene._panels() == SETTINGS.MUSEUM_OUTRO_PANELS, "Enter on the final results plays the Museum's epilogue")
+	_check(game.phase == "live" and game.getaway, "Enter on the final results opens The Getaway")
+	await _key(KEY_ESCAPE)
+	await _wait(0.2)
+	_check(game.phase == "outro" and cutscene._panels() == SETTINGS.MUSEUM_OUTRO_PANELS, "Esc skips to the Museum's epilogue")
 	for index: int in range(SETTINGS.MUSEUM_OUTRO_PANELS.size()):
 		_check(cutscene.panel_index == index, "Epilogue panel %d shows" % (index + 1))
 		await _wait(0.2)

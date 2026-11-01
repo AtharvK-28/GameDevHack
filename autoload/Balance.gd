@@ -995,6 +995,98 @@ const INTRO_PAPER_INK := Color("2b1d14")
 const INTRO_PAPER_MARGIN: int = 26
 const INTRO_PAPER_SLIDE: float = 0.7 # Seconds a page takes to slide up.
 const INTRO_CAPTION_WIDTH: float = 0.62 # Share of the screen width.
+
+# --- The Getaway (decision 147, arenas/getaway.gd): the playable finale after a Museum match ---
+const GETAWAY_SECONDS: float = 60.0
+const GETAWAY_GRACE: float = 4.0 # Seconds before the first ghost attacks.
+const GETAWAY_STAGE_NAMES: Array[String] = ["SETH-JI'S REVENGE!", "THE CAPTAIN'S FLOOD!", "BAHADUR'S ROADBLOCK!"]
+const GETAWAY_STAGE_OPENING: float = 1.5 # Seconds into a stage before its first attack.
+const GETAWAY_BANNER_SECONDS: float = 2.5
+const GETAWAY_STAGE_DB: float = -8.0
+const GETAWAY_STAR_SHARES: Array[float] = [0.4, 0.6, 0.8] # Share of the gold saved for each star.
+const GETAWAY_RESULT_SECONDS: float = 7.0 # The GOLD SAVED page shows this long unless Enter moves on.
+const GETAWAY_BED_HALF := Vector2(3.0, 4.5) # Half the truck bed: across, along. The tailgate is at +z.
+const GETAWAY_WALL_HEIGHT: float = 1.0
+const GETAWAY_MOVER_MARGIN: float = 0.35 # Movers stay this far inside the bed's edge, so nobody falls off.
+const GETAWAY_FALL_MARGIN: float = 0.4 # Metres past the edge that count as gone.
+const GETAWAY_SPAWN_SPACING: float = 1.3
+const GETAWAY_SPAWN_Z: float = 2.6
+const GETAWAY_LOOT: Array[String] = [
+	"res://props/catalog/ship/chest.tres", "res://props/catalog/museum/golden_mask.tres", "res://props/catalog/museum/bronze_elephant.tres",
+	"res://props/catalog/museum/crystal.tres", "res://props/catalog/ship/chalice.tres", "res://props/catalog/ship/chalice.tres",
+	"res://props/catalog/ship/compass.tres", "res://props/catalog/ship/sextant.tres",
+]
+const GETAWAY_GOLD_SPOTS: Array[Vector2] = [
+	Vector2(0.0, -3.0), Vector2(-1.9, -3.0), Vector2(1.9, -3.0), Vector2(-1.9, -1.4), Vector2(0.0, -1.2), Vector2(1.9, -1.4), Vector2(-1.0, 0.2), Vector2(1.0, 0.2),
+]
+# The slide: loose gold on the bed creeps toward the tailgate and swings with the sway.
+const GETAWAY_DRIFT_SPEED: float = 0.55 # Metres per second toward the tailgate.
+const GETAWAY_SWAY_SPEED: float = 0.5 # Metres per second side to side.
+const GETAWAY_SWAY_PERIOD: float = 5.0
+const GETAWAY_SLIDE_ACCEL: float = 2.0 # Metres per second squared toward those speeds.
+const GETAWAY_SLIDE_HEIGHT: float = 0.8 # Above this an item is in the air, and left alone.
+const GETAWAY_POTHOLE_INTERVAL: float = 7.0
+const GETAWAY_POTHOLE_HOP: float = 2.2 # Metres per second upward.
+const GETAWAY_POTHOLE_BACK: float = 2.4 # Metres per second toward the tailgate.
+const GETAWAY_POTHOLE_SHAKE: float = 0.4
+const GETAWAY_LOST_TRAVEL: float = 30.0 # Metres a lost item bounces away down the road.
+const GETAWAY_LOST_SECONDS: float = 1.4
+# Seth-ji's vases.
+const GETAWAY_VASE_INTERVAL: float = 2.0
+const GETAWAY_VASE_WARNING: float = 1.3 # Seconds the red circle shows before it lands.
+const GETAWAY_VASE_FALL: float = 0.4
+const GETAWAY_VASE_HEIGHT: float = 7.0
+const GETAWAY_VASE_RADIUS: float = 1.1
+const GETAWAY_VASE_SHOVE: float = 3.0
+const GETAWAY_VASE_DB: float = -6.0
+const GETAWAY_VASE_COLOUR := Color("b9774a")
+const GETAWAY_CIRCLE_ALPHA: float = 0.55
+# The Captain's waves.
+const GETAWAY_WAVE_INTERVAL: float = 5.5
+const GETAWAY_WAVE_WARNING: float = 1.2
+const GETAWAY_WAVE_START: float = 14.0 # Metres off to the side a wave starts and ends.
+const GETAWAY_WAVE_WASH: float = 1.5 # Metres an unbraced mover is carried.
+const GETAWAY_WAVE_SHOVE: float = 1.6 # Metres per second across the bed.
+const GETAWAY_WAVE_BACK: float = 3.5 # Metres per second toward the tailgate.
+const GETAWAY_WAVE_SHAKE: float = 0.6
+# Bahadur's searchlight: freeze or BRACE while it passes.
+const GETAWAY_BEAM_SECONDS: float = 5.0
+const GETAWAY_BEAM_REST: float = 1.5
+const GETAWAY_BEAM_RADIUS: float = 1.7
+# The view.
+const GETAWAY_CAMERA_ANGLE: float = 44.0
+const GETAWAY_CAMERA_FOCUS := Vector3(0.0, 0.0, -0.3)
+const GETAWAY_CAMERA_DISTANCE: float = 11.5
+const GETAWAY_GHOST_SPOTS: Array[Vector3] = [Vector3(-5.6, 2.6, -1.5), Vector3(5.8, 2.6, -1.5), Vector3(5.6, 2.6, -0.5)]
+const GETAWAY_GHOST_SCALE: float = 2.0
+const GETAWAY_ROAD_Y: float = -1.2
+const GETAWAY_ROAD_WIDTH: float = 16.0
+const GETAWAY_ROAD_SPEED: float = 16.0 # Metres per second past the truck.
+const GETAWAY_SCENERY_NEAR: float = 26.0 # Scenery wraps from here, behind the camera, back up the road.
+const GETAWAY_SCENERY_LENGTH: float = 160.0
+const GETAWAY_BUILDINGS: int = 16
+const GETAWAY_DASH_GAP: float = 8.0
+const GETAWAY_DASH_X: float = 4.4
+const GETAWAY_LAMP_GAP: float = 24.0
+const GETAWAY_ENGINE_DB: float = -14.0
+const GETAWAY_FOG: float = 0.0025
+const GETAWAY_SUN_ROTATION := Vector3(-28.0, -35.0, 0.0)
+const GETAWAY_SUN_COLOUR := Color("ffd2a0")
+const GETAWAY_AMBIENT := Color("d8d4e0")
+const GETAWAY_SKY_TOP := Color("4f5f9e")
+const GETAWAY_SKY_HORIZON := Color("f5a66b")
+const GETAWAY_ROAD_COLOUR := Color("3a3a44")
+const GETAWAY_PAVEMENT_COLOUR := Color("8a8478")
+const GETAWAY_SEA_COLOUR := Color("2a86b8")
+const GETAWAY_WAVE_COLOUR := Color("3fb2e6")
+const GETAWAY_BEAM_ALPHA: float = 0.5
+const GETAWAY_BED_COLOUR := Color("8a5a34")
+const GETAWAY_WALL_COLOUR := Color("b5843f")
+const GETAWAY_CAB_COLOUR := Color("e0a92e")
+const GETAWAY_GLASS_COLOUR := Color("a9d6e5")
+const GETAWAY_SLOGAN_COLOUR := Color("ffd04a")
+const GETAWAY_WINDOW_COLOUR := Color("5a4a55")
+const GETAWAY_BUILDING_COLOURS: Array[Color] = [Color("e8b4a0"), Color("d9c98f"), Color("a8c4b8"), Color("c9a8c4"), Color("e0c8a8"), Color("b0b8d0")]
 const INTRO_VIDEO_DB: float = -2.0 # A video panel's own sound.
 const INTRO_VIDEO_ASPECT: float = 16.0 / 9.0 # Videos fill the screen, cropped at its edges on other shapes.
 const INTRO_LETTERING_SIZE: int = 30 # Caption and bubble text on story panels lettered in the game.
