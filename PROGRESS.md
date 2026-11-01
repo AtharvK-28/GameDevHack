@@ -154,7 +154,11 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
   pulls back; each arena's grade is desaturated while the playfield's rim and ink go up; movers bob and waddle as they
   walk; and the phone buzzes for its own taps, with the status strip split in two and the controls wearing the
   player's colour. The reach shell owns its own meshes because `Loot.tscn`'s `Possessable` child already uses
-  `material_overlay`. No mechanics or protocol changed.
+  `material_overlay`. No mechanics or protocol changed. `core/match_check.gd` gains the new camera rule and now
+  passes 69; its old assertion expected the midpoint of mover and ghost, which the new framing deliberately drops
+  for a distant ghost. Measured on the Mansion: with the ghost 15.9 m from the lone mover the camera sits at 12.0 m
+  instead of its old limit, and a ghost brought alongside is framed with the crew again. All 23 suites pass, 1,486
+  assertions, no failures. Still to do: 1080p renders of the framing and auras, and a human look at the feel.
 - [ ] Gust of Wind and Lights Out
 - [x] Mover and ghost character models integrated (brought forward; visual acceptance pending)
 - [x] Party camera and Mansion wall fade implemented (human acceptance pending)

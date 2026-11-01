@@ -155,11 +155,24 @@ func _check_live_and_ghost_limits() -> void:
 	_check(absf(yaw - SETTINGS.CAMERA_YAW) < 1.0 and absf(pitch - SETTINGS.CAMERA_ANGLE) < 1.0, "Three-quarter camera: %.1f° down, %.1f° sideways" % [pitch, yaw])
 	var mover_b: CharacterBody3D = playground.movers[1]
 	await _wait(1.5)
-	# The camera frames the movers and the ghost; with one of each, it centres between them.
-	var ghost_point: Vector3 = game.ghost().global_position
-	var middle := (mover_b.global_position + ghost_point) / 2.0
-	var focus_gap: float = Vector2(camera.focus.x - middle.x, camera.focus.z - middle.z).length()
-	_check(focus_gap < 1.0 and not playground.movers[0].visible, "The camera frames the mover and the ghost together (%.2f m off); the ghost's mover is hidden" % focus_gap)
+	# The camera frames the movers; a ghost far from them is left out, so it cannot drag the view back and shrink
+	# everyone, and one near them is framed like a player (decision 149).
+	var wisp: Node3D = game.ghost()
+	var ghost_point: Vector3 = wisp.global_position
+	var ghost_reach: float = Vector2(ghost_point.x - mover_b.global_position.x, ghost_point.z - mover_b.global_position.z).length()
+	var focus_gap: float = Vector2(camera.focus.x - mover_b.global_position.x, camera.focus.z - mover_b.global_position.z).length()
+	_check(ghost_reach > SETTINGS.CAMERA_GHOST_CUSHION and focus_gap < 1.0 and not playground.movers[0].visible, "A ghost %.1f m away is left out of the framing: the camera stays on the mover (%.2f m off); the ghost's mover is hidden" % [ghost_reach, focus_gap])
+	_check(camera.distance < SETTINGS.CAMERA_MAX_DISTANCE - 0.01, "The far ghost does not pull the camera to its limit (%.1f m of %.1f m)" % [camera.distance, SETTINGS.CAMERA_MAX_DISTANCE])
+
+	# Bring the wisp alongside the mover: now it counts, and the camera centres between the two of them.
+	var parked: Vector3 = wisp.global_position
+	wisp.global_position = mover_b.global_position + Vector3(2.0, 0.0, 0.0)
+	await _wait(1.5)
+	var middle := (mover_b.global_position + wisp.global_position) / 2.0
+	var near_gap: float = Vector2(camera.focus.x - middle.x, camera.focus.z - middle.z).length()
+	_check(near_gap < 1.0, "A ghost beside the crew is framed with them, centred between the two (%.2f m off)" % near_gap)
+	wisp.global_position = parked
+	await _wait(1.0)
 
 	var ghost: Node3D = game.ghost()
 	_check(ghost != null and ghost.demo_rules and ghost.mover_count == 1, "The demo ghost is in play against one mover")
