@@ -413,7 +413,7 @@ flowchart LR
 
 **How the bridge works in Godot.** `Net.gd` opens a `TCPServer` on port 9080. Each incoming connection is upgraded with `WebSocketPeer.accept_stream()`, and every peer is polled in `_process`. Messages are JSON text. No Godot multiplayer API is needed, because phones are plain browsers, not Godot clients.
 
-**Serving the page.** The host serves it itself: `autoload/PageServer.gd` listens on 8080 and serves `controller/` read-only over HTTP, so the laptop runs the game alone with no second server to start. If another program holds 8080, it takes the next free port up to 8090, and the QR code, lobby address and F9 use that port; if all are taken, the lobby says "PHONE PAGE COULDN'T START" (decision 126). Phones open `http://<laptop-ip>:8080` (or the fallback port shown), and the page connects to `ws://<laptop-ip>:9080`. Use plain `http`: an `https` page is not allowed to open a `ws://` connection. Only the page's own file types are served and nothing outside `controller/` is reachable. Note `controller/` carries a `.gdignore`, so an exported build must add it to the export filter for the page to ship.
+**Serving the page.** The host serves it itself: `autoload/PageServer.gd` listens on 8080 and serves `controller/` read-only over HTTP, so the laptop runs the game alone with no second server to start. If another program holds 8080, it takes the next free port up to 8090, and the QR code, lobby address and F9 use that port; if all are taken, the lobby says "PHONE PAGE COULDN'T START" (decision 126). Phones open `http://<laptop-ip>:8080` (or the fallback port shown), and the page connects to `ws://<laptop-ip>:9080`. Use plain `http`: an `https` page is not allowed to open a `ws://` connection. Only the page's own file types are served and nothing outside `controller/` is reachable. The export preset packs `controller/` through its include filter (decision 148).
 
 **Stretch goal.** A ~40-line static file server inside Godot, also on `TCPServer`, would make the game one self-contained executable.
 
@@ -517,7 +517,7 @@ ghosted-movers/
 │   └── Museum.tscn
 ├── assets/               # models/ (mover/, ghost/, truck/, decor/), cutscenes/ (intro story panels), textures/, materials/, audio/, fonts/; source/ holds art sources Godot skips; _incoming/ holds raw downloads (ignored); CREDITS.md lists every source
 ├── tools/                # one-off generators, e.g. make_surface_textures.gd
-└── controller/           # the phone web page; contains a .gdignore so Godot skips it
+└── controller/           # the phone web page; packed by the export preset's include filter
     ├── index.html
     ├── controller.js
     ├── style.css

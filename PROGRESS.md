@@ -164,7 +164,9 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 ## Phase 8 · H21–22.5 · Feature freeze
 
 - [ ] Bug fixes only
-- [ ] Exported build
+- [x] Exported build (decision 148, 2026-11-01): `build/GhostedMovers.exe`, 179 MB, not in Git. Run in a window with no
+  errors, and every phone file fetched from it. `page_server_check` 33 and `plumbing_check` 73 still pass. Not yet played
+  through with phones.
 - [ ] Venue network tested
 - [ ] Fallback inputs confirmed
 
@@ -211,9 +213,8 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
   server failed silently. It now falls back to the next free port up to 8090, every link uses `PageServer.port`, and
   the lobby says "PHONE PAGE COULDN'T START" when all are taken. `core/page_server_check.gd` covers the move, the QR
   link and the all-busy report (33 assertions). All 17 suites pass, 1,241 assertions, no failures.
-- [ ] Export filter: `controller/` carries a `.gdignore`, so the page is read from disk when running from source
-  but would not be packed into an exported build. Add `controller/*` to the export preset's include filter when
-  the export is built.
+- [x] Export filter (decision 148): the `.gdignore` kept `controller/` out of the export, so it is gone, and the preset
+  packs the page. The exported game was run and served every phone file.
 - [ ] Venue network still untested. The laptop hotspot caps at 8 devices on Windows, which covers 4 players plus
   4 spectators but not audience mode's 50; that needs venue Wi-Fi without client isolation.
 - Dropped for now: a Wi-Fi QR beside the join QR. Two codes cost more experience than they save, and the
