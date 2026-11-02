@@ -55,7 +55,8 @@ func _play_arena(arena_path: String) -> void:
 		game.start_match()
 		await _wait(0.2)
 		if game.phase == "intro":
-			await _key(KEY_ESCAPE) # Skip the arena's story; the Museum has none yet.
+			await _key(KEY_ESCAPE) # Skip the arena's story,
+			await _skip_briefing() # and the Museum's briefing behind it.
 		await _wait_for_phase("live")
 		name = playground.arena.ARENA_NAME
 		game.normal_speed = speed

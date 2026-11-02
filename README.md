@@ -123,12 +123,30 @@ godot --headless --path . --script res://core/audience_check.gd
 godot --headless --path . --script res://core/dev_mode_check.gd
 godot --headless --path . --script res://core/bot_crew_check.gd
 godot --headless --path . --script res://core/stick_check.gd
+godot --headless --path . --script res://core/e2e_check.gd
 godot --path . --script res://core/ui_check.gd
 ```
 
+`e2e_check.gd` is the one that plays the game rather than a part of it: each of the three arenas from the lobby to
+the story's ending, with a real phone on a real socket and a bot crew doing the work. Reach for it first when a
+change could affect more than one system.
+
+Two tools read a round rather than assert about it:
+
+```text
+godot --headless --path . --script res://tools/balance_sim.gd -- --rounds=10 --speed=3 [--arena=Museum]
+godot --headless --path . --script res://tools/bot_report.gd -- --arena=Museum [--seed=100] [--speed=3]
+```
+
+`balance_sim.gd` gives a win rate over seeded rounds. `bot_report.gd` plays one round and prints what became of
+every item: banked, wrecked, never touched, still under glass, how long a bot wanted it, and how much of each
+item's face value survived the carry. Use it when the win rate moves and you need to know why, or does not move
+and you need to know what is really in the way. Bot rounds vary a lot on the same seed, so read one round as a
+mechanism and several as a number.
+
 Close a running host before any integration check; they all open port 9080.
 
-`ui_check.gd` uses the real renderer to exercise Home, Guide, Options, Credits, map selection, lobby, match screens and pause navigation, including maximum-length player names. It saves local review captures under `.verification/`. The other eight checks run headlessly.
+`ui_check.gd` uses the real renderer to exercise Home, Guide, Options, Credits, map selection, lobby, match screens and pause navigation, including maximum-length player names. It saves local review captures under `.verification/`, and it is the check that catches text overflowing a panel or the viewport. The other checks run headlessly.
 
 - `plumbing_check.gd` tests four clients, independent mover movement, malformed messages, joystick clamping, button edges, timeout, reconnect, capacity and keyboard fallback. Success ends with `PLUMBING CHECK: PASS` and exit code 0.
 - `carrying_check.gd` runs real Jolt physics: pickup and spring settling, walking and 180° turns without launching, plain drops, grab selection, throwing, damage maths, wall hits, resting contact, banking exactly once, phone grab and HUD, heartbeat and disconnect drops, and two movers grabbing the same item in one tick, price tags that show only while a mover is near, the stick response and walking ramp, movers bumping apart and items jiggling. Success ends with `CARRYING CHECK: PASS` and exit code 0.

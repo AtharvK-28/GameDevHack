@@ -7,7 +7,6 @@
   --ink: #f4efff;
   --paper: #1a1228;
   --orange: #ffd04a;
-  --blue: #a7e4ee;
   --green: #6dff8a;
   --curse: #8a3fc1;
   --curse-light: #e4c6ff;
@@ -71,8 +70,9 @@ input { width: 100%; min-height: 48px; border: 2px solid var(--ink); border-radi
 .action strong { font-size: clamp(20px, 3.4vw, 34px); letter-spacing: -.03em; }
 .action small { font-size: 12px; font-weight: 400; opacity: .85; }
 .action.pressed { transform: scale(1.04, .9); } /* The thumb sees the hit as well as feeling it (decision 149). */
-.grab { grid-column: 1 / -1; background: var(--orange); }
-.throw { background: var(--blue); }
+/* Two mover buttons, stacked full width: GRAB does the throwing too, so there is no third thumb to find. */
+#mover-buttons { grid-template-columns: 1fr; grid-template-rows: 1.4fr 1fr; }
+.grab { background: var(--orange); }
 .brace { background: var(--green); }
 .ghost-buttons .action { background: var(--green); position: relative; overflow: hidden; }
 .ghost-buttons .action strong { font-size: clamp(14px, 2.4vw, 24px); }
@@ -201,9 +201,9 @@ body.hex-warn .hex-overlay, body.hexed .hex-overlay { display: block; }
 body.hex-warn .hex-overlay { animation: hex-flicker .12s steps(2, start) infinite; background: rgba(176, 108, 255, .25); }
 body.hexed .hex-overlay { background: rgba(176, 108, 255, .12); }
 @keyframes hex-flicker { to { opacity: .35; } }
-body.hexed #mover-buttons .throw { grid-column: 1 / -1; order: 1; }
-body.hexed #mover-buttons .grab { grid-column: auto; order: 2; }
-body.hexed #mover-buttons .brace { order: 3; }
+body.hexed #mover-buttons { grid-template-rows: 1fr 1.4fr; } /* The buttons trade places; the stick is the real curse. */
+body.hexed #mover-buttons .grab { order: 2; }
+body.hexed #mover-buttons .brace { order: 1; }
 .ghost-buttons { grid-template-rows: none; grid-auto-rows: 1fr; }
 .ghost-buttons .action.curse { grid-column: 1 / -1; } /* Five buttons in a match: CURSE takes the last row. */
 .ghost-buttons .action.hex { background: #d9c2ff; }

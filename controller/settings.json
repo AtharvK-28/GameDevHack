@@ -40,5 +40,6 @@
 	"maxNameLength": 20,
 	"reconnectDelayMs": 1000,
 	"socketPort": 9080,
-	"stickSendRate": 60
+	"stickSendRate": 60,
+	"throwFlickStick": 0.45
 }

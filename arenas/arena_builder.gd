@@ -577,20 +577,20 @@ static func _build_deck_layout(arena: Node3D, layout: Dictionary) -> Area3D:
 	for obstacle: Dictionary in layout.get("obstacles", []):
 		_hidden_box(arena, obstacle.id, _box_from_rect(rect_of(obstacle.rect), Balance.SHIP_DECK_BASE, obstacle.top - Balance.SHIP_DECK_BASE))
 	for room: Dictionary in layout.rooms:
-		var zone := Area3D.new()
-		zone.name = room.id
-		zone.add_to_group("room_zones")
-		zone.collision_layer = 0
-		zone.collision_mask = Balance.MOVER_LAYER | Balance.LOOT_LAYER
-		zone.monitorable = false
+		var room_zone := Area3D.new()
+		room_zone.name = room.id
+		room_zone.add_to_group("room_zones")
+		room_zone.collision_layer = 0
+		room_zone.collision_mask = Balance.MOVER_LAYER | Balance.LOOT_LAYER
+		room_zone.monitorable = false
 		var rect: Rect2 = rect_of(room.rect)
 		var shape := CollisionShape3D.new()
 		var box := BoxShape3D.new()
 		box.size = Vector3(rect.size.x, room.zone_height, rect.size.y)
 		shape.shape = box
-		zone.add_child(shape)
-		zone.position = Vector3(rect.get_center().x, room.floor + room.zone_height / 2.0, rect.get_center().y)
-		arena.add_child(zone)
+		room_zone.add_child(shape)
+		room_zone.position = Vector3(rect.get_center().x, room.floor + room.zone_height / 2.0, rect.get_center().y)
+		arena.add_child(room_zone)
 	var delivery: Dictionary = layout.delivery
 	var delivery_rect: Rect2 = rect_of(delivery.rect)
 	var zone: Area3D = TRUCK_SCENE.instantiate()

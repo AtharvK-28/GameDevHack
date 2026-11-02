@@ -14,6 +14,7 @@ func _initialize() -> void:
 		"joystickDeadzone": SETTINGS.JOYSTICK_DEADZONE,
 		"joystickFollow": SETTINGS.JOYSTICK_FOLLOW,
 		"stickSendRate": SETTINGS.STICK_SEND_RATE,
+		"throwFlickStick": SETTINGS.THROW_FLICK_STICK, # How far the stick must be pushed for a release to throw.
 		"ghostEnergyMax": SETTINGS.ENERGY_MAX,
 		"ghostNearBuzzMs": SETTINGS.GHOST_NEAR_BUZZ_MS,
 		"ghostNearPulseMs": SETTINGS.GHOST_NEAR_PULSE_MS,

@@ -1,7 +1,9 @@
 # A glass display case over one Museum exhibit (decision 138). While it is shut, nobody can grab the exhibit and the
 # ghost cannot possess it. A mover opens it one of two ways: hold GRAB at the case for CASE_UNLOCK_SECONDS to pick the
-# lock quietly (a meter shows the progress), or press THROW at it to smash the glass at once, which is loud: it
-# fills the ALARM bar and gives the ghost energy.
+# lock quietly (a meter shows the progress), or shove the glass in to smash it at once, which is loud: it fills the
+# ALARM bar and gives the ghost energy. A shove is a quick jab of GRAB let go with the stick pushed at the case, the
+# same flick that throws an item (decision 151), so the case needs no button of its own. Hold GRAB any longer than
+# that and you are picking the lock, so letting go part way through costs you nothing but the progress.
 extends Node3D
 
 var item: Loot
@@ -67,17 +69,29 @@ func _physics_process(delta: float) -> void:
 		if Vector2(mover.global_position.x - global_position.x, mover.global_position.z - global_position.z).length() > Balance.CASE_REACH:
 			continue
 		var input: RefCounted = InputRouter.for_slot(mover.slot)
-		if input.pressed.get("throw", false):
-			smash(mover.slot)
-			return
 		if input.buttons.get("grab", false):
 			picking = true
+		elif input.released.get("grab", false) and progress < Balance.CASE_SHOVE_WINDOW and _shoved_by(mover):
+			smash(mover.slot)
+			return
 	progress = progress + delta if picking else maxf(0.0, progress - delta * Balance.CASE_PROGRESS_DECAY)
 	meter.visible = progress > 0.0
 	var steps: int = clampi(int(progress / Balance.CASE_UNLOCK_SECONDS * 5.0), 0, 5)
 	meter.text = "UNLOCKING " + "▮".repeat(steps) + "▯".repeat(5 - steps)
 	if progress >= Balance.CASE_UNLOCK_SECONDS:
 		_open()
+
+
+func _shoved_by(mover: Node3D) -> bool:
+	# A shove is the throw flick aimed at the glass: pushed hard enough, and pointing at the case rather than away
+	# from it, so walking off with the stick still pushed never breaks a case by accident.
+	# The caller also checks it was a jab, not the tail of a lock-pick.
+	if mover.stick.length() < Balance.THROW_FLICK_STICK:
+		return false
+	var toward := Vector2(global_position.x - mover.global_position.x, global_position.z - mover.global_position.z)
+	if toward.length() < 0.01:
+		return false
+	return mover.stick.normalized().dot(toward.normalized()) > Balance.CASE_SMASH_AIM
 
 
 func smash(slot: int) -> void:

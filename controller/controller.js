@@ -204,7 +204,8 @@ function handleMessage(message) {
       elements["lift-banner"].hidden = !(Boolean(message.on) && activeRole === "mover");
       break;
     case "hex": {
-      // The ghost's HEX (decision 142): the screen cracks and flickers, then GRAB and THROW swap places until it ends.
+      // The ghost's HEX (decision 142): the screen cracks and flickers, the buttons trade places and the stick is
+      // mirrored until it ends.
       const state = activeRole === "mover" ? String(message.state) : "off";
       document.body.classList.toggle("hex-warn", state === "warn");
       document.body.classList.toggle("hexed", state === "on");
@@ -570,14 +571,18 @@ function releaseButton(button) {
   heldPointers.delete(button);
   button.classList.remove("pressed");
   button.setAttribute("aria-pressed", "false");
-  if (button.dataset.button === "grab") buzz("letGo"); // Putting something down feels different from picking it up.
+  // Letting go of GRAB throws when the stick is pushed and sets down when it is centred (decision 151), so the
+  // thumb is told which of the two it just did.
+  if (button.dataset.button === "grab") {
+    const pushed = Math.hypot(movement.x, movement.y) >= settings.throwFlickStick;
+    buzz(pushed ? "throw" : "letGo");
+  }
   send({ type: "btn", b: button.dataset.button, down: false });
 }
 
 function buzzForButton(name) {
   // Each control gets its own feel, so a thumb learns the buttons without looking down.
   if (name === "grab") return "grab";
-  if (name === "throw") return "throw";
   if (name === "brace") return "brace";
   return "ghostAction"; // Possess, action and the hauntings.
 }

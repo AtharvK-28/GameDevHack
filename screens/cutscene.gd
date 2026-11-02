@@ -102,8 +102,14 @@ func _finish() -> void:
 	playing = false
 	if Game.phase == "outro":
 		Game.finish_ending()
-	else:
-		Game.finish_intro()
+		return
+	# A map with a briefing (decision 155) points out its hazards on the real floor plan before the first round;
+	# the briefing starts the round itself when its arrows are done.
+	var briefing: Node = get_tree().get_first_node_in_group("arena_briefing")
+	if briefing != null and briefing.play_for_arena():
+		hide()
+		return
+	Game.finish_intro()
 
 
 # --- Panels ---

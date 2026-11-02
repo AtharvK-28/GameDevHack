@@ -353,15 +353,77 @@ func run() -> int:
 	_set_input(0, Vector2.ZERO)
 	await _frames(5)
 	_check(not cased[0].in_closed_case() and cased[0].grab_point_for(picker) != Vector3.INF, "Holding GRAB at the case for %.0f s unlocks it quietly" % SETTINGS.CASE_UNLOCK_SECONDS)
+	# A case only answers GRAB from within CASE_REACH, measured flat and from the case: an arm's length from the
+	# exhibit raised inside it is too far. The bots used to pick at nothing from there for most of a round.
+	_place(0, Vector2(17.0, 11.5 + SETTINGS.BOT_GRAB_REACH))
+	await _frames(5)
+	for frame: int in range(int(SETTINGS.CASE_UNLOCK_SECONDS * 60) + 15):
+		_set_input(0, Vector2.ZERO, true)
+		await get_tree().physics_frame
+	_set_input(0, Vector2.ZERO)
+	await _frames(3)
+	_check(cased[1].in_closed_case(), "GRAB held %.1f m from a case picks nothing: that is outside CASE_REACH (%.1f m)" % [SETTINGS.BOT_GRAB_REACH, SETTINGS.CASE_REACH])
+	_place(0, Vector2(17.0, 11.5 + SETTINGS.BOT_CASE_REACH))
+	await _frames(5)
+	for frame: int in range(int(SETTINGS.CASE_UNLOCK_SECONDS * 60) + 15):
+		_set_input(0, Vector2.ZERO, true)
+		await get_tree().physics_frame
+	_set_input(0, Vector2.ZERO)
+	await _frames(3)
+	_check(not cased[1].in_closed_case(), "GRAB held at BOT_CASE_REACH (%.1f m) does unlock it, so a bot that closes in can pick the lock" % SETTINGS.BOT_CASE_REACH)
+
+	# Smashing: the throw flick aimed at the glass, now that the phone has no THROW button (decision 153).
+	var smashed := _museum_loot("golden_mask", Vector2(21.0, 11.5), 0.0)
+	var third: Node3D = case_script.new()
+	third.setup(smashed)
+	third.position = Vector3(21.0, 0.0, 11.5)
+	arena.add_child(third)
+	await _frames(20)
 	var alarm_box: Node = arena.get_node("MuseumAlarm")
 	alarm_box.enabled = true
 	var level_before: float = alarm_box.level
-	_place(0, Vector2(17.0, 12.4))
+	_place(0, Vector2(21.0, 12.4))
 	await _frames(5)
-	router.snapshots[0].pressed = {"throw": true}
+	var at_glass := Vector2(0.0, -1.0) # From the mover's spot toward the case.
+	_set_input(0, at_glass, true)
+	await _frames(6)
+	_check(smashed.in_closed_case(), "Holding GRAB with the stick pushed does not smash it: the shove is the release")
+
+	# Letting go part way through picking the lock must not smash it: that is the common accident.
+	for frame: int in range(int(SETTINGS.CASE_SHOVE_WINDOW * 60) + 12):
+		_set_input(0, at_glass, true)
+		await get_tree().physics_frame
+	var picking: RefCounted = router.snapshots[0]
+	picking.direction = at_glass
+	picking.buttons = {}
+	picking.released = {"grab": true}
 	await _frames(2)
-	router.snapshots[0].pressed = {}
-	_check(not cased[1].in_closed_case() and alarm_box.level >= level_before + SETTINGS.ALARM_CASE - 0.1, "THROW at a case smashes it at once, and the ALARM bar jumps")
+	_check(smashed.in_closed_case(), "Letting go part way through picking the lock leaves the glass whole, however the stick points")
+	_set_input(0, Vector2.ZERO)
+	await _frames(int(SETTINGS.CASE_UNLOCK_SECONDS / SETTINGS.CASE_PROGRESS_DECAY * 60) + 10) # Let the progress drain.
+	var snapshot: RefCounted = router.snapshots[0]
+	snapshot.direction = at_glass
+	snapshot.buttons = {}
+	snapshot.released = {"grab": true}
+	await _frames(2)
+	_check(not smashed.in_closed_case() and alarm_box.level >= level_before + SETTINGS.ALARM_CASE - 0.1, "Letting go of GRAB with the stick pushed at the glass smashes it, and the ALARM bar jumps")
+
+	# Walking away with the stick still pushed must never cost a case.
+	var spared := _museum_loot("golden_mask", Vector2(9.0, 11.5), 0.0)
+	var fourth: Node3D = case_script.new()
+	fourth.setup(spared)
+	fourth.position = Vector3(9.0, 0.0, 11.5)
+	arena.add_child(fourth)
+	await _frames(20)
+	_place(0, Vector2(9.0, 12.4))
+	await _frames(5)
+	_set_input(0, Vector2(0.0, 1.0), true) # Pushed away from the case.
+	await _frames(6)
+	snapshot.direction = Vector2(0.0, 1.0)
+	snapshot.buttons = {}
+	snapshot.released = {"grab": true}
+	await _frames(2)
+	_check(spared.in_closed_case(), "Letting go of GRAB while walking away from a case leaves its glass alone")
 	alarm_box._open()
 	alarm_box.enabled = false
 	await _clear_props()

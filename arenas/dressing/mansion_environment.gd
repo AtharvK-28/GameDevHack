@@ -124,22 +124,21 @@ func _add_perimeter() -> void:
 	var gate_x: float = _drive_rect().get_center().x
 	var fence: Array[Transform3D] = []
 	var pillars: Array[Transform3D] = []
-	var corners: Array[Vector3] = [
-		Vector3(limits.position.x, 0.0, limits.position.y), Vector3(limits.end.x, 0.0, limits.position.y),
-		Vector3(limits.end.x, 0.0, limits.end.y), Vector3(limits.position.x, 0.0, limits.end.y),
-	]
+	var corners: Array[Vector3] = []
+	for corner: Vector2 in [limits.position, Vector2(limits.end.x, limits.position.y), limits.end, Vector2(limits.position.x, limits.end.y)]:
+		corners.append(Vector3(corner.x, 0.0, corner.y))
 	var section: float = Balance.GROUNDS_FENCE_SCALE
 	for side: int in range(4):
 		var start: Vector3 = corners[side]
 		var end: Vector3 = corners[(side + 1) % 4]
 		var direction: Vector3 = (end - start).normalized()
-		var basis := Basis(Vector3.UP, atan2(-direction.z, direction.x)).scaled(Vector3.ONE * section)
+		var turned := Basis(Vector3.UP, atan2(-direction.z, direction.x)).scaled(Vector3.ONE * section)
 		var count: int = ceili(start.distance_to(end) / section)
 		for index: int in range(count):
 			var point: Vector3 = start.lerp(end, (index + 0.5) / count)
 			if side == 2 and absf(point.x - gate_x) < Balance.GATE_WIDTH / 2.0:
 				continue # The gate's opening.
-			fence.append(Transform3D(basis, point))
+			fence.append(Transform3D(turned, point))
 		var posts: int = ceili(start.distance_to(end) / Balance.FENCE_PILLAR_SPACING)
 		for index: int in range(posts):
 			var point: Vector3 = start.lerp(end, float(index) / posts)
@@ -253,8 +252,8 @@ func _add_forest() -> void:
 			continue
 		var kind: int = NEAR_TREES.size() if random.randf() < Balance.FOREST_DEAD_SHARE else random.randi_range(0, NEAR_TREES.size() - 1)
 		var size: float = random.randf_range(1.0, 1.6) if kind == NEAR_TREES.size() else random.randf_range(NEAR_TREE_SCALES[kind].x, NEAR_TREE_SCALES[kind].y)
-		var basis := Basis(Vector3.UP, random.randf() * TAU).scaled(Vector3.ONE * size)
-		transforms[kind].append(Transform3D(basis, Vector3(point.x, 0.0, point.y)))
+		var turned := Basis(Vector3.UP, random.randf() * TAU).scaled(Vector3.ONE * size)
+		transforms[kind].append(Transform3D(turned, Vector3(point.x, 0.0, point.y)))
 		placed += 1
 	for kind: int in range(NEAR_TREES.size()):
 		_multimesh(_mesh(NEAR_TREES[kind], true, Color(0, 0, 0, 0), Balance.FOREST_SHADE), transforms[kind])
@@ -343,8 +342,8 @@ func _scatter(model: String, count: int, sizes: Vector2, clear: Array[Rect2], sw
 	for index: int in range(count):
 		var point: Vector2 = _free_point(clear)
 		var size: float = random.randf_range(sizes.x, sizes.y)
-		var basis := Basis(Vector3.UP, random.randf() * TAU).scaled(Vector3(size, size * stretch, size))
-		transforms.append(Transform3D(basis, Vector3(point.x, 0.0, point.y)))
+		var turned := Basis(Vector3.UP, random.randf() * TAU).scaled(Vector3(size, size * stretch, size))
+		transforms.append(Transform3D(turned, Vector3(point.x, 0.0, point.y)))
 	_multimesh(_mesh(model, sway, tint), transforms)
 
 
@@ -523,8 +522,8 @@ func _dead_tree_mesh() -> Mesh:
 		limb.height = branch[3]
 		limb.radial_segments = 5
 		limb.rings = 1
-		var basis := Basis(Vector3.UP, deg_to_rad(branch[1])) * Basis(Vector3.BACK, deg_to_rad(branch[2]))
-		tool.append_from(limb, 0, Transform3D(basis, Vector3.UP * branch[0] + basis * Vector3.UP * branch[3] / 2.0))
+		var turned := Basis(Vector3.UP, deg_to_rad(branch[1])) * Basis(Vector3.BACK, deg_to_rad(branch[2]))
+		tool.append_from(limb, 0, Transform3D(turned, Vector3.UP * branch[0] + turned * Vector3.UP * branch[3] / 2.0))
 	var mesh: ArrayMesh = tool.commit()
 	var bark := ShaderMaterial.new()
 	bark.shader = SWAY_SHADER

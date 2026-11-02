@@ -2,7 +2,9 @@
 
 The phases follow the spec's 24-hour build plan. A phase is done only when its check passes. AI agents update this file after every task.
 
-**Status:** Decision 149's readability and feel pass is in; its suite run and human look are noted below. Phases 0–3 complete. Phase 4 (ghost) passes `core/ghost_check.gd`; its two-phone 1v1 check is still to do. Phase 5 (match flow and demo scope) is built and passes `core/match_check.gd` (60 checks) plus all four earlier checks; the user's 4-player phone test is next. The Mansion layout, furniture catalog, lighting, environment, animated movers, menus and edge HUD are built. Phase 6 remains incomplete: Ship, Museum, their hauntings and human acceptance are pending.
+**Status:** Decisions 153-156 are in (the phone's THROW button removed, the illustrated guide, the Museum briefing,
+the end-to-end suite, the ambience pass) along with a measured correction to decision 152's claim about the bots.
+Decision 149's readability and feel pass is in; its suite run and human look are noted below. Phases 0–3 complete. Phase 4 (ghost) passes `core/ghost_check.gd`; its two-phone 1v1 check is still to do. Phase 5 (match flow and demo scope) is built and passes `core/match_check.gd` (60 checks) plus all four earlier checks; the user's 4-player phone test is next. The Mansion layout, furniture catalog, lighting, environment, animated movers, menus and edge HUD are built. Phase 6 remains incomplete: Ship, Museum, their hauntings and human acceptance are pending.
 
 ## Phase 0 · Setup
 
@@ -174,10 +176,31 @@ The phases follow the spec's 24-hour build plan. A phase is done only when its c
 - [x] Museum softened (decision 152, 2026-11-02): ALARM sources fill less, the lockdown halves to 10 s, lasers give
   more dark to cross in, cases unlock quicker, and the bar drains while the crew keeps quiet. The meter shows from the
   start of the round instead of only after the first trip.
-- [ ] **The Museum's difficulty is still unmeasured.** The softening took the ALARM from one or two fills a round to
-  none and the bots still won 0 of 10, banking 29% against a 60% quota. `core/bot_crew.gd` cannot open glass cases, so
-  the Egypt and Space exhibits are unreachable to it and `tools/balance_sim.gd` cannot score this arena. Needs either
-  case-aware bots or a human playtest before any more tuning.
+- [x] **Correction (2026-11-02): the bots can open glass cases.** Decision 152 said they could not, which was read
+  off the code rather than measured. The new `tools/bot_report.gd` plays one seeded round and prints what became of
+  every item, and on Museum seed 100 a bot unlocked the moon rock's case and banked it. What is true is that the
+  attempt is ruinously slow: a bot fires GRAB from `BOT_GRAB_REACH` (1.6 m, measured in 3D to the exhibit raised
+  inside the case), which is outside `CASE_REACH` (1.2 m, flat and from the case), so it can stand there picking at
+  nothing. One round showed 42 s spent on a single ₹5,000 exhibit. Fixed: a bot closes to `BOT_CASE_REACH` (0.9 m)
+  before trying, holds GRAB steady instead of pulsing it (the pulse decays the lock-picking progress), and gives up
+  on any item after `BOT_GRAB_PATIENCE` (6 s) of pressing with nothing to show. `core/museum_checks.gd` covers both
+  reaches.
+- [ ] **The Museum's difficulty is still unmeasured, and the reason has changed.** Three seeded rounds on seed 100
+  banked 37%, 40% and 41% of ₹63,700 — the same seed, so the spread is noise, not tuning. The report shows why the
+  arena cannot be scored yet, and it is not the ALARM (peak 19-56%, never a lockdown in any run) and not the cases:
+  **the two-person skull takes both movers for 76-78 s of a 150 s round**, and **what does arrive is wrecked** —
+  the Ming vase banked for ₹19 of ₹6,000, the crystal sculpture for ₹1,595-2,985 of ₹9,000. **Why** that happens
+  is not yet established: `BOT_CARRY_STICK` is already set below the damage speed, so it is not simply walking
+  pace, and the ghost bot attacking carriers would do it just as well. The report now splits each item's losses
+  into value shed in somebody's hands and value shed loose, and counts drops, so the next run says which. Either
+  way the sim is measuring bot carrying far more than arena difficulty, so the Museum needs a human playtest
+  before any more tuning.
+- [x] The phone loses its THROW button, and a glass case is smashed by shoving it (decision 153).
+- [x] How to play rebuilt with drawn controller diagrams for joining, the mover and the ghost (decision 154).
+- [x] The Museum's arrow briefing (decision 155): five labelled arrows over the real floor plan when the story ends.
+- [x] `core/e2e_check.gd` (decision 155): all three arenas, lobby to ending, with a real phone and a bot crew.
+  93 assertions. On the Mansion a round is played out in full; the bots banked 5 items for ₹27,084.
+- [x] Ambience turned down without turning the game down (decision 156).
 - [ ] Gust of Wind and Lights Out
 - [x] Mover and ghost character models integrated (brought forward; visual acceptance pending)
 - [x] Party camera and Mansion wall fade implemented (human acceptance pending)

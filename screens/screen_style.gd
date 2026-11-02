@@ -254,11 +254,11 @@ static func star_row(stars: int, total: int, size: float) -> Control:
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.draw.connect(func() -> void:
 		for index: int in total:
-			var centre := Vector2(size * 0.5 + index * size * 1.2, size * 0.53)
+			var middle := Vector2(size * 0.5 + index * size * 1.2, size * 0.53)
 			var points := PackedVector2Array()
 			for corner: int in 10:
 				var reach: float = size * (0.5 if corner % 2 == 0 else 0.21)
-				points.append(centre + Vector2.from_angle(-PI / 2.0 + corner * PI / 5.0) * reach)
+				points.append(middle + Vector2.from_angle(-PI / 2.0 + corner * PI / 5.0) * reach)
 			if index < stars:
 				row.draw_colored_polygon(points, Balance.UI_MONEY)
 			points.append(points[0])
@@ -267,12 +267,12 @@ static func star_row(stars: int, total: int, size: float) -> Control:
 	return row
 
 
-static func goal_line(goal: Dictionary, label: String) -> String:
+static func goal_line(goal: Dictionary, heading: String) -> String:
 	# One bonus goal as a line of text: "BONUS: Nothing shatters · DONE".
 	if goal.is_empty():
 		return ""
 	var state: String = {"met": " · DONE", "failed": " · MISSED"}.get(goal.get("state"), "")
-	return "%s: %s%s" % [label, goal.text, state]
+	return "%s: %s%s" % [heading, goal.text, state]
 
 
 static func keycap(key: String) -> PanelContainer:

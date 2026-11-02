@@ -94,6 +94,8 @@ const BOT_MAX_INPUT_RATE: float = 90.0 # Stick messages a real second at most, u
 const BOT_ALONE_SECONDS: float = 1.5 # A lone holder lets go of the two-person item after this.
 const BOT_REGRAB_SECONDS: float = 0.5 # GRAB held this long without taking hold is pressed again,
 const BOT_REGRAB_GAP: float = 0.25 # after being let go for this long.
+const BOT_CASE_REACH: float = 0.9 # Metres (flat) a bot closes to before picking a display case's lock; inside CASE_REACH.
+const BOT_GRAB_PATIENCE: float = 6.0 # Seconds pressing GRAB at one item before a bot gives up and fetches another.
 const BOT_HANDLE_SIDE: float = 0.7 # Metres outside a handle where a bot lines up before taking it.
 const BOT_SHOVE_REACH: float = 6.0 # Metres from a mover within which the ghost bot picks a prop to shove.
 const BOT_SHOVE_SECONDS: float = 1.5 # How long it steers a possessed prop before its action.
@@ -597,15 +599,19 @@ const BRIEFING_NOTE_SIZE: int = 22
 const BRIEFING_ARROW_HEAD: float = 14.0 # Pixels.
 const BRIEFING_ARROW_WIDTH: float = 3.0
 const BRIEFING_PAD: float = 10.0 # Pixels of padding inside a label's card.
+const BRIEFING_HOLD: float = 2.8 # Seconds the finished diagram stays up before the round starts.
 const BRIEFING_INK := Color("fff3d4")
 const BRIEFING_CARD := Color(0.07, 0.04, 0.11, 0.82)
 const MUSEUM_BRIEFING_MARKS: Array[Dictionary] = [
 	{"at": Vector3(6.25, 0.9, 17.5), "title": "LASER HALL", "note": "The short way out. Cross on the dark beat.", "push": Vector2(-170.0, 90.0)},
-	{"at": Vector3(5.0, 1.1, 4.0), "title": "GLASS CASES", "note": "Hold GRAB to pick the lock, or THROW to smash it: loud.", "push": Vector2(-150.0, -110.0)},
+	{"at": Vector3(5.0, 1.1, 4.0), "title": "GLASS CASES", "note": "Hold GRAB to pick the lock. Flick the stick at it to smash: loud.", "push": Vector2(-150.0, -110.0)},
 	{"at": Vector3(15.0, 1.6, 8.0), "title": "SHUTTERS", "note": "Trip the ALARM enough and these three doorways seal.", "push": Vector2(60.0, -130.0)},
 	{"at": Vector3(21.0, 1.0, 17.5), "title": "THE LONG WAY", "note": "No lasers through the lobby, but it costs you time.", "push": Vector2(190.0, 70.0)},
 	{"at": Vector3(2.6, 1.0, 23.0), "title": "THE VAN", "note": "Everything you carry has to end up here.", "push": Vector2(-60.0, 120.0)},
 ]
+# Which arenas brief their crew before round one. Only the Museum needs one: its lasers, cases and shutters are
+# rules a crew cannot guess, where the Mansion and the Ship ask nothing a player has not met already.
+const BRIEFING_MARKS: Dictionary = {"res://arenas/Museum.tscn": MUSEUM_BRIEFING_MARKS}
 
 # --- Loot pips (decision 150) ---
 # A small diamond turning above every item a mover could pick up, bright and unshaded so it reads from across the
@@ -870,7 +876,9 @@ const FURNITURE_COLOURS: Array[Color] = [Color("a87a4f"), Color("9aa3ad")]
 const GHOST_PANEL_WIDTH: float = 240.0 # Pixels; the ghost energy bar shown to everyone.
 const HUD_FONT_SIZE: int = 20
 const HUD_SMALL_FONT_SIZE: int = 15
-const GUIDE_ROLE_FONT_SIZE: int = 16 # The How to play screen's MOVERS and GHOST columns.
+const GUIDE_ROLE_FONT_SIZE: int = 17 # The How to play screen's numbered control lines; 28 px at 1080p, the projector's floor.
+const GUIDE_TITLE_FONT_SIZE: int = 22 # Its three column headings.
+const GUIDE_DIAGRAM_HEIGHT: float = 130.0 # Pixels: the drawn phone in each column.
 
 # --- Temporary banking sound settings ---
 const BANK_SAMPLE_RATE: int = 22050
@@ -956,19 +964,23 @@ const TRUCK_HAZARD_SECONDS: float = 0.6 # On and off time of the hazard lamps.
 const CROW_SCARE_DISTANCE: float = 3.0 # Metres: a mover this close sends a crow flying.
 const CROW_RETURN_SECONDS: float = 12.0 # A scared crow comes back after this long.
 const SMASH_SCARE_DISTANCE: float = 12.0 # Metres: birds this near a shattering item take off.
-const BAT_INTERVAL := Vector2(18.0, 35.0) # Seconds between bat flights, random in this range.
-const OWL_INTERVAL := Vector2(20.0, 45.0) # Seconds between hoots.
-const HOWL_INTERVAL := Vector2(40.0, 80.0) # Seconds between distant howls.
+const BAT_INTERVAL := Vector2(30.0, 55.0) # Seconds between bat flights, random in this range.
+const OWL_INTERVAL := Vector2(35.0, 70.0) # Seconds between hoots.
+const HOWL_INTERVAL := Vector2(70.0, 130.0) # Seconds between distant howls.
 const EYE_BLINK_INTERVAL := Vector2(2.0, 6.0) # Seconds between blinks.
-const LIGHTNING_INTERVAL := Vector2(40.0, 60.0) # Seconds between lightning strikes, random in this range.
+const LIGHTNING_INTERVAL := Vector2(60.0, 95.0) # Seconds between lightning strikes, random in this range.
 const LIGHTNING_RETRY: float = 5.0 # Seconds to wait when a haunting is warning or running.
 const LIGHTNING_FLASH_ENERGY: float = 6.0 # Moonlight energy at the flash's peak.
 const LIGHTNING_AMBIENT_BOOST: float = 4.0 # Ambient light multiplier during a flash.
 const LIGHTNING_FLASH_TIME: float = 0.35 # Seconds each flash takes to fade; lightning flashes twice.
 const THUNDER_DELAY := Vector2(0.6, 1.8) # Seconds from flash to thunder.
-const AMBIENT_VOLUME_DB: float = -14.0 # The wind, crickets and night loop.
-const CREATURE_VOLUME_DB: float = -10.0 # Owl, howl, crows.
-const THUNDER_VOLUME_DB: float = -4.0
+# Ambience is background, so it is mixed under the game and spaced out (decision 156): the beds are quieter and
+# the one-off calls (owl, howl, bats, thunder, sirens, horns) are both quieter and rarer, because a loud noise at a
+# random moment pulls a carrier's attention off the loot. The round music, every game sound and every hazard's
+# timing are deliberately untouched: the mix got calmer, the game did not get quieter.
+const AMBIENT_VOLUME_DB: float = -18.0 # The wind, crickets and night loop.
+const CREATURE_VOLUME_DB: float = -16.0 # Owl, howl, crows.
+const THUNDER_VOLUME_DB: float = -9.0
 
 # --- Intro cutscene ---
 # The story (decision 145): plays once per match, between START and the first role reveal. Each panel holds for
@@ -1509,9 +1521,11 @@ const BABY_REST: float = 0.7 # then it pauses before it can run again.
 const CASE_ROLES: Array[StringName] = [&"egypt", &"space"] # Pedestals whose exhibits sit under glass.
 const CASE_SIZE := Vector3(0.75, 0.75, 0.75)
 const CASE_GLASS := Color(0.75, 0.9, 1.0, 0.22)
-const CASE_REACH: float = 1.2 # Metres from a case within which GRAB picks its lock and THROW smashes it.
+const CASE_REACH: float = 1.2 # Metres from a case within which GRAB picks its lock and a shove smashes it.
 const CASE_UNLOCK_SECONDS: float = 1.4 # GRAB held this long opens it quietly; was 2.0.
 const CASE_PROGRESS_DECAY: float = 0.5 # Picking progress lost per second while nobody holds GRAB.
+const CASE_SMASH_AIM: float = 0.5 # How squarely the shove must point at the case to smash it: 1 is dead on, 0 is sideways.
+const CASE_SHOVE_WINDOW: float = 0.35 # Seconds of GRAB that still count as a jab; past this you are picking the lock.
 const CASE_SMASH_ENERGY: float = 10.0 # Energy a smashed case gives the ghost,
 const ALARM_CASE: float = 25.0 # and how much of the ALARM bar it fills.
 const CASE_SMASH_SOUND_VALUE: int = 6000 # Rupees whose smash the breaking glass sounds like.
@@ -1531,9 +1545,9 @@ const CAMERA_CONE_ALPHA: float = 0.07
 const ALARM_CAMERA: float = 6.0 # ALARM a camera adds when it spots someone,
 const CAMERA_ALARM_REST: float = 4.0 # at most once per mover in this many seconds.
 # The Museum's street sounds (decision 139): a far siren or a car horn every so often.
-const MUSEUM_CITY_CALL_INTERVAL := Vector2(14.0, 30.0) # Seconds between calls, at random in this range.
-const MUSEUM_SIREN_DB: float = -20.0
-const MUSEUM_HORN_DB: float = -26.0
+const MUSEUM_CITY_CALL_INTERVAL := Vector2(26.0, 50.0) # Seconds between calls, at random in this range.
+const MUSEUM_SIREN_DB: float = -25.0
+const MUSEUM_HORN_DB: float = -31.0
 # --- The Mansion's personalities (decision 140) ---
 const CAT_WARN_SECONDS: float = 1.0 # Running this long with the cat box brings the MRRROW? warning,
 const CAT_ESCAPE_SECONDS: float = 1.5 # and this much longer, the cat leaps out.
@@ -1661,7 +1675,7 @@ const SHIP_AMBIENT_ENERGY: float = 0.65
 const SHIP_MOON_ENERGY: float = 1.25
 const SHIP_LAMP_ENERGY: float = 1.0
 const SHIP_LAMP_RANGE: float = 6.0
-const SHIP_LIGHTNING_INTERVAL := Vector2(40.0, 60.0)
+const SHIP_LIGHTNING_INTERVAL := Vector2(60.0, 95.0)
 const SHIP_LIGHTNING_DURATION: float = 0.16
 const SHIP_LIGHTNING_ENERGY: float = 2.6
 const SHIP_BACKGROUND := Color("17253f")
@@ -1714,7 +1728,7 @@ const SHIP_TENTACLE_COLOUR := Color("51466c")
 const SHIP_CREATURE_SPEED: float = 0.35
 const SHIP_CREATURE_BOB: float = 0.3
 const SHIP_AMBIENT_DB: float = -30.0
-const SHIP_AMBIENT_CALL_INTERVAL: float = 24.0
+const SHIP_AMBIENT_CALL_INTERVAL: float = 40.0
 
 const SHIP_MIST_SIZE := Vector2(10, 2)
 const SHIP_MIST_POSITION := Vector3(15, -1, 6)

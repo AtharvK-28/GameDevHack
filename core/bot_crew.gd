@@ -23,6 +23,7 @@ class Bot:
 	var pair_end: int = -1 # The two-person item's handle this bot takes.
 	var alone_time: float = 0.0 # Seconds holding the two-person item without the partner.
 	var grab_time: float = 0.0 # Seconds GRAB has been held without taking hold.
+	var grab_total: float = 0.0 # Seconds spent pressing GRAB at this item, over all its presses.
 
 # --- State ---
 var host: Node3D # Main.
@@ -172,6 +173,7 @@ func _choose_item(bot: Bot) -> void:
 	bot.item = best
 	bot.mode = "fetch"
 	bot.stuck_count = 0
+	bot.grab_total = 0.0
 	bot.route = _route_to(bot.mover.global_position, _stand_point(best))
 
 
@@ -196,11 +198,17 @@ func _bot_fetch(bot: Bot, delta: float) -> void:
 		return
 	bot.route.clear()
 	var facing_ok: bool = Vector2(mover.facing.x, mover.facing.z).dot(flat.normalized()) > 0.85
-	if to_item.length() <= Balance.BOT_GRAB_REACH and facing_ok:
+	# A display case only answers GRAB from within its own reach, measured flat and from the case, not from the
+	# exhibit raised inside it: a bot an arm's length away picks at nothing (measured: 42 s on one moon rock).
+	var cased: bool = item.has_method("in_closed_case") and item.in_closed_case()
+	var distance: float = flat.length() if cased else to_item.length()
+	var reach: float = Balance.BOT_CASE_REACH if cased else Balance.BOT_GRAB_REACH
+	if distance <= reach and facing_ok:
 		bot.phone.stick = Vector2.ZERO
-		_press_grab(bot, delta)
+		_press_grab(bot, delta, cased)
 		return
 	bot.phone.buttons["grab"] = false
+	bot.grab_total = 0.0
 	bot.phone.stick = flat.normalized() * (0.35 if flat.length() < Balance.BOT_STAND_DISTANCE else 1.0)
 	if _is_stuck(bot, delta) and bot.stuck_count > Balance.BOT_MAX_STUCK:
 		_give_up(bot, Balance.BOT_GIVE_UP_SECONDS)
@@ -241,9 +249,17 @@ func _bot_carry(bot: Bot, delta: float) -> void:
 		_give_up(bot, Balance.BOT_GIVE_UP_SECONDS) # Wedged: put it down and fetch something else.
 
 
-func _press_grab(bot: Bot, delta: float) -> void:
+func _press_grab(bot: Bot, delta: float, cased: bool = false) -> void:
 	# GRAB takes hold only on a fresh press: if holding it down hasn't worked, let go for a moment and press again.
 	# The release lasts a beat, so it reaches the host even when a sped-up round runs several steps per send.
+	# A glass case is the exception: picking its lock needs GRAB held down, and letting go loses the progress.
+	bot.grab_total += delta
+	if bot.mode == "fetch" and bot.grab_total > Balance.BOT_GRAB_PATIENCE:
+		_give_up(bot, Balance.BOT_GIVE_UP_SECONDS) # Nothing is happening: go and fetch something reachable.
+		return
+	if cased:
+		bot.phone.buttons["grab"] = true
+		return
 	bot.grab_time += delta
 	bot.phone.buttons["grab"] = bot.grab_time < Balance.BOT_REGRAB_SECONDS
 	if bot.grab_time >= Balance.BOT_REGRAB_SECONDS + Balance.BOT_REGRAB_GAP:
@@ -254,6 +270,8 @@ func _give_up(bot: Bot, seconds: float) -> void:
 	if is_instance_valid(bot.item):
 		bot.give_up[bot.item] = live_time + seconds
 	bot.phone.buttons["grab"] = false
+	bot.grab_time = 0.0
+	bot.grab_total = 0.0
 	bot.mode = "idle"
 
 

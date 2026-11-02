@@ -422,6 +422,14 @@ func _key(key: Key) -> void:
 	await _frame()
 
 
+func _skip_briefing() -> void:
+	# A map with an arena briefing (decision 155) holds the "intro" phase for a few seconds after the story ends.
+	# Checks that only want the round skip past it; e2e_check looks at it first.
+	var briefing: Node = get_first_node_in_group("arena_briefing")
+	if briefing != null and briefing.visible:
+		await _key(KEY_ESCAPE)
+
+
 func _tap(index: int, button: String) -> void:
 	_send(index, {"type": "btn", "b": button, "down": true})
 	await _wait(INPUT_SECONDS)

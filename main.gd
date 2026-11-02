@@ -18,7 +18,7 @@ const WIPE_PHASES: Array[String] = ["lobby", "intro", "reveal", "result", "final
 const SCREEN_SCENES: Array[PackedScene] = [
 	preload("res://screens/HUD.tscn"), preload("res://screens/Lobby.tscn"), preload("res://screens/RoleReveal.tscn"),
 	preload("res://screens/RoundEnd.tscn"), preload("res://screens/Results.tscn"),
-	preload("res://screens/Cutscene.tscn"),
+	preload("res://screens/Cutscene.tscn"), preload("res://screens/ArenaBriefing.tscn"),
 ]
 var camera: Camera3D
 var audience_vote: AudienceVote # Runs the audience's votes during live play.
@@ -38,6 +38,7 @@ var shown_phase: String = "lobby" # The match phase on screen, so the wipe plays
 # --- Setup ---
 func _ready() -> void:
 	arena = _arena_scene().instantiate()
+	arena.add_to_group("arenas") # So a screen can find the map it is drawing over, without reaching through main.
 	add_child(arena)
 	_build_camera()
 	if match_mode: # Matches take audience votes; the test harness has no audience.
@@ -243,6 +244,7 @@ func setup_match_round(round_seed: int, participants: Array[int], ghost_slot: in
 	remove_child(arena)
 	arena.free() # Freed now, so Game counts only the new round's loot.
 	arena = _arena_scene().instantiate()
+	arena.add_to_group("arenas")
 	arena.demo_mode = true
 	arena.player_count = participants.size()
 	arena.spawn_seed = round_seed
