@@ -2,7 +2,8 @@
 
 The phases follow the spec's 24-hour build plan. A phase is done only when its check passes. AI agents update this file after every task.
 
-**Status:** Decisions 153-156 are in (the phone's THROW button removed, the illustrated guide, the Museum briefing,
+**Status:** Decision 158 adds the Sabotage Showdown, the new problem statement's sequenced mission, on a fourth
+map card. Decisions 153-156 are in (the phone's THROW button removed, the illustrated guide, the Museum briefing,
 the end-to-end suite, the ambience pass) along with a measured correction to decision 152's claim about the bots.
 Decision 149's readability and feel pass is in; its suite run and human look are noted below. Phases 0–3 complete. Phase 4 (ghost) passes `core/ghost_check.gd`; its two-phone 1v1 check is still to do. Phase 5 (match flow and demo scope) is built and passes `core/match_check.gd` (60 checks) plus all four earlier checks; the user's 4-player phone test is next. The Mansion layout, furniture catalog, lighting, environment, animated movers, menus and edge HUD are built. Phase 6 remains incomplete: Ship, Museum, their hauntings and human acceptance are pending.
 
@@ -212,6 +213,15 @@ Decision 149's readability and feel pass is in; its suite run and human look are
   so the script plays it itself, with all four as movers. Esc is ignored during play so a stray key can't ruin a take.
   Full rounds rehearsed in a window at ×1: Ship seed 2 (8 items, 58-59% against a 65% target, a loss) and the Getaway
   seed 3 (₹28,500 of ₹46,500, 2 stars). Outcomes vary run to run on one seed. No game code changed.
+- [x] **The Sabotage Showdown (decision 158, 2026-11-02): the new problem statement's sequenced mission.** A fourth
+  map card runs the Old Mansion with `mission_mode` on: find the gallery key, carry it to the fuse cupboard, match
+  the wires on your phone, haul Seth-ji's strongbox down from the gallery. An iron stair gate makes it a real
+  sequence; the fuse box is a switch both sides work, so the ghost can cut the power and the crew can throw it
+  back on. `core/mission_check.gd` 41 assertions, `core/wire_check.gd` 12 over a real socket.
+- [ ] The Ship and Museum versions of the mission: the system is arena-agnostic (`core/mission.gd`,
+  `core/wire_puzzle.gd`), so each is a set of spots, a switch and a re-skinned puzzle. Place their props with
+  `.verification/clearance_probe.gd` rather than by reading the layout: the Mansion's first cupboard spot was
+  unreachable behind the dressing, and only a probe showed it.
 - [ ] Gust of Wind and Lights Out
 - [x] Mover and ghost character models integrated (brought forward; visual acceptance pending)
 - [x] Party camera and Mansion wall fade implemented (human acceptance pending)

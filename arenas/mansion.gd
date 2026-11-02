@@ -9,6 +9,11 @@ const LAYOUT_PATH: String = "res://arenas/layouts/mansion_layout.json"
 const LOOT_SCENE := preload("res://props/Loot.tscn")
 const BATTERY_SCENE := preload("res://props/tasks/battery.tscn")
 const GENERATOR_SCENE := preload("res://props/tasks/generator_zone.tscn")
+const MISSION_SCRIPT := preload("res://core/mission.gd")
+const KEY_SCRIPT := preload("res://props/tasks/gallery_key.gd")
+const CUPBOARD_SCRIPT := preload("res://props/tasks/fuse_cupboard.gd")
+const FUSE_SCRIPT := preload("res://props/tasks/fuse_box.gd")
+const GATE_SCRIPT := preload("res://props/tasks/stair_gate.gd")
 
 # --- Arena identity ---
 const ARENA_NAME: String = "Old Mansion"
@@ -21,10 +26,15 @@ signal clock_chimed(slot: int) # The grandfather clock chimed; slot is the mover
 var demo_mode: bool = false
 var player_count: int = 2
 var spawn_seed: int = 0
+@export var mission_mode: bool = false # The Sabotage Showdown variant (decision 158) sets this in its own scene.
 
 var layout: Dictionary
 var truck: Area3D
 var generator: Area3D
+var mission: Mission
+var fuse_box: Node3D
+var stair_gate: StaticBody3D
+var strongbox: Node3D
 
 # --- Setup ---
 func _ready() -> void:
@@ -32,7 +42,11 @@ func _ready() -> void:
 	truck = ArenaBuilder.build(self, layout)
 	_build_mood()
 	_spawn_loot()
-	if demo_mode:
+	# The mission replaces the Battery Run: one is a sequence the crew must finish, the other an optional errand,
+	# and running both at once would give the crew two unrelated jobs and the ghost nothing to defend.
+	if mission_mode:
+		_spawn_mission()
+	elif demo_mode:
 		_spawn_battery_run()
 
 
@@ -203,3 +217,86 @@ func _spawn(scene: PackedScene, location: Vector3) -> void:
 	var prop: Node3D = scene.instantiate()
 	prop.position = location
 	add_child(prop)
+
+
+# --- The Sabotage Showdown mission (decision 158) ---
+func _spawn_mission() -> void:
+	# Four steps, each shut until the one before it is done: find the key, open the fuse cupboard beside the
+	# stairs, match the wires to restore power, then carry the strongbox down from the gallery.
+	mission = MISSION_SCRIPT.new(Balance.MISSION_STEPS)
+	add_child(mission)
+
+	stair_gate = GATE_SCRIPT.new()
+	stair_gate.position = Balance.MISSION_GATE_AT
+	add_child(stair_gate)
+
+	var cupboard: Area3D = CUPBOARD_SCRIPT.new()
+	cupboard.mission = mission
+	cupboard.position = Balance.MISSION_CUPBOARD_AT
+	add_child(cupboard)
+
+	fuse_box = FUSE_SCRIPT.new()
+	fuse_box.mission = mission
+	fuse_box.position = Balance.MISSION_FUSE_AT
+	add_child(fuse_box)
+	fuse_box.power_changed.connect(_on_power_changed)
+	fuse_box.puzzle_wanted.connect(_on_puzzle_wanted)
+
+	var key: RigidBody3D = KEY_SCRIPT.new()
+	key.mission = mission
+	key.generator = cupboard # The cupboard is this item's delivery zone, as a generator is a battery's.
+	key.arena = self
+	key.position = _key_spot() + Vector3.UP * (Balance.MISSION_KEY_SIZE.y / 2.0 + Balance.LOOT_SPAWN_CLEARANCE)
+	key.add_to_group("mission_key")
+	add_child(key)
+
+	# The prize sits on the gallery, behind the gate. Its own pool keeps it out of the ordinary loot draw.
+	strongbox = LOOT_SCENE.instantiate()
+	strongbox.catalog_item = load("res://props/catalog/mansion/strongbox.tres")
+	strongbox.position = Balance.MISSION_STRONGBOX_AT
+	strongbox.add_to_group("mission_prize")
+	add_child(strongbox)
+	truck.banked.connect(_on_banked_for_mission)
+	mission.finished.connect(_on_mission_finished)
+
+
+func _key_spot() -> Vector3:
+	# One spot a round, from its own seeded stream so the key never shifts the loot or the battery placement.
+	var random := RandomNumberGenerator.new()
+	random.seed = spawn_seed + Balance.MISSION_KEY_SEED_OFFSET
+	var spots: Array[Vector3] = Balance.MISSION_KEY_SPOTS
+	return spots[random.randi_range(0, spots.size() - 1)]
+
+
+func _on_power_changed(on: bool) -> void:
+	# Power is what the whole sequence is for: it opens the gate and lights the gallery, and the ghost cutting it
+	# shuts the crew out again (or in, if someone is still upstairs).
+	if is_instance_valid(stair_gate):
+		stair_gate.set_shut(not on)
+	var environment: Environment = $WorldEnvironment.environment
+	var target: float = Balance.MOOD_AMBIENT_ENERGY * (Balance.GENERATOR_AMBIENT_RATIO if on else 1.0)
+	var fade := create_tween()
+	fade.tween_property(environment, "ambient_light_energy", target, Balance.GENERATOR_LIGHT_FADE)
+
+
+func _on_puzzle_wanted(slot: int) -> void:
+	# The fuse box is in the arena, but the puzzle talks to a phone, so Main runs it.
+	var host: Node = get_parent()
+	if host != null and host.has_method("_on_puzzle_wanted"):
+		host._on_puzzle_wanted(slot)
+
+
+func _on_mission_finished() -> void:
+	# The crew got the strongbox out: the mission is the win condition in this mode, not the usual quota.
+	print("Mission complete: the crew got the strongbox out")
+	Game.finish_mission()
+
+
+func _on_banked_for_mission(_value: int, _carrier_slot: int) -> void:
+	# The last step is done when the strongbox itself reaches the truck, not when any loot does. The truck retires
+	# the item and emits this in the same frame, so the strongbox is still valid here; a strongbox smashed earlier
+	# has already been freed, and then no later delivery can finish the step for it.
+	if mission == null:
+		return
+	if is_instance_valid(strongbox) and strongbox.finished:
+		mission.complete("haul")

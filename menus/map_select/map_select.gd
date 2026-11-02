@@ -13,6 +13,8 @@ static func maps() -> Array[Dictionary]:
 		{"name": "Old Mansion", "note": "Gallery, stairs and a grand piano", "arena": "res://arenas/Mansion.tscn", "preview": Balance.MAP_PREVIEW_ART, "crop": Balance.MAP_PREVIEW_CROP},
 		{"name": "Ghost Ship", "note": "Salvage, wind and a risky crossing", "arena": "res://arenas/Ship.tscn", "preview": "res://assets/ui/ship_preview.svg", "crop": Rect2(0, 0, 640, 360)},
 		{"name": "Museum of Mostly Real Things", "note": "Dinosaurs, lasers and a watchman", "arena": "res://arenas/Museum.tscn", "preview": "res://assets/ui/museum_preview.svg", "crop": Rect2(0, 0, 640, 360)},
+		# The Sabotage Showdown (decision 158): the same house, played as a mission the crew must finish in order.
+		{"name": "Sabotage Showdown", "note": "Key, fuse box, wires, strongbox · in that order", "arena": "res://arenas/MansionMission.tscn", "preview": Balance.MAP_PREVIEW_ART, "crop": Balance.MAP_PREVIEW_CROP},
 	]
 
 var first_tile: Button

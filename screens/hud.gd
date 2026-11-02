@@ -214,10 +214,18 @@ func _process(delta: float) -> void:
 	truck_meter.queue_redraw()
 	lost_label.text = "Lost %s / %s" % [Loot.rupees(Game.lost_value), Loot.rupees(Game.loss_limit())]
 	vase.queue_redraw()
-	var generator: Node = Game.host.arena.get("generator") if is_instance_valid(Game.host) else null
-	generator_label.visible = is_instance_valid(generator)
-	if generator_label.visible:
-		generator_label.text = generator.hud_text()
+	# The task line carries whichever job this arena has: the optional errand, or the mission's current step.
+	var arena: Node = Game.host.arena if is_instance_valid(Game.host) else null
+	var mission: Node = arena.get("mission") if arena != null else null
+	var generator: Node = arena.get("generator") if arena != null else null
+	if is_instance_valid(mission):
+		generator_label.visible = true
+		generator_label.text = mission.hud_text()
+		generator_label.modulate = Balance.UI_GHOST if mission.is_finished() else Balance.MISSION_KEY_COLOUR
+	else:
+		generator_label.visible = is_instance_valid(generator)
+		if generator_label.visible:
+			generator_label.text = generator.hud_text()
 	goal_label.text = Style.goal_line(Game.goals.goal, "BONUS")
 	goal_label.visible = not goal_label.text.is_empty()
 	goal_label.modulate = {"met": Balance.UI_GHOST, "failed": Balance.UI_DANGER}.get(Game.goals.goal.get("state"), Balance.UI_MONEY)

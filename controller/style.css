@@ -70,6 +70,18 @@ input { width: 100%; min-height: 48px; border: 2px solid var(--ink); border-radi
 .action strong { font-size: clamp(20px, 3.4vw, 34px); letter-spacing: -.03em; }
 .action small { font-size: 12px; font-weight: 400; opacity: .85; }
 .action.pressed { transform: scale(1.04, .9); } /* The thumb sees the hit as well as feeling it (decision 149). */
+/* The fuse box's wire puzzle (decision 158): it covers the controls, because standing still at the box and
+   looking at your hands is the whole point of it. */
+.wires { position: absolute; inset: 0; z-index: 7; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 6px; background: #0c0816; padding: 10px; }
+.wires-title { font-size: clamp(18px, 3vw, 28px); letter-spacing: -.02em; }
+.wires-note { font-size: 12px; opacity: .8; margin: 0; }
+.wire-board { display: flex; gap: clamp(40px, 18vw, 150px); width: 100%; max-width: 640px; justify-content: center; }
+.wire-column { display: flex; flex-direction: column; gap: 8px; flex: 1; max-width: 190px; }
+.wire-pin { min-height: 42px; border: 3px solid var(--ink); border-radius: 10px; opacity: .95; }
+.wire-pin.picked { outline: 4px solid var(--ink); transform: scale(1.05); }
+.wire-pin.done { opacity: .28; }
+
 /* Two mover buttons, stacked full width: GRAB does the throwing too, so there is no third thumb to find. */
 #mover-buttons { grid-template-columns: 1fr; grid-template-rows: 1.4fr 1fr; }
 .grab { background: var(--orange); }

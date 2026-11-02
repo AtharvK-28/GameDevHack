@@ -26,6 +26,7 @@ func _run() -> void:
 	await _key(KEY_ENTER)
 	await _wait(0.2)
 	await _key(KEY_ESCAPE)
+	await _skip_briefing() # The Museum's arena briefing holds the intro after the story.
 	await _wait_for_phase("live")
 	game._set_phase("final")
 	await _wait(0.2)
@@ -74,6 +75,7 @@ func _run() -> void:
 	await _key(KEY_ENTER)
 	await _wait(0.2)
 	await _key(KEY_ESCAPE)
+	await _skip_briefing() # The Museum's arena briefing holds the intro after the story.
 	await _wait_for_phase("live")
 	_check(game.phase == "live" and not game.getaway and is_instance_valid(playground.ghost), "A normal match runs afterwards, with a ghost")
 	print("GETAWAY CHECK: %s" % ("PASS" if failures == 0 else "%d failures" % failures))

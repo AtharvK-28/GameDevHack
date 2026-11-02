@@ -16,6 +16,7 @@ const DEV_TOOLS := preload("res://core/dev_tools.gd")
 const DISASTER_REPLAY := preload("res://screens/disaster_replay.gd")
 const GETAWAY_END := preload("res://screens/getaway_end.gd")
 const GETAWAY_SCRIPT := preload("res://arenas/getaway.gd")
+const WIRE_PUZZLE := preload("res://core/wire_puzzle.gd")
 const WIPE_PHASES: Array[String] = ["lobby", "intro", "reveal", "result", "final", "outro", "saved"]
 const SCREEN_SCENES: Array[PackedScene] = [
 	preload("res://screens/HUD.tscn"), preload("res://screens/Lobby.tscn"), preload("res://screens/RoleReveal.tscn"),
@@ -36,12 +37,14 @@ var ghost: Node3D
 var connection_text: String = ""
 var hud_elapsed: float = 0.0
 var shown_phase: String = "lobby" # The match phase on screen, so the wipe plays once per change.
+var wire_puzzle: WirePuzzle = WIRE_PUZZLE.new() # The fuse box's phone minigame (decision 158); shut unless open.
 
 # --- Setup ---
 func _ready() -> void:
 	arena = _arena_scene().instantiate()
 	arena.add_to_group("arenas") # So a screen can find the map it is drawing over, without reaching through main.
 	add_child(arena)
+	_apply_mission_mode()
 	_build_camera()
 	if match_mode: # Matches take audience votes; the test harness has no audience.
 		audience_vote = AudienceVote.new()
@@ -58,6 +61,7 @@ func _ready() -> void:
 	_apply_arena_bounds()
 	Net.players_changed.connect(_start_ready_controllers)
 	Net.shouted.connect(_on_shouted)
+	Net.wired.connect(_on_wired)
 	_build_connection_text()
 	_start_ready_controllers()
 	add_child(WINDOW_KEYS.new())
@@ -84,6 +88,7 @@ func _process(delta: float) -> void:
 		_update_harness_overlay()
 	# A 2-player match is one mover against the ghost; in the harness, count the active movers.
 	Loot.lone_mover = Game.participants.size() == 2 if match_mode else _active_mover_count() <= 1
+	_check_puzzle_hold()
 	hud_elapsed += delta
 	if hud_elapsed >= 1.0 / Balance.HUD_RATE:
 		hud_elapsed = fmod(hud_elapsed, 1.0 / Balance.HUD_RATE)
@@ -169,6 +174,69 @@ func _on_shouted(slot: int, shout: int) -> void:
 		movers[slot].shout(Balance.SHOUTS[shout])
 
 
+func _apply_mission_mode() -> void:
+	# A mission arena is won by finishing its sequence rather than by filling the usual quota.
+	Game.mission_mode = "mission_mode" in arena and arena.mission_mode
+
+
+# --- The fuse box's wire puzzle (decision 158) ---
+func _on_puzzle_wanted(slot: int) -> void:
+	# A mover is holding GRAB at the fuse box: deal them a puzzle, once, and send it to their phone.
+	if wire_puzzle.open or slot < 0 or slot >= movers.size() or is_ghost_slot(slot):
+		return
+	wire_puzzle.start(slot, Game.round_seed)
+	_send_puzzle()
+	print("The wire puzzle opened on phone %d" % (slot + 1))
+
+
+func _on_wired(slot: int, left_pin: int, right_pin: int) -> void:
+	# Only the mover holding the puzzle can wire it, and only while they are still standing at the box.
+	if not wire_puzzle.open or slot != wire_puzzle.slot:
+		return
+	if not wire_puzzle.join(left_pin, right_pin):
+		Net.send_to_player(Net.player_for_slot(slot), {"type": "buzz", "ms": Balance.BUZZ_REFUSED_MS})
+		return
+	_send_puzzle()
+	if wire_puzzle.is_solved():
+		_close_puzzle(true)
+
+
+func _fuse_box() -> Node3D:
+	return arena.fuse_box if "fuse_box" in arena else null
+
+
+func _close_puzzle(solved: bool) -> void:
+	var slot: int = wire_puzzle.slot
+	var box: Node3D = _fuse_box()
+	wire_puzzle.stop()
+	if slot >= 0:
+		Net.send_to_player(Net.player_for_slot(slot), {"type": "wires", "open": false, "solved": solved})
+	if solved and is_instance_valid(box):
+		box.solved_puzzle()
+
+
+func _check_puzzle_hold() -> void:
+	# Walking away from the box drops the puzzle and the joins with it, so it cannot be solved from safety.
+	if not wire_puzzle.open:
+		return
+	var box: Node3D = _fuse_box()
+	var mover: CharacterBody3D = movers[wire_puzzle.slot] if wire_puzzle.slot < movers.size() else null
+	if not is_instance_valid(box) or not is_instance_valid(mover) or not mover.in_play:
+		_close_puzzle(false)
+		return
+	var reach: float = Vector2(mover.global_position.x - box.global_position.x, mover.global_position.z - box.global_position.z).length()
+	var still_there: bool = reach <= Balance.MISSION_FUSE_REACH + 0.4
+	if not still_there or Game.phase != "live":
+		_close_puzzle(false)
+
+
+func _send_puzzle() -> void:
+	var message: Dictionary = wire_puzzle.state()
+	message["type"] = "wires"
+	message["open"] = true
+	Net.send_to_player(Net.player_for_slot(wire_puzzle.slot), message)
+
+
 func ghost_near_level(mover: CharacterBody3D) -> int:
 	# 0 to 3: how close the free-flying ghost is to this mover. A ghost inside a prop is already marked by its glow.
 	if not is_instance_valid(ghost) or is_instance_valid(ghost.possessing) or not mover.in_play:
@@ -251,6 +319,7 @@ func setup_match_round(round_seed: int, participants: Array[int], ghost_slot: in
 	arena.player_count = participants.size()
 	arena.spawn_seed = round_seed
 	add_child(arena)
+	_apply_mission_mode()
 	_apply_arena_bounds()
 	for mover: CharacterBody3D in movers:
 		mover.position = _spawn_point(mover.slot)
@@ -278,8 +347,10 @@ func setup_getaway(participants: Array[int], round_seed: int) -> void:
 	remove_child(arena)
 	arena.free()
 	arena = GETAWAY_SCRIPT.new()
+	arena.add_to_group("arenas")
 	arena.spawn_seed = round_seed
 	add_child(arena)
+	_apply_mission_mode()
 	_apply_arena_bounds()
 	for mover: CharacterBody3D in movers:
 		mover.reset_for_round(_spawn_point(mover.slot), mover.slot in participants)
@@ -295,6 +366,7 @@ func _leave_getaway() -> void:
 	remove_child(arena)
 	arena.free()
 	arena = _arena_scene().instantiate()
+	arena.add_to_group("arenas")
 	add_child(arena)
 	_apply_arena_bounds()
 	camera.follow_movers = true

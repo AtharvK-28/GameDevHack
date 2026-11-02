@@ -42,6 +42,51 @@ const TASK_LABEL_HEIGHT: float = 1.4 # Metres above the generator zone.
 const BATTERY_RECOVERY_DEPTH: float = -3.0 # Metres; return a battery that escapes below the arena.
 const BATTERY_SEED_OFFSET: int = 7919 # Separate battery placement from the seeded loot selection.
 
+# --- Sabotage Showdown: the Mansion's mission (decision 158) ---
+# A sequence, not a quota: four steps, each shut until the one before it is done. The crew must find the gallery
+# key, take it to the fuse cupboard under the stairs, match the wires on the phone to put the power back on, and
+# only then can they get up the stairs for the strongbox. The ghost cannot touch the key at all; it works on the
+# crew instead, with the shake and shoved props it already has.
+const MISSION_STEPS: Array[Dictionary] = [
+	{"id": "key", "short": "FIND THE KEY", "text": "Find the gallery key somewhere in the house"},
+	{"id": "cupboard", "short": "OPEN THE CUPBOARD", "text": "Take the key to the fuse cupboard under the stairs"},
+	{"id": "wires", "short": "MATCH THE WIRES", "text": "Hold GRAB at the fuse box and match the wires on your phone"},
+	{"id": "haul", "short": "RUN THE STRONGBOX", "text": "Carry Seth-ji's strongbox down to the truck"},
+]
+const MISSION_KEY_SIZE := Vector3(0.3, 0.1, 0.5) # Metres; light, so one mover can run with it.
+const MISSION_KEY_COLOUR := Color("ffd04a")
+# One is picked per round by seed. All stand on the ground floor and outside the stair well (x 0-3, z 6-10), so
+# the key can never spawn behind the very gate it opens.
+const MISSION_KEY_SPOTS: Array[Vector3] = [ # x, floor height, z.
+	Vector3(6.2, 0.0, 8.0), Vector3(9.4, 0.0, 12.8), Vector3(5.0, 0.0, 13.6), Vector3(15.6, 0.0, 9.2),
+	Vector3(17.8, 0.0, 13.0), Vector3(13.2, 0.0, 7.4),
+]
+const MISSION_KEY_SEED_OFFSET: int = 4231 # Separate the key's spot from the loot and battery streams.
+# Measured clear of the Mansion dressing with .verification/clearance_probe.gd: at x 4.3 a mover cannot even
+# reach the cupboard, and x 5.0 upward is open with a clear walk-in from the south.
+const MISSION_CUPBOARD_AT := Vector3(5.0, 0.0, 8.8) # Beside the stair well, in the main room.
+# A carried item hangs HOLD_DISTANCE (1.25 m) in front of its carrier, so a zone narrower than that cannot be
+# delivered into by a mover standing on it. This matches the generator zone the Battery Run already uses.
+const MISSION_CUPBOARD_SIZE := Vector3(2.4, 2.0, 2.4) # The key's centre must be inside on release.
+const MISSION_FUSE_AT := Vector3(5.0, 0.0, 8.2) # The box at the back of the cupboard, revealed when its door swings.
+const MISSION_FUSE_SIZE := Vector3(0.5, 0.7, 0.25)
+const MISSION_FUSE_REACH: float = 1.3 # Metres (flat) within which GRAB opens the wire puzzle.
+const MISSION_GATE_AT := Vector3(1.5, 0.0, 10.0) # The iron gate across the foot of the stairs, their only way in.
+const MISSION_GATE_WIDTH: float = 3.0 # The stair well is exactly this wide.
+const MISSION_STRONGBOX_AT := Vector3(4.0, 1.2, 2.6) # On the gallery (z 0-6, floor 1.2), behind the gate.
+const MISSION_STRONGBOX_VALUE: int = 30000 # Rupees; the run is worth making.
+# The two-sided switch (requirement 5): movers throw the breaker by holding GRAB, the ghost possesses the box and
+# cuts the power with ACTION. Cutting it shuts the gate again, so anyone upstairs is stuck until it is thrown back.
+const MISSION_CUT_COST: float = 30.0 # Ghost energy to cut the power,
+const MISSION_CUT_COOLDOWN: float = 18.0 # and how long before it can be cut again.
+const MISSION_RESTORE_SECONDS: float = 1.0 # GRAB held at the box to throw the breaker back on.
+# The wire puzzle: MISSION_WIRE_PAIRS colours down each side, shuffled, matched by tapping one then the other.
+# Sized so a competent thumb is done in five to eight seconds. Walking away from the box drops it and loses the
+# joins, so the crew has to stand still where the ghost can reach them.
+const MISSION_WIRE_PAIRS: int = 4
+const MISSION_WIRE_COLOURS: Array[String] = ["#ff6a6a", "#67c8ff", "#ffe066", "#8ed081", "#c9a7ff"]
+const MISSION_WIRE_SEED_OFFSET: int = 3307
+
 # --- Controller cadence ---
 const INPUT_RATE: int = 30 # Messages per second, including idle heartbeats.
 const HUD_RATE: int = 8 # Messages per second in later gameplay phases.

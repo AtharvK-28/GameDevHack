@@ -212,6 +212,15 @@ function handleMessage(message) {
       elements["hex-text"].textContent = state === "on" ? "HEXED! Let go of the stick to shake it off" : "HEXED!";
       break;
     }
+    case "wires": {
+      // The fuse box's wire puzzle (decision 158): the host deals the colours and we send back each join.
+      if (!message.open) {
+        closeWires(Boolean(message.solved));
+        break;
+      }
+      drawWires(message);
+      break;
+    }
     case "cam": {
       // Museum CCTV: this mover is on camera (decision 138).
       const onCamera = Boolean(message.on) && activeRole === "mover";
@@ -578,6 +587,57 @@ function releaseButton(button) {
     buzz(pushed ? "throw" : "letGo");
   }
   send({ type: "btn", b: button.dataset.button, down: false });
+}
+
+// --- The wire puzzle ---
+let wirePick = -1; // The left pin waiting for its match, or -1.
+
+function drawWires(message) {
+  elements["wires"].hidden = false;
+  const joined = Array.isArray(message.joined) ? message.joined : [];
+  if (!Array.isArray(message.left) || !Array.isArray(message.right)) return;
+  wirePick = -1;
+  paintColumn(elements["wire-left"], message.left, index => joined[index] !== -1, index => pickLeft(index));
+  paintColumn(elements["wire-right"], message.right, index => joined.includes(index), index => pickRight(index));
+}
+
+function paintColumn(column, colours, isDone, onTap) {
+  column.replaceChildren();
+  colours.forEach((colour, index) => {
+    const pin = document.createElement("button");
+    pin.type = "button";
+    pin.className = "wire-pin" + (isDone(index) ? " done" : "");
+    pin.style.background = colour;
+    pin.disabled = isDone(index);
+    pin.addEventListener("pointerdown", event => {
+      event.preventDefault();
+      onTap(index);
+    });
+    column.appendChild(pin);
+  });
+}
+
+function pickLeft(index) {
+  wirePick = index;
+  buzz("ui");
+  for (const pin of elements["wire-left"].children) pin.classList.remove("picked");
+  elements["wire-left"].children[index].classList.add("picked");
+}
+
+function pickRight(index) {
+  // Nothing is decided here: the host owns the puzzle and answers with the new state, or a refusal buzz.
+  if (wirePick < 0) {
+    buzz("refused");
+    return;
+  }
+  send({ type: "wire", l: wirePick, r: index });
+  wirePick = -1;
+}
+
+function closeWires(solved) {
+  elements["wires"].hidden = true;
+  wirePick = -1;
+  buzz(solved ? "grab" : "letGo");
 }
 
 function buzzForButton(name) {
