@@ -10,6 +10,7 @@ signal role_changed(slot: int)
 signal session_changed
 signal shouted(slot: int, shout: int) # A phone tapped a shout; Main shows it over that mover.
 signal voted(pid: String, option: int) # An audience phone voted; AudienceVote counts it.
+signal wired(slot: int, left_pin: int, right_pin: int) # A phone joined two wires in the fuse-box puzzle (decision 158).
 
 # --- Protocol constants ---
 const BUTTONS: Array[String] = ["grab", "throw", "brace", "possess", "action", "haunt1", "haunt2", "haunt3"]
@@ -189,6 +190,16 @@ func _handle_message(connection: Dictionary, message: Dictionary) -> void:
 			var shout: Variant = message.get("s")
 			if shout is float and shout == floorf(shout) and int(shout) >= 0 and int(shout) < Balance.SHOUTS.size():
 				shouted.emit(player.slot, int(shout))
+		"wire":
+			var left_pin: Variant = message.get("l")
+			var right_pin: Variant = message.get("r")
+			if _is_pin(left_pin) and _is_pin(right_pin):
+				wired.emit(player.slot, int(left_pin), int(right_pin))
+
+
+func _is_pin(value: Variant) -> bool:
+	# A wire pin index: a whole number inside the puzzle's own range, so a junk message can never reach the puzzle.
+	return value is float and value == floorf(value) and int(value) >= 0 and int(value) < Balance.MISSION_WIRE_PAIRS
 
 
 func _join(connection: Dictionary, message: Dictionary) -> void:
