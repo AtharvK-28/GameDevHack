@@ -167,6 +167,9 @@ func _check_ending(arena_label: String) -> void:
 	_check(rows.size() == 3 and sorted_rows, "%s: all three players are ranked, highest first" % arena_label)
 	_check(not _last(0, "final").is_empty(), "%s: the phone is shown the standings" % arena_label)
 	await _key(KEY_ENTER)
+	if arena_label == "Museum": # The Museum's ending opens with The Getaway (decision 147); Esc skips to the epilogue.
+		_check(game.phase == "live" and game.getaway, "Museum: Enter opens The Getaway before the ending")
+		await _key(KEY_ESCAPE)
 	_check(game.phase == "outro", "%s: Enter plays this arena's own ending" % arena_label)
 	await _key(KEY_ESCAPE)
 	await _wait(INPUT_SECONDS)

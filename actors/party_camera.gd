@@ -7,6 +7,7 @@ extends Camera3D
 
 # --- Settings ---
 var arena_yaw: float = Balance.CAMERA_YAW
+var pitch_degrees: float = Balance.CAMERA_ANGLE
 var limit_overview: bool = false
 var follow_movers: bool = false # Off for the fixed regression view; the match turns it on.
 var bounds: Rect2 = Balance.CAMERA_BOUNDS # The x/z area the focus may move within; set from the arena.
@@ -165,7 +166,7 @@ func _update_wall_fade(delta: float) -> void:
 
 
 func _place(offset: Vector3, roll: float) -> void:
-	var pitch: float = deg_to_rad(Balance.CAMERA_ANGLE)
+	var pitch: float = deg_to_rad(pitch_degrees)
 	var yaw: float = deg_to_rad(arena_yaw)
 	var back := Vector3(sin(yaw) * cos(pitch), sin(pitch), cos(yaw) * cos(pitch))
 	look_at_from_position(focus + back * distance, focus)

@@ -14,7 +14,9 @@ const GREYBOX_SCENE := preload("res://arenas/Greybox.tscn")
 const WINDOW_KEYS := preload("res://core/window_keys.gd")
 const DEV_TOOLS := preload("res://core/dev_tools.gd")
 const DISASTER_REPLAY := preload("res://screens/disaster_replay.gd")
-const WIPE_PHASES: Array[String] = ["lobby", "intro", "reveal", "result", "final", "outro"]
+const GETAWAY_END := preload("res://screens/getaway_end.gd")
+const GETAWAY_SCRIPT := preload("res://arenas/getaway.gd")
+const WIPE_PHASES: Array[String] = ["lobby", "intro", "reveal", "result", "final", "outro", "saved"]
 const SCREEN_SCENES: Array[PackedScene] = [
 	preload("res://screens/HUD.tscn"), preload("res://screens/Lobby.tscn"), preload("res://screens/RoleReveal.tscn"),
 	preload("res://screens/RoundEnd.tscn"), preload("res://screens/Results.tscn"),
@@ -270,9 +272,40 @@ func setup_match_round(round_seed: int, participants: Array[int], ghost_slot: in
 	print("Round set up: seed %d, ghost is player %d" % [round_seed, ghost_slot + 1])
 
 
+func setup_getaway(participants: Array[int], round_seed: int) -> void:
+	# The finale: the truck replaces the arena, and everyone is a mover (decision 147).
+	_remove_ghost()
+	remove_child(arena)
+	arena.free()
+	arena = GETAWAY_SCRIPT.new()
+	arena.spawn_seed = round_seed
+	add_child(arena)
+	_apply_arena_bounds()
+	for mover: CharacterBody3D in movers:
+		mover.reset_for_round(_spawn_point(mover.slot), mover.slot in participants)
+	Loot.lone_mover = false
+	arena.take_camera(camera)
+	for slot: int in participants:
+		Net.set_role(slot, "mover", arena.ARENA_NAME)
+	camera.snap()
+
+
+func _leave_getaway() -> void:
+	# Back to the chosen map under the lobby, and the usual camera.
+	remove_child(arena)
+	arena.free()
+	arena = _arena_scene().instantiate()
+	add_child(arena)
+	_apply_arena_bounds()
+	camera.follow_movers = true
+	camera.pitch_degrees = Balance.CAMERA_ANGLE
+
+
 func reset_for_lobby() -> void:
 	# Between matches: no ghost and no movers on the board; players appear when a round starts.
 	_remove_ghost()
+	if arena.get_script() == GETAWAY_SCRIPT:
+		_leave_getaway()
 	for mover: CharacterBody3D in movers:
 		mover.reset_for_round(_spawn_point(mover.slot), false)
 	camera.snap()
@@ -372,6 +405,7 @@ func _build_match_screens() -> void:
 	for scene: PackedScene in SCREEN_SCENES:
 		canvas.add_child(scene.instantiate())
 	canvas.add_child(DISASTER_REPLAY.new()) # Over the screens: it plays before the round-end page shows.
+	canvas.add_child(GETAWAY_END.new())
 	Game.changed.connect(_wipe_on_new_screen)
 
 

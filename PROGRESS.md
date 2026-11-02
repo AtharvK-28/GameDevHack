@@ -201,6 +201,12 @@ Decision 149's readability and feel pass is in; its suite run and human look are
 - [x] `core/e2e_check.gd` (decision 155): all three arenas, lobby to ending, with a real phone and a bot crew.
   93 assertions. On the Mansion a round is played out in full; the bots banked 5 items for ₹27,084.
 - [x] Ambience turned down without turning the game down (decision 156).
+- [x] The Getaway, demo cut (decision 147, 2026-11-01; merged into `main` on 2026-11-02 at the user's request): the 60 s
+  playable finale after a Museum match, with Seth-ji's vases, the Captain's waves, Bahadur's searchlight and GOLD SAVED.
+  Rendered at each stage. With idle stand-ins 12–69% of the gold survives. New suite `core/getaway_check.gd`, 19
+  assertions. `core/e2e_check.gd` now goes through it on the Museum. On the merged code the getaway, story, plumbing,
+  carrying, team carry, ghost, match and end-to-end suites pass; the other suites were not rerun. A human playtest is
+  still to do.
 - [ ] Gust of Wind and Lights Out
 - [x] Mover and ghost character models integrated (brought forward; visual acceptance pending)
 - [x] Party camera and Mansion wall fade implemented (human acceptance pending)

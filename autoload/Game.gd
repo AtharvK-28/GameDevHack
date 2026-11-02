@@ -37,6 +37,8 @@ var goals: RefCounted = ROUND_GOALS.new() # This round's stars and bonus goals (
 var smash_ready_at: int = 0 # Ticks (ms) before another big-smash punch-in may play.
 var slow_until: int = 0 # Ticks (ms) when the current punch-in's slow motion ends.
 var normal_speed: float = 1.0 # Live play's game speed; developer mode changes it (decision 121).
+var getaway: bool = false # The Getaway is running (decision 147): live play, with no ghost, no goals and no scoring.
+var getaway_result: Dictionary = {} # {saved, total, stars}, for the GOLD SAVED page.
 var replay: Array[Dictionary] = [] # Disaster Cam clips to show before this result page (decision 144); empty once shown.
 
 # --- Setup ---
@@ -161,8 +163,12 @@ func _process(delta: float) -> void:
 			_set_phase("live")
 	elif phase == "live":
 		seconds_left = maxf(0.0, seconds_left - delta)
-		goals.update()
-		_evaluate_round()
+		if getaway:
+			if seconds_left <= 0.0:
+				finish_getaway()
+		else:
+			goals.update()
+			_evaluate_round()
 	broadcast_left -= delta
 	if broadcast_left <= 0.0:
 		broadcast_left = 1.0 / Balance.HUD_RATE
@@ -219,6 +225,9 @@ func _on_delivered(value: int, carrier_slots: Array[int]) -> void:
 func _finish_round(movers_won: bool, reason: String) -> void:
 	if phase != "live":
 		return
+	if getaway: # Developer mode's Ctrl+W and Ctrl+L end the finale instead.
+		finish_getaway()
+		return
 	goals.finish()
 	var stars: int = ROUND_GOALS.stars_for(banked_value, starting_value, delivery_percent()) if movers_won else 0
 	var goal_met: bool = goals.goal.get("state") == "met"
@@ -274,8 +283,37 @@ func _disaster_cam_call(method: String, fallback: Variant = null, arguments: Arr
 
 # --- The story's ending ---
 func play_ending() -> void:
-	# From the final results: the arena's ending plays, then the lobby.
-	if phase == "final" and replay.is_empty():
+	# From the final results: the arena's ending plays, then the lobby. The Museum's opens with The Getaway.
+	if phase != "final" or not replay.is_empty():
+		return
+	if selected_arena == MUSEUM_ARENA:
+		_begin_getaway()
+	else:
+		_set_phase("outro")
+
+
+func _begin_getaway() -> void:
+	_set_phase("setup")
+	getaway = true
+	ghost_slot = -1
+	seconds_left = Balance.GETAWAY_SECONDS
+	Sfx.stop_ambient()
+	UiMotion.flash()
+	host.setup_getaway(participants, randi())
+	_set_phase("live")
+	_players_changed()
+
+
+func finish_getaway(skipped: bool = false) -> void:
+	# Time is up, or the gold is all gone; Esc skips straight to the epilogue.
+	if not getaway or phase != "live":
+		return
+	getaway_result = host.arena.gold_result()
+	_set_phase("outro" if skipped else "saved")
+
+
+func finish_saved() -> void:
+	if phase == "saved":
 		_set_phase("outro")
 
 
@@ -388,6 +426,7 @@ func return_to_lobby() -> void:
 	ghost_slot = -1
 	replay.clear()
 	_disaster_cam_call("forget_match")
+	getaway = false
 	for player: Dictionary in Net.players:
 		player.ready = false
 		player.role = ""
