@@ -207,6 +207,11 @@ Decision 149's readability and feel pass is in; its suite run and human look are
   assertions. `core/e2e_check.gd` now goes through it on the Museum. On the merged code the getaway, story, plumbing,
   carrying, team carry, ghost, match and end-to-end suites pass; the other suites were not rerun. A human playtest is
   still to do.
+- [x] `tools/video_autoplay.gd` (2026-11-02): plays one full round for a screen recording, with Another as the ghost and
+  Atharv, Aditya and Tanish as the movers, through the real stand-in sockets and bot crew. The Getaway has no route map,
+  so the script plays it itself, with all four as movers. Esc is ignored during play so a stray key can't ruin a take.
+  Full rounds rehearsed in a window at ×1: Ship seed 2 (8 items, 58-59% against a 65% target, a loss) and the Getaway
+  seed 3 (₹28,500 of ₹46,500, 2 stars). Outcomes vary run to run on one seed. No game code changed.
 - [ ] Gust of Wind and Lights Out
 - [x] Mover and ghost character models integrated (brought forward; visual acceptance pending)
 - [x] Party camera and Mansion wall fade implemented (human acceptance pending)
