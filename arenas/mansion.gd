@@ -260,6 +260,11 @@ func _spawn_mission() -> void:
 	mission.finished.connect(_on_mission_finished)
 
 
+func can_reach(point: Vector3) -> bool:
+	# For the bots: the stairs and gallery are out of reach while the stair gate is shut.
+	return not is_instance_valid(stair_gate) or not stair_gate.shut or is_zero_approx(floor_height_at(point))
+
+
 func _key_spot() -> Vector3:
 	# One spot a round, from its own seeded stream so the key never shifts the loot or the battery placement.
 	var random := RandomNumberGenerator.new()

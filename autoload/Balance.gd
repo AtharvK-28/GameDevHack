@@ -73,6 +73,8 @@ const MISSION_FUSE_SIZE := Vector3(0.5, 0.7, 0.25)
 const MISSION_FUSE_REACH: float = 1.3 # Metres (flat) within which GRAB opens the wire puzzle.
 const MISSION_GATE_AT := Vector3(1.5, 0.0, 10.0) # The iron gate across the foot of the stairs, their only way in.
 const MISSION_GATE_WIDTH: float = 3.0 # The stair well is exactly this wide.
+const MISSION_GATE_HINGE_INSET: float = 0.16 # Metres from the wall's centre line to the hinge, just clear of its face.
+const MISSION_GATE_OPEN_ANGLE: float = 90.0 # Degrees: up the stairs and flat to the wall; the room side has the TV cabinet.
 const MISSION_STRONGBOX_AT := Vector3(4.0, 1.2, 2.6) # On the gallery (z 0-6, floor 1.2), behind the gate.
 const MISSION_STRONGBOX_VALUE: int = 30000 # Rupees; the run is worth making.
 # The two-sided switch (requirement 5): movers throw the breaker by holding GRAB, the ghost possesses the box and

@@ -3,35 +3,38 @@
 # and the two-person item's path to the truck with a stand at each end. Geometry, not tuning.
 extends RefCounted
 
-const ROUTES: Dictionary = {
-	"res://arenas/Mansion.tscn": {
-		"nodes": {
-			"g_stairs": Vector3(1.5, 1.2, 4.6), "g_west": Vector3(3.4, 1.2, 4.6), "g_lib": Vector3(6.6, 1.2, 4.6),
-			"g_mid": Vector3(10.0, 1.2, 5.0), "g_hall": Vector3(12.4, 1.2, 4.4), "g_bed": Vector3(15.0, 1.2, 3.4),
-			"g_tv": Vector3(18.0, 1.2, 3.0),
-			"m_west": Vector3(1.5, 0.0, 11.6), "m_centre": Vector3(5.5, 0.0, 11.5), "m_north": Vector3(7.0, 0.0, 8.6),
-			"m_east": Vector3(11.0, 0.0, 11.0), "m_door": Vector3(7.75, 0.0, 13.4),
-			"k_door": Vector3(13.2, 0.0, 11.0), "k_centre": Vector3(15.5, 0.0, 9.2), "k_east": Vector3(18.0, 0.0, 12.0),
-			"k_corner": Vector3(18.0, 0.0, 13.9),
-			"o_porch": Vector3(7.75, 0.0, 16.6), "o_path": Vector3(7.75, 0.0, 19.5), "truck": Vector3(7.75, 0.0, 21.2),
-			"o_gate": Vector3(9.0, 0.0, 16.5), "gd_in": Vector3(11.2, 0.0, 16.5), "gd_path": Vector3(12.8, 0.0, 18.0),
-			"gd_east": Vector3(16.6, 0.0, 16.4),
-		},
-		"edges": [
-			["g_stairs", "g_west"], ["g_west", "g_lib"], ["g_lib", "g_mid"], ["g_mid", "g_hall"], ["g_hall", "g_bed"],
-			["g_bed", "g_tv"], ["g_stairs", "m_west"], ["m_west", "m_centre"], ["m_centre", "m_north"],
-			["m_centre", "m_door"], ["m_centre", "m_east"], ["m_north", "m_east"], ["m_east", "m_door"],
-			["m_east", "k_door"], ["k_door", "k_centre"], ["k_door", "k_east"], ["k_centre", "k_east"],
-			["k_east", "k_corner"], ["m_door", "o_porch"], ["o_porch", "o_path"], ["o_path", "truck"],
-			["o_porch", "o_gate"], ["o_gate", "gd_in"], ["gd_in", "gd_path"], ["gd_in", "gd_east"], ["gd_path", "gd_east"],
-		],
-		"delivery": Vector3(7.75, 0.0, 22.6), # On the driveway at the tailgate.
-		"pair_path": [
-			Vector2(6.5, 3.6), Vector2(2.7, 3.8), Vector2(1.6, 7.0), Vector2(1.5, 11.8), Vector2(4.5, 12.8),
-			Vector2(7.75, 13.4), Vector2(7.75, 16.8), Vector2(7.75, 19.8), Vector2(7.75, 21.6),
-		],
-		"pair_stands": [Vector3(7.85, 1.2, 3.0), Vector3(12.15, 1.2, 3.0)], # The piano's west and east ends.
+const MANSION: Dictionary = {
+	"nodes": {
+		"g_stairs": Vector3(1.5, 1.2, 4.6), "g_west": Vector3(3.4, 1.2, 4.6), "g_lib": Vector3(6.6, 1.2, 4.6),
+		"g_mid": Vector3(10.0, 1.2, 5.0), "g_hall": Vector3(12.4, 1.2, 4.4), "g_bed": Vector3(15.0, 1.2, 3.4),
+		"g_tv": Vector3(18.0, 1.2, 3.0),
+		"m_west": Vector3(1.5, 0.0, 11.6), "m_centre": Vector3(5.5, 0.0, 11.5), "m_north": Vector3(7.0, 0.0, 8.6),
+		"m_east": Vector3(11.0, 0.0, 11.0), "m_door": Vector3(7.75, 0.0, 13.4),
+		"k_door": Vector3(13.2, 0.0, 11.0), "k_centre": Vector3(15.5, 0.0, 9.2), "k_east": Vector3(18.0, 0.0, 12.0),
+		"k_corner": Vector3(18.0, 0.0, 13.9),
+		"o_porch": Vector3(7.75, 0.0, 16.6), "o_path": Vector3(7.75, 0.0, 19.5), "truck": Vector3(7.75, 0.0, 21.2),
+		"o_gate": Vector3(9.0, 0.0, 16.5), "gd_in": Vector3(11.2, 0.0, 16.5), "gd_path": Vector3(12.8, 0.0, 18.0),
+		"gd_east": Vector3(16.6, 0.0, 16.4),
 	},
+	"edges": [
+		["g_stairs", "g_west"], ["g_west", "g_lib"], ["g_lib", "g_mid"], ["g_mid", "g_hall"], ["g_hall", "g_bed"],
+		["g_bed", "g_tv"], ["g_stairs", "m_west"], ["m_west", "m_centre"], ["m_centre", "m_north"],
+		["m_centre", "m_door"], ["m_centre", "m_east"], ["m_north", "m_east"], ["m_east", "m_door"],
+		["m_east", "k_door"], ["k_door", "k_centre"], ["k_door", "k_east"], ["k_centre", "k_east"],
+		["k_east", "k_corner"], ["m_door", "o_porch"], ["o_porch", "o_path"], ["o_path", "truck"],
+		["o_porch", "o_gate"], ["o_gate", "gd_in"], ["gd_in", "gd_path"], ["gd_in", "gd_east"], ["gd_path", "gd_east"],
+	],
+	"delivery": Vector3(7.75, 0.0, 22.6), # On the driveway at the tailgate.
+	"pair_path": [
+		Vector2(6.5, 3.6), Vector2(2.7, 3.8), Vector2(1.6, 7.0), Vector2(1.5, 11.8), Vector2(4.5, 12.8),
+		Vector2(7.75, 13.4), Vector2(7.75, 16.8), Vector2(7.75, 19.8), Vector2(7.75, 21.6),
+	],
+	"pair_stands": [Vector3(7.85, 1.2, 3.0), Vector3(12.15, 1.2, 3.0)], # The piano's west and east ends.
+}
+
+const ROUTES: Dictionary = {
+	"res://arenas/Mansion.tscn": MANSION,
+	"res://arenas/MansionMission.tscn": MANSION, # The same house; bots walk it but have no mission logic.
 	"res://arenas/Ship.tscn": {
 		"nodes": {
 			"q_back": Vector3(3.5, 1.2, 2.6), "q_mid": Vector3(4.6, 1.2, 6.0), "q_front": Vector3(3.5, 1.2, 9.4),

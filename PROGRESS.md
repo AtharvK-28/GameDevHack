@@ -222,6 +222,18 @@ Decision 149's readability and feel pass is in; its suite run and human look are
   `core/wire_puzzle.gd`), so each is a set of spots, a switch and a re-skinned puzzle. Place their props with
   `.verification/clearance_probe.gd` rather than by reading the layout: the Mansion's first cupboard spot was
   unreachable behind the dressing, and only a probe showed it.
+- [x] One Old Mansion card, the stair gate and the bots (decisions 159 and 160, 2026-11-02): the Mansion's card opens the
+  mission and the Sabotage Showdown card is gone; the gate hinges at the left wall and folds up the stairs (rendered);
+  bots walk the mission scene and keep off the gallery while the gate is shut. On the merged code the mission (41), wire
+  (12), bot crew (15), story (44), match (73), plumbing (73), end-to-end (98) and UI (211) suites pass; the others were not
+  rerun.
+- [ ] Bots have no mission logic, so a bot crew cannot finish the Mansion: every bot round there is a timeout loss, and
+  the Mansion video needs people playing, or new bot work.
+- [ ] The in-game guide, `README.md` and `JUDGE_HANDOUT.md` still describe the Mansion's batteries and delivery target.
+- [ ] Bots stall on the two-person item. With two movers both spend the round on it (`bot_crew_check` banks ₹0 on the
+  Ship and the plain Mansion, the same before and after decision 160). On the Ship a holder loses their grip at the
+  90-degree turn by the gangplank and sometimes cannot take it again. A way-clearing change and a `--trace` flag for
+  `tools/video_autoplay.gd` are parked in a Git stash, unproven.
 - [ ] Gust of Wind and Lights Out
 - [x] Mover and ghost character models integrated (brought forward; visual acceptance pending)
 - [x] Party camera and Mansion wall fade implemented (human acceptance pending)

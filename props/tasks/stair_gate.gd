@@ -18,6 +18,9 @@ func _ready() -> void:
 	collision_layer = Balance.WORLD_LAYER
 	collision_mask = 0
 	add_child(leaf)
+	# The hinge is at the wall end, so the leaf folds flat against the wall instead of spinning about its middle.
+	leaf.position.x = Balance.MISSION_GATE_HINGE_INSET - Balance.MISSION_GATE_WIDTH / 2.0
+	var length: float = Balance.MISSION_GATE_WIDTH - Balance.MISSION_GATE_HINGE_INSET
 	var iron := StandardMaterial3D.new()
 	iron.albedo_color = Balance.FURNITURE_COLOURS[1].darkened(0.45) # Wrought iron, darker than the furniture grey.
 	iron.metallic = 0.7
@@ -31,15 +34,15 @@ func _ready() -> void:
 		rod.height = height
 		bar.mesh = rod
 		bar.material_override = iron
-		bar.position = Vector3(Balance.MISSION_GATE_WIDTH * (float(index) / (BAR_COUNT - 1) - 0.5), height / 2.0, 0.0)
+		bar.position = Vector3(length * float(index) / (BAR_COUNT - 1), height / 2.0, 0.0)
 		leaf.add_child(bar)
 	for rail: float in [0.12, height - 0.12]: # Top and bottom rails tie the bars together.
 		var bar := MeshInstance3D.new()
 		var rod := BoxMesh.new()
-		rod.size = Vector3(Balance.MISSION_GATE_WIDTH, BAR_RADIUS * 2.0, BAR_RADIUS * 2.0)
+		rod.size = Vector3(length, BAR_RADIUS * 2.0, BAR_RADIUS * 2.0)
 		bar.mesh = rod
 		bar.material_override = iron
-		bar.position = Vector3(0.0, rail, 0.0)
+		bar.position = Vector3(length / 2.0, rail, 0.0)
 		leaf.add_child(bar)
 
 	var box := BoxShape3D.new()
@@ -56,6 +59,6 @@ func set_shut(closed: bool) -> void:
 	shut = closed
 	blocker.set_deferred("disabled", not closed) # Deferred: the shape cannot change mid physics step.
 	var swing := leaf.create_tween()
-	swing.tween_property(leaf, "rotation:y", 0.0 if closed else deg_to_rad(-95.0), SWING_SECONDS)
+	swing.tween_property(leaf, "rotation:y", 0.0 if closed else deg_to_rad(Balance.MISSION_GATE_OPEN_ANGLE), SWING_SECONDS)
 	Sfx.play("creak", 0.8 if closed else 1.1)
 	print("The stair gate is %s" % ("shut" if closed else "open"))

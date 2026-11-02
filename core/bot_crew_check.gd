@@ -4,11 +4,12 @@
 # the ghost see to that), so the score is printed, not judged. -- --trace adds a log.
 extends "res://core/match_check.gd"
 
-const ARENAS: Array[String] = ["res://arenas/Ship.tscn", "res://arenas/Mansion.tscn"]
+const ARENAS: Array[String] = ["res://arenas/Ship.tscn", "res://arenas/Mansion.tscn", "res://arenas/MansionMission.tscn"]
+const MISSION_ARENA: String = "res://arenas/MansionMission.tscn" # The stair gate keeps bots off the gallery and its two-person items.
 const SPEED: float = 3.0
 const SPEED_ARGUMENT: String = "--speed=" # -- --speed=1 plays at normal speed instead.
 const ROUND_TIMEOUT: float = 200.0 # Real seconds: a 150 s round at ×1, with room for a slow machine.
-const ROUND_SEEDS: Array[int] = [3, 11] # Match seeds: the same loot each run.
+const ROUND_SEEDS: Array[int] = [3, 11, 7] # Match seeds: the same loot each run.
 
 func _run() -> void:
 	game = root.get_node("Game")
@@ -77,7 +78,10 @@ func _play_round(arena_path: String, round_seed: int) -> void:
 		"carried along its path" if pair_moved else "not moved"])
 	_check(game.phase == "result", "%s: the bots play the round to its end" % name)
 	_check(carried, "%s: mover bots pick up loot" % name)
-	_check(pair_moved, "%s: two mover bots carry the two-person item along its path" % name)
+	if arena_path == MISSION_ARENA:
+		_check(deliveries[0] > 0, "%s: with the gallery shut, the bots still deliver loot from downstairs (%d)" % [name, deliveries[0]])
+	else:
+		_check(pair_moved, "%s: two mover bots carry the two-person item along its path" % name)
 	_check(haunted and possessed, "%s: the ghost bot haunts and possesses (haunted %s, possessed %s)" % [name, haunted, possessed])
 	_check(is_equal_approx(Engine.time_scale, 1.0), "%s: the round end runs at normal speed" % name)
 	game.return_to_lobby()

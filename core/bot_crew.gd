@@ -98,7 +98,7 @@ func _start_round() -> void:
 	for item: Node in get_tree().get_nodes_in_group("loot"):
 		if item.weight_class == Balance.TWO_PERSON:
 			pair_item = item
-	if pair_item == null or bots.size() < 2:
+	if pair_item == null or bots.size() < 2 or not _reachable(pair_item.global_position):
 		return
 	var stands: Array = route_map.pair_stands
 	for index: int in range(2):
@@ -161,7 +161,7 @@ func _choose_item(bot: Bot) -> void:
 	for item: Node in get_tree().get_nodes_in_group("loot"):
 		if item == pair_item or item.finished or item.is_held() or item.haunted or _delivered(item):
 			continue
-		if bot.give_up.get(item, -1.0) > live_time or _claimed(item, bot):
+		if bot.give_up.get(item, -1.0) > live_time or _claimed(item, bot) or not _reachable(item.global_position):
 			continue
 		var trip: float = bot.mover.global_position.distance_to(item.global_position) + item.global_position.distance_to(route_map.delivery)
 		var score: float = item.value / (trip + 8.0)
@@ -175,6 +175,11 @@ func _choose_item(bot: Bot) -> void:
 	bot.stuck_count = 0
 	bot.grab_total = 0.0
 	bot.route = _route_to(bot.mover.global_position, _stand_point(best))
+
+
+func _reachable(point: Vector3) -> bool:
+	# An arena may wall part of itself off, like the Mansion's stair gate; a bot walking at it would stand there.
+	return not host.arena.has_method("can_reach") or host.arena.can_reach(point)
 
 
 func _bot_fetch(bot: Bot, delta: float) -> void:

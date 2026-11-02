@@ -676,12 +676,14 @@ The Ship catalog contains 19 items worth 78500 rupees: chest 18000 (two-person, 
 
 **The Captain's parrot (decision 127).** Walk it, don't run. Carried at 85% or more of the carrier's full speed for 1.5 s, it shows "SQUAWK!", squawks and buzzes the carrier's phone; 1.0 s more and it flies off. Slowing below 85% resets the count. A throw, a knock above the damage threshold or the sea also make it fly off; it never loses value. It flies a 2 s, 3 m high arc to a random free perch at least 6 m away (the layout's `spawns.perches`); in flight it cannot be grabbed or possessed. On the tug it banks like any loot. Numbers live in `Balance.gd` (`PARROT_*`).
 
-**The Sabotage Showdown (decision 158).** A fourth map card, `arenas/MansionMission.tscn`: the Old Mansion with
-`mission_mode` on, which spawns a mission instead of the Battery Run. Four steps, each shut until the one before
+**The Sabotage Showdown (decisions 158 and 159).** The Old Mansion's map card, `arenas/MansionMission.tscn`: the
+house with `mission_mode` on, which spawns a mission instead of the Battery Run. There is no separate card, so the
+Mansion is always played this way; plain `Mansion.tscn` stays for the title screen and the checks, and bots walk the
+mission scene on the same route map but have no mission logic. Four steps, each shut until the one before
 it is done: find the gallery key (one of six seeded spots, all outside the stair well), carry it to the fuse
 cupboard beside the stairs, match four pairs of wires on the phone, then haul Seth-ji's strongbox (30,000) down
 from the gallery to the truck. An iron gate across the foot of the stairs is solid to movers and loot until the
-power is on. The fuse box is a switch both sides work: movers hold GRAB to throw the breaker, the ghost possesses
+power is on, when it swings up the stairs and lies flat to the left wall (decision 160). The fuse box is a switch both sides work: movers hold GRAB to throw the breaker, the ghost possesses
 it and ACTION cuts the power (30 energy, 18 s cooldown), shutting the gate again. The ghost may not touch the key.
 The round is won by finishing the mission and lost only to the clock. Protocol: host to phone
 `{"type":"wires","open":true,"left":[..],"right":[..],"joined":[..]}`, phone to host `{"type":"wire","l":i,"r":j}`;
