@@ -313,6 +313,7 @@ func _check_rotation_and_timeout() -> void:
 func _check_disconnect() -> void:
 	await _key(KEY_ENTER)
 	await _wait_for_phase("live")
+	var role_before: String = net.player_for_slot(1).role # Decision 162 reshuffles each lap, so the role is read, not assumed.
 	clients[1].close()
 	await _wait_for_phase("paused")
 	_check(game.phase == "paused" and paused and String(game.pause_reason).contains("Bilal"), "A missing phone pauses the round: \"%s\"" % game.pause_reason)
@@ -322,7 +323,7 @@ func _check_disconnect() -> void:
 	_check(_last(0, "match").get("phase") == "paused", "The other phone shows the pause")
 	await _reconnect_phone(1)
 	await _wait_for_phase("live")
-	_check(game.phase == "live" and _last(1, "role").get("role") == "mover", "Rejoining with the same browser resumes the round with the same role")
+	_check(game.phase == "live" and _last(1, "role").get("role") == role_before, "Rejoining with the same browser resumes the round with the same role (%s)" % role_before)
 
 	clients[1].close()
 	await _wait_for_phase("paused")
@@ -416,6 +417,7 @@ func _key(key: Key) -> void:
 	for pressed: bool in [true, false]:
 		var event := InputEventKey.new()
 		event.physical_keycode = key
+		event.keycode = key # A real key sets both; ui_* actions such as the briefing's ui_cancel match on keycode.
 		event.pressed = pressed
 		Input.parse_input_event(event)
 		await _frame()
@@ -425,6 +427,7 @@ func _key(key: Key) -> void:
 func _skip_briefing() -> void:
 	# A map with an arena briefing (decision 155) holds the "intro" phase for a few seconds after the story ends.
 	# Checks that only want the round skip past it; e2e_check looks at it first.
+	await _wait(INPUT_SECONDS) # The briefing appears a frame after the story ends; look after it has had the chance.
 	var briefing: Node = get_first_node_in_group("arena_briefing")
 	if briefing != null and briefing.visible:
 		await _key(KEY_ESCAPE)

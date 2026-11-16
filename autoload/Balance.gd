@@ -43,16 +43,17 @@ const BATTERY_RECOVERY_DEPTH: float = -3.0 # Metres; return a battery that escap
 const BATTERY_SEED_OFFSET: int = 7919 # Separate battery placement from the seeded loot selection.
 
 # --- Sabotage Showdown: the Mansion's mission (decision 158) ---
-# A sequence, not a quota: four steps, each shut until the one before it is done. The crew must find the gallery
-# key, take it to the fuse cupboard under the stairs, match the wires on the phone to put the power back on, and
-# only then can they get up the stairs for the strongbox. The ghost cannot touch the key at all; it works on the
-# crew instead, with the shake and shoved props it already has.
+# A sequence on top of the quota (decision 161): three steps, each shut until the one before it is done. The crew must
+# find the gallery key, take it to the fuse cupboard under the stairs and match the wires on the phone to put the
+# power back on. That opens the stairs, and the round plays on as usual: the piano and the rest to the truck. The
+# ghost cannot touch the key at all; it works on the crew instead, with the shake and shoved props it already has.
 const MISSION_STEPS: Array[Dictionary] = [
 	{"id": "key", "short": "FIND THE KEY", "text": "Find the gallery key somewhere in the house"},
 	{"id": "cupboard", "short": "OPEN THE CUPBOARD", "text": "Take the key to the fuse cupboard under the stairs"},
 	{"id": "wires", "short": "MATCH THE WIRES", "text": "Hold GRAB at the fuse box and match the wires on your phone"},
-	{"id": "haul", "short": "RUN THE STRONGBOX", "text": "Carry Seth-ji's strongbox down to the truck"},
 ]
+const MISSION_DONE_HUD: String = "POWER ON: REACH THE TARGET"
+const MISSION_DONE_PHONE: String = "Power on! The gallery is open. Get the loot to the truck"
 const MISSION_KEY_SIZE := Vector3(0.3, 0.1, 0.5) # Metres; light, so one mover can run with it.
 const MISSION_KEY_COLOUR := Color("ffd04a")
 # One is picked per round by seed. All stand on the ground floor and outside the stair well (x 0-3, z 6-10), so
@@ -75,8 +76,6 @@ const MISSION_GATE_AT := Vector3(1.5, 0.0, 10.0) # The iron gate across the foot
 const MISSION_GATE_WIDTH: float = 3.0 # The stair well is exactly this wide.
 const MISSION_GATE_HINGE_INSET: float = 0.16 # Metres from the wall's centre line to the hinge, just clear of its face.
 const MISSION_GATE_OPEN_ANGLE: float = 90.0 # Degrees: up the stairs and flat to the wall; the room side has the TV cabinet.
-const MISSION_STRONGBOX_AT := Vector3(4.0, 1.2, 2.6) # On the gallery (z 0-6, floor 1.2), behind the gate.
-const MISSION_STRONGBOX_VALUE: int = 30000 # Rupees; the run is worth making.
 # The two-sided switch (requirement 5): movers throw the breaker by holding GRAB, the ghost possesses the box and
 # cuts the power with ACTION. Cutting it shuts the gate again, so anyone upstairs is stuck until it is thrown back.
 const MISSION_CUT_COST: float = 30.0 # Ghost energy to cut the power,
@@ -331,8 +330,10 @@ const LOOT_ANGULAR_DAMP: float = 1.0
 const LOOT_FRICTION: float = 0.6
 const LOOT_BOUNCE: float = 0.1
 const LIGHT_LOOT_BOUNCE: float = 0.3 # Light items skitter when dropped (goofy physics).
-const THROW_SPEED: float = 7.0 # Metres per second added in the facing direction.
-const THROW_LIFT: float = 2.0 # Metres per second upwards.
+const THROW_SPEED: float = 4.5 # Metres per second added in the facing direction (7.0 before decision 162).
+const THROW_LIFT: float = 1.5 # Metres per second upwards (2.0 before decision 162).
+const THROW_REST_STICK: float = 0.2 # Stick tilt, 0 to 1, below which the stick counts as back at its centre.
+const THROW_FLICK_WINDOW: float = 0.3 # Seconds from leaving the centre to letting go, for it to count as a flick.
 # Decision 151: the THROW button was unreachable. Carrying pins one thumb on GRAB and the other on the stick, so
 # there was no thumb left to tap with. Letting go of GRAB with the stick pushed now throws the item that way;
 # letting go with the stick centred sets it down gently, as it always did. The button still works for a teammate.

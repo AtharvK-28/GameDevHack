@@ -17,7 +17,7 @@ var round_index: int = 0
 var round_count: int = 0
 var round_seed: int = 0
 var ghost_slot: int = -1
-var ghost_order: Array[int] = [] # Decision 151: who is the ghost each round, shuffled once a match.
+var ghost_order: Array[int] = [] # Decisions 151 and 162: who is the ghost each round, reshuffled after each lap.
 var seconds_left: float = 0.0
 var reveal_left: float = 0.0
 var starting_value: int = 0
@@ -37,7 +37,8 @@ var goals: RefCounted = ROUND_GOALS.new() # This round's stars and bonus goals (
 var smash_ready_at: int = 0 # Ticks (ms) before another big-smash punch-in may play.
 var slow_until: int = 0 # Ticks (ms) when the current punch-in's slow motion ends.
 var normal_speed: float = 1.0 # Live play's game speed; developer mode changes it (decision 121).
-var mission_mode: bool = false # The Sabotage Showdown (decision 158): the round is won by finishing the mission.
+var mission_mode: bool = false # The Sabotage Showdown (decision 158): the crew must finish the mission as well as the target.
+var mission_done: bool = false # Every step of it is done (decision 161).
 var getaway: bool = false # The Getaway is running (decision 147): live play, with no ghost, no goals and no scoring.
 var getaway_result: Dictionary = {} # {saved, total, stars}, for the GOLD SAVED page.
 var replay: Array[Dictionary] = [] # Disaster Cam clips to show before this result page (decision 144); empty once shown.
@@ -91,8 +92,8 @@ func finish_intro() -> void:
 
 func _shuffle_ghost_order() -> void:
 	# Decision 151: the ghost used to be phone 1 in round 1, phone 2 in round 2 and so on, which gave the whole
-	# match away. The turns are shuffled once, at the start of the match, so nobody can predict who is next but
-	# everyone still gets exactly one turn before anyone repeats. Fixed for the match, so a restart keeps the role.
+	# match away. The turns are shuffled at the start of the match and again after everyone has had one, so nobody
+	# can predict who is next but everyone still gets exactly one turn before anyone repeats. A restart keeps the role.
 	ghost_order = participants.duplicate()
 	ghost_order.shuffle()
 	print("Ghost order this match: ", ghost_order)
@@ -104,6 +105,8 @@ func _begin_round(restarting: bool) -> void:
 		round_seed = randi()
 	if ghost_order.is_empty():
 		_shuffle_ghost_order() # Never divide by an empty order, whatever path got us here.
+	elif not restarting and round_index > 0 and round_index % ghost_order.size() == 0:
+		_shuffle_ghost_order() # Decision 162: everyone has had a turn, so the next lap is dealt afresh.
 	ghost_slot = ghost_order[round_index % ghost_order.size()]
 	bank_credit.clear()
 	round_points.clear()
@@ -112,6 +115,7 @@ func _begin_round(restarting: bool) -> void:
 	banked_value = 0
 	lost_value = 0
 	starting_value = 0
+	mission_done = false
 	room_items.clear()
 	seconds_left = Balance.DEMO_ROUND_SECONDS if PlayerConfig.get_config("GameSettings", "DemoMode", false) else Balance.ROUND_SECONDS
 	reveal_left = Balance.REVEAL_SECONDS
@@ -188,16 +192,15 @@ func _evaluate_round() -> void:
 		remaining += item.value
 		unresolved += 1
 	lost_value = maxi(0, starting_value - banked_value - remaining)
-	if mission_mode:
-		# A mission is won by finishing it, not by filling a quota: the only way to lose is to run out of time.
-		if seconds_left <= 0.0:
-			_finish_round(false, "Time is up, and the job was not finished.")
-		return
 	if (banked_value + remaining) * 100 < starting_value * delivery_percent():
 		_finish_round(false, "More than %d%% of the starting value was lost." % (100 - delivery_percent()))
 	elif seconds_left <= 0.0 or unresolved == 0:
-		var won: bool = banked_value * 100 >= starting_value * delivery_percent()
-		_finish_round(won, "Time is up." if seconds_left <= 0.0 else "All items are accounted for.")
+		var unfinished: bool = mission_mode and not mission_done # Decision 161: a mission round needs the mission too.
+		var won: bool = not unfinished and banked_value * 100 >= starting_value * delivery_percent()
+		if unfinished:
+			_finish_round(false, "The power never came back on.")
+		else:
+			_finish_round(won, "Time is up." if seconds_left <= 0.0 else "All items are accounted for.")
 
 
 func _on_alarm_tripped(slot: int) -> void:
@@ -229,8 +232,8 @@ func _on_delivered(value: int, carrier_slots: Array[int]) -> void:
 
 
 func finish_mission() -> void:
-	# Called by a mission arena the moment its last step is done.
-	_finish_round(true, "The crew finished the job.")
+	# Called by a mission arena the moment its last step is done; the round then plays on as usual (decision 161).
+	mission_done = true
 
 
 func _finish_round(movers_won: bool, reason: String) -> void:

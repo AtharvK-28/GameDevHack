@@ -54,12 +54,13 @@ The current demo uses the supplied Old Mansion layout and mover character assets
 - **Haunting limits:** 8 s opening protection from live start; 4 s shared lock after a cast; individual cooldowns start at cast. House Shake works while possessing; Curse is wisp-only. Phone UI explains all refusals and displays remaining seconds, including exorcism, cooldown, opening protection, shared lock, insufficient energy and missing targets. A mover holding cursed loot sees its remaining duration.
 - **Seeded setup:** 6/9/12 loot items for 2/3/4 players, exactly one centrepiece, using existing types. Original total is calculated from that spawn. Restart restores the same seed, layout, roles and values. Keep the lone-mover 40% drag rule. New rounds receive a new seed.
 - **Disconnect:** pause the round simulation and timers until all participants reconnect; the host may cancel to the lobby without scoring the unfinished round. Reject new identities during a match; existing participants may rejoin.
+- **Going Home (decision 162):** Esc or HOME in the lobby returns to the title screen to pick another map. Phones stay connected on the same join code and tap Ready again in the new lobby.
 - **Host flow:** lobby/QR → intro cutscene (once per match, about 50 s; Enter next panel, Esc skip) → 3 s role reveal/countdown → 150 s round → round result/restart → next role → final leaderboard → the story's ending (Enter; decision 146; after the Museum, The Getaway first, decision 147) → lobby. 2 players play 4 rounds, 3 play 3, 4 play 4. The demo uses Mansion for all rounds; additional arenas remain later work.
 - **Results:** frozen once per attempt; restarting replaces rather than adds that attempt's score. Host controls start, next, restart and return to lobby. Phones display the same current phase and their own role/points after reconnect.
 
 ## Match flow
 
-A match is a set of rounds where the ghost role passes along each time. **Who is the ghost (decision 151):** the players are shuffled into a ghost order once, when the match starts, and each round takes the next one. Nobody can predict who is next, but everyone still gets exactly one turn before anyone repeats. The order is fixed for the match, so restarting a round keeps its roles. Each state is its own Godot scene; `Game.gd` broadcasts the current state so every phone switches to the right screen.
+A match is a set of rounds where the ghost role passes along each time. **Who is the ghost (decisions 151 and 162):** the players are shuffled into a ghost order when the match starts and again each time everyone has had a turn, and each round takes the next one. Nobody can predict who is next, but everyone still gets exactly one turn before anyone repeats. Restarting a round keeps its roles. Each state is its own Godot scene; `Game.gd` broadcasts the current state so every phone switches to the right screen.
 
 ```mermaid
 flowchart LR
@@ -90,7 +91,7 @@ Movers have one job: get value onto the truck. Every control is about carrying w
 | --- | --- |
 | Joystick | Move. Base speed 4.5 m/s, reduced by what you carry. Up on the stick is up on the big screen, whatever the camera's angle (decision 124). Speed follows tilt^1.3 (half tilt is about 40% of full speed); walking eases in over about 0.3 s and stops in about 0.15 s; bracing stops at once. |
 | GRAB (hold) | Pick up the nearest item in front of you — the one wearing your colour's shell on the big screen (decision 149). Items worth picking up wear a pip overhead, two of them when it takes two of you (decision 150). Let go to drop it. |
-| Let go of GRAB with the stick pushed | **Throw** a light item where you are pointing (decision 151). Carrying pins one thumb on GRAB and the other on the stick, so there was no thumb left for a THROW button; aiming with the stick you already hold needs no third thumb. Letting go with the stick centred sets the item down gently. Fast, but a throw lands hard and takes damage; medium and heavy loot cannot be thrown. |
+| Flick the stick as you let go of GRAB | **Throw** a light item where you are pointing (decisions 151 and 162). The stick must leave its centre within 0.3 s of letting go, so letting go in the middle of a walk just sets the item down. Over a delivery zone letting go always delivers. A throw lands hard and takes damage; medium and heavy loot cannot be thrown. |
 | Let go of GRAB with the stick pushed at a glass case | **Shove** the case in and smash it (decision 153). The phone has no THROW button: the flick that throws an item is the same gesture, and the stick must point at the case, so walking off with it still pushed costs nothing. The keyboard keeps E, and the protocol keeps the button, for the stand-ins and the dev keyboard. |
 | BRACE (hold) | Plant your feet. You can't move, but shake and wind can't knock you over. |
 
@@ -679,13 +680,15 @@ The Ship catalog contains 19 items worth 78500 rupees: chest 18000 (two-person, 
 **The Sabotage Showdown (decisions 158 and 159).** The Old Mansion's map card, `arenas/MansionMission.tscn`: the
 house with `mission_mode` on, which spawns a mission instead of the Battery Run. There is no separate card, so the
 Mansion is always played this way; plain `Mansion.tscn` stays for the title screen and the checks, and bots walk the
-mission scene on the same route map but have no mission logic. Four steps, each shut until the one before
+mission scene on the same route map but have no mission logic. Three steps, each shut until the one before
 it is done: find the gallery key (one of six seeded spots, all outside the stair well), carry it to the fuse
-cupboard beside the stairs, match four pairs of wires on the phone, then haul Seth-ji's strongbox (30,000) down
-from the gallery to the truck. An iron gate across the foot of the stairs is solid to movers and loot until the
+cupboard beside the stairs, and match four pairs of wires on the phone. That puts the power back on, and from there
+the round plays as usual: the piano and the rest of the loot to the truck. An iron gate across the foot of the stairs is solid to movers and loot until the
 power is on, when it swings up the stairs and lies flat to the left wall (decision 160). The fuse box is a switch both sides work: movers hold GRAB to throw the breaker, the ghost possesses
 it and ACTION cuts the power (30 energy, 18 s cooldown), shutting the gate again. The ghost may not touch the key.
-The round is won by finishing the mission and lost only to the clock. Protocol: host to phone
+**Winning (decision 161):** as on the other maps, the round runs to the clock and the movers need the crew's delivery
+target banked; here they also need the power back on, so the steps cannot be skipped by banking only what is
+downstairs. The ghost wins if either is missing at the end, or at once if the target goes out of reach. Protocol: host to phone
 `{"type":"wires","open":true,"left":[..],"right":[..],"joined":[..]}`, phone to host `{"type":"wire","l":i,"r":j}`;
 the host judges every join, and walking away from the box drops the puzzle.
 

@@ -197,8 +197,8 @@ func _check_flick_throw() -> void:
 	await _wait(SETTLE_SECONDS)
 	_check(mover.held_item == item, "The mover is carrying the vase before the flick")
 
-	_key(KEY_W, true) # Push the stick and let it settle into a walk.
-	await _wait(WALK_SECONDS)
+	_key(KEY_W, true) # A fresh push, inside the flick window.
+	await _wait(INPUT_SECONDS)
 	var aim := Vector3(mover.stick.x, 0.0, mover.stick.y).normalized()
 	_check(mover.stick.length() >= SETTINGS.THROW_FLICK_STICK, "The stick is pushed past the flick threshold (%.2f)" % mover.stick.length())
 	_key(KEY_SPACE, false) # Let go of GRAB: that is the throw.
@@ -206,9 +206,24 @@ func _check_flick_throw() -> void:
 	_key(KEY_W, false)
 	var flight := Vector3(item.linear_velocity.x, 0.0, item.linear_velocity.z)
 	_check(mover.held_item == null, "Letting go of GRAB with the stick pushed releases the item")
-	_check(flight.length() > 3.0, "The flick throws it properly (%.1f m/s)" % flight.length())
+	_check(flight.length() > 2.5, "The flick throws it properly (%.1f m/s)" % flight.length())
+	_check(flight.length() < SETTINGS.THROW_SPEED + SETTINGS.MOVER_SPEED, "The throw stays gentle enough to land near its aim (%.1f m/s)" % flight.length())
 	_check(aim != Vector3.ZERO and flight.normalized().dot(aim) > 0.8, "It flies where the stick was pointing (dot %.2f)" % flight.normalized().dot(aim))
 	_check(item.linear_velocity.y > 0.0, "The throw lifts it as well as sending it forward")
+
+	# Decision 162: walking along and letting go sets the item down. Only a fresh push is a flick.
+	await _clear_loot()
+	_reset_mover(Vector3(0.0, MOVER_HEIGHT, 0.0), Vector3.FORWARD)
+	var walked := _spawn(0, Vector3(0.0, _rest_height(0), -SETTINGS.HOLD_DISTANCE))
+	_key(KEY_SPACE, true)
+	await _wait(SETTLE_SECONDS)
+	_check(mover.held_item == walked, "The mover is carrying a vase to walk with")
+	_key(KEY_W, true)
+	await _wait(WALK_SECONDS)
+	_key(KEY_SPACE, false)
+	await _wait(INPUT_SECONDS)
+	_key(KEY_W, false)
+	_check(mover.held_item == null and not walked.thrown, "Letting go in the middle of a walk is not a throw")
 
 	# Stick centred: the same release sets the item down instead of hurling it.
 	await _clear_loot()
@@ -364,6 +379,19 @@ func _check_banking() -> void:
 	_key(KEY_E, false)
 	_key(KEY_SPACE, false)
 	_check(is_instance_valid(thrown_item) and not thrown_item.finished and truck.banked_items == 2, "Throwing inside the truck does not bank the item")
+
+	# Decision 162: a flick over the zone delivers instead, since a thrown item would never bank.
+	await _clear_loot()
+	_reset_mover(Vector3(5.0, MOVER_HEIGHT, 6.5), Vector3.FORWARD)
+	var flicked := _spawn(0, Vector3(5.0, _rest_height(0), 6.5 - SETTINGS.HOLD_DISTANCE))
+	_key(KEY_SPACE, true)
+	await _wait(SETTLE_SECONDS)
+	_key(KEY_W, true)
+	await _wait(INPUT_SECONDS)
+	_key(KEY_SPACE, false)
+	await _wait(INPUT_SECONDS)
+	_key(KEY_W, false)
+	_check(not is_instance_valid(flicked) and truck.banked_items == 3, "Letting go over the truck zone banks the item even with the stick flicked")
 
 
 # --- Phone integration ---

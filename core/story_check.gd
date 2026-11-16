@@ -89,6 +89,7 @@ func _run() -> void:
 	await _key(KEY_ENTER)
 	await _wait(0.2)
 	await _key(KEY_ESCAPE)
+	await _skip_briefing() # The Museum is still the loaded arena here, and its briefing would otherwise eat the next Enter.
 	await _ending_from_results()
 	await _wait(1.0)
 	_check(game.phase == "outro" and cutscene._panels() == SETTINGS.MANSION_OUTRO_PANELS and _lettering_on_screen(), "The Mansion ends on Seth-ji's diary, on screen")

@@ -31,6 +31,16 @@ func _unhandled_input(event: InputEvent) -> void:
 	if visible and Style.pressed_key(event) in [KEY_ENTER, KEY_KP_ENTER]:
 		Game.start_match()
 		get_viewport().set_input_as_handled()
+	elif visible and Style.pressed_key(event) == KEY_ESCAPE:
+		_go_home()
+		get_viewport().set_input_as_handled()
+
+
+func _go_home() -> void:
+	# Back to the title to pick another map. The phones stay: Net outlives the match world, so the join code holds
+	# and everyone is still connected in the next lobby, where they tap Ready again.
+	get_tree().paused = false
+	UiMotion.cover(func() -> void: get_tree().change_scene_to_file(MaaacksGameTemplate.get_main_menu_path("")))
 
 
 # --- Refresh ---
@@ -152,9 +162,14 @@ func _build() -> void:
 	crew.add_child(card_grid)
 	status_label = Style.label("", Balance.UI_SMALL_SIZE, Balance.UI_MUTED)
 	crew.add_child(status_label)
+	var actions := HBoxContainer.new()
+	actions.alignment = BoxContainer.ALIGNMENT_CENTER
+	actions.add_theme_constant_override("separation", Balance.UI_PANEL_MARGIN)
 	var start := Style.action("START THE JOB", "Enter", Game.start_match)
 	start_button = start.get_child(1)
-	crew.add_child(start)
+	actions.add_child(start)
+	actions.add_child(Style.action("HOME", "Esc", _go_home))
+	crew.add_child(actions)
 
 	var hint := Style.label("F11: fullscreen or window", Balance.UI_SMALL_SIZE, Balance.UI_MUTED)
 	hint.autowrap_mode = TextServer.AUTOWRAP_OFF

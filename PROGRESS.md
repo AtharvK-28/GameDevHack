@@ -227,6 +227,11 @@ Decision 149's readability and feel pass is in; its suite run and human look are
   bots walk the mission scene and keep off the gallery while the gate is shut. On the merged code the mission (41), wire
   (12), bot crew (15), story (44), match (73), plumbing (73), end-to-end (98) and UI (211) suites pass; the others were not
   rerun.
+- [x] The strongbox is gone (decision 161, 2026-11-02): the mission is key, cupboard, wires, then a normal round with the
+  piano and the rest; the movers need the power on and the delivery target. `core/mission_win_check.gd` covers each ending.
+- [x] Softer throws, HOME in the lobby and a reshuffled ghost (decision 162, 2026-11-02). `core/carrying_check.gd` covers
+  the flick, a let-go while walking and a let-go over the zone; `core/home_check.gd` covers leaving the lobby with a phone.
+- [x] 2026-11-16: the above verified with the game closed: carrying 109, team carry 35, mission 39, mission win 12, home 7, wire 12, match 73 (x3), story 44 (x2), museum 93, crazy 20, getaway 19 (x2), e2e 98, ui 215. Two checks were stale, not the game: `match_check` assumed the rejoining phone is a mover (decision 162 reshuffles each lap), and the checks' synthetic keys set only `physical_keycode`, which Godot's `ui_cancel`/`ui_accept` never match, so the Museum briefing could not be skipped (`getaway_check` has failed since the briefing landed). Test keys now set `keycode` too, like a real key.
 - [ ] Bots have no mission logic, so a bot crew cannot finish the Mansion: every bot round there is a timeout loss, and
   the Mansion video needs people playing, or new bot work.
 - [ ] The in-game guide, `README.md` and `JUDGE_HANDOUT.md` still describe the Mansion's batteries and delivery target.

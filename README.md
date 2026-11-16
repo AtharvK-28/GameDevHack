@@ -129,9 +129,9 @@ godot --headless --path . --script res://core/e2e_check.gd
 godot --path . --script res://core/ui_check.gd
 ```
 
-`mission_check.gd` and `wire_check.gd` cover the Sabotage Showdown (decision 158): the first proves the four
+`mission_check.gd` and `wire_check.gd` cover the Sabotage Showdown (decision 158): the first proves the
 steps are a sequence and that the stair gate really blocks the gallery, the second drives the fuse box's wire
-puzzle from a real phone over the socket.
+puzzle from a real phone over the socket. `mission_win_check.gd` plays every way a mission round can end (decision 161), and `home_check.gd` goes from a lobby to the title and into another map's lobby with a phone still connected (decision 162).
 
 `e2e_check.gd` is the one that plays the game rather than a part of it: each of the three arenas from the lobby to
 the story's ending, with a real phone on a real socket and a bot crew doing the work. Reach for it first when a

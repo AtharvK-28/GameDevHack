@@ -34,7 +34,6 @@ var generator: Area3D
 var mission: Mission
 var fuse_box: Node3D
 var stair_gate: StaticBody3D
-var strongbox: Node3D
 
 # --- Setup ---
 func _ready() -> void:
@@ -221,8 +220,8 @@ func _spawn(scene: PackedScene, location: Vector3) -> void:
 
 # --- The Sabotage Showdown mission (decision 158) ---
 func _spawn_mission() -> void:
-	# Four steps, each shut until the one before it is done: find the key, open the fuse cupboard beside the
-	# stairs, match the wires to restore power, then carry the strongbox down from the gallery.
+	# Three steps, each shut until the one before it is done: find the key, open the fuse cupboard beside the
+	# stairs, match the wires to restore power. Then the gallery opens and the round plays on as usual.
 	mission = MISSION_SCRIPT.new(Balance.MISSION_STEPS)
 	add_child(mission)
 
@@ -250,13 +249,6 @@ func _spawn_mission() -> void:
 	key.add_to_group("mission_key")
 	add_child(key)
 
-	# The prize sits on the gallery, behind the gate. Its own pool keeps it out of the ordinary loot draw.
-	strongbox = LOOT_SCENE.instantiate()
-	strongbox.catalog_item = load("res://props/catalog/mansion/strongbox.tres")
-	strongbox.position = Balance.MISSION_STRONGBOX_AT
-	strongbox.add_to_group("mission_prize")
-	add_child(strongbox)
-	truck.banked.connect(_on_banked_for_mission)
 	mission.finished.connect(_on_mission_finished)
 
 
@@ -292,16 +284,6 @@ func _on_puzzle_wanted(slot: int) -> void:
 
 
 func _on_mission_finished() -> void:
-	# The crew got the strongbox out: the mission is the win condition in this mode, not the usual quota.
-	print("Mission complete: the crew got the strongbox out")
+	# The power is back; the round still needs the delivery target (decision 161).
+	print("Mission complete: the power is back on")
 	Game.finish_mission()
-
-
-func _on_banked_for_mission(_value: int, _carrier_slot: int) -> void:
-	# The last step is done when the strongbox itself reaches the truck, not when any loot does. The truck retires
-	# the item and emits this in the same frame, so the strongbox is still valid here; a strongbox smashed earlier
-	# has already been freed, and then no later delivery can finish the step for it.
-	if mission == null:
-		return
-	if is_instance_valid(strongbox) and strongbox.finished:
-		mission.complete("haul")

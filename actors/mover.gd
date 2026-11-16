@@ -13,6 +13,7 @@ signal tumbled(slot: int)
 var slot: int = 0
 var facing := Vector3.FORWARD
 var stick := Vector2.ZERO # This frame's movement input; zero while bracing or down.
+var stick_pushed_for: float = 0.0 # Seconds since the stick was last near its centre; a throw needs a fresh push.
 var bracing: bool = false
 var in_play: bool = true
 var held_item: Carryable
@@ -83,6 +84,7 @@ func _physics_process(delta: float) -> void:
 	if hex_state == "on":
 		var screen: Vector2 = InputRouter.world_to_stick(stick)
 		stick = InputRouter.stick_to_world(Vector2(-screen.x, screen.y)) # Mirrored left to right.
+	stick_pushed_for = 0.0 if stick.length() < Balance.THROW_REST_STICK else stick_pushed_for + delta
 	bracing = player_input.buttons.get("brace", false)
 	if is_instance_valid(lifted_by):
 		_ride(player_input)
@@ -290,9 +292,12 @@ func _handle_carry_input(input: InputRouter.PlayerInput) -> void:
 
 
 func _release_or_throw() -> void:
-	# Letting go of GRAB with the stick pushed throws the item where you are pointing; letting go with the stick
-	# centred sets it down gently (decision 151). Aiming with the stick you are already holding needs no third thumb.
-	var flick: bool = stick.length() >= Balance.THROW_FLICK_STICK
+	# A flick of the stick as you let go of GRAB throws the item where you are pointing (decision 151). It has to be a
+	# fresh push, or letting go while walking would throw (decision 162), and over a delivery zone letting go always
+	# delivers, since a thrown item never banks.
+	var flick: bool = stick.length() >= Balance.THROW_FLICK_STICK and stick_pushed_for <= Balance.THROW_FLICK_WINDOW
+	if _over_delivery_zone():
+		flick = false
 	if flick and is_instance_valid(held_item) and not is_instance_valid(lifting) and held_item.can_throw():
 		var aim := Vector3(stick.x, 0.0, stick.y).normalized()
 		held_item.release(aim * Balance.THROW_SPEED + Vector3.UP * Balance.THROW_LIFT, self)
@@ -305,6 +310,17 @@ func _release_or_throw() -> void:
 		_throw_teammate() # The same flick sends a teammate flying.
 		return
 	_let_go()
+
+
+func _over_delivery_zone() -> bool:
+	if not is_instance_valid(held_item):
+		return false
+	var at: Vector3 = held_item.global_position
+	for zone: Node in get_tree().get_nodes_in_group("truck_zones"):
+		if zone.contains_point(at):
+			return true
+	var task_zone: Variant = held_item.get("generator") # A task item's own zone, like the Mansion key's cupboard.
+	return is_instance_valid(task_zone) and task_zone.contains_point(at)
 
 
 func _let_go() -> void:

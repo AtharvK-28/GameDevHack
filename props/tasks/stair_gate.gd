@@ -1,5 +1,5 @@
 # The iron gate across the foot of the gallery stairs (decision 158). Shut, it is solid to movers and to loot, so
-# the gallery and Seth-ji's strongbox are genuinely out of reach until the power is on: the mission is a sequence,
+# the gallery and the piano are genuinely out of reach until the power is on: the mission is a sequence,
 # not a dark room you can wander into. Power swings it open; the ghost cutting the power swings it shut again,
 # which can leave a mover stranded upstairs until the crew throws the breaker back.
 extends StaticBody3D

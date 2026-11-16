@@ -6,7 +6,7 @@ class_name Mission
 extends Node
 
 signal step_done(id: String, index: int)
-signal finished # Every step done: the crew has won the round.
+signal finished # Every step done; the crew still needs the delivery target (decision 161).
 
 # --- State ---
 var steps: Array[Dictionary] = [] # Copies of Balance.MISSION_STEPS, each with "done".
@@ -61,14 +61,14 @@ func current() -> Dictionary:
 
 func hud_text() -> String:
 	if is_finished():
-		return "MISSION COMPLETE"
+		return Balance.MISSION_DONE_HUD
 	var step: Dictionary = current()
 	return "%d/%d  %s" % [done_count + 1, steps.size(), step.get("short", "")]
 
 
 func phone_text() -> String:
 	var step: Dictionary = current()
-	return "Mission complete. Get clear!" if is_finished() else String(step.get("text", ""))
+	return Balance.MISSION_DONE_PHONE if is_finished() else String(step.get("text", ""))
 
 
 func state() -> Dictionary:

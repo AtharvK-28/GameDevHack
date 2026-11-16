@@ -1,5 +1,5 @@
 # The Sabotage Showdown mission's body (run by core/mission_check.gd), on the Mansion mission arena. It proves
-# the thing the mode is for: that the four steps are a sequence and not four errands in any order.
+# the thing the mode is for: that the steps are a sequence and not errands in any order.
 extends Node
 
 const SETTINGS := preload("res://autoload/Balance.gd")
@@ -48,12 +48,12 @@ func _check_sequence_rules() -> void:
 	var fresh: Node = MISSION_SCRIPT.new(SETTINGS.MISSION_STEPS)
 	_check(fresh.steps.size() >= 3, "The mission has at least three steps (%d)" % fresh.steps.size())
 	_check(fresh.is_open("key") and not fresh.is_open("cupboard"), "Only the first step is open to begin with")
-	_check(not fresh.complete("haul") and not fresh.complete("wires"), "A later step cannot be finished out of turn")
+	_check(not fresh.complete("wires") and not fresh.complete("cupboard"), "A later step cannot be finished out of turn")
 	_check(fresh.done_count == 0, "A refused step leaves the mission where it was")
 	_check(fresh.complete("key"), "The open step can be finished")
 	_check(fresh.is_open("cupboard") and not fresh.is_open("wires"), "Finishing one step opens exactly the next")
 	_check(not fresh.complete("key"), "A finished step cannot be finished twice")
-	for id: String in ["cupboard", "wires", "haul"]:
+	for id: String in ["cupboard", "wires"]:
 		fresh.complete(id)
 	_check(fresh.is_finished(), "Finishing every step in order completes the mission")
 	fresh.free()
@@ -115,14 +115,11 @@ func _check_gate_blocks() -> void:
 # --- The whole run, in order ---
 func _check_run_through() -> void:
 	var key: Node3D = get_tree().get_first_node_in_group("mission_key")
-	var prize: Node3D = get_tree().get_first_node_in_group("mission_prize")
-	_check(key != null and prize != null, "The key and the strongbox are both in the world")
-	if key == null or prize == null:
+	_check(key != null, "The key is in the world")
+	if key == null:
 		return
 	_check(key.global_position.z > SETTINGS.MISSION_GATE_AT.z, "The key never spawns behind the gate it opens")
-	_check(prize.global_position.z < SETTINGS.MISSION_GATE_AT.z, "The strongbox is on the gallery, behind the gate")
 	_check(key.weight_class == SETTINGS.LIGHT, "The key is light, so one mover can run with it")
-	_check(prize.value == SETTINGS.MISSION_STRONGBOX_VALUE, "The strongbox is worth %d" % prize.value)
 	_check(key.get_node_or_null("Possessable") == null, "The key carries nothing the ghost can possess")
 
 	# Step one: a mover picks the key up.
@@ -156,6 +153,7 @@ func _check_run_through() -> void:
 	fuse_box.solved_puzzle()
 	await _frames(60)
 	_check(mission.is_done("wires") and fuse_box.powered and not gate.shut, "Solving the wires finishes step three, powers the box and opens the gate")
+	_check(mission.is_finished(), "That is the last step: the round plays on as usual from here")
 
 	# The two-sided switch, and the crew's counter to it.
 	_check(fuse_box.can_cut(), "With the power on the ghost may cut it")
@@ -166,7 +164,6 @@ func _check_run_through() -> void:
 	fuse_box.set_powered(true)
 	await _frames(60)
 	_check(not gate.shut, "A mover throwing the breaker back on reverses the ghost's cut")
-	_check(not mission.is_finished(), "The mission is still not complete until the strongbox is out")
 
 
 # --- Helpers ---
